@@ -1,0 +1,31 @@
+\documentclass[border=0.5cm]{standalone}
+\usepackage{../../latex/pgf-go}
+
+
+\pgfgouseprofile{pgfgosmooth}
+
+\begin{document}
+	\vbox{
+	\hbox{
+	\begin{goban}[partial = {from = A9 to E5}]
+		\stone[b]{C7}
+		\marks[sequence]{C8, D7, C6, B7};
+	\end{goban}\thinspace
+	\begin{goban}[partial = {from = E9 to I5}]
+		\stone[b]{G7}
+		\stone[w]{F7}
+		\marks[sequence]{G8, H7, G6};
+	\end{goban}}
+	\hbox{
+	\begin{goban}[partial = {from = A1 to E5}]
+		\stone[b]{C3}
+		\stones[w]{B3,C2}
+		\marks[sequence]{C4, D3};
+	\end{goban}\thinspace
+	\begin{goban}[partial = {from = E1 to I5}]
+		\stone[b]{G3}
+		\stones[w]{F3,G2, H3}
+		\marks[sequence]{G4};
+	\end{goban}
+}}
+\end{document}

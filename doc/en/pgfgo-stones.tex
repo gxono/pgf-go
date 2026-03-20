@@ -1,0 +1,533 @@
+\section{Stones, Moves, and Prisoners}
+
+Stones are the fundamental elements. In \pgfgoname, commands and options are provided to draw them flexibly, allowing customization of their appearance and behavior according to the needs of the diagram.
+
+\subsection{Stones}
+
+\begin{command}{\stone\opt{\oarg{options}}\marg{intersection}}
+	This command draws an individual stone at the specified intersection. The mandatory argument is the coordinate (e.g., "C2"), while optional options allow adjusting its style, such as color, size, or markings, following the convention of the first player in Go.
+\end{command}
+
+\begin{command}{\stones\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
+	Similar to |\stone|, but allows placing multiple stones using the corresponding syntax (see Coordinate Syntax).
+\end{command}
+
+It is possible to change an option for all players using |\pgfgoset{stone = {...}}|. This is equivalent to |\pgfgoset{players = {all = {stone = {...}}}}|.
+
+\begin{key}{/pgfgo/stone/fill = \meta{option} (default true)}
+	Controls the fill options of a stone.
+\end{key}
+
+\begin{key}{/pgfgo/stone/fill/color = \meta{color}}
+	Defines the fill color of a stone.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[fill = {color = cyan!80!black}]{C2,D3}
+			\stone[fill = {color = magenta!80!black}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/fill/opacity = \meta{float} (initially 1)}
+	
+	Controls the opacity of the stone’s fill, ranging from 0 (transparent) to 1 (opaque).
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, fill = {opacity = 0.8}]{C2,D3}
+			\stone[w, fill = {opacity = 0.5}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/line = \meta{option} (initially true)}
+	Controls the border options of a stone.
+\end{key}
+
+\begin{key}{/pgfgo/stone/line/color = \meta{color} (initially black)}
+	
+	Sets the border color of the stone, which is black by default for all stones.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, line = {color = magenta}]{C2,D3}
+			\stone[w, line = {color = cyan}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/line/opacity = \meta{float} (initially 1)}
+	
+	Defines the opacity of the stone’s border, allowing it to be more subtle or transparent.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, line = {opacity = 0.5}]{C2,D3}
+			\stone[w, line = {opacity = 0.8}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/line/width = \meta{dimension} (initially 0.9pt)}
+	
+	Controls the thickness of the stone’s border.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w, line = {width = 2pt}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/radius = \meta{dimension} (initially 0.55em)}
+	
+	Sets the size of the stone by its radius.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, radius = 0.15cm]{C2,D3}
+			\stone[w, radius = 0.25cm]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/scale = \meta{float} (initially 1)}
+	
+	Defines a scaling factor that affects all elements of the stone (radius, border, markings), maintaining their proportions.
+\end{key}
+
+\begin{key}{/pgfgo/stone/black}
+	
+	Assigns the stone the characteristics of the first player (black by default), including fill and border color. This is the initial state of any stone unless another option is specified.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[black]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/b}
+	
+	Abbreviation for "black," with identical functionality.
+\end{key}
+
+\begin{key}{/pgfgo/stone/white}
+	
+	Assigns the stone the characteristics of the second player (white by default), with a white fill and black border.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[white]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[white]{C2,D3}
+			\stone[white]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/w}
+	
+	Abbreviation for "white," with the same functionality.
+\end{key}
+
+\begin{key}{/pgfgo/stone/mark = \meta{mark keys}}
+	
+	Places a mark on the stone (e.g., triangle, circle). Marks can be further customized with other keys, such as color or size.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, mark = triangle]{C2,D3}
+			\stone[w, mark = t-circle]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/forget}
+	
+	When the board uses a memory system (|new remember|, |resume|), this option indicates that the stone should not be remembered, allowing it to be excluded from subsequent states.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}[new remember]
+			\stones[b]{C2,D3}
+			\stone[w, forget]{B4}
+		\end{goban}
+		
+		\begin{goban}[resume]
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/remember}
+	
+	In a board with active memory, ensures that the stone is remembered even if the general environment uses |forget|.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}[forget]
+			\stones[b]{C2,D3}
+			\stone[w, remember]{B4}
+		\end{goban}
+		
+		\begin{goban}[resume]
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/prisoner=\meta{prisoner options} (default fill opacity = 0.5)}
+	
+	Characterizes a stone as a prisoner, typically with reduced opacity (0.5 by default) to indicate it has been captured. Other options can be added to customize its appearance.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, prisoner]{C2,D3}
+			\stone[white]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\subsection{Moves}
+
+Move commands allow representing sequences of plays, automatically alternating between black and white. They include options for numbering the moves and customizing the associated stones.
+
+\begin{command}{\move\opt{*}\opt{\oarg{options}}\marg{intersection}}
+	
+	Draws a stone as part of a move sequence, automatically alternating colors (black, white, black, etc.). The starred version (|\move*|) adds a numeric label to the stone.
+\end{command}
+
+\begin{command}{\moves\opt{*}\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
+	
+	Similar to |\move|, but applies the sequence to multiple intersections in a single line.
+\end{command}
+
+It is possible to change options for all players using |\pgfgoset{move = {...}}|, which is equivalent to |\pgfgoset{players = {all = {move = {...}}}}|.
+
+\begin{key}{/pgfgo/move/black}
+	
+	Sets the move sequence to start with the black player, useful for forcing the start of a play in specific diagrams.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\moves[b]{C2,B4}
+			\move{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/white}
+	
+	Sets the sequence to start with the white player, altering the natural order of moves.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\moves[white]{C2,B4}
+			\move{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/from = \meta{number}}
+	
+	Defines the starting number of a numbered move sequence, allowing continuation from a specific point instead of starting at 1.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\moves*[from = 7]{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label = \meta{options}}
+	
+	Controls the properties of numeric labels in starred moves, such as size, color, or format.
+\end{key}
+
+%\begin{key}{/pgfgo/move/label/font size=\meta{dimension} (initially 0.5em)}
+%	
+%	Adjusts the font size of the labels, allowing them to adapt to the stone size or overall design.
+%	
+%	\begin{codeexample}[]
+%		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+%		
+%		\begin{goban}
+%			\stones[b]{C2,D3}
+%			\stone[w]{B4}
+%		\end{goban}
+%		
+%		\begin{goban}
+%			\moves*[from = 7]{C2,B4}
+%			\move*[label = {font size = 0.125em}]{D3}
+%		\end{goban}
+%	\end{codeexample}
+%\end{key}
+
+\begin{key}{/pgfgo/move/label/format = \meta{options} (initially arabic)}
+	
+	Defines the numbering style of the labels.
+\end{key}
+
+\begin{key}{/pgfgo/move/label/format/arabic}
+	
+	Uses Arabic numerals, the default format for move labels.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\moves*[from = 7]{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/format/alph}
+	
+	Uses lowercase letters for the labels.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\pgfgoset{move={label = {format=alph}}}
+		\begin{goban}
+			\moves*[from = 7]{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/format/Alph}
+	
+	Uses uppercase letters.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\pgfgoset{move = {label = {format = Alph}}}
+		\begin{goban}
+			\moves*[from = 7]{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/format/roman}
+	
+	Uses lowercase Roman numerals.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\pgfgoset{move = {label = {format = roman}}}
+		\begin{goban}
+			\moves*{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/format/Roman}
+	
+	Uses uppercase Roman numerals.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\pgfgoset{move = {label = {format = Roman}}}
+		\begin{goban}
+			\moves*{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/color = \meta{color}}
+	
+	Defines the color of the labels.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\moves*{C2,B4}
+			\move*{D3}
+		\end{goban}
+		
+		\begin{goban}
+			\moves*[label = {color = red}]{C2,B4}
+			\move*[label = {color = blue}]{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/forget}
+	
+	Prevents move labels from being stored in the board’s memory when using |remember|, allowing stones to persist without their numbers.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}[new remember]
+			\moves*[label = forget]{C2,B4,D3}
+		\end{goban}
+		
+		\begin{goban}[resume]
+			\moves*{C:D4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/remember}
+	
+	Ensures that labels are stored in memory, even if the environment uses |forget|, maintaining their continuity in subsequent diagrams.
+\end{key}
+
+\begin{key}{/pgfgo/move/forget}
+	
+	Indicates that moves should not be remembered in the board’s memory, removing them from future states when using |resume|.
+\end{key}
+
+\begin{key}{/pgfgo/move/remember}
+	
+	Ensures that moves are remembered, preserving them for reuse with |resume|.
+\end{key}
+
+\subsection{Prisoners}
+
+\pgfgoname\ provides specific commands to represent prisoners, typically with reduced opacity to distinguish them from active stones.
+
+\begin{command}{\prisoner\opt{\oarg{options}}\marg{intersection}}
+	
+	Draws a prisoner stone at a specific intersection, with options to customize its style.
+\end{command}
+
+\begin{command}{\prisoners\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
+	
+	Places multiple prisoner stones in a single line, efficient for showing captured groups.
+\end{command}
+
+\begin{key}{/pgfgo/prisoner=\meta{stone options} (default fill opacity = 0.5)}
+	
+	Defines the characteristics of prisoner stones, with a default fill opacity of 0.5 to indicate their status. Other |\stone| options, such as color or size, can be applied.
+	
+\end{key}

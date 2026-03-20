@@ -1,0 +1,300 @@
+\def\karu{K\={a}ru}
+
+\section{Los tableros de \karu}
+
+\subsection{Tablero y piedras}
+
+\karu\ está escribiendo un artículo para compartir con sus estudiantes. Ha notado que los \emph{softwares} para diagramar no ofrecen formatos ni resultados satisfactorios. Por ello, decide probar \pgfgoname\ y comienza representando una partida como la que se muestra en la Figura~\ref{fig:primer-ejemplo}.
+
+\begin{figure}[H]
+	\centering
+	\pgfgouseprofile{pgfgo}
+	\begin{goban}[use i = false, label = {at = {north, west}}]
+		\stones[black]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+		\stones[white]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+	\end{goban}
+	\caption{}
+	\label{fig:primer-ejemplo}
+\end{figure}
+
+\karu\ debe empezar por el tablero. En \pgfgoname\ existe actualmente un único entorno donde se pueden colocar los elementos: |goban|. Este entorno controla por defecto el tamaño y el color del tablero, la posición y el tipo de etiquetas, entre otras propiedades. También permite representar tableros parciales.
+
+\begin{codeexample}[width=4.4cm]
+	\begin{goban}
+	\end{goban}
+\end{codeexample}
+
+\karu\ está satisfecho. El entorno proporciona por defecto un tablero de $9\times 9$, que es justo lo que necesita, pero debe añadirle etiquetas laterales. El entorno |goban| no requiere parámetros obligatorios, aunque acepta uno opcional: una lista de |keys| o |key=values| para configurarlo. \karu\ consulta la sección sobre |goban| (pág.~\pageref{sec:tablero}) y decide añadir etiquetas al entorno. Sabe que las \emph{keys} que controlan los objetos del goban se dividen en tres grupos: |grid|, para la cuadrícula central; |background|, para el borde y el relleno del tablero; y |label|, para las etiquetas de las coordenadas. Esta última es la que le interesa. A esta \emph{key}, entre otras opciones, se le puede pasar la \emph{key} |at| para definir la posición de las etiquetas con valores como |above|, |west|, |below|, |right|, |all| o |none|. También se pueden usar puntos cardinales. Como solo quiere etiquetas arriba y a la izquierda del goban, empleará las \emph{keys} |above| y |left|.
+
+\begin{codeexample}[width=4.7cm]
+	\begin{goban}[label = {at = {above, left}}]
+	\end{goban}
+\end{codeexample}
+
+\karu\ siente que todo va bien, pero nota que su tablero incluye una |I| en lugar de omitirla y pasar directamente a la |J|. Por defecto, en \pgfgoname\ las «I» existen y se usan tanto como coordenadas como en las etiquetas laterales, aunque es posible eliminarlas. Hay dos formas de hacerlo: establecer la \emph{key} global |use i| con el valor |false| (|\pgfgoset{use i = false}|), lo que evitaría a \karu\ preocuparse por esto en el resto del artículo, o aplicarla directamente al tablero con la misma \emph{key} y valor.
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgoset{use i = false}
+	
+	\begin{goban}[label = {at = {above, left}}]
+	\end{goban}
+\end{codeexample}
+
+Ahora sí está listo para colocar las piedras. Para ello, \karu\ dispone de varias macros. Empecemos por la más básica: |\stone[options]{intersection}|. Este comando acepta dos parámetros: el primero, opcional, controla la apariencia y los elementos adicionales de las piedras (como marcas); el segundo, obligatorio, es la intersección. \karu\ no necesita convertir las intersecciones a números, ya que puede indicarlas alfanuméricamente. Por defecto, las piedras son neutrales, pero puede elegir al primer jugador pasando la \emph{key} |black| o |b|.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[label = {at = {above, left}}, use i = false]
+		\stone[black] {D8}
+		\stone[black] {F8}
+		\stone[b] {E7}
+		\stone[b] {H7}
+	\end{goban}
+\end{codeexample}
+
+\karu\ sospecha que esta no es la mejor opción si necesita añadir 200 piedras o más. Para simplificar la sintaxis, descubre en la documentación la macro |\stones[options]{intersection, intersection, ...}|, que acepta las mismas \emph{keys} opcionales que |\stone|.\footnote{Entre \texttt{\textbackslash stone\{A1\}} y \texttt{\textbackslash stones\{A1\}}, la primera opción es mucho más rápida. Veremos más adelante que hay muchos procesos involucrados en la lectura del parámetro obligatorio de las macros plurales.}
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[label = {at = {north, west}}, use i = false]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+	\end{goban}
+\end{codeexample}
+
+\karu\ también nota que existe un sistema sintáctico (pág.~\pageref{subsec:sintaxis-de-coordenadas}) para agregar varias coordenadas simultáneamente. Por ejemplo, para una línea de piedras de C5 a G5, puede escribir |C:G5| o |C5--G5|.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[label = {at = {north, west}}, use i = false]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,E6,G6,C:G5}
+	\end{goban}
+\end{codeexample}
+
+Para añadir piedras blancas, \karu\ debe incluir la \emph{key} |white| en el comando |\stones|. Sabe que |white| y |black| no se refieren literalmente a los colores blanco y negro, sino al primer y segundo jugador, respectivamente, y que al aplicar estas \emph{keys} los objetos heredan sus propiedades.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[label = {at = {north, west}}, use i = false]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,E6,G6,C:G5}
+		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,B4,E4,H2,J3:5}
+	\end{goban}
+\end{codeexample}
+
+Por último, resta aplicar el estilo a su tablero. Para ello, revisa el catálogo (pág.~\pageref{sec:catalogo}) y encuentra un estilo que le gusta: |pgfgo|. Para aplicarlo, consulta la sección correspondiente a los perfiles (pág.~\pageref{subsec:perfiles}) y decide usar la macro |\pgfgouseprofile{<name>}|.
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgouseprofile{pgfgo}
+	
+	\begin{goban}[label = {at = {north, west}}, use i = false]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,E6,G6,C:G5}
+		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,B4,E4,H2,J3:5}
+	\end{goban}
+\end{codeexample}
+
+\subsection{Movimientos}
+
+Cuando se desea cargar las piedras en orden o siguiendo la secuencia «negro, blanco, negro, blanco», puede resultar tedioso e innecesario especificar la \emph{key} correspondiente a cada jugador.
+
+\begin{codeexample}[code only]
+	\begin{goban}
+		\stone[b]	{F7}
+		\stone[w] {E6}
+		\stone[b]	{G3}
+		\stone[w]	{D6}
+	\end{goban}
+\end{codeexample}
+
+Por eso, \pgfgoname\ incluye macros que facilitan este proceso. Empecemos con la singular:
+\begin{command}{\move\opt{\oarg{options}}\marg{intersection}}
+\end{command}
+Este comando funciona como |\stone|, pero alterna automáticamente los colores.
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = all}]
+		\move	{F7}
+		\move	{E6}
+		\move	{G3}
+		\move	{D6}
+	\end{goban}
+\end{codeexample}
+
+La macro |\move|, al igual que |\stone|, tiene una versión plural:
+\begin{command}{\moves\opt{\oarg{options}}\marg{intersection}}
+\end{command}
+En este caso, especificar la \emph{key} |black| o |white| solo determina quién es el primer jugador de la secuencia.
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = all}]
+		\stone[b] {F7}
+		\moves[white] {	E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
+			G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
+			I3,I2,I5,H3}
+	\end{goban}
+\end{codeexample}
+
+Las macros |\move| y |\moves| también cuentan con versiones «estrelladas» (|\move*| y |\moves*|), que permiten etiquetar las jugadas. Es posible controlar desde dónde comenzará el etiquetado con la \emph{key} |from|.
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = all}]
+		\moves[white] {	E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
+			G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
+			I3,I2,I5,H3}
+		
+		\moves*[from = 26]{F6,E5,I4,G6}
+		\move* {H2} % Es negra y etiquetada con 30, sin necesidad de expresarlo.
+	\end{goban}
+\end{codeexample}
+
+En este último ejemplo, se observa que |H2| se colocó con |\move*| y, aunque está separado de |\moves*|, es negra y está etiquetada con 30, ya que la última piedra colocada (|G6|) era negra y estaba etiquetada con 29.
+
+\subsection{Tablero parcial y marcas}
+
+En ocasiones, interesa centrarse en una región particular del tablero. Por esta razón, es posible enfocarse en una porción de este.
+
+\begin{figure}[H]
+	\centering
+	\begin{goban}[partial = {from = B2 to E4}, background = false]
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2}
+		\stone[w, mark = {circle, line = {color = red}}] {C3}
+		\mark[custom = {!}] {D3}
+	\end{goban}
+\end{figure}
+
+Para representar este tablero, comenzamos cargando las piedras.
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2,C3}
+	\end{goban}
+\end{codeexample}
+
+A través de la \emph{key} |partial|, podemos especificar el rango del tablero mediante su \emph{key} |from|. Esta recibe un valor de la forma |LN to LN|, donde cada |LN| representa un par de vértices opuestos del rectángulo.
+
+\begin{codeexample}[]
+	\begin{goban}[partial = {from = B2 to E4}]
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2,C3}
+	\end{goban}
+\end{codeexample}
+
+Para eliminar la línea del tablero, recurrimos a la \emph{key} |line| del |background| del |goban|.
+
+\begin{codeexample}[]
+	\begin{goban}[partial = {from = B2 to E4}, background = {line = false}]
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2,C3}
+	\end{goban}
+\end{codeexample}
+
+Ahora bien, para colocar marcas contamos con la macro
+\begin{command}{\mark\opt{\oarg{options}}\marg{intersection}}
+\end{command}
+y con su versión plural.
+
+Esta macro es bastante amplia y se encuentra documentada en su página correspondiente. Por el momento, debemos saber dos cosas:
+\begin{itemize}
+	\item La marca para la circunferencia se llama |circle|.
+	\item La marca «!» puede añadirse mediante |custom|.
+\end{itemize}
+
+\begin{codeexample}[]
+	\begin{goban}[partial = {from = B2 to E4}, background = {line = false}]
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2}
+		\mark[custom = {!}] {D3}
+		\stone[w, mark = circle] {C3}
+	\end{goban}
+\end{codeexample}
+
+Podemos cambiar el color de la línea de una marca mediante la \emph{key} |mark/line/color|.
+
+\begin{codeexample}[]
+	\begin{goban}[partial = {from = B2 to E4}, background = {line = false}]
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2}
+		\mark[custom = {!}] {D3}
+		\stone[w, mark = {circle, line = {color = red}}] {C3}
+	\end{goban}
+\end{codeexample}
+
+\subsection{El final del juego: Territorio}
+
+\begin{figure}[H]
+	\centering
+	\pgfgouseprofile{wain}
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A5,A6,B1,B2,B3,B4,B5,C1,C4,D1,D2,D5,D7,E2,E5,E7,E9,F4,F5,F6,F7,F8,F9,G5,G6,G7,H6,H8,I7}
+		\stones[w] {A7,B6,B8,C2,C3,C5,C6,C7,C8,D3,D4,D6,D8,D9,E3,E4,E6,E8,F1,F2,F3,G4,H2,H3,H5,I5,I6}
+		\prisoners{H1,I1,I2}
+		\prisoner[white] {A1}
+		
+		\marks[b, t-circle] {A1,A2,A3,A4,G8,G9,H9,I9,I8,H7}
+		\marks[w, t-square] {A9,B9,C9,A8,B7,H4,I4,I3,I2,I1,H1,G1,G2,G3}
+		\mark[neutral, t-square] {E1}
+	\end{goban}
+\end{figure}
+
+Partamos del siguiente tablero:
+
+\begin{codeexample}[]
+	\pgfgouseprofile{wain}
+	
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+	\end{goban}
+\end{codeexample}
+
+Lo siguiente será identificar las piedras prisioneras. Los prisioneros se pueden marcar mediante la \emph{key} |prisoner| o mediante la macro 
+\begin{command}{\prisoner\opt{\oarg{options}}\marg{intersection}}
+\end{command}
+que cuenta también con su versión plural.
+
+\begin{codeexample}[width=4.75cm]
+	\pgfgouseprofile{wain}
+	
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		
+		\stones[b, prisoner]{H1-|I2} % Equivalente a \prisoners[b] {...}
+		\prisoner[w] {A1} % Equivalente a \stone[w, prisoner] {...}
+	\end{goban}
+\end{codeexample}
+
+Ahora definamos los territorios. Esto se puede hacer de muchas maneras. En particular, hay dos implementadas con seguridad: la marca |t-square| y la marca |t-circle|. Estas marcas toman siempre como relleno el color de relleno de la piedra a la que pertenecen y como color y grosor de borde los de la cuadrícula.
+
+\begin{codeexample}[width=4.75cm]
+	\pgfgouseprofile{wain}
+	
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		
+		\stones[b, prisoner]{H1-|I2}
+		\prisoner[w] {A1}
+		
+		\marks[b, t-circle]{A1:4, G8|-I9, I8, H7}
+		\marks[w, t-square]{G3|-I1|-H4, C9-|A8, B7}
+		\marks[t-square, fill = {color = red}] {E1} % No se rellena de rojo, porque toma el color de neutral
+	\end{goban}
+\end{codeexample}
+
+%Otro comando para delimitar territorios es |\territory|. El argumento obligatorio es la lista de vértices del polígono de la región que se desea delimitar.
+%
+%\begin{codeexample}[width=4.75cm]
+%	\pgfgouseprofile{wain}
+%	
+%	\begin{goban}[label = {at = {above, left}}]
+%		\stones[b]{A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+%		\stones[w]{E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+%		
+%		\stones[b, prisoner]{H1-|I2}
+%		\prisoner[w] {A1}
+%		
+%		\territory[b]{A1,A5,B5,B1}
+%		\territory[b]{F9,F7,G7,G6,I6,I9}
+%		\territory[w]{F1,F4,G4,G5,I5,I1}
+%		\territory[w]{A9,A6,C6,C8,D8,D9}
+%	\end{goban}
+%\end{codeexample}
+%
+%En cualquier caso, esta macro no aparece documentada por el momento, y no recomiendo usarla hasta que esté implementada definitivamente.

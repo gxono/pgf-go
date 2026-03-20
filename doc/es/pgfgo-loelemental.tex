@@ -1,0 +1,987 @@
+\section{Fundamentos}
+
+\subsection{El juego del \texttt{\textbackslash let}}
+
+Para permitir el uso de las macros |\mark| y |\marks|, estas primitivas han sido reasignadas a |\pgfgo_old_mark| y |\pgfgo_old_marks|, respectivamente. Esto se realiza para evitar conflictos con definiciones previas y garantizar que las nuevas funcionalidades del paquete \pgfgoname\ puedan integrarse sin inconvenientes en documentos existentes. En la práctica, si un usuario necesita acceder a las versiones originales, aún puede hacerlo mediante los comandos renombrados.
+
+\subsection{Configuración}
+
+La macro |\pgfgoset{...}| permite definir configuraciones generales para el paquete. Es equivalente a |\keys_set:nn{pgfgo}{...}|, lo que implica que utiliza el sistema de claves de LaTeX3 para establecer opciones de manera estructurada y jerárquica. Esta macro resulta especialmente útil para personalizar el comportamiento global del paquete, como el aspecto del tablero, las piedras o los movimientos, sin necesidad de repetir configuraciones en cada entorno individual. Por ejemplo, un usuario podría definir colores personalizados para los jugadores o ajustar el diseño del tablero de forma que se aplique a todos los diagramas del documento. También sirve como una puerta al formato directo.\footnote{Úsese con discreción\dots no como los pies de página.}
+
+\begin{command}{\pgfgoset\marg{options}}
+\end{command}
+
+\begin{key}{/pgfgo/goban = \meta{goban options}}
+	Establece opciones generales para el tablero. Esto incluye propiedades como el tamaño, el color de fondo, la visibilidad de las líneas de la cuadrícula o las etiquetas de coordenadas. Por ejemplo, se puede usar para crear tableros parciales o modificar el estilo visual del borde.
+\end{key}
+
+\begin{key}{/pgfgo/stone = \meta{stone options}}
+	Define opciones generales para las piedras, como su color de relleno, contorno o marcas predeterminadas. Es útil para establecer un estilo consistente en todas las piedras de un documento (neutrales, blancas o negras).
+\end{key}
+
+%\begin{key}{/pgfgo/move = \meta{move options}}
+%	Establece opciones generales para los movimientos, como el color o el etiquetado automático.
+%\end{key}
+
+%\begin{key}{/pgfgo/mark = \meta{mark options}}
+%	Establece opciones generales para las marcas, permitiendo definir formas (círculos, triángulos, etc.) o colores por defecto para destacar posiciones específicas en el tablero.
+%\end{key}
+
+\begin{key}{/pgfgo/use i = \meta{boolean} (default true)}
+	Permite decidir si se utiliza o no la etiqueta «I» en el tablero. Por defecto, está activada («true»), lo que significa que las coordenadas incluyen la letra «I». Si se desactiva («false»), el sistema omite esta letra y pasa directamente de «H» a «J», algo habitual en ciertas representaciones del juego de Go.
+\end{key}
+
+\begin{key}{/pgfgo/players = \meta{players options}}
+	Permite definir opciones para cada jugador (incluidas las neutrales). Esta \emph{key} actúa como un contenedor que engloba configuraciones específicas para los jugadores negro, blanco y neutral, facilitando la personalización según las reglas o preferencias del usuario. Todas las opciones disponibles y cómo personalizar estilos de piedras se detallarán en otra sección.
+\end{key}
+
+\begin{codeexample}[]
+	\pgfgoset{
+		goban = {
+			background = {
+				fill = {color = pgfgo},
+				line = false},
+			grid = {line = {color = white}}},
+		players = {
+			black = {
+				stone = {
+					line = {color = magenta},
+					fill = {color = blue!50!black}}},
+			white = {
+				stone = {line = {color = blue}},
+				mark = {line = {color = orange}}
+			}				
+		}
+	}
+	
+	\begin{goban}[3]
+		\stone[black] {A1}
+		\stone[white, mark = {triangle}] {A2}
+	\end{goban}
+	
+	\begin{goban}[4]
+		\stone[black] {A2}
+		\stones[white, mark = {circle}] {B2,A3}
+	\end{goban}
+\end{codeexample}
+
+Los entornos |goban| posteriores heredan estas configuraciones, aunque pueden sobrescribirse localmente si es necesario.
+
+\subsection{Sintaxis de coordenadas}
+\label{subsec:sintaxis-de-coordenadas}
+
+Algo que distingue a \pgfgoname\ de otros paquetes es la posibilidad de introducir coordenadas con diversas sintaxis, ofreciendo flexibilidad para representar posiciones en el tablero de manera intuitiva. 
+\begin{itemize}
+	\item Posibilidad de tener multiples entradas separando con comas.
+	\item Posibilidad de eliminar piedras agregando el grupo sustractivo despu\'es de un <<;>>.
+\end{itemize}
+
+Estas macros solo funcionan en las variantes plurales de las macros (no tiene sentido que |\stone| lo tenga). Sin embargo, por motivos de rendimiento y consistencia, se han restringido algunas libertades que en un comienzo no estaban. Por ejemplo, para referirse a una intersección, la coordenada alfabética debe escribirse en mayúsculas y sin espacios. Así, la intersección B5 debe ingresarse como |B5|, y no como |B 5|, |B  5| o |b5|, ya que los espacios entre letra y número no son válidos en este contexto. Las restricciones se explicarán en cada caso.
+
+
+Cuando \pgfgoname\ tiene que leer el argumento de las coordenadas se puede encontrar con algo como esto
+\begin{center}
+	|\stones{|{\color{red}|<item>, <item>, |\dots;} {\color{blue} |<item>, <item>, |\dots; }{\color{red} \dots}|}|
+\end{center}
+
+Lo primero que intentar\'a hacer es dividir el argumento entre los |;| y construir dos grupos: el grupo aditivo y el grupo sustractivo. El grupo aditivo es el encargado de a\~nadir piedras mediante nuestra sintaxis. El grupo sustractivo es el encargado de eliminarlas. Estos grupos alternan automáticamente al colocar un |;|. Esto se ve con mas detalle en la subsecci\'on correspondiente. Si no se coloca un |;|, \pgfgoname\ a\~nadir\'a todas las piedras al grupo aditivo. Se pueden a\~nadir varias piedras o varios grupos separados por |,|. En conjunto, todo esto provee una interfaz para crear grupos complejos con pocos \emph{tokens};
+
+\begin{codeexample}[width=0pt]
+	\pgfgouseprofile{pgfgosmooth}
+	
+	\begin{goban}[17, partial = {from = A1 to Q5}, label = {at = {north, west}}]
+		\stones[b]{*;B,D,H,L,Q2,P,F2:4,J2rK5,N[1:2,4];B3}
+	\end{goban}
+\end{codeexample}
+
+
+\subsubsection{Grupos de piedras}
+
+\def\sssseccion#1{\vskip0.5em\noindent\textbf{#1}\par}
+
+\sssseccion{Todas las piedras del tablero (\emph{?`Por qu\'e no?})}
+
+A\~nade al correspondiente grupo todas las intersecciones \textbf{visibles} del tablero. Es decir, si  es un tablero parcial, solo se a\~nadir\'an las corresopndientes a la regi\'on visible. Es importante aclarar esto por si se usa en combinaci\'on con |remember|. Su sintaxis es |*|.
+
+\begin{codeexample}[]
+	\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+	
+	\begin{goban}[3, label = {at = {south, west}}]
+		\stones[b]{*}
+	\end{goban}
+\end{codeexample}
+
+
+\sssseccion{Intersección}
+
+Las intersecciones se especifican indicando la letra seguida del número, sin espacios entre el componente alfabético y el numérico: |AN|
+
+\begin{codeexample}[]
+	\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+	
+	\begin{goban}[label = {at = {south, west}}]
+		\stones[b]{C2, D3}
+		\stone[w]{B4}
+		\stone[w]{B 3} % No se reconoce porque tiene un espacio.
+	\end{goban}
+\end{codeexample}
+
+En el ejemplo, |B 3| no se reconoce debido al espacio, mientras que |B4| se dibuja correctamente como una piedra blanca.
+
+\sssseccion{Rectas verticales u horizontales}
+Las lineas son grupos de piedras verticales u horizontales delimitadas impl\'icitamente por el tama\~no del tablero.
+
+\begin{itemize}
+	\item Para lineas horizontales, la sintaxis es |L|.
+	\item Para lineas verticales, la sintaxis es |N|.
+\end{itemize}
+
+\begin{codeexample}[width=6cm]
+	\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+	
+	\begin{goban}
+		\stones[b]{B2,B3,B4}
+		\stones[fill = {color = red}]{D}
+	\end{goban}
+	
+	\begin{goban}
+		\stones[b]{B2,C2,D2}
+		\stones[fill = {color = blue}]{4}
+	\end{goban}
+	
+	\begin{goban}
+		%Agrego las lineas C y 3. Luego elimino C3.
+		\stones[fill = {color = orange}]{C, 3; C3} %OJO C,3 != C3.
+	\end{goban}
+\end{codeexample}
+
+\sssseccion{Segmentos}
+
+Los segmentos son grupos de piedras verticales u horizontales explícitamente delimitados. Como son unidireccionales (solo verticales o solo horizontales), una de sus coordenadas permanece constante y no necesita repetirse; solo se especifica el rango de la otra variable.
+
+\begin{itemize}
+	\item Para segmentos horizontales, la sintaxis es |L:LN| o |L:L N|.
+	\item Para segmentos verticales, la sintaxis es |LN:N| o |L N:N|.
+\end{itemize}
+
+\begin{codeexample}[width=6cm]
+	\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+	
+	\begin{goban}
+		\stones[b]{B2,B3,B4}
+		\stones[w]{C2,D2}
+	\end{goban}
+	
+	\begin{goban}
+		\stones[b]{B2:4}
+		\stones[w]{C:D2}
+	\end{goban}
+	
+	\begin{goban}
+		\stones[b]{B 2:4} % Los espacios funcionan entre elementos distintos.
+		\stones[w]{C:D 2}
+	\end{goban}
+\end{codeexample}
+
+Aquí, |B2:4| representa un segmento horizontal de B2 a B4, mientras que |C:D2| indica un segmento horizontal de C2 a D2.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A:E5}
+		\stones[fill = {color = blue}]{H9:2}
+		\stones[fill = {color = orange}]{E:A2}
+		\stones[fill = {color = magenta}]{A:D7, A:C9} % Pueden combinarse.
+	\end{goban}
+\end{codeexample}
+
+\sssseccion{Rectángulo: una consecuencia artificial}
+
+La sintaxis de segmentos permite crear rangos entre coordenadas para insertar piedras. Me pareció útil extenderla para incluir dos rangos y así ofrecer una primera aproximación a los rectángulos (aunque no es mi método favorito, aquí está). En este caso, la sintaxis es |L:L N:N| o |L:LN:N|. 
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A:E 7:8} % El espacio no es obligatorio.
+		\stones[fill = {color = blue}]{I:G 9:2}
+		\stones[fill = {color = orange}]{A:B 2:4, F:D 1:3}
+	\end{goban}
+\end{codeexample}
+
+Por ejemplo, |A:E 7:8| crea un rectángulo que abarca las columnas de A a E en las filas 7 y 8, mientras que |I:G 9:2| desciende de I9 a G2. Aunque funcional, esta sintaxis puede resultar menos intuitiva, lo que lleva a los operadores más específicos que veremos más adelante.
+
+
+\sssseccion{Productos Cartesianos}
+	En este contexto, el producto cartesiano es una extensi\'on m\'as poderosa de los segmentos, pero a su vez, una generalizaci\'on a todas las notaciones antes presentadas. La idea detr\'as de esto es la siguiente: Supongamos que queremos ingresar un grupo de piedras sobra la columna A: |A1:3, A5, A7:8|. Hasta el momento no hab\'ia forma mas sencilla de escribir esto. Pero todas repiten A al comienzo: ?`qu\'e tal si en lugar de escribirla tres veces la escribimos solo una? Algo como
+	\begin{center}
+		|A[1:3, 5, 7:8]|
+	\end{center}
+	En este caso, el interprete va a distribuir el A de la izquierda para cada uno de los elementos de la derecha.
+	
+	Los elementos de la lista de la derecha no necesariamente tienen que estar formados por n\'umeros. Si se tiene algo como esto |A:D 5:7, A1:2, A3, A:G9| tambi\'en se puede reescribir as\'i
+	\begin{center}
+		|A[:D 5:7, 1:2, 3, :G9]|
+	\end{center}
+	Claro est\'a que nadie abstrae tanto al momento de poner coordenadas, por lo que esto es solo mero capricho. La \'unica restricci\'on para el contenido entre corchetes es que no pueden anidarse corchetes. 
+	
+	Del mismo modo que hay una sintaxis para letras a la izquierda, hay una para n\'umeros a la derecha, y funciona igual. La expresi\'on |A12, C12, E:G12| puede escribirse como |[A,C,E:G]12|.
+	
+	Existe un tercer operador, que s\'i, es m\'as un capricho que otra cosa y es el producto cartesiano sin restricci\'ones. No me detendr\'e mucho en \'el, porque este requiere mayor grado de abstracci\'on y realmente no tiene utilidad humana. Este operador es una conjunci\'on de los dos anteriores: La expresi\'on |[A,D:F][2,5,7:9]| se interpreta como
+	\begin{center}
+		|A2, A5, A7:9, D:F2, D:F5, D:F 7:9|.
+	\end{center}
+ 
+	\begin{codeexample}[width=4cm]
+		\begin{goban}
+			\stones[b]{[A, D:F][2, 5, 7:9]}
+			\marks[b]{A2, A5, A7:9, D:F2, D:F5, D:F 7:9} %<- lo que lee el interprete.
+		\end{goban}
+	\end{codeexample}
+
+	La sintaxis de producto cartesiano entonces se puede invocar de tres formas distintas:
+\begin{itemize}
+	\item |L[itm1, itm2,...]|.
+	\item |[itm1, itm2,...]N|.
+	\item |[itm1,itm2,...][itm3,itm4,...]|.
+\end{itemize}
+donde los corchetes no pueden anidarse. 
+
+Esto puede combinarse tambi\'en con algunos operadores que veremos a continuaci\'on para crear nodos en los caminos.
+
+Hasta aquí hemos visto comandos para intersecciones que no pueden combinarse con otros en una misma instrucción y que, por lo tanto, \textbf{deben} separarse por comas. Ahora exploraremos comandos que sí permiten encadenarse entre sí, ofreciendo mayor flexibilidad para patrones complejos.
+
+\sssseccion{Horizontal--Vertical y Vertical--Horizontal}
+
+Dadas dos intersecciones no alineadas vertical ni horizontalmente, estos comandos generan las intersecciones que conectan la primera con la segunda mediante un recorrido «horizontal--vertical» o «vertical--horizontal». Esto puede recordar al operador \verb+-|+ de TikZ, de donde tomé prestada la idea. La sintaxis es \verb+LN -| LN+ (para el primer caso) o \verb+LN |- LN+ (para el segundo), con o sin espacios. Estos comandos, junto con el siguiente, pueden encadenarse para formar escaleras o recorridos propios de la m\'etrica de Manhattan.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A1 -| D3}
+		\stones[fill = {color = blue}]{D4 -| A2}
+		\stones[fill = {color = orange}] {A9 -| C7 -| G5} % Encadenados.
+		\stones[fill = {color = magenta}] {F1 |- I3 -| E4} % Intente adivinar.
+	\end{goban}
+\end{codeexample}
+
+En este ejemplo, \verb+A1 -| D3+ va horizontalmente de A1 a D1 y luego verticalmente a D3.
+
+\sssseccion{Línea horizontal o vertical}
+
+Dadas dos intersecciones alineadas vertical u horizontalmente, este operador las conecta con una línea recta de piedras. Su sintaxis es |LN -- LN|. Puede encadenarse con los dos comandos anteriores para formar patrones más elaborados. Si las intersecciones no están alineadas, el operador no dibuja nada (quién sabe, quizás en el futuro genere escaleras ;)).
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A1 -- A5}
+		\stones[fill = {color = blue}] {A1 -- D1}
+		\stones[fill = {color = magenta}] {A6 -- B9} % No dibuja porque no están alineados.
+		\stones[fill = {color = orange}] {I9 -| F6 -- I6} % Encadenado.
+	\end{goban}
+\end{codeexample}
+
+Aquí, |A1 -- A5| dibuja una línea vertical, mientras que \verb+I9 -| F6 -- I6+ combina un recorrido «horizontal--vertical» con una línea horizontal adicional.
+
+¡Ojo! \verb+A1 -- D1 -| F3+ es un encadenamiento permitido, mientras que \verb+A:D1 -| F3+ no lo es, porque |:| no es un operador de cadena. Esto podría cambiar en futuras versiones del paquete.
+
+\sssseccion{Rectángulos rellenos y vacíos}
+
+La sintaxis previa para rectángulos |L:L N:N| es poco intuitiva y más bien una herencia de los segmentos acotados. Por ello, existen dos operadores más directos para crear rectángulos: |R| y |r|. La diferencia radica en que |R| genera un rectángulo relleno, mientras que |r| solo dibuja su contorno. Dados dos vértices diametralmente opuestos del rectángulo, la sintaxis es |LN R LN| o |LN r LN|. Aunque los espacios no son obligatorios por ahora, recomiendo usarlos para mayor legibilidad.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A1 R D3}
+		\stones[fill = {color = blue}] {A5 r D8}
+		\stones[fill = {color = orange}] {I8 r G4, H6} % ¡Está vivo!
+	\end{goban}
+\end{codeexample}
+
+Por ejemplo, |A1 R D3| rellena un rectángulo de A1 a D3, mientras que |A5 r D8| dibuja solo el borde de un rectángulo mayor.
+
+Los rectángulos también son operadores de cadena y pueden usarse como tales para crear patrones más complejos.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = orange}] {I8 r G6 r I4} % Ud. adivine.
+		\marks[sequence]{I8,G6,I4}
+		\stones[fill = {color = blue!20}] {A1 R E3 r A6 |- E9 -- E8} % ¡Wow!
+		\marks[sequence]{A1,E3,A6,E9,E8}
+	\end{goban}
+\end{codeexample}
+
+En este caso, |I8 r G6 r I4| encadena dos rectángulos de contorno, mientras que \verb+A1 R E3 r A6 |- E9 -- E8+ combina un rectángulo relleno, un contorno, un recorrido «vertical--horizontal» y una línea, mostrando la potencia del encadenamiento.
+
+\subsubsection{Grupos aditivos y sustractivos}
+
+Supongamos que queremos dibujar el siguiente diagrama:
+
+\begin{figure}[H]
+	\centering
+	\begin{goban}
+		\stones[b]{A1 R E6; C6 |- E3, A1:2;}
+	\end{goban}
+\end{figure}
+
+Esto puede lograrse con los operadores ya vistos, dividiendo el patrón en varias partes:
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = orange}] {A6 R B3, B2 R E1, D4 R E6}
+	\end{goban}
+\end{codeexample}
+
+Pero también podemos imaginar que partimos de un rectángulo completo al que le hemos quitado las piedras marcadas, ofreciendo una perspectiva más conceptual:
+
+\begin{figure}[H]
+	\centering
+	\begin{goban}
+		\stones[b]{A1 R E6}
+		\marks[cross, line = {color = white}]{C6 |- E3, A1:2}
+	\end{goban}
+\end{figure}
+
+De esto tratan los grupos aditivos y sustractivos. Un grupo aditivo añade intersecciones a la lista, mientras que uno sustractivo las elimina. Por defecto, los comandos siempre comienzan procesando grupos aditivos, lo que explica que dibujen piedras directamente. En \pgfgoname, podemos alternar entre ambos tipos usando |;|.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+		\stones[b]{A1 R E6} % Grupo aditivo.
+	\end{goban}
+	
+	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+		\stones[b]{A1 R E6; A 1:2} % Grupo aditivo; sustractivo.
+	\end{goban}
+	
+	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+		\stones[b]{A1 R E6; A 1:2, C6 |- E3} % Grupo aditivo; sustractivo.
+	\end{goban}
+\end{codeexample}
+
+En esta secuencia, primero se dibuja un rectángulo completo (|A1 R E6|), luego se elimina el segmento horizontal |A1:2|, y finalmente se quita el recorrido \verb+C6 |- E3+. Esto resulta en el mismo diagrama que el ejemplo inicial, pero con un enfoque más compacto.
+
+La ventaja de este sistema es que permite realizar ajustes cuando sea necesario. A veces, un patrón aditivo es ideal salvo por una o dos piedras; en esos casos, podemos eliminarlas con un grupo sustractivo sin rehacer todo el diseño.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[b]{A1 R E6; B:D 5, C2}
+	\end{goban}
+\end{codeexample}
+
+Aquí, |B:D 5| elimina un segmento horizontal en la fila 5, y |C2| quita una piedra específica, ajustando el rectángulo inicial.
+
+Recordemos que los grupos aditivos y sustractivos pueden encadenarse, separándolos con |;|, lo que permite alternar entre añadir y quitar elementos en una sola línea tantas veces como se desee.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+		\stones[b]{A1 R E6} % AD
+	\end{goban}
+	
+	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+		\stones[b]{A1 R E6; A1 R C4, E6} % AD, SU
+	\end{goban}
+	
+	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+		\stones[b]{A1 R E6; A1 R C4, E6; A 1:2} % AD, SU, AD
+	\end{goban}
+\end{codeexample}
+
+En este último ejemplo, se crea un rectángulo, se eliminan dos regiones (|A1 R C4| y |E6|), y luego se añade un segmento (|A 1:2|).
+
+\subsection{Perfiles}
+
+Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten guardar una configuración de tablero y piedras con un nombre y llamarla cuando se desee.
+
+\begin{command}{\pgfgodefinegoban\opt{\oarg{options}}\marg{goban name}\marg{goban options}}
+	Permite asignar un nombre a un grupo de opciones de goban. Tiene dos posibles opciones no obligatorias.
+	
+	\begin{key}{/pgfgo/profiles/goban/from = \meta{goban name}}
+		Permite definir un goban a partir de una copia de otro.
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[from = gobanA]{gobanB}{...}
+		\end{codeexample}
+		
+		Es posible copiarse a sí mismo para añadir opciones, aunque no es la mejor alternativa.
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[from = gobanB]{gobanB}{...}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/profiles/goban/append}
+		Permite ampliar las opciones de un goban.
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[append]{gobanB}{...}
+		\end{codeexample}
+		Es equivalente a:
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[from = gobanB]{gobanB}{...}
+		\end{codeexample}
+	\end{key}
+\end{command}
+
+\begin{command}{\pgfgodefineplayer\opt{\oarg{options}}\marg{player name}\marg{player options}}
+	Permite asignar un nombre a un grupo de opciones de piedras. Sus opciones y \emph{keys} son equivalentes a las de |\pgfgodefinegoban|.
+\end{command}
+
+\begin{command}{\pgfgousegoban\marg{goban name}}
+	Aplica localmente las opciones del goban definido mediante |goban name|.
+\end{command}
+
+\begin{command}{\pgfgouseneutral\marg{player name}}
+	Aplica localmente las opciones de piedras definidas mediante |player name| al jugador neutral.
+\end{command}
+
+\begin{command}{\pgfgouseblack\marg{player name}}
+	Aplica localmente las opciones de piedras definidas mediante |player name| al jugador negro.
+\end{command}
+
+\begin{command}{\pgfgousewhite\marg{player name}}
+	Aplica localmente las opciones de piedras definidas mediante |player name| al jugador blanco.
+\end{command}
+
+\begin{command}{\pgfgouseplayers\marg{neutral player name}\marg{black player name}\marg{white player name}}
+	Aplica localmente las opciones de piedras definidas mediante |neutral player name|, |black player name| y |white player name| a los jugadores correspondientes.
+\end{command}
+
+\begin{command}{\pgfgouseprofile\marg{name}}
+	Esta macro es equivalente a:
+	\begin{codeexample}[code only]
+		\pgfgousegoban{name}
+		\pgfgouseplayers{name-neutral}{name-black}{name-white}
+	\end{codeexample}
+	
+	Nótese que es necesario que existan piedras llamadas |name-neutral|, |name-black| y |name-white|. Por ejemplo, cuando previamente ejecutamos |\pgfgouseprofile{pgfgo}| funcionó porque existe un goban llamado |pgfgo|, y piedras denominadas |pgfgo-neutral|, |pgfgo-black| y |pgfgo-white|.
+\end{command}
+
+\begin{codeexample}[width=3cm]
+	\pgfgodefinegoban{example}{background = {fill = {color = blue!05}}}
+	\pgfgodefineplayer[from = default-neutral]{example-neutral}
+	{stone = {
+			fill = {color = gray},
+			line = {color = magenta!20!black}}
+	}
+	
+	\pgfgodefineplayer[from = example-neutral]{example-white}
+	{stone = {fill = {color = yellow}}}
+	
+	\pgfgodefineplayer[from = example-neutral]{example-black}
+	{stone = {fill = {color = blue}}}
+	
+	\pgfgouseprofile{example}
+	
+	\begin{goban}[partial = {from = A1 to C3}]
+		\moves{A1:3}
+		\stones[b]{B1,B3,C2}
+		\stones[w]{C1,C3}
+		\stone{B2}
+	\end{goban}
+\end{codeexample}
+
+\subsection{Cambiar opciones sobre la marcha}
+\label{subsec:perfiles}
+
+Cuando se desea cambiar una opción de tablero con |\pgfgoset|, puede hacerse directamente con |\pgfgoset{goban = {...}}|. Para los jugadores, la situación es algo distinta. Para ello, se cuenta con las siguientes \emph{keys}:
+
+\begin{key}{/pgfgo/players = \meta{players options}}
+	Permite ajustar las opciones de los jugadores. Por defecto, son tres: |neutral|, |black| y |white|. No hay que confundir jugadores con perfiles de piedras. Una vez cargado el perfil de una piedra, se puede realizar un cambio con estas \emph{keys}.
+\end{key}
+
+Las opciones de los jugadores pueden configurarse todas juntas con la \emph{key} |all|, o por separado. Los cambios realizados aquí no afectarán la definición de los perfiles. Es decir, si cargamos el perfil |pgfgo| y modificamos al jugador negro, esto no afectar\'a a la definici\'on de |pgfgo-black|, sino que a las opciones propias del jugador primero.
+
+\begin{key}{/pgfgo/players/all = \meta{all player options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/neutral = \meta{neutral player options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/black = \meta{first player options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white = \meta{second player options}}
+\end{key}
+
+Cada jugador tiene acceso al mismo árbol de \emph{keys}. Por esta razón, las siguientes, aunque mencionen |white|, aplican a todos los jugadores. Cada una de ellas se explica en la sección correspondiente al tipo de objeto, pero se ilustran brevemente ac\'a.
+
+\begin{key}{/pgfgo/players/white/stone = \meta{stone options}}
+	Controla las opciones de las piedras del segundo jugador.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line = \meta{stone line options}}
+	Controla las opciones de los bordes de las piedras del segundo jugador.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line/true}
+	Determina si aparece o no la frontera de una piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {line = true}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line/false}	
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line/width = \meta{dimension}}
+	Determina el grosor de la frontera de una piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {line = {true, width = 1pt}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line/color = \meta{color}}
+	Determina el color de la frontera de una piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {line = {true, width = 1pt, color = red}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line/opacity = \meta{float}}
+	Determina la opacidad de la frontera de una piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {line = {true, width = 2pt, opacity = 0.25}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/fill = \meta{stone fill options}}
+	Controla las opciones referidas al relleno de la piedra.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/fill/true}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/fill/false}
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {fill = false}}}}
+		% Lo que se ve en la figura es lo que queda de la piedra: sombras y brillos.
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/fill/color = \meta{color}}
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {fill = {color = magenta!20}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/fill/opacity = \meta{float}}
+	Establece la opacidad del relleno de la piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {fill = {opacity = 0.5}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/radius = \meta{dimension}}
+	Establece el radio de la piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {radius = 0.3cm}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/scale = \meta{float}}
+	Controla la escala de la piedra, lo que afecta también a las marcas.
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {scale = 1.25}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w, mark = circle]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow = \meta{stone drop shadow options}}
+	Controla las opciones propias de las sombras en las piedras.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow/true}
+	Habilita la sombra en la piedra.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow/false}
+	Desactiva la sombra en la piedra.
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {drop shadow = false}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow/angle = \meta{float}}
+	Establece el ángulo de la sombra.
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {drop shadow = {angle = 225}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow/offset = \meta{dimension}}
+	Establece el desplazamiento de la sombra respecto al centro.
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {drop shadow = {offset = 0.125cm}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow/opacity = \meta{float}}
+	Controla la opacidad de la sombra.
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {drop shadow = {offset = 0.125cm, opacity = 0.1}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shine = \meta{stone drop shine options}}
+	Controla los brillos sobre las piedras.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shine/true}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shine/false}
+	Oculta los brillos sobre las piedras.
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {black = {stone = {drop shine = false}}}}
+		% Sobre black que se nota más.
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shine/angle = \meta{float}}
+	Controla el ángulo del brillo.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {black = {stone = {drop shine = {angle = 0}}}}}
+		% Sobre black que se nota más.
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shine/opacity = \meta{float}}
+	Controla la opacidad del brillo.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {black = {stone = {drop shine = {opacity = 0.5}}}}}
+		% Sobre black que se nota más.
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/prisoner = \meta{stone options}}
+	Controla la apariencia de los prisioneros.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move = \meta{stone options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label = \meta{stone options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/font size = \meta{stone options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/color = \meta{stone options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format = \meta{stone options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format/arabic = \meta{stone options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format/alph = \meta{stone options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format/Alph = \meta{stone options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format/roman = \meta{stone options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format/Roman = \meta{stone options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark = \meta{stone options}}
+	Controla las opciones de marcas asociadas al jugador correspondiente.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/line = \meta{stone mark line options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/line/color = \meta{color}}
+	Controla el color de línea de las marcas.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {mark = {line = {color = red!80!black}}}}}
+		
+		\begin{goban}
+			\stones[b] {B1}
+			\stone [b, mark] {C2}
+			\stone [w, mark = circle] {A3}
+			\mark  [w, circle] {A2}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/line/width = \meta{dimension}}
+	Controla el grosor de línea de las marcas.
+	\begin{codeexample}[width=4cm]
+		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {mark = {line = {color = red!80!black}}}}}
+		
+		\begin{goban}
+			\stones[b] {B1}
+			\stone [b, mark] {C2}
+			\stone [w, mark = circle] {A3}
+			\mark  [w, circle] {A2}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/fill = \meta{stone mark fill options}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/fill/true}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/fill/false}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/fill/color = \meta{color}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label = \meta{stone mark label options}}
+	Controla las opciones de etiqueta para las marcas que las tengan.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/color = \meta{color}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence = \meta{stone mark sequence options}}
+	Controla las opciones de secuencias.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/format = \meta{stone mark sequence format choice}}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/format/arabic}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/format/alph}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/format/Alph}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/format/roman}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/format/Roman}
+\end{key}

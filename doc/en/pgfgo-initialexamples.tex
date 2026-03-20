@@ -1,0 +1,52 @@
+\def\karu{K\={a}ru}
+
+\section{The Boards of \karu}
+
+\subsection{Board and Stones}
+
+\karu\ is writing an article to share with his students. He has noticed that diagramming \emph{software} does not offer satisfactory formats or results. Therefore, he decides to try \pgfgoname\ and starts by representing a game like the one shown in Figure~\ref{fig:first-example}.
+
+\begin{figure}[H]
+	\centering
+	\pgfgouseprofile{pgfgo}
+	\begin{goban}[use i = false, label = {at = {north, west}}]
+		\stones[black]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+		\stones[white]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+	\end{goban}
+	\caption{}
+	\label{fig:first-example}
+\end{figure}
+
+\karu\ must start with the board. In \pgfgoname, there is currently a single environment where elements can be placed: |goban|. This environment controls by default the size and color of the board, the position and type of labels, among other properties. It also allows partial board representations.
+
+\begin{codeexample}[width=4.4cm]
+	\begin{goban}
+	\end{goban}
+\end{codeexample}
+
+\karu\ is satisfied. The environment provides a default $9\times 9$ board, which is exactly what he needs, but he must add side labels. The |goban| environment does not require mandatory parameters, although it accepts an optional one: a list of |keys| or |key=values| for configuration. \karu\ consults the section on |goban| (p.~\pageref{sec:board}) and decides to add labels to the environment. He knows that the \emph{keys} controlling the objects in the goban are divided into three groups: |grid|, for the central grid; |background|, for the border and board fill; and |label|, for coordinate labels. The latter is the one that interests him. This \emph{key}, among other options, can take the \emph{key} |at| to define the label position with values such as |above|, |west|, |below|, |right|, |all|, or |none|. Cardinal points can also be used. Since he only wants labels above and to the left of the goban, he will use the \emph{keys} |above| and |left|.
+
+\begin{codeexample}[width=4.7cm]
+	\begin{goban}[label = {at = {above, left}}]
+	\end{goban}
+\end{codeexample}
+
+\karu\ feels that everything is going well, but he notices that his board includes an |I| instead of omitting it and going directly to |J|. By default, in \pgfgoname, "I" exists and is used both as a coordinate and in the side labels, although it is possible to remove it. There are two ways to do this: setting the global \emph{key} |use i| to |false| (|\pgfgoset{use i = false}|), which would prevent \karu\ from worrying about this throughout the rest of the article, or applying it directly to the board with the same \emph{key} and value.
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgoset{use i = false}
+	
+	\begin{goban}[label = {at = {above, left}}]
+	\end{goban}
+\end{codeexample}
+
+Now he is ready to place the stones. For this, \karu\ has several macros. Let’s start with the most basic one: |\stone[options]{intersection}|. This command accepts two parameters: the first, optional, controls the appearance and additional elements of the stones (such as marks); the second, mandatory, is the intersection. \karu\ does not need to convert intersections to numbers since he can specify them alphanumerically. By default, the stones are neutral, but he can choose the first player by passing the \emph{key} |black| or |b|.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[label = {at = {above, left}}, use i = false]
+		\stone[black] {D8}
+		\stone[black] {F8}
+		\stone[b] {E7}
+		\stone[b] {H7}
+	\end{goban}
+\end{codeexample}

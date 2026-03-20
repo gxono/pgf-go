@@ -1,0 +1,20 @@
+\documentclass[border=0.5cm]{standalone}
+\usepackage{../../latex/pgf-go}
+
+
+\pgfgoset{
+	use i = false,
+	goban = {background = {fill = {color = pgfgo}}}
+}
+
+\begin{document}
+	\begin{goban}[13, label = {at = {all}}]
+		\stones{A1, J1, K1, G7, N9, D12, D13}
+		\stones[w]{A2, H1, J2, K2, G6, F7, G8, M9, N10, C12, C13, E12, E13}
+		\marks[circle]{B1, L1, N8, H7, D11}
+	\end{goban}
+	\begin{goban}[13, label = {at = {north, east, south}}]
+		\stones[w]{A2, H1, J2, K2, G6, F7, G8, M9, N10, C12, C13, E12, E13}
+		\stones[w,mark = triangle]{B1, L1, N8, H7, D11}
+	\end{goban}
+\end{document}
