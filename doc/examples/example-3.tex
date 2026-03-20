@@ -1,0 +1,18 @@
+\documentclass[border=0.5cm]{standalone}
+\usepackage{../../latex/pgf-go}
+
+
+\pgfgoset{
+	use i = false,
+	goban = {background = {fill = {color = pgfgo}}}
+}
+
+\begin{document}
+	\begin{goban}[9, label = {at = {south, west}}]
+		\stones[b]{A2,B1,B2,C2,D1,D2,G1,G2,F2,F3,F4,G4,G5,G6,E9,E8,E7,F7,G7,H7,J7,G8}
+		\stones[w]{A7,B7,C7,D7,D8,D9,D6,B5,C5,A3,B3,C3,D3,E1,E2,E3,E4,E5,E6,F5}
+		\marks[b, t-circle]{J1,J2,J3,J4,J5,J6,H1,H2,H3,H4,H5,H6,G3,H8,H9,J8,J9,G9,F9,F8,A1,C1}
+		\marks[w, t-square]{A9,A8,B9,B8,C9,C8,A6,B6,C6,A5,D5,A4,B4,C4,D4}
+		\marks[filled square, line = {color = gray}]{F1,F6}
+	\end{goban}
+\end{document}

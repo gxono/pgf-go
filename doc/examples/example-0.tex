@@ -1,0 +1,17 @@
+\documentclass[border=0.5cm]{standalone}
+\usepackage{../../latex/pgf-go}
+
+
+\pgfgoset{goban = {background = {fill = {color = pgfgo}}}}
+
+
+\begin{document}
+	\pgfgouseprofile{pgfgosmooth}
+	\begin{goban}[9, partial = {from = A2 to H9}]
+		\stones{A7,B6,C8,C7}
+		\stones[mark=triangle]{D6,D5,D4}
+		\stones[w]{C3,C4,C5,C6,D7,E7,E6}
+		\stone[w, mark = {custom = 1}]{E3}
+		\marks[circle, line = {color = red!80!black}] {D3,E4, E5}
+	\end{goban}
+\end{document}

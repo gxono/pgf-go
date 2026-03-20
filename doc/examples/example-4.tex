@@ -1,0 +1,15 @@
+\documentclass[border=0.5cm]{standalone}
+\usepackage{../../latex/pgf-go}
+
+
+\pgfgoset{goban = {background = {fill = {color = pgfgo}}}}
+
+
+\begin{document}
+	\pgfgouseprofile{wain}
+	\begin{goban}[9, label = {at = {south, west}}]
+		\stones[b]{C7}
+		\stones[w]{B6,B7,C8,D7}
+		\moves*[b]{C6,C5,D6,E6,D5,D4,E5,F5,E4,E3}
+	\end{goban}
+\end{document}

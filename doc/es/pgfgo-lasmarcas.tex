@@ -1,0 +1,508 @@
+\section{Marcas}
+
+Las marcas son elementos gráficos que se colocan en las intersecciones del tablero para resaltar posiciones específicas, indicar puntos de interés o numerar secuencias, sin necesidad de añadir piedras. \pgfgoname\ ofrece comandos y opciones versátiles para personalizar estas marcas, desde formas predefinidas hasta etiquetas personalizadas.
+
+\begin{command}{\mark\opt{\oarg{options}}\marg{intersection}}
+	
+	Dibuja una marca individual en la intersección especificada (ej. «C3»). Las opciones permiten definir su forma, color y otros atributos.
+\end{command}
+
+\begin{command}{\marks\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
+	
+	Similar a |\mark|, pero aplica la misma marca a múltiples intersecciones mediante la sintaxis de coordenadas.
+\end{command}
+
+\begin{key}{/pgfgogo/mark = \meta{options} (default cross)}
+	
+	Define el tipo de marca a colocar, con una cruz («cross») como valor predeterminado si no se especifica otra opción.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark{C3}
+		\end{goban}
+	\end{codeexample}	
+\end{key}
+
+\begin{key}{/pgfgo/mark/circle}
+	
+	Coloca un círculo hueco como marca.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[circle]{C3}
+		\end{goban}
+	\end{codeexample}	
+\end{key}
+
+\begin{key}{/pgfgo/mark/triangle}
+	
+	Dibuja un triángulo hueco.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[triangle]{C3}
+		\end{goban}
+	\end{codeexample}	
+\end{key}
+
+\begin{key}{/pgfgo/mark/square}
+	
+	Coloca un cuadrado hueco.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[square]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/cross}
+	
+	Dibuja una cruz.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[cross]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/filled square}
+	
+	Coloca un cuadrado relleno.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[filled square]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/filled circle}
+	
+	Dibuja un círculo relleno.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[filled circle]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/t-circle}
+	
+	Coloca un círculo pequeño con un borde más grueso, diseñado específicamente para marcar territorios.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[t-circle]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/t-square}
+	
+	Dibuja un cuadrado pequeño con borde grueso, similar a «t-circle», usado para señalar territorios.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[t-square]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/hatched lines}
+	
+	Coloca un patrón de líneas cruzadas (tramado).
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[hatched lines]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/sequence=\meta{options}(default false, initial false)}
+	Permite numerar una serie de marcas en orden.
+\end{key}
+
+\begin{key}{/pgfgo/mark/sequence/use}
+	Muestra la marca |sequence| sobre el tablero.
+\end{key}
+
+\begin{key}{/pgfgo/mark/sequence/from=\meta{number}}
+	
+	Establece el número inicial de la secuencia de marcas numeradas, permitiendo continuar desde un punto específico en lugar de 1.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[sequence = {use, from = 3}]{C3,B3,C4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+
+
+
+\begin{key}{/pgfgo/mark/custom=\meta{token list}}
+	
+	Permite definir una marca personalizada usando texto o símbolos (como «!» o «?») e incluso im\'agenes.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[custom = {!}]{C3}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[custom = {\tikz{\node[rounded corners, draw, inner sep = 1em, red]{\dots};}}]{C3}
+		\end{goban}
+	\end{codeexample}	
+\end{key}
+
+
+\begin{key}{/pgfgo/mark/line = \meta{option} (default true)}
+	Controla el contorno de la marca.
+\end{key}
+
+
+\begin{key}{/pgfgo/mark/line/color = \meta{color}}
+	Define el color del contorno de la marca.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[triangle, line = {color = red}]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+
+\begin{key}{/pgfgo/mark/line/width = \meta{dimension}}
+	
+	Ajusta el grosor del contorno de las marcas.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[triangle]{C3}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[triangle, line = {width = 0.1pt}]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+
+
+\begin{key}{/pgfgo/mark/fill = \meta{options} (default true)}
+	Controla el relleno de una marca
+\end{key}
+
+\begin{key}{/pgfgo/mark/fill/color = \meta{color}}
+	
+	Establece el color de relleno de una marca.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[circle, fill = {color = red}]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+
+\begin{key}{/pgfgo/mark/label = \meta{option}}
+	Controla la apariencia de las etiquetas de las marcas que las tengan.
+\end{key}
+
+
+\begin{key}{/pgfgo/mark/label/color = \meta{color}}
+	
+	Controla el color del texto o símbolo en marcas personalizadas (como con |custom|).
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[custom = {!}, label = {color = red}]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/label/format=\meta{options} (default arabic)}
+	
+	Controla el estilo de numeración de las etiquetas de enumeraci\'on (como |sequence|), con opciones como números arábigos, letras o romanos.
+\end{key}
+
+\begin{key}{/pgfgo/mark/label/format/arabic}
+	
+	Usa números arábigos para secuencias.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[label = {format = arabic}, sequence]{C3,B3,C4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/label/format/alph}
+	
+	Usa letras minúsculas para la secuencia.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[label = {format = alph}, sequence]{C3,B3,C4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/label/format/Alph}
+	
+	Usa letras mayúsculas.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[label = {format = Alph}, sequence]{C3,B3,C4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/label/format/roman}
+	
+	Usa números romanos minúsculos.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[label = {format = roman}, sequence]{C3,B3,C4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/label/format/Roman}
+	
+	Usa números romanos mayúsculos.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[label = {format = Roman}, sequence]{C3,B3,C4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+
+
+\begin{key}{/pgfgo/mark/black}
+	
+	Aplica las propiedades del primer jugador (negro) a la marca.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[triangle]{C3}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\mark[black, t-square]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/white}
+	
+	Aplica las propiedades del segundo jugador (blanco) a la marca.
+\end{key}
+
+\begin{key}{/pgfgo/mark/neutral}
+	
+	Mantiene la marca sin asociarla a ningún jugador.
+\end{key}
+

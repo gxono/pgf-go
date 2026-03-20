@@ -1,0 +1,26 @@
+\section{Introduction}
+
+\subsection{Motivation}
+
+The following package offers a collection of macros designed to represent Go boards and positions, fully implemented in \pgfname. This project, although still under development, incorporates innovative features aimed at simplifying and streamlining the creation of Go-related diagrams:
+\begin{itemize}
+	\item Profile management for boards and players.
+	\item Loading multiple coordinates simultaneously using a syntax that some might find familiar.
+\end{itemize}
+
+The development of \pgfgoname stems from frustration with not finding packages that met my needs. The packages I explored allow for the representation of black-and-white boards, suitable for printing, but impractical when combined with technologies like |beamer| or in documents where a color presentation is desired.
+
+Initially, \pgfgoname was intended to be limited to these tasks; however, I now envision it more as an interface for managing styles and states, avoiding excessive use of direct formatting. This will be reflected primarily in the structure of the \emph{keys} tree.
+
+Regarding the name, although the macros are implemented in \pgfname and L3, the board is built on |\tikzpicture| so that users familiar with this environment can take advantage of its macros.
+
+\subsection{What’s New}
+
+\begin{itemize}
+	\item \version:
+	\begin{itemize}
+			\item The \emph{keys} |inner| and |outer| have been added for the \emph{rounded corner} of the board.
+			\item Three new coordinate operators have been added: |*| for all intersections, |L| for vertical lines, and |N| for horizontal lines.
+	\end{itemize}
+	\item 0.2025.03.07: First release.
+\end{itemize}

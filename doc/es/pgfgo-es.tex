@@ -1,0 +1,77 @@
+% Copyright 2025 by Jonatan Perren
+%
+% This file may be distributed and/or modified
+%
+% 1. under the LaTeX Project Public License and/or
+% 2. under the GNU Free Documentation License.
+
+
+\documentclass[a4paper,doc2]{ltxdoc}
+
+
+
+\input{../pgfgo.cfg}
+\input{../pgfgo-preamble.tex}
+
+\usepackage{../../latex/pgf-go}
+\def\pgfgoname{\textsc{pgfgo}}
+
+\usepackage[spanish]{babel}
+
+\usepackage{float}
+\usetikzlibrary{positioning, fit}
+\usepackage{caption}
+
+
+
+\definecolor{pgfgo}{RGB}{220,179,92}
+\colorlet{tablero2}{red!10!blue!10}
+\colorlet{tablero3}{blue!10!green!10}
+\definecolor{tablero4}{HTML}{9B8465}
+
+\def\pgfgoversion{\leavevmode\hbox{0.\the\year.\twodigits\month.\twodigits\day}}
+\def\twodigits#1{\ifnum#1<10 0\fi\the#1}
+
+
+
+\begin{document}
+	\title{\Huge\bfseries pgf-go\\[1em]
+		\normalsize
+		
+		\begin{center}
+			\pgfgouseprofile{pgfgosmooth}
+			\begin{goban}[partial = {from = B2 to E3}]
+				\stones[black]{C2,D2,E3}
+				\stones[white] {B2,C3,D3}
+				\mark[w, custom = {36}]{B2}
+				\mark[custom = {a}] {E2}
+				
+				\marks[circle, line = {color = red!80!black}] {C3,D3}
+				
+			\end{goban}
+		\end{center}
+		
+		\large Manual for version~\pgfgoversion}
+		\author{Jonat\'an Perren Hug\\
+		\texttt{jonatan.perren@gmail.com}
+		}
+	
+	\maketitle
+	
+	
+	
+	\label{table-of-contents}
+	\tableofcontents
+
+	\clearpage 
+
+	\input{pgfgo-motivacion}
+	\input{pgfgo-ejemplosiniciales}
+	\input{pgfgo-loelemental}
+	\input{pgfgo-eltablero}
+	\input{pgfgo-laspiedras}
+	\input{pgfgo-lasmarcas}
+	\input{pgfgo-ejemplos}
+	\input{pgfgo-catalogo}
+	\input{pgfgo-definiciones}
+\end{document}

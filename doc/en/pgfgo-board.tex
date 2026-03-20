@@ -1,0 +1,574 @@
+\section{The Board}
+\label{sec:board}
+
+When we refer to the "board," we mean an environment or \emph{scope} in which both the goban (the game grid) and its contents—stones, coordinate labels, and other relevant information—are rendered. This environment is designed to be flexible and customizable, allowing users to adapt its appearance and functionality according to the needs of the diagram, whether to represent full games, specific sections, or even add visual annotations.
+
+\begin{environment}{{goban}\opt{\oarg{options}}}
+	
+	Initializes the goban environment. By default, it draws a square 9×9 intersection board with a visible border, white background, and no labels on the sides.
+	
+	\begin{codeexample}[width=5cm]
+		\begin{goban}
+		\end{goban}
+	\end{codeexample}
+	
+	Since the board is the only macro that utilizes the TikZ layer, each intersection can be accessed using its alphanumeric coordinate (as in \pgfname) or numeric values in the \tikzname\ coordinate system. This allows combining Go’s intuitive syntax with TikZ’s graphical capabilities, which is especially useful for adding custom elements, such as arrows or marks, directly onto the board.
+	
+	\begin{codeexample}[width=5.85cm]
+		\begin{goban}[19, partial = {from = J1 to S9},
+			label = {at = {north, east}}]
+			\stones {K8,R8,Q5,R5,O4,Q4,L3,O3,M2,N2}
+			\mark[black, circle] {K8}
+			\stones[white] {K6,R4,R3,P3,N1,O2,Q2}
+			
+			\tikzset{flecha/.style = {-{latex[]}, line width = 2pt, blue}}
+			\draw[flecha] (12,8)--(17,8);
+		\end{goban}
+	\end{codeexample}
+	
+	\begin{key}{/pgfgo/goban/use i=\meta{boolean} (default true, initially true)}
+		
+		Enables or disables the use of the letter "I" in the board’s coordinates and labels. When disabled ("false"), any reference to "I" is interpreted as "J".
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {13, label = {at = north}}}
+			
+			\begin{goban}[label = {at = west}, partial = {from = H1 to M3}]
+				\stone[b]{J2}
+			\end{goban}
+			
+			\begin{goban}[use i = false, partial = {from = H1 to N3}]
+				\stone[b]{J2}
+			\end{goban}
+			
+			\begin{goban}[use i = false, label = {at = east}, partial = {from = H1 to N3}]
+				\stone[white, mark = {custom = !}] {I2} % If it’s I, it shifts to J.
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/size=\meta{nlines or nlines |x| nlines} (initially 9)}
+		
+		Defines the number of vertical and horizontal lines on the board. The word "size" can be omitted, and the value specified directly. If a single integer (e.g., |9|) is provided, the board will be square (9×9). If an expression like |5x3| is used, a rectangular board with 5 columns and 3 rows will be created.
+		
+		\begin{codeexample}[width=6.5cm]
+			\begin{goban}[5]
+			\end{goban}
+			
+			\begin{goban}[5x3]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/scale=\meta{float} (initially 1)}
+		
+		Controls the global scale of the board, affecting both its overall dimensions and the thickness of certain elements (e.g., the "line width" of the lines).
+		
+		\begin{codeexample}[width=5.5cm]
+			\begin{goban}[2, scale = 2]
+				\stone[b, mark]{A1}
+			\end{goban}
+			
+			\begin{goban}[2, scale = 1]
+				\stone[b, mark]{A1}
+			\end{goban}
+			
+			\begin{goban}[2, scale = 0.5]
+				\stone[b, mark]{A1}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\subsection{Grid}
+	
+	The grid refers to the central lines that form the board’s intersections.
+	
+	\begin{key}{/pgfgo/goban/grid=\meta{options}}
+		Controls the behavior and appearance of the board’s central lines. This set of options allows modifying their visibility, color, thickness, and spacing, offering a high degree of customization.
+	\end{key}
+	
+	\begin{stylekey}{/pgfgo/goban/grid/false}
+		
+		Disables the central lines, leaving only the border and stones visible.
+		
+		\begin{codeexample}[]
+			\begin{goban}[3]
+				\stone[b]{A1}
+				\stone[w]{B2}
+			\end{goban}
+			
+			\begin{goban}[3, grid = false]
+				\stone[b]{A1}
+				\stone[w]{B2}
+			\end{goban}
+		\end{codeexample}
+		
+		The first board shows the default grid.
+	\end{stylekey}
+	
+	\begin{key}{/pgfgo/goban/grid/line=\meta{options}}
+		Allows controlling the grid lines.
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/grid/line/color =\meta{color} (initially black)}
+		
+		Allows changing the color of the grid lines.
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[grid = {line = {color = blue}}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[grid = {line = {color = red}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/grid/line/opacity =\meta{float} (initially 1)}
+		
+		Sets the opacity of the grid lines, from 0 (transparent) to 1 (opaque).
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[grid = {line = {opacity = 0.2}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/grid/line/width =\meta{dimension} (initially 0.55pt)}
+		
+		Defines the thickness of the grid lines.
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[grid = {line = {width = 1.5pt}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/grid/x sep =\meta{dimension} (initially 1.25em)}
+		Sets the spacing between vertical lines, adjusting the width of the board’s columns.
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/grid/y sep =\meta{dimension} (initially 1.25em)}
+		Sets the spacing between horizontal lines, adjusting the height of the rows.
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/grid/sep =\meta{dimension} (initially 1.25em)}
+		Simultaneously defines the vertical and horizontal spacing of the lines, ensuring uniform spacing in both directions. This is a convenient option for maintaining balanced proportions.
+	\end{key}
+	
+	\subsection{Border}
+	
+	The board’s border is the outline that frames the grid and stones, providing a clear visual boundary. By default, it is active, has a white background, and a black outline.
+	
+	\begin{key}{/pgfgo/goban/background=\meta{options} (default true)}
+		Controls the properties of the board’s border, such as its visibility, color, thickness, and shape, allowing detailed customization.
+	\end{key}
+	
+	\begin{stylekey}{/pgfgo/goban/background/false}
+		
+		Completely disables the board’s border, removing both the outline and fill. This is useful for minimalist diagrams or when the document’s background already provides sufficient contrast.
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[background = false, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{stylekey}
+	
+	\begin{key}{/pgfgo/goban/background/fill=\meta{options} (initially true)}
+		Controls options related to the board’s background fill.
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/fill=\meta{boolean} (initially true)}
+		
+		Determines whether the board’s background fill is active. If disabled, the area inside the border will be transparent, showing only the outline (if enabled).
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[background = {line = {color = red}}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[background = {line = false}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/fill/color =\meta{color} (default white)}
+		
+		Defines the fill color of the board.
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[background = {fill = {color = orange!40}}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[background = {fill = {color = olive!30}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/fill/opacity =\meta{float} (initially 1)}
+		
+		Controls the opacity of the fill, from 0 (transparent) to 1 (opaque).
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[background = {fill = {color = orange!40}}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[background = {fill = {color = orange!40}, fill = {opacity = 0.5}}, resume]
+			\end{goban}
+		\end{codeexample}
+		
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/line=\meta{options} (default true)}
+		Controls the options for the background’s outline.
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/line=\meta{boolean}}
+		Enables or disables the border line.
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[background = {line = {color = red}}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[background = {line = false}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/line/color =\meta{color} (default black)}
+		
+		Defines the color of the border line, allowing it to stand out from the background or grid lines.
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[background = {line = {color = red}}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[background = {line = {color = blue}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/line/opacity =\meta{float} (default 1)}
+		
+		Adjusts the opacity of the border line.
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[background = {line = {color = red}}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[background = {line = {color = red}, line = {opacity = 0.5}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/line/width =\meta{dimension} (default 0.75pt)}
+		
+		Controls the thickness of the border line.
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[background = {line = {width = 1.5pt}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/rounded corners =\meta{dimension} (default 1pt)}
+		
+		Adjusts the rounding of the border corners, from 0pt (straight corners) to larger values for a smoother, more stylized effect.
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			
+			\begin{goban}[new remember]
+				\stones[b]{B1,C2}
+				\stone[w]{A3}
+			\end{goban}
+			
+			\begin{goban}[background = {rounded corners = 10pt}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/rounded corners/outer =\meta{dimension} (default 1pt)}
+		
+		Adjusts only the rounding of the outer corners of the border.
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			
+			\begin{goban}[background = {rounded corners = 0pt}, new remember]
+				\stones[b]{B1,C2}
+				\stone[w]{A3}
+			\end{goban}
+			
+			\begin{goban}[background = {rounded corners = {outer = 10pt}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/rounded corners/inner =\meta{dimension} (default 1pt)}
+		
+		Adjusts only the rounding of the inner corners of the board (only visible on partial boards).
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			
+			\begin{goban}[background = {rounded corners = 0pt}, new remember]
+				\stones[b]{B1,C2}
+				\stone[w]{A3}
+			\end{goban}
+			
+			\begin{goban}[background = {rounded corners = {outer = 8pt, inner = 2pt}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/background/sep =\meta{dimension} (default /pgfgo/goban/stone/radius * 1.5)}
+		
+		Defines the separation between the grid and the border, based by default on the stone radius multiplied by 1.5. This adjustment ensures that stones near the border do not overlap with it.
+		
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			
+			\begin{goban}[background = {sep = 0.625em}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+			
+			\begin{goban}[background = {sep = 1.5em}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+	\subsection{Partial Board}
+	
+	In many cases, it’s not necessary to represent a full board, but rather just a rectangular section—whether due to space constraints, to focus attention on a specific area, or to simplify diagram creation. The |goban| environment includes the \emph{key} |partial|, which allows defining this region using the sub-\emph{key} |from|. This specifies the opposite vertices of a rectangle, regardless of the order in which they are provided, making it easy to use. For example, |from = A1 to D3| is equivalent to |from = D3 to A1|.
+	
+	\begin{figure}[H]
+		\centering
+		
+		\begin{tikzpicture}
+			\node[anchor=north] (X) {
+				\begin{goban}[label = {at = {north, west}}]
+					\coordinate (A) at (4,6);
+					\coordinate (B) at (9,9);
+					\coordinate (C) at (A|-B);
+					\coordinate (D) at (A-|B);
+					
+					\tikzset{punto/.style = {circle, fill = #1, draw, inner sep=0.25em, fill opacity=0.5, anchor=center}}
+					
+					\node[punto = red] at (A){};
+					\node[punto = red] at (B){};
+					\node[punto = blue] at (C){};
+					\node[punto = blue] at (D){};
+					
+					\draw[red, {latex}-{latex}, shorten <=5pt, shorten >= 5pt] (A)--(B);
+					\draw[blue, {latex}-{latex}, shorten <=5pt, shorten >= 5pt] (C)--(D);
+					
+					\node[fit=(A)(B), draw, inner sep=0.6em, rounded corners, line width=1pt, fill opacity=0.1, fill=orange] {};
+				\end{goban}
+			};
+			
+			\node[anchor=north, xshift=15em] {
+				\tikz{
+					\node[inner sep=0] (Y) {
+						\begin{goban}[label = {at = {north, west}}, partial = {from = I9 to D6}]
+						\end{goban}
+					};	
+					\node[align = left, anchor=north, inner sep=0, yshift=-1em] at (Y.south){
+						{\color{blue}|partial = {from = D9 to I6}|}\\
+						{\color{blue}|partial = {from = I6 to D9}|}\\
+						{\color{red} |partial = {from = D6 to I9}|}\\
+						{\color{red} |partial = {from = I9 to D6}|}\\
+					};
+				}
+			};
+		\end{tikzpicture}
+	\end{figure}
+	
+	\begin{key}{/pgfgo/goban/partial=\meta{options}}
+		
+		Controls options for representing partial boards, allowing the delimitation of a specific region of the goban.
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/partial/from=\meta{intersection |to| intersection}}
+		
+		Specifies the opposite vertices of the rectangle defining the partial board. These intersections can be any pair of points forming a diagonal of the desired area.
+		
+	\end{key}
+	
+	\begin{codeexample}[]
+		\tikzset{flecha/.style = {-{latex[]}, line width = 1pt, red}}
+		
+		\begin{goban}[partial = {from = A1 to D3}]
+			\draw[flecha] (1,1)--(4,3); % From A1 to D3
+		\end{goban}
+		
+		\begin{goban}[partial = {from = A9 to I6}]
+			\draw[flecha] (1,9)--(9,6); % From A9 to I6
+		\end{goban}
+		
+		\begin{goban}[partial = {from = E2 to B4}]
+			\draw[flecha] (5,2)--(2,4); % From E2 to B4
+		\end{goban}
+	\end{codeexample}
+	
+	\subsection{Board Labels}
+	
+	Labels are the alphanumeric indicators (letters and numbers) that appear on the sides of the board to identify intersections.
+	
+	\begin{key}{/pgfgo/goban/label=\meta{options}}
+		Controls the properties of the labels, such as their position and format.
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/label/false}
+		Disables all labels.
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/label/at =\meta{options}}
+		
+		Defines on which sides of the board the labels appear. Options include combinations of cardinal positions or predefined values like "all" or "none".
+		
+		\begin{stylekey}{/pgfgo/goban/label/at/all}
+			
+			Displays labels on all sides of the board (north, south, east, and west).
+		\end{stylekey}
+		
+		\begin{stylekey}{/pgfgo/goban/label/at/none}
+			
+			Equivalent to |label=false|, removing all labels.
+		\end{stylekey}
+		
+		\begin{stylekey}{/pgfgo/goban/label/at/east}
+			Places labels only on the right side (vertical numbers).
+		\end{stylekey}
+		\begin{stylekey}{/pgfgo/goban/label/at/right}
+			Equivalent to |east|.
+		\end{stylekey}
+		
+		\begin{stylekey}{/pgfgo/goban/label/at/north}
+			Places labels only at the top (horizontal letters).
+		\end{stylekey}
+		\begin{stylekey}{/pgfgo/goban/label/at/above}
+			Equivalent to |north|.
+		\end{stylekey}
+		
+		\begin{stylekey}{/pgfgo/goban/label/at/south}
+			Places labels only at the bottom (horizontal letters).
+		\end{stylekey}
+		\begin{stylekey}{/pgfgo/goban/label/at/below}
+			Equivalent to |south|.
+		\end{stylekey}
+		
+		\begin{stylekey}{/pgfgo/goban/label/at/west}
+			Places labels only on the left side (vertical numbers).
+		\end{stylekey}
+		\begin{stylekey}{/pgfgo/goban/label/at/left}
+			Equivalent to |west|.
+		\end{stylekey}
+		
+		\begin{codeexample}[]
+			\begin{goban}[12, label = {at = {all}}]
+			\end{goban}
+			
+			\begin{goban}[partial = {from = A6 to I9}, label = {at = north}]
+			\end{goban}
+			
+			\begin{goban}[partial = {from = B2 to E4}, label = {at = {north, east}}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+	
+%	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially 0.75em)}
+%		
+%		Adjusts the font size of the labels.
+%	\end{key}
+	
+	\begin{key}{/pgfgo/goban/label/sep = \meta{dimension} (initially 0.5em)}
+		
+		Controls the distance between the labels and the board’s border.
+	\end{key}
+	
+	\begin{key}{/pgfgo/goban/label/text color = \meta{color} (initially black)}
+		
+		Defines the text color of the labels.
+	\end{key}
+	
+	\subsection{Remembering a Board}
+	The "remember" system allows storing and reusing a board’s state across different |goban| environments. This functionality is highly experimental and, strictly speaking, should not yet be documented.
+	
+	\begin{stylekey}{/pgfgo/goban/new remember}
+		
+		Starts a new memory state, saving the current board’s stones and configurations for later use.
+	\end{stylekey}
+	
+	\begin{stylekey}{/pgfgo/goban/add to remember}
+		
+		Adds elements to the memorized state without erasing the previous content, allowing incremental diagram construction.
+	\end{stylekey}
+	
+	\begin{stylekey}{/pgfgo/goban/forget}
+		
+		Erases the memorized state, resetting the memory system.
+	\end{stylekey}
+	
+	\begin{stylekey}{/pgfgo/goban/resume}
+		
+		Retrieves and renders the memorized state, useful for continuing from a previous point without rewriting the code.
+		
+	\end{stylekey}
+	
+\end{environment}

@@ -1,0 +1,547 @@
+\section{Las piedras, movimientos y prisioneros}
+
+Las piedras son los elementos fundamentales. En \pgfgoname, se proporcionan comandos y opciones para dibujarlas de manera flexible, permitiendo personalizar su apariencia y comportamiento según las necesidades del diagrama.
+
+\subsection{Piedras}
+
+\begin{command}{\stone\opt{\oarg{options}}\marg{intersection}}
+	Este comando dibuja una piedra individual en la intersección especificada. El argumento obligatorio es la coordenada (ej. «C2»), mientras que las opciones opcionales permiten ajustar su estilo, como color, tamaño o mar, siguiendo la convención del primer jugador en Go.
+\end{command}
+
+
+\begin{command}{\stones\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
+	Similar a |\stone|, pero permite colocar múltiples piedras con la sintaxis correspondiente (Ver Sintaxis de coordenadas).
+\end{command}
+
+Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone = {...}}|. Esto es equivalente a |\pgfgoset{players = {all = {stone = {...}}}}|.
+
+
+\begin{key}{/pgfgo/stone/fill = \meta{option} (default true)}
+	Controla las opciones de relleno de una piedra.
+\end{key}
+
+
+\begin{key}{/pgfgo/stone/fill/color = \meta{color}}	
+	Define el color de relleno de una piedra.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[fill = {color = cyan!80!black}]{C2,D3}
+			\stone[fill = {color = magenta!80!black}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/fill/opacity = \meta{float} (initially 1)}
+	
+	Controla la opacidad del relleno de la piedra, desde 0 (transparente) hasta 1 (opaco).
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, fill = {opacity = 0.8}]{C2,D3}
+			\stone[w, fill = {opacity = 0.5}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+
+\begin{key}{/pgfgo/stone/line = \meta{option} (initially true)}
+	Controla las opciones de la frontera de una piedra.
+\end{key}
+
+\begin{key}{/pgfgo/stone/line/color = \meta{color} (initially black)}
+	
+	Establece el color del borde de la piedra, que por defecto es negro para todas las piedras.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, line = {color = magenta}]{C2,D3}
+			\stone[w, line = {color = cyan}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/line/opacity = \meta{float} (initially 1)}
+	
+	Define la opacidad del borde de la piedra, permitiendo hacerlo más sutil o transparente.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, line = {opacity = 0.5}]{C2,D3}
+			\stone[w, line = {opacity = 0.8}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/line/width = \meta{dimension} (initially 0.9pt)}
+	
+	Controla el grosor del borde de la piedra.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w, line = {width = 2pt}]{B4}
+		\end{goban}
+	\end{codeexample}	
+\end{key}
+
+\begin{key}{/pgfgo/stone/radius = \meta{dimension} (initially 0.55em)}
+	
+	Establece el tamaño de la piedra mediante su radio.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, radius = 0.15cm]{C2,D3}
+			\stone[w, radius = 0.25cm]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/scale = \meta{float} (initially 1)}
+	
+	Define un factor de escala que afecta todos los elementos de la piedra (radio, borde, marcas), manteniendo sus proporciones.
+\end{key}
+
+\begin{key}{/pgfgo/stone/black}
+	
+	Asigna a la piedra las características del primer jugador (negro por defecto), incluyendo color de relleno y borde. Es el estado inicial de toda piedra si no se especifica otra opción.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[black]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/b}
+	
+	Abreviatura de «black», con idéntica funcionalidad.
+\end{key}
+
+\begin{key}{/pgfgo/stone/white}
+	
+	Asigna a la piedra las características del segundo jugador (blanco por defecto), con relleno blanco y borde negro.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[white]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[white]{C2,D3}
+			\stone[white]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/w}
+	
+	Abreviatura de «white», con la misma funcionalidad.
+\end{key}
+
+\begin{key}{/pgfgo/stone/mark = \meta{mark keys}}
+	
+	Coloca una marca sobre la piedra (ej. triángulo, círculo). Las marcas pueden personalizarse ulteriormente con otras claves, como color o tamaño.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, mark = triangle]{C2,D3}
+			\stone[w, mark = t-circle]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/forget}
+	
+	Cuando el tablero usa un sistema de memoria (|new remember|, |resume|), esta opción indica que la piedra no debe recordarse, permitiendo excluirla de estados posteriores.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}[new remember]
+			\stones[b]{C2,D3}
+			\stone[w, forget]{B4}
+		\end{goban}
+		
+		\begin{goban}[resume]
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/remember}
+	
+	En un tablero con memoria activa, asegura que la piedra se recuerde incluso si el entorno general usa |forget|.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}[forget]
+			\stones[b]{C2,D3}
+			\stone[w, remember]{B4}
+		\end{goban}
+		
+		\begin{goban}[resume]
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/prisoner=\meta{prisoner options} (default fill opacity = 0.5)}
+	
+	Caracteriza a una piedra como prisionera, típicamente con una opacidad reducida (0.5 por defecto) para indicar que ha sido capturada. Pueden añadirse otras opciones para personalizar su apariencia.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\stones[b, prisoner]{C2,D3}
+			\stone[white]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+
+
+
+
+\subsection{Movimientos}
+
+Los comandos de movimientos permiten representar secuencias de jugadas alternando automáticamente entre negro y blanco. Incluyen opciones para numerar las jugadas y personalizar las piedras asociadas.
+
+\begin{command}{\move\opt{*}\opt{\oarg{options}}\marg{intersection}}
+	
+	Dibuja una piedra como parte de una secuencia de movimientos, alternando colores automáticamente (negro, blanco, negro, etc.). La versión estrellada (|\move*|) añade una etiqueta numérica a la piedra.
+\end{command}
+
+\begin{command}{\moves\opt{*}\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
+	
+	Similar a |\move|, pero aplica la secuencia a múltiples intersecciones en una sola línea.
+\end{command}
+
+Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move = {...}}| que es equivalente a |\pgfgoset{players = {all = {move = {...}}}}|.
+
+\begin{key}{/pgfgo/move/black}
+	
+	Establece que la secuencia de movimientos comienza con el jugador negro, útil para forzar el inicio de una jugada en diagramas específicos.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\moves[b]{C2,B4}
+			\move{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/white}
+	
+	Establece que la secuencia comienza con el jugador blanco, alterando el orden natural de las jugadas.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\moves[white]{C2,B4}
+			\move{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/from = \meta{number}}
+	
+	Define el número inicial de una secuencia numerada de movimientos, permitiendo continuar desde un punto específico en lugar de empezar en 1.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\moves*[from = 7]{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label = \meta{options}}
+	
+	Controla las propiedades de las etiquetas numéricas en los movimientos estrellados, como tamaño, color o formato.
+\end{key}
+
+\begin{key}{/pgfgo/move/label/font size=\meta{dimension} (initially 0.5em)}
+	
+	Ajusta el tamaño de la fuente de las etiquetas, permitiendo adaptarlas al tamaño de las piedras o al diseño general.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\moves*[from = 7]{C2,B4}
+			\move*[label = {font size = 0.125em}]{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/format = \meta{options} (initially arabic)}
+	
+	Define el estilo de numeración de las etiquetas.
+\end{key}
+
+\begin{key}{/pgfgo/move/label/format/arabic}
+	
+	Usa números arábigos, el formato por defecto para las etiquetas de movimientos.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\begin{goban}
+			\moves*[from = 7]{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/format/alph}
+	
+	Usa letras minúsculas para las etiquetas.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\pgfgoset{move={label = {format=alph}}}
+		\begin{goban}
+			\moves*[from = 7]{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/format/Alph}
+	
+	Usa letras mayúsculas.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\pgfgoset{move = {label = {format = Alph}}}
+		\begin{goban}
+			\moves*[from = 7]{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/format/roman}
+	
+	Usa números romanos minúsculos.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\pgfgoset{move = {label = {format = roman}}}
+		\begin{goban}
+			\moves*{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/format/Roman}
+	
+	Usa números romanos mayúsculos.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+		
+		\pgfgoset{move = {label = {format = Roman}}}
+		\begin{goban}
+			\moves*{C2,B4}
+			\move*{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/color = \meta{color}}
+	
+	Define el color de las etiquetas.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}
+			\moves*{C2,B4}
+			\move*{D3}
+		\end{goban}
+		
+		\begin{goban}
+			\moves*[label = {color = red}]{C2,B4}
+			\move*[label = {color = blue}]{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/forget}
+	
+	Evita que las etiquetas de movimientos se guarden en la memoria del tablero cuando se usa |remember|, permitiendo que las piedras persistan sin sus números.
+	
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		
+		\begin{goban}[new remember]
+			\moves*[label = forget]{C2,B4,D3}
+		\end{goban}
+		
+		\begin{goban}[resume]
+			\moves*{C:D4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/remember}
+	
+	Garantiza que las etiquetas se guarden en la memoria, incluso si el entorno usa |forget|, asegurando su continuidad en diagramas posteriores.
+\end{key}
+
+\begin{key}{/pgfgo/move/forget}
+	
+	Indica que los movimientos no se recuerden en la memoria del tablero, eliminándolos de estados futuros al usar |resume|.
+\end{key}
+
+\begin{key}{/pgfgo/move/remember}
+	
+	Asegura que los movimientos se recuerden, preservándolos para su reutilización con |resume|.
+\end{key}
+
+
+
+
+
+
+
+\subsection{Prisioneros}
+
+\pgfgoname\ ofrece comandos específicos para representar prisioneros, generalmente con una opacidad reducida para distinguirlas de las piedras activas.
+
+\begin{command}{\prisoner\opt{\oarg{options}}\marg{intersection}}
+	
+	Dibuja una piedra prisionera en una intersección específica, con opciones para personalizar su estilo.
+\end{command}
+
+\begin{command}{\prisoners\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
+	
+	Coloca múltiples piedras prisioneras en una sola línea, eficiente para mostrar grupos capturados.
+\end{command}
+
+\begin{key}{/pgfgo/prisoner=\meta{stone options} (default fill opacity = 0.5)}
+	
+	Define las características de las piedras prisioneras, con una opacidad de relleno de 0.5 por defecto para indicar su estado. Pueden aplicarse otras opciones de |\stone|, como color o tamaño.
+	
+\end{key}

@@ -1,0 +1,107 @@
+\section{Otros ejemplos}
+
+
+
+\pgfgouseprofile{pgfgo}
+
+\begin{codeexample}[width=6cm]
+	\setlength{\tabcolsep}{2pt}
+	\pgfgouseprofile{pgfgosmooth}
+	
+	\begin{tabular}{cc}
+		\begin{goban}[partial = {from = A9 to E5}]
+			\stone[b]{C7}
+			\marks[sequence]{C8, D7, C6, B7};
+		\end{goban} &
+		%
+		\begin{goban}[partial = {from = E9 to I5}]
+			\stone[b]{G7}
+			\stone[w]{F7}
+			\marks[sequence]{G8, H7, G6};
+		\end{goban} \\
+		%
+		\begin{goban}[partial = {from = A1 to E5}]
+			\stone[b]{C3}
+			\stones[w]{B3,C2}
+			\marks[sequence]{C4, D3};
+		\end{goban} & 
+		%
+		\begin{goban}[partial = {from = E1 to I5}]
+			\stone[b]{G3}
+			\stones[w]{F3,G2, H3}
+			\marks[sequence]{G4};
+		\end{goban}\\
+	\end{tabular}
+\end{codeexample}
+
+
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgoset{use i = false}
+	
+	\begin{goban}[13, label = {at = {all}}]
+		\stones[b]{A1, J1, K1, G7, N9, D12, D13}
+		\stones[w]{A2, H1, J2, K2, G6, F7, G8, M9, N10, C12, C13, E12, E13}
+		\marks[circle]{B1, L1, N8, H7, D11}
+	\end{goban}
+	\begin{goban}[13, label = {at = {north, east, south}}]
+		\stones[w]{A2, H1, J2, K2, G6, F7, G8, M9, N10, C12, C13, E12, E13}
+		\stones[w,mark = triangle]{B1, L1, N8, H7, D11}
+	\end{goban}
+\end{codeexample}
+
+
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgoset{use i = false}
+	
+	\begin{goban}[9, label = {at = {south, west}}]
+		\stones[b]{A2-|D1, B1, G1|-F2|-G4|-J7-|E9, G8}
+		\stones[w]{E1|-D6|-A7, D 8:9, F5, B:C 5, A:D 3}
+		\marks[b, t-circle]{J1 R H6, G3, F8 R J9; G8; A1, C1}
+		\marks[b, t-square, white]{A9 R C8, A4 R D6; B:C 5, D6}
+		\marks[t-square, neutral]{F1,F6}
+	\end{goban}
+\end{codeexample}
+
+
+
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[9, label = {at = {south, west}}]
+		\stones[b]{C7}
+		\stones[w]{B6,B7,C8,D7}
+		\moves*{C6,C5,D6,E6,D5,D4,E5,F5,E4,E3}
+	\end{goban}
+\end{codeexample}
+
+
+
+\begin{codeexample}[width=4.8cm]	
+	\begin{goban}[9, partial = {from = A2 to H9}]
+		\stones[b]{A7,B6,C8,C7}
+		\stones[b, mark = triangle]{D6,D5,D4}
+		\stones[w]{C3,C4,C5,C6,D7,E7,E6}
+		\stone[w, mark = {custom = 1}]{E3}
+		\marks[b, circle, line = {color = red!80!black}] {D3,E4, E5}
+	\end{goban}
+\end{codeexample}
+
+
+
+
+
+
+
+
+
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgouseprofile{pgfgosmooth}
+	
+	\begin{goban}[label = {at = all}]
+		\stones[b]{A8 |- B7, B9 -| C8, H:I 1:9, G8:9, A:D 1:2, A3; I2, I6, I8, H9, C1, A2, H:J4;}
+		\stones[w]{E1 |- B3 |- A4, A6 -| C7 -| D9, G1 |- I4 -| G7 -| F9; D7;}
+	\end{goban}
+\end{codeexample}
+
