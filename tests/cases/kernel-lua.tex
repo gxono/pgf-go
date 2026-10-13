@@ -63,5 +63,8 @@
 \__test:nnn {sgf~white} {\seq_use:Nn \l_pgfgo_kernel_sgf_white_seq {,}} {{7}{3}}
 \__test:nnn {sgf~moves} {\seq_use:Nn \l_pgfgo_kernel_sgf_moves_seq {,}}
 	{{black}{5}{5},{white}{7}{7},{black}{}{},{white}{3}{3},{black}{7}{5}}
+\__test:nnn {sgf~root~comment} {\pgfgo_kernel_sgf_comment:n {0}} {A~comment~with~a~]~bracket.}
+\__test:nnn {sgf~no~comment} {\pgfgo_kernel_sgf_comment:n {2}} {}
+\__test:nnn {sgf~comment~4} {\pgfgo_kernel_sgf_comment:n {4}} {Main~line.}
 \ExplSyntaxOff
 \end{document}

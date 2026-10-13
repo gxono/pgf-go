@@ -12,7 +12,7 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	Similar to |\mark|, but applies the same mark to multiple intersections using the coordinate syntax.
 \end{command}
 
-\begin{key}{/pgfgogo/mark = \meta{options} (default cross)}
+\begin{key}{/pgfgo/mark = \meta{options} (default cross)}
 	
 	Defines the type of mark to be placed, with a cross ("cross") as the default value if no other option is specified.
 	
@@ -154,7 +154,7 @@ Marks are graphical elements placed at the intersections of the board to highlig
 
 \begin{key}{/pgfgo/mark/t-circle}
 	
-	Places a small circle with a thicker border, specifically designed for marking territories.
+	Places a small circle with a thicker border, specifically designed for marking territories. It can also be written |tcircle|.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -174,7 +174,7 @@ Marks are graphical elements placed at the intersections of the board to highlig
 
 \begin{key}{/pgfgo/mark/t-square}
 	
-	Draws a small square with a thick border, similar to "t-circle," used to mark territories.
+	Draws a small square with a thick border, similar to "t-circle," used to mark territories. It can also be written |tsquare|.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -217,7 +217,15 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/sequence/use}
-	Displays the |sequence| mark on the board.
+	Displays the |sequence| mark on the board. It is the same as |sequence = true|.
+\end{key}
+
+\begin{key}{/pgfgo/mark/sequence/false}
+	Turns the sequence off (for example, one turned on with |\pgfgoset|).
+\end{key}
+
+\begin{key}{/pgfgo/mark/sequence/format = \meta{format}}
+	Turns the sequence on and chooses the number format. It is the same as |sequence, label = {format = ...}| (see |label/format|).
 \end{key}
 
 \begin{key}{/pgfgo/mark/sequence/from=\meta{number}}
@@ -266,7 +274,7 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/mark/line = \meta{option} (default true)}
+\begin{key}{/pgfgo/mark/line = \meta{options}}
 	Controls the outline of the mark.
 \end{key}
 
@@ -310,13 +318,21 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/mark/fill = \meta{options} (default true)}
-	Controls the fill of a mark.
+\begin{key}{/pgfgo/mark/fill = \meta{options}}
+	Controls the fill of the filled marks (|filled square|, |filled circle| and |hatched lines|).
+\end{key}
+
+\begin{key}{/pgfgo/mark/fill/true}
+	Filled marks use |fill/color|. Without |fill = true|, they are filled in gray.
+\end{key}
+
+\begin{key}{/pgfgo/mark/fill/false}
+	Filled marks are filled in gray again. It is the initial value.
 \end{key}
 
 \begin{key}{/pgfgo/mark/fill/color = \meta{color}}
 	
-	Sets the fill color of a mark.
+	Sets the fill color of a mark. It is only used with |fill = true|.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -329,7 +345,7 @@ Marks are graphical elements placed at the intersections of the board to highlig
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
-			\mark[circle, fill = {color = red}]{C3}
+			\mark[filled circle, fill = {true, color = red}]{C3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -358,7 +374,21 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/mark/label/format=\meta{options} (default arabic)}
+\begin{key}{/pgfgo/mark/label/font = \meta{font commands}}
+	Font of the labels of marks (|sequence| and |custom|).
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[sequence, label = {font = \itshape}]{C3,B3,C4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/label/format=\meta{options} (initially arabic)}
 	
 	Controls the numbering style of enumeration labels (e.g., |sequence|), with options such as Arabic numerals, letters, or Roman numerals.
 \end{key}
@@ -492,4 +522,24 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \begin{key}{/pgfgo/mark/neutral}
 	
 	Keeps the mark unassociated with any player.
+\end{key}
+
+\begin{key}{/pgfgo/mark/b}
+	Short for |black|.
+\end{key}
+
+\begin{key}{/pgfgo/mark/w}
+	Short for |white|.
+\end{key}
+
+\begin{key}{/pgfgo/mark/n}
+	Short for |neutral|.
+\end{key}
+
+\begin{key}{/pgfgo/mark/forget}
+	This mark is not stored in the board’s memory, even if the |goban| uses |remember|.
+\end{key}
+
+\begin{key}{/pgfgo/mark/remember}
+	This mark is stored in the board’s memory, even if the |goban| uses |forget|.
 \end{key}

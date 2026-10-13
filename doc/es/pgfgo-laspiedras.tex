@@ -18,7 +18,7 @@ Las piedras, marcas y etiquetas que caen fuera de la región visible de un table
 Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone = {...}}|. Esto es equivalente a |\pgfgoset{players = {all = {stone = {...}}}}|.
 
 
-\begin{key}{/pgfgo/stone/fill = \meta{option} (default true)}
+\begin{key}{/pgfgo/stone/fill = \meta{options}}
 	Controla las opciones de relleno de una piedra.
 \end{key}
 
@@ -194,6 +194,41 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Abreviatura de «white», con la misma funcionalidad.
 \end{key}
 
+\begin{key}{/pgfgo/stone/neutral}
+	La piedra es del jugador neutral. Es el jugador por defecto de |\stone|.
+\end{key}
+
+\begin{key}{/pgfgo/stone/n}
+	Abreviatura de «neutral».
+\end{key}
+
+\begin{key}{/pgfgo/stone/drop shadow = \meta{options}}
+	Sombra de la piedra: |true|, |false|, |angle|, |offset| y |opacity|. Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}).
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+		\begin{goban}
+			\stones[b, drop shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
+			\stone[w, drop shadow = {true, angle = -45, offset = 1.5pt}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/drop shine = \meta{options}}
+	Brillo de la piedra: |true|, |false|, |angle|, |opacity| y |color|. Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}).
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+		\begin{goban}
+			\stones[b, drop shine = true]{C2,D3}
+			\stone[w, drop shine = {true, color = gray}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+
 \begin{key}{/pgfgo/stone/mark = \meta{mark keys}}
 	
 	Coloca una marca sobre la piedra (ej. triángulo, círculo). Las marcas pueden personalizarse ulteriormente con otras claves, como color o tamaño.
@@ -324,6 +359,14 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 			\move{D3}
 		\end{goban}
 	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/b}
+	Abreviatura de |black|.
+\end{key}
+
+\begin{key}{/pgfgo/move/w}
+	Abreviatura de |white|.
 \end{key}
 
 \begin{key}{/pgfgo/move/from = \meta{number}}
@@ -539,8 +582,8 @@ Al terminar, la numeración y el turno quedan listos para seguir la partida con 
 
 En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 \begin{verbatim}
-(;GM[1]FF[4]SZ[9]PB[Negras]PW[Blancas]
-;B[ee];W[ef];B[df];W[ce];B[ff];W[gd];B[eg];W[dd];B[cf];W[fd])
+(;GM[1]FF[4]SZ[9]PB[Negras]PW[Blancas]C[Una partida corta.]
+;B[ee];W[ef];B[df];W[ce];B[ff];W[gd];B[eg]C[Negras capturan.];W[dd];B[cf];W[fd])
 \end{verbatim}
 
 \begin{codeexample}[width=5cm]
@@ -576,6 +619,62 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 			\moves*{F5} % Sigue con la 7 (negras), en otro lugar.
 		\end{goban}
 	\end{codeexample}
+\end{key}
+
+
+\begin{command}{\sgfanimation\opt{\oarg{options}}\marg{file}}
+
+	Recorre la partida con el paquete |animate|: dibuja un |goban| por jugada, y los botones de |animate| permiten avanzar, retroceder o reproducirla. El cuadro $k$ muestra la posición después de la jugada $k$; el cuadro 0, la posición antes de la primera jugada. Se usa fuera de |goban|. Necesita |\usepackage{animate}| y dos compilaciones.
+\end{command}
+
+Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros visores (Foxit, PDF-XChange). En los demás se ve solo el primer cuadro. Estas opciones pueden fijarse para todo el documento con |\pgfgoset{sgf animation = {...}}|.
+
+\begin{codeexample}[width=5cm]
+	\sgfanimation[comments, goban = {captures}]{partida.sgf}
+\end{codeexample}
+
+\begin{key}{/pgfgo/sgf animation/from = \meta{number} (initially 0)}
+	Primer cuadro.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/to = \meta{number} (initially la última jugada)}
+	Último cuadro.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/fps = \meta{number} (initially 1)}
+	Cuadros por segundo al reproducir.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/goban = \meta{goban options}}
+	Opciones de cada tablero, como en |\begin{goban}[...]|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/animate = \meta{animate options} (initially controls)}
+	Opciones del entorno |animateinline| de |animate|, por ejemplo |controls, loop|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/numbers = \meta{boolean} (default true, initially false)}
+	Numera todas las jugadas, como |\sgf|. Sin |numbers|, las jugadas no tienen número y se marca la última.
+
+	\begin{codeexample}[width=5cm]
+		\sgfanimation[from = 6, to = 8, numbers, goban = {captures}]{partida.sgf}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/last mark = \meta{mark options o false} (initially circle)}
+	Marca de la última jugada, con el color de quien jugó. Con |false|, la última jugada no se marca. No se usa con |numbers|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/comments = \meta{boolean} (default true, initially false)}
+	Muestra debajo del tablero el comentario (|C|) de la jugada. El del cuadro 0 es el de los nodos anteriores a la primera jugada.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/comment height = \meta{dimension} (initially 4em)}
+	Alto del espacio para los comentarios. Es el mismo en todos los cuadros, para que no cambien de tamaño.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/comment font = \meta{font commands} (initially \texttt{\string\small})}
+	Fuente de los comentarios.
 \end{key}
 
 

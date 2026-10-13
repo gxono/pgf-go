@@ -38,14 +38,57 @@ The output is unchanged.
   next number and colour. It works with `captures`, `partial`, `remember` and
   `resume`. A game for a board of another size produces a warning. With
   `kernel = expl3`, `\sgf` raises an error.
-- New tests `captures.tex` and `sgf.tex` (with `game.sgf`).
+- New command `\sgfanimation[<options>]{<file>}`, used outside `goban`. With
+  the `animate` package, it draws one board per move of an SGF game, and
+  `animate`'s buttons step through the game. By default the last move is
+  marked (`last mark`); `numbers` numbers every move instead. `comments`
+  shows the comment (`C`) of each move below the board. Other keys: `from`,
+  `to`, `fps`, `goban`, `animate`, `comment height`, `comment font`. They can
+  be set with `\pgfgoset{sgf animation = {...}}`. It needs `\usepackage{animate}`
+  and two runs. All the frames have the same size, with or without a comment,
+  so that `animate` does not stretch any of them; `sgf-animation.tex` checks
+  it.
+- New tests `captures.tex`, `sgf.tex` (with `game.sgf`) and
+  `sgf-animation.tex`. Test documents can ask for two runs with
+  `% passes: 2`.
 
 ### Documentation
 
 These changes apply to both manuals (Spanish and English).
 
+- Every key and command of the package is now documented. New entries:
+  `goban/background/drop shadow` (with `angle`, `offset`, `opacity`, `color`),
+  `goban/partial/false`, `goban/remember`, the mark keys `forget`,
+  `remember`, `b`, `w`, `n`, `fill/true`, `fill/false`, `label/font`,
+  `sequence/false` and `sequence/format`, the stone keys `neutral`, `n`,
+  `drop shadow` and `drop shine`, the move keys `b` and `w`, `/pgfgo/move`,
+  `/pgfgo/sgf animation`, the `from` and `append` options of
+  `\pgfgodefineplayer`, and the commands `\pgfgosetplayer`,
+  `\pgfgosetallplayers`, `\pgfgocopyplayer` and `\pgfgochooseplayers`.
+- The player key reference no longer has entries without a description, and
+  lists `stone/drop shine/color`, `move/label/forget`, `move/label/remember`,
+  `mark/custom`, `mark/label/font`, `mark/label/format` and the `sequence`
+  keys. It listed `mark/sequence/format/<format>` keys, which do not exist.
+- The definitions of the `pgfgo`, `pgfgosmooth` and `wain` profiles are now
+  copied from `pgf-go-profiles.sty`. They had drifted: `wain` used a command
+  that does not exist (`\pgfgonewprofile`) and a different white, and some
+  options were missing (rounded corners, shine colours, the `pgfgosmooth`
+  grid colour).
+- Fixed the key `/pgfgogo/mark` (a typo for `/pgfgo/mark`), and initial values
+  given as defaults or wrong: `background/rounded corners`, `inner` and
+  `outer` start at 0pt, and keys that take options (`background`, `fill`,
+  `line`) no longer claim a default.
+- `mark/fill/color` is only used with `fill = true` and only by the filled
+  marks; the manual now says so, and its example uses a filled mark.
+- The section on remembering boards describes what is stored and how `resume`
+  continues the numbering, and has an example. It no longer says that the
+  feature is experimental.
+- The label of the profiles section pointed to the following section.
+- New test `docs/keys` (`tests/check_docs.py`): the manuals must document every
+  key and command, and only existing ones.
 - New sections on the compute kernel (`kernel` package option), captures
-  (`goban/captures`) and SGF games (`\sgf`, `sgf/from`, `sgf/to`). The
+  (`goban/captures`), SGF games (`\sgf`, `sgf/from`, `sgf/to`) and animations
+  (`\sgfanimation`). The
   examples use a short game in `doc/es/partida.sgf` and `doc/en/game.sgf`.
 - The manuals are compiled with LuaLaTeX, so they use the Lua kernel.
 - "What's New" lists every version. The features of 0.2025.03.10 were listed

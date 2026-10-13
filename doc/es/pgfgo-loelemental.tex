@@ -19,9 +19,9 @@ La macro |\pgfgoset{...}| permite definir configuraciones generales para el paqu
 	Define opciones generales para las piedras, como su color de relleno, contorno o marcas predeterminadas. Es útil para establecer un estilo consistente en todas las piedras de un documento (neutrales, blancas o negras).
 \end{key}
 
-%\begin{key}{/pgfgo/move = \meta{move options}}
-%	Establece opciones generales para los movimientos, como el color o el etiquetado automático.
-%\end{key}
+\begin{key}{/pgfgo/move = \meta{move options}}
+	Establece opciones generales para los movimientos, como el formato de sus números. Es lo mismo que |\pgfgoset{players = {all = {move = {...}}}}|.
+\end{key}
 
 %\begin{key}{/pgfgo/mark = \meta{mark options}}
 %	Establece opciones generales para las marcas, permitiendo definir formas (círculos, triángulos, etc.) o colores por defecto para destacar posiciones específicas en el tablero.
@@ -29,6 +29,10 @@ La macro |\pgfgoset{...}| permite definir configuraciones generales para el paqu
 
 \begin{key}{/pgfgo/use i = \meta{boolean} (default true)}
 	Permite decidir si se utiliza o no la etiqueta «I» en el tablero. Por defecto, está activada («true»), lo que significa que las coordenadas incluyen la letra «I». Si se desactiva («false»), el sistema omite esta letra y pasa directamente de «H» a «J», algo habitual en ciertas representaciones del juego de Go.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation = \meta{sgf animation options}}
+	Opciones de todas las |\sgfanimation| del documento (pág.~\pageref{subsec:sgf}).
 \end{key}
 
 \begin{key}{/pgfgo/players = \meta{players options}}
@@ -402,6 +406,7 @@ Recordemos que los grupos aditivos y sustractivos pueden encadenarse, separándo
 En este último ejemplo, se crea un rectángulo, se eliminan dos regiones (|A1 R C4| y |E6|), y luego se añade un segmento (|A 1:2|).
 
 \subsection{Perfiles}
+\label{subsec:perfiles}
 
 Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten guardar una configuración de tablero y piedras con un nombre y llamarla cuando se desee.
 
@@ -433,7 +438,15 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 \end{command}
 
 \begin{command}{\pgfgodefineplayer\opt{\oarg{options}}\marg{player name}\marg{player options}}
-	Permite asignar un nombre a un grupo de opciones de piedras. Sus opciones y \emph{keys} son equivalentes a las de |\pgfgodefinegoban|.
+	Permite asignar un nombre a un grupo de opciones de piedras. Sus opciones son equivalentes a las de |\pgfgodefinegoban|.
+
+	\begin{key}{/pgfgo/profiles/player/from = \meta{player name}}
+		Define el jugador a partir de una copia de otro.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/player/append}
+		Amplía las opciones de un jugador ya definido. Es lo mismo que |from = \meta{player name}| con su propio nombre.
+	\end{key}
 \end{command}
 
 \begin{command}{\pgfgousegoban\marg{goban name}}
@@ -491,7 +504,6 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 \end{codeexample}
 
 \subsection{Cambiar opciones sobre la marcha}
-\label{subsec:perfiles}
 
 Cuando se desea cambiar una opción de tablero con |\pgfgoset|, puede hacerse directamente con |\pgfgoset{goban = {...}}|. Para los jugadores, la situación es algo distinta. Para ello, se cuenta con las siguientes \emph{keys}:
 
@@ -502,18 +514,49 @@ Cuando se desea cambiar una opción de tablero con |\pgfgoset|, puede hacerse di
 Las opciones de los jugadores pueden configurarse todas juntas con la \emph{key} |all|, o por separado. Los cambios realizados aquí no afectarán la definición de los perfiles. Es decir, si cargamos el perfil |pgfgo| y modificamos al jugador negro, esto no afectar\'a a la definici\'on de |pgfgo-black|, sino que a las opciones propias del jugador primero.
 
 \begin{key}{/pgfgo/players/all = \meta{all player options}}
+	Aplica las opciones a los tres jugadores.
 \end{key}
 
 \begin{key}{/pgfgo/players/neutral = \meta{neutral player options}}
+	Opciones del jugador neutral (las piedras sin jugador).
 \end{key}
 
 \begin{key}{/pgfgo/players/black = \meta{first player options}}
+	Opciones del primer jugador.
 \end{key}
 
 \begin{key}{/pgfgo/players/white = \meta{second player options}}
+	Opciones del segundo jugador.
 \end{key}
 
-Cada jugador tiene acceso al mismo árbol de \emph{keys}. Por esta razón, las siguientes, aunque mencionen |white|, aplican a todos los jugadores. Cada una de ellas se explica en la sección correspondiente al tipo de objeto, pero se ilustran brevemente ac\'a.
+Para no escribir la ruta completa, hay cuatro comandos:
+
+\begin{command}{\pgfgosetplayer\marg{player}\marg{player options}}
+	Es lo mismo que |\pgfgoset{players = {<player> = {<player options>}}}|.
+\end{command}
+
+\begin{command}{\pgfgosetallplayers\marg{player options}}
+	Aplica las opciones a los tres jugadores. Es lo mismo que |\pgfgoset{players = {all = {...}}}|.
+\end{command}
+
+\begin{command}{\pgfgocopyplayer\marg{target player}\marg{source player}}
+	Copia las opciones actuales de |source player| en |target player|.
+
+	\begin{codeexample}[width=3cm]
+		\pgfgocopyplayer{neutral}{white}
+
+		\begin{goban}[partial = {from = A1 to C3}]
+			\stone{B2} % Neutral, pero con el aspecto de las blancas.
+			\stones[b]{A1,C3}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\begin{command}{\pgfgochooseplayers\marg{neutral source}\marg{black source}\marg{white source}}
+	Copia, en este orden, |neutral source| en el jugador neutral, |black source| en el negro y |white source| en el blanco (con |\pgfgocopyplayer|). Como las copias se hacen una tras otra, no sirve para intercambiar jugadores.
+\end{command}
+
+\label{subsec:jugadores}Cada jugador tiene acceso al mismo árbol de \emph{keys}. Por esta razón, las siguientes, aunque mencionen |white|, aplican a todos los jugadores. Cada una de ellas se explica en la sección correspondiente al tipo de objeto, pero se ilustran brevemente ac\'a.
 
 \begin{key}{/pgfgo/players/white/stone = \meta{stone options}}
 	Controla las opciones de las piedras del segundo jugador.
@@ -878,61 +921,83 @@ Cada jugador tiene acceso al mismo árbol de \emph{keys}. Por esta razón, las s
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/players/white/stone/drop shine/color = \meta{color} (initially gray!50!white)}
+	Controla el color del brillo.
+\end{key}
+
 \begin{key}{/pgfgo/players/white/stone/prisoner = \meta{stone options}}
-	Controla la apariencia de los prisioneros.
+	Dibuja la piedra como prisionero: baja la opacidad del relleno a 0.5 y aplica las \meta{stone options}. Es lo que usan |\prisoner| y |\prisoners|.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/move = \meta{stone options}}
+\begin{key}{/pgfgo/players/white/move = \meta{move options}}
+	Controla las opciones de las jugadas del jugador.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/move/label = \meta{stone options}}
+\begin{key}{/pgfgo/players/white/move/label = \meta{move label options}}
+	Controla las etiquetas (los números) de sus jugadas.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/font size = \meta{dimension}}
+	Tamaño de los números. Si no se fija, se ajusta según la cantidad de dígitos.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/move/label/color = \meta{stone options}}
+\begin{key}{/pgfgo/players/white/move/label/color = \meta{color}}
+	Color de los números.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/move/label/format = \meta{stone options}}
+\begin{key}{/pgfgo/players/white/move/label/format = \meta{format}}
+	Formato de los números: |arabic|, |alph|, |Alph|, |roman| o |Roman|.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/move/label/format/arabic = \meta{stone options}}
+\begin{key}{/pgfgo/players/white/move/label/format/arabic}
+	Números arábigos (1, 2, 3).
 \end{key}
 
-\begin{key}{/pgfgo/players/white/move/label/format/alph = \meta{stone options}}
+\begin{key}{/pgfgo/players/white/move/label/format/alph}
+	Letras minúsculas (a, b, c).
 \end{key}
 
-\begin{key}{/pgfgo/players/white/move/label/format/Alph = \meta{stone options}}
+\begin{key}{/pgfgo/players/white/move/label/format/Alph}
+	Letras mayúsculas (A, B, C).
 \end{key}
 
-\begin{key}{/pgfgo/players/white/move/label/format/roman = \meta{stone options}}
+\begin{key}{/pgfgo/players/white/move/label/format/roman}
+	Números romanos en minúscula (i, ii, iii).
 \end{key}
 
-\begin{key}{/pgfgo/players/white/move/label/format/Roman = \meta{stone options}}
+\begin{key}{/pgfgo/players/white/move/label/format/Roman}
+	Números romanos en mayúscula (I, II, III).
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark = \meta{stone options}}
+\begin{key}{/pgfgo/players/white/move/label/forget}
+	Los números de sus jugadas no se guardan en la memoria del tablero: |resume| vuelve a dibujar las piedras sin número.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/remember}
+	Los números de sus jugadas se guardan en la memoria del tablero.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark = \meta{mark options}}
 	Controla las opciones de marcas asociadas al jugador correspondiente.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/line = \meta{stone mark line options}}
+\begin{key}{/pgfgo/players/white/mark/line = \meta{mark line options}}
+	Controla la línea de sus marcas.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/line/color = \meta{color}}
 	Controla el color de línea de las marcas.
-	
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
 		\pgfgoset{goban = {partial = {from = A1 to C3}}}
-		
+
 		\begin{goban}
 			\stones[b]{B1,C2}
 			\stone[w]{A3}
 		\end{goban}
-		
+
 		\pgfgoset{players = {white = {mark = {line = {color = red!80!black}}}}}
-		
+
 		\begin{goban}
 			\stones[b] {B1}
 			\stone [b, mark] {C2}
@@ -947,14 +1012,14 @@ Cada jugador tiene acceso al mismo árbol de \emph{keys}. Por esta razón, las s
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
 		\pgfgoset{goban = {partial = {from = A1 to C3}}}
-		
+
 		\begin{goban}
 			\stones[b]{B1,C2}
 			\stone[w]{A3}
 		\end{goban}
-		
-		\pgfgoset{players = {white = {mark = {line = {color = red!80!black}}}}}
-		
+
+		\pgfgoset{players = {white = {mark = {line = {width = 0.3pt}}}}}
+
 		\begin{goban}
 			\stones[b] {B1}
 			\stone [b, mark] {C2}
@@ -964,43 +1029,82 @@ Cada jugador tiene acceso al mismo árbol de \emph{keys}. Por esta razón, las s
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/fill = \meta{stone mark fill options}}
+\begin{key}{/pgfgo/players/white/mark/fill = \meta{mark fill options}}
+	Controla el relleno de sus marcas rellenas (|filled square|, |filled circle| y |hatched lines|).
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/fill/true}
+	Las marcas rellenas usan |fill/color|.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/fill/false}
+	Las marcas rellenas se rellenan de gris. Es el valor inicial.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/fill/color = \meta{color}}
+	Color de relleno de las marcas. Solo se usa con |fill = true|.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/label = \meta{stone mark label options}}
-	Controla las opciones de etiqueta para las marcas que las tengan.
+\begin{key}{/pgfgo/players/white/mark/label = \meta{mark label options}}
+	Controla las opciones de etiqueta para las marcas que las tengan (|sequence| y |custom|).
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/label/color = \meta{color}}
+	Color de las etiquetas de sus marcas.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/sequence = \meta{stone mark sequence options}}
-	Controla las opciones de secuencias.
+\begin{key}{/pgfgo/players/white/mark/label/font = \meta{font commands}}
+	Fuente de las etiquetas de sus marcas.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/sequence/format = \meta{stone mark sequence format choice}}
+\begin{key}{/pgfgo/players/white/mark/label/format = \meta{format}}
+	Formato de los números de |sequence|: |arabic|, |alph|, |Alph|, |roman| o |Roman|.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/sequence/format/arabic}
+\begin{key}{/pgfgo/players/white/mark/label/format/arabic}
+	Números arábigos (1, 2, 3).
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/sequence/format/alph}
+\begin{key}{/pgfgo/players/white/mark/label/format/alph}
+	Letras minúsculas (a, b, c).
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/sequence/format/Alph}
+\begin{key}{/pgfgo/players/white/mark/label/format/Alph}
+	Letras mayúsculas (A, B, C).
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/sequence/format/roman}
+\begin{key}{/pgfgo/players/white/mark/label/format/roman}
+	Números romanos en minúscula (i, ii, iii).
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/sequence/format/Roman}
+\begin{key}{/pgfgo/players/white/mark/label/format/Roman}
+	Números romanos en mayúscula (I, II, III).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence = \meta{mark sequence options} (default from = 1)}
+	Numera sus marcas en orden.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/true}
+	Activa la secuencia.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/use}
+	Lo mismo que |sequence/true|.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/false}
+	Desactiva la secuencia.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/from = \meta{number}}
+	Activa la secuencia y la empieza en \meta{number}.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/format = \meta{format}}
+	Activa la secuencia y elige el formato de los números (lo mismo que |label/format|).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/custom = \meta{token list}}
+	Marca personalizada con texto o símbolos, como |/pgfgo/mark/custom|.
 \end{key}

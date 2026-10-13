@@ -182,7 +182,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	
 	The board’s border is the outline that frames the grid and stones, providing a clear visual boundary. By default, it is active, has a white background, and a black outline.
 	
-	\begin{key}{/pgfgo/goban/background=\meta{options} (default true)}
+	\begin{key}{/pgfgo/goban/background=\meta{options}}
 		Controls the properties of the board’s border, such as its visibility, color, thickness, and shape, allowing detailed customization.
 	\end{key}
 	
@@ -208,7 +208,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{stylekey}
 	
-	\begin{key}{/pgfgo/goban/background/fill=\meta{options} (initially true)}
+	\begin{key}{/pgfgo/goban/background/fill=\meta{options}}
 		Controls options related to the board’s background fill.
 	\end{key}
 	
@@ -229,7 +229,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/fill/color =\meta{color} (default white)}
+	\begin{key}{/pgfgo/goban/background/fill/color =\meta{color} (initially white)}
 		
 		Defines the fill color of the board.
 		
@@ -264,11 +264,11 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/line=\meta{options} (default true)}
+	\begin{key}{/pgfgo/goban/background/line=\meta{options}}
 		Controls the options for the background’s outline.
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/line=\meta{boolean}}
+	\begin{key}{/pgfgo/goban/background/line=\meta{boolean} (initially true)}
 		Enables or disables the border line.
 		
 		\begin{codeexample}[]
@@ -284,7 +284,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/line/color =\meta{color} (default black)}
+	\begin{key}{/pgfgo/goban/background/line/color =\meta{color} (initially black)}
 		
 		Defines the color of the border line, allowing it to stand out from the background or grid lines.
 		
@@ -301,7 +301,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/line/opacity =\meta{float} (default 1)}
+	\begin{key}{/pgfgo/goban/background/line/opacity =\meta{float} (initially 1)}
 		
 		Adjusts the opacity of the border line.
 		
@@ -318,7 +318,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/line/width =\meta{dimension} (default 0.75pt)}
+	\begin{key}{/pgfgo/goban/background/line/width =\meta{dimension} (initially 0.75pt)}
 		
 		Controls the thickness of the border line.
 		
@@ -335,7 +335,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/rounded corners =\meta{dimension} (default 1pt)}
+	\begin{key}{/pgfgo/goban/background/rounded corners =\meta{dimension} (initially 0pt)}
 		
 		Adjusts the rounding of the border corners, from 0pt (straight corners) to larger values for a smoother, more stylized effect.
 		
@@ -352,7 +352,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/rounded corners/outer =\meta{dimension} (default 1pt)}
+	\begin{key}{/pgfgo/goban/background/rounded corners/outer =\meta{dimension} (initially 0pt)}
 		
 		Adjusts only the rounding of the outer corners of the border.
 		
@@ -369,7 +369,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/rounded corners/inner =\meta{dimension} (default 1pt)}
+	\begin{key}{/pgfgo/goban/background/rounded corners/inner =\meta{dimension} (initially 0pt)}
 		
 		Adjusts only the rounding of the inner corners of the board (only visible on partial boards).
 		
@@ -403,6 +403,63 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/background/drop shadow=\meta{options} (default true)}
+		Draws a shadow under the board. Without a value, it turns it on.
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+			\begin{goban}[background = {drop shadow}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+
+			\begin{goban}[background = {drop shadow = {color = blue, opacity = 0.3}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/drop shadow=\meta{boolean} (initially false)}
+		Turns the shadow on (|true|) or off (|false|).
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/drop shadow/angle =\meta{float} (initially -45)}
+		Direction of the shadow, in degrees.
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+			\begin{goban}[background = {drop shadow}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+
+			\begin{goban}[background = {drop shadow = {angle = 45}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/drop shadow/offset =\meta{dimension} (initially 1.5pt)}
+		Distance between the board and its shadow.
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+			\begin{goban}[background = {drop shadow}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+
+			\begin{goban}[background = {drop shadow = {offset = 4pt}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/drop shadow/opacity =\meta{float} (initially 0.5)}
+		Opacity of the shadow.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/drop shadow/color =\meta{color} (initially black)}
+		Color of the shadow.
+	\end{key}
+
 	\subsection{Partial Board}
 	
 	In many cases, it’s not necessary to represent a full board, but rather just a rectangular section—whether due to space constraints, to focus attention on a specific area, or to simplify diagram creation. The |goban| environment includes the \emph{key} |partial|, which allows defining this region using the sub-\emph{key} |from|. This specifies the opposite vertices of a rectangle, regardless of the order in which they are provided, making it easy to use. For example, |from = A1 to D3| is equivalent to |from = D3 to A1|.
@@ -476,6 +533,10 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{goban}
 	\end{codeexample}
 	
+	\begin{key}{/pgfgo/goban/partial/false}
+		Shows the whole board again (for example, after a global |partial| set with |\pgfgoset|).
+	\end{key}
+
 	\subsection{Board Labels}
 	
 	Labels are the alphanumeric indicators (letters and numbers) that appear on the sides of the board to identify intersections.
@@ -625,27 +686,39 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{stylekey}
 
 	\subsection{Remembering a Board}
-	The "remember" system allows storing and reusing a board’s state across different |goban| environments. This functionality is highly experimental and, strictly speaking, should not yet be documented.
-	
+	The "remember" system stores what is drawn in a |goban| (stones, moves and marks, with their options) to draw it again in another one with |resume|. Moves keep their number and color, and the numbering continues from there. Only what is drawn is stored: the board options (size, |partial|, labels) are given in each |goban|.
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+		\begin{goban}[new remember]
+			\stones[b]{C2,D3}
+			\moves*[w]{B4}
+		\end{goban}
+
+		\begin{goban}[resume]
+			\moves*{C3} % Continues with 2 (Black).
+		\end{goban}
+	\end{codeexample}
+
 	\begin{stylekey}{/pgfgo/goban/new remember}
-		
-		Starts a new memory state, saving the current board’s stones and configurations for later use.
+		Empties the memory and stores what is drawn in this |goban|.
 	\end{stylekey}
-	
+
+	\begin{stylekey}{/pgfgo/goban/remember}
+		Adds what is drawn in this |goban| to the memory, without erasing what was there.
+	\end{stylekey}
+
 	\begin{stylekey}{/pgfgo/goban/add to remember}
-		
-		Adds elements to the memorized state without erasing the previous content, allowing incremental diagram construction.
+		The same as |remember|.
 	\end{stylekey}
-	
+
 	\begin{stylekey}{/pgfgo/goban/forget}
-		
-		Erases the memorized state, resetting the memory system.
+		Empties the memory and stores nothing from this |goban|, except what is drawn with the option |remember| (for example, |\stone[remember]{C3}|).
 	\end{stylekey}
-	
+
 	\begin{stylekey}{/pgfgo/goban/resume}
-		
-		Retrieves and renders the memorized state, useful for continuing from a previous point without rewriting the code.
-		
+		Draws what is in the memory at the beginning of the |goban|.
 	\end{stylekey}
-	
+
 \end{environment}

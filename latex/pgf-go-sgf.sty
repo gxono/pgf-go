@@ -9,6 +9,9 @@
 \int_new:N \l__pgfgo_sgf_from_int
 \int_new:N \l__pgfgo_sgf_to_int
 \int_new:N \l__pgfgo_sgf_number_int
+%LAS ANIMACIONES SOLO COMPRUEBAN EL TAMANO EN EL PRIMER CUADRO.
+\bool_new:N \l__pgfgo_sgf_check_size_bool
+\bool_set_true:N \l__pgfgo_sgf_check_size_bool
 
 \keys_define:nn {pgfgo / sgf} {
 	from		.int_set:N	= \l__pgfgo_sgf_from_int,
@@ -73,8 +76,9 @@
 		\pgfgo_kernel_sgf_read:n {#2}
 
 		\bool_if:nF {
-			\int_compare_p:nNn {\l_pgfgo_kernel_sgf_size_x_int} = {\l_pgfgo_goban_size_x_int} &&
-			\int_compare_p:nNn {\l_pgfgo_kernel_sgf_size_y_int} = {\l_pgfgo_goban_size_y_int}
+			! \l__pgfgo_sgf_check_size_bool ||
+			(\int_compare_p:nNn {\l_pgfgo_kernel_sgf_size_x_int} = {\l_pgfgo_goban_size_x_int} &&
+			\int_compare_p:nNn {\l_pgfgo_kernel_sgf_size_y_int} = {\l_pgfgo_goban_size_y_int})
 		}{
 			\msg_warning:nnnee {pgfgo} {sgf-size} {#2}
 				{\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
@@ -96,6 +100,161 @@
 	\pgfgo_kernel_if_feature:nTF {sgf}
 		{\pgfgo_sgf:nn {#1} {#2}}
 		{\pgfgo_kernel_require:n {sgf}}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%---------------------------------------ANIMACION-----------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\sgfanimation[<opciones>]{<archivo>} RECORRE LA PARTIDA CON EL PAQUETE animate: UN goban POR CUADRO.
+%EL CUADRO k MUESTRA LA POSICION DESPUES DE LA JUGADA k (EL 0, LA DE ANTES DE LA PRIMERA JUGADA).
+%SE USA FUERA DE goban. NECESITA kernel = lua Y \usepackage{animate}.
+
+\int_new:N \l__pgfgo_sgfanim_from_int
+\int_new:N \l__pgfgo_sgfanim_to_int
+\tl_new:N \l__pgfgo_sgfanim_fps_tl
+\tl_new:N \l__pgfgo_sgfanim_goban_tl
+\tl_new:N \l__pgfgo_sgfanim_animate_tl
+\tl_new:N \l__pgfgo_sgfanim_last_tl
+\bool_new:N \l__pgfgo_sgfanim_numbers_bool
+\bool_new:N \l__pgfgo_sgfanim_comments_bool
+\dim_new:N \l__pgfgo_sgfanim_comment_height_dim
+\tl_new:N \l__pgfgo_sgfanim_comment_font_tl
+\tl_new:N \l__pgfgo_sgfanim_file_tl
+\seq_new:N \l__pgfgo_sgfanim_moves_seq
+\box_new:N \l__pgfgo_sgfanim_box
+
+\keys_define:nn {pgfgo / sgf~animation} {
+	from						.int_set:N	= \l__pgfgo_sgfanim_from_int,
+	from						.initial:n	= {0},
+	%-1: LA ULTIMA JUGADA.
+	to							.int_set:N	= \l__pgfgo_sgfanim_to_int,
+	to							.initial:n	= {-1},
+	fps							.tl_set:N		= \l__pgfgo_sgfanim_fps_tl,
+	fps							.initial:n	= {1},
+	goban						.tl_set:N		= \l__pgfgo_sgfanim_goban_tl,
+	animate					.tl_set:N		= \l__pgfgo_sgfanim_animate_tl,
+	animate					.initial:n	= {controls},
+	numbers					.bool_set:N	= \l__pgfgo_sgfanim_numbers_bool,
+	numbers					.default:n	= {true},
+	%OPCIONES DE LA MARCA DE LA ULTIMA JUGADA (SIN numbers). false: SIN MARCA.
+	last~mark				.code:n			= {
+															\str_if_eq:nnTF {#1} {false}
+																{\tl_clear:N \l__pgfgo_sgfanim_last_tl}
+																{\tl_set:Nn \l__pgfgo_sgfanim_last_tl {#1}}
+														},
+	last~mark				.initial:n	= {circle},
+	comments				.bool_set:N	= \l__pgfgo_sgfanim_comments_bool,
+	comments				.default:n	= {true},
+	comment~height	.dim_set:N	= \l__pgfgo_sgfanim_comment_height_dim,
+	comment~height	.initial:n	= {4em},
+	comment~font		.tl_set:N		= \l__pgfgo_sgfanim_comment_font_tl,
+	comment~font		.initial:n	= {\small},
+}
+
+\keys_define:nn {pgfgo} {
+	sgf~animation		.code:n			= {\keys_set:nn {pgfgo / sgf~animation} {#1}}
+}
+
+\msg_new:nnn {pgfgo} {sgf-animation-animate}
+	{\iow_char:N\\sgfanimation~needs~the~animate~package.~Add~\iow_char:N\\usepackage{animate}.}
+
+
+%LEE LA PARTIDA Y FIJA LOS CUADROS. SEPARADO DE \pgfgo_sgfanimation:nn PARA PODER DIBUJAR CUADROS SUELTOS.
+\cs_new_protected:Npn \pgfgo_sgfanimation_setup:nn #1#2 {
+	\keys_set:nn {pgfgo / sgf~animation} {#1}
+	\tl_set:Nn \l__pgfgo_sgfanim_file_tl {#2}
+	\pgfgo_kernel_sgf_read:n {#2}
+	\seq_set_eq:NN \l__pgfgo_sgfanim_moves_seq \l_pgfgo_kernel_sgf_moves_seq
+	\int_compare:nNnT {\l__pgfgo_sgfanim_to_int} < {0}
+		{\int_set:Nn \l__pgfgo_sgfanim_to_int {\seq_count:N \l__pgfgo_sgfanim_moves_seq}}
+	\int_set:Nn \l__pgfgo_sgfanim_to_int
+		{\int_min:nn {\l__pgfgo_sgfanim_to_int} {\seq_count:N \l__pgfgo_sgfanim_moves_seq}}
+	\int_set:Nn \l__pgfgo_sgfanim_from_int
+		{\int_max:nn {0} {\int_min:nn {\l__pgfgo_sgfanim_from_int} {\l__pgfgo_sgfanim_to_int}}}
+}
+
+%MARCA LA JUGADA #2,#3 DE #1. UN PASE NO SE MARCA.
+\cs_new_protected:Npn \__pgfgo_sgfanim_mark:nnn #1#2#3 {
+	\tl_if_blank:nF {#2} {
+		\use:e {
+			\exp_not:N \pgfgo_marks_parsed:nn
+				{#1, \exp_not:V \l__pgfgo_sgfanim_last_tl} {\exp_not:n {{#2}{#3}}}
+		}
+	}
+}
+
+%DIBUJA EL CUADRO #1: LA POSICION DESPUES DE LA JUGADA #1.
+\cs_new_protected:Npn \pgfgo_sgfanimation_frame:n #1 {
+	\group_begin:
+	\hbox_set:Nn \l__pgfgo_sgfanim_box {
+		\use:e {\exp_not:N \begin{goban} [\exp_not:V \l__pgfgo_sgfanim_goban_tl]}
+			%CADA CUADRO ES UN TABLERO NUEVO: NO SE RECUERDA NADA.
+			\pgfgo_goban_remember_nothing:
+			\bool_set:Nn \l__pgfgo_sgf_check_size_bool
+				{\int_compare_p:nNn {#1} = {\l__pgfgo_sgfanim_from_int}}
+			\use:e {
+				\exp_not:N \pgfgo_sgf:nn
+					{
+						to = \int_eval:n {#1},
+						from = \bool_if:NTF \l__pgfgo_sgfanim_numbers_bool {1} {\int_eval:n {#1 + 1}}
+					}
+					{\exp_not:V \l__pgfgo_sgfanim_file_tl}
+			}
+			\bool_if:nT {
+				! \l__pgfgo_sgfanim_numbers_bool &&
+				! \tl_if_empty_p:N \l__pgfgo_sgfanim_last_tl &&
+				\int_compare_p:nNn {#1} > {0}
+			}{
+				\use:e {
+					\exp_not:N \__pgfgo_sgfanim_mark:nnn
+						\seq_item:Nn \l__pgfgo_sgfanim_moves_seq {#1}
+				}
+			}
+		\end{goban}
+	}
+	\mode_leave_vertical:
+	\bool_if:NTF \l__pgfgo_sgfanim_comments_bool {
+		\vbox:n {
+			\box_use:N \l__pgfgo_sgfanim_box
+			\skip_vertical:n {0.5em}
+			\hbox:n {
+				%EL \strut DA LA MISMA ALTURA A LA PRIMERA LINEA, HAYA COMENTARIO O NO: TODOS LOS CUADROS
+				%MIDEN LO MISMO (SI NO, animate LOS ESTIRA PARA QUE ENTREN EN LA ANIMACION).
+				\parbox[t][\l__pgfgo_sgfanim_comment_height_dim][t]{\box_wd:N \l__pgfgo_sgfanim_box}
+					{\raggedright \l__pgfgo_sgfanim_comment_font_tl \strut \pgfgo_kernel_sgf_comment:n {#1}}
+			}
+		}
+	}{
+		\box_use:N \l__pgfgo_sgfanim_box
+	}
+	\group_end:
+}
+
+\cs_new_protected:Npn \pgfgo_sgfanimation:nn #1#2 {
+	\group_begin:
+	\pgfgo_sgfanimation_setup:nn {#1} {#2}
+	\use:e {
+		\exp_not:N \begin{animateinline}
+			[\exp_not:V \l__pgfgo_sgfanim_animate_tl] {\exp_not:V \l__pgfgo_sgfanim_fps_tl}
+		\exp_not:N \multiframe
+			{\int_eval:n {\l__pgfgo_sgfanim_to_int - \l__pgfgo_sgfanim_from_int + 1}}
+			{iPgfgoFrame = \int_use:N \l__pgfgo_sgfanim_from_int + 1}
+			{\exp_not:N \pgfgo_sgfanimation_frame:n {\exp_not:N \iPgfgoFrame}}
+		\exp_not:N \end{animateinline}
+	}
+	\group_end:
+}
+
+\NewDocumentCommand{\sgfanimation}{O{}m}{
+	\pgfgo_kernel_if_feature:nTF {sgf} {
+		\cs_if_exist:NTF \animateinline
+			{\pgfgo_sgfanimation:nn {#1} {#2}}
+			{\msg_error:nn {pgfgo} {sgf-animation-animate}}
+	}{
+		\pgfgo_kernel_require:n {sgf}
+	}
 }
 
 \ExplSyntaxOff

@@ -679,8 +679,17 @@ local function find_file(name)
 	return kpse.find_file(name, "other text files") or kpse.find_file(name, "tex")
 end
 
+-- COMENTARIOS (C) DE LA ULTIMA PARTIDA LEIDA. sgf_comments[k] ES EL DE LA JUGADA k; sgf_comments[0], EL
+-- DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA. UN NODO SIN JUGADA SE SUMA AL COMENTARIO DE LA ANTERIOR.
+local sgf_comments = {}
+
+function pgfgo.sgf_comment(k)
+	tex.sprint(-2, sgf_comments[k] or "")
+end
+
 function pgfgo.sgf_read(name)
 	local black, white, moves = {}, {}, {}
+	sgf_comments = {}
 	local size_x, size_y = 19, 19
 	local path = find_file(name)
 	if not path then
@@ -717,6 +726,13 @@ function pgfgo.sgf_read(name)
 						p = "{}{}"
 					end
 					insert(moves, "{" .. player[2] .. "}" .. p)
+				end
+			end
+			if n.C then
+				local text = concat(n.C, " "):gsub("%s+", " "):match("^%s*(.-)%s*$")
+				local k = #moves
+				if text ~= "" then
+					sgf_comments[k] = sgf_comments[k] and (sgf_comments[k] .. " " .. text) or text
 				end
 			end
 		end

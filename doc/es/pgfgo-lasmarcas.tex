@@ -12,7 +12,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 	Similar a |\mark|, pero aplica la misma marca a múltiples intersecciones mediante la sintaxis de coordenadas.
 \end{command}
 
-\begin{key}{/pgfgogo/mark = \meta{options} (default cross)}
+\begin{key}{/pgfgo/mark = \meta{options} (default cross)}
 	
 	Define el tipo de marca a colocar, con una cruz («cross») como valor predeterminado si no se especifica otra opción.
 	
@@ -154,7 +154,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/t-circle}
 	
-	Coloca un círculo pequeño con un borde más grueso, diseñado específicamente para marcar territorios.
+	Coloca un círculo pequeño con un borde más grueso, diseñado específicamente para marcar territorios. También puede escribirse |tcircle|.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -174,7 +174,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/t-square}
 	
-	Dibuja un cuadrado pequeño con borde grueso, similar a «t-circle», usado para señalar territorios.
+	Dibuja un cuadrado pequeño con borde grueso, similar a «t-circle», usado para señalar territorios. También puede escribirse |tsquare|.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -217,7 +217,15 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 \end{key}
 
 \begin{key}{/pgfgo/mark/sequence/use}
-	Muestra la marca |sequence| sobre el tablero.
+	Muestra la marca |sequence| sobre el tablero. Es lo mismo que |sequence = true|.
+\end{key}
+
+\begin{key}{/pgfgo/mark/sequence/false}
+	Desactiva la secuencia (por ejemplo, una activada con |\pgfgoset|).
+\end{key}
+
+\begin{key}{/pgfgo/mark/sequence/format = \meta{format}}
+	Activa la secuencia y elige el formato de los números. Es lo mismo que |sequence, label = {format = ...}| (ver |label/format|).
 \end{key}
 
 \begin{key}{/pgfgo/mark/sequence/from=\meta{number}}
@@ -270,7 +278,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 \end{key}
 
 
-\begin{key}{/pgfgo/mark/line = \meta{option} (default true)}
+\begin{key}{/pgfgo/mark/line = \meta{options}}
 	Controla el contorno de la marca.
 \end{key}
 
@@ -318,13 +326,21 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 
 
-\begin{key}{/pgfgo/mark/fill = \meta{options} (default true)}
-	Controla el relleno de una marca
+\begin{key}{/pgfgo/mark/fill = \meta{options}}
+	Controla el relleno de las marcas rellenas (|filled square|, |filled circle| y |hatched lines|).
+\end{key}
+
+\begin{key}{/pgfgo/mark/fill/true}
+	Las marcas rellenas usan |fill/color|. Sin |fill = true|, se rellenan de gris.
+\end{key}
+
+\begin{key}{/pgfgo/mark/fill/false}
+	Las marcas rellenas vuelven a rellenarse de gris. Es el valor inicial.
 \end{key}
 
 \begin{key}{/pgfgo/mark/fill/color = \meta{color}}
 	
-	Establece el color de relleno de una marca.
+	Establece el color de relleno de una marca. Solo se usa con |fill = true|.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -337,7 +353,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
-			\mark[circle, fill = {color = red}]{C3}
+			\mark[filled circle, fill = {true, color = red}]{C3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -368,7 +384,21 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/mark/label/format=\meta{options} (default arabic)}
+\begin{key}{/pgfgo/mark/label/font = \meta{font commands}}
+	Fuente de las etiquetas de las marcas (|sequence| y |custom|).
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[sequence, label = {font = \itshape}]{C3,B3,C4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/mark/label/format=\meta{options} (initially arabic)}
 	
 	Controla el estilo de numeración de las etiquetas de enumeraci\'on (como |sequence|), con opciones como números arábigos, letras o romanos.
 \end{key}
@@ -504,5 +534,25 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 \begin{key}{/pgfgo/mark/neutral}
 	
 	Mantiene la marca sin asociarla a ningún jugador.
+\end{key}
+
+\begin{key}{/pgfgo/mark/b}
+	Abreviatura de |black|.
+\end{key}
+
+\begin{key}{/pgfgo/mark/w}
+	Abreviatura de |white|.
+\end{key}
+
+\begin{key}{/pgfgo/mark/n}
+	Abreviatura de |neutral|.
+\end{key}
+
+\begin{key}{/pgfgo/mark/forget}
+	Esta marca no se guarda en la memoria del tablero, aunque el |goban| use |remember|.
+\end{key}
+
+\begin{key}{/pgfgo/mark/remember}
+	Esta marca se guarda en la memoria del tablero, aunque el |goban| use |forget|.
 \end{key}
 
