@@ -4,11 +4,6 @@
 
 
 %MARK
-\int_new:N\g_pgfgo_mark_sequence_current_int
-\int_gset:Nn\g_pgfgo_mark_sequence_current_int{1}
-
-
-
 
 \bool_new:N\l_pgfgo_mark_hatched_lines_bool
 \bool_new:N\l_pgfgo_mark_t_bool
@@ -270,7 +265,7 @@
 \cs_set:Nn\pgfgo_mark_sequence: {
 	%Ajustar el tamano de acuerdo a la cantidad de caracteres <--------
 	\tl_set:Nn\l_tmpa_tl{0.45em}
-	\tl_set:Nx\l_tmpb_tl{\pgfgo_players_mark_sequence_format:n{\g_pgfgo_mark_sequence_current_int}}
+	\tl_set:Nx\l_tmpb_tl{\pgfgo_players_mark_sequence_format:n{\pgfgo_kernel_sequence_number:}}
 	\regex_count:nVN{[a-zA-Z\d]}\l_tmpb_tl\l_tmpa_int
 	\int_case:nn{\l_tmpa_int}{
 		{1}{\tl_set:Nn\l_tmpa_tl{0.7em}}
@@ -282,11 +277,11 @@
 	\pgftext{{
 			\fontsize{\l_tmpa_tl}{0pt}\selectfont
 			\l_pgfgo_players_mark_label_font_tl
-			\pgfgo_players_mark_sequence_format:n{\g_pgfgo_mark_sequence_current_int}
+			\pgfgo_players_mark_sequence_format:n{\pgfgo_kernel_sequence_number:}
 	}}
 	\pgfusepath{stroke}
 
-	\int_gincr:N\g_pgfgo_mark_sequence_current_int
+	\pgfgo_kernel_sequence_step:
 }
 
 
@@ -296,7 +291,7 @@
 
 %SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO.
 \cs_set_protected:Npn\pgfgo_mark:nnn #1#2#3 {
-	\pgfgo_if_visible:nnT {#2} {#3} {\__pgfgo_mark_draw:nnn {#1} {#2} {#3}}
+	\pgfgo_kernel_if_visible:nnT {#2} {#3} {\__pgfgo_mark_draw:nnn {#1} {#2} {#3}}
 }
 
 \cs_set_protected:Npn\__pgfgo_mark_draw:nnn #1#2#3 {
@@ -366,7 +361,7 @@
 		\keys_set:nn { pgfgo / mark }{neutral}
 		%SOLO PARA EL NUMERO INICIAL DE LA SECUENCIA; EL RESTO LO APLICA CADA MARCA.
 		\keys_set_groups:nnn{ pgfgo / players / neutral / mark } { sequence }{#1}
-		\int_gset_eq:NN\g_pgfgo_mark_sequence_current_int\l_pgfgo_neutral_mark_sequence_from_int
+		\pgfgo_kernel_sequence_reset:n {\l_pgfgo_neutral_mark_sequence_from_int}
 		\clist_map_inline:nn {#2} {\pgfgo_mark:nn{#1}{##1}}
 	\group_end:
 }
@@ -376,11 +371,11 @@
 \cs_set_protected:Npn\pgfgo_marks:nn #1#2 {
 	\group_begin:
 		\keys_set_groups:nnn{ pgfgo / mark }{ preset }{#1}
-		\pgfgo_coordinate_parser_from_pgfgonce_to_items:n{#2} %Devuelve \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
+		\pgfgo_kernel_points:n{#2} %Devuelve \l_pgfgo_kernel_points_seq
 		%RECORDAR LAS MARCAS
-		\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
+		\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
 		\bool_if:NT \l_pgfgo_goban_remember_mark_bool {
-			\pgfgo_goban_remember_push:n {\exp_not:N\pgfgo_marks_parsed:nn{\exp_not:n{#1}}{\exp_not:V\l_tmpa_clist}}
+			\pgfgo_kernel_remember_push:n {\exp_not:N\pgfgo_marks_parsed:nn{\exp_not:n{#1}}{\exp_not:V\l_tmpa_clist}}
 		}
 
 		\pgfgo_marks_parsed:nV {#1} \l_tmpa_clist

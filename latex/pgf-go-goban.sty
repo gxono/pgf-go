@@ -1,8 +1,8 @@
 \ProvidesFile{pgf-go-goban.sty}[2025/10/13 v0.2025.10.13 pgf-go: goban]
 \ExplSyntaxOn
 
-
-	\bool_new:N\l_pgfgo_goban_partial_bool
+	%EL TAMANO, LA PARTE VISIBLE (\l_pgfgo_goban_from_x_int, ...) Y \l_pgfgo_goban_partial_bool
+	%ESTAN DECLARADOS EN pgf-go-kernel.sty.
 
 
 	%GRID
@@ -57,7 +57,7 @@
 	\keys_define:nn {pgfgo / goban}{
 		%EMPIEZA UNA MEMORIA NUEVA Y RECUERDA TODO LO QUE SE DIBUJE.
 		new~remember					.code:n			= {
-																			\seq_gclear:N\g_pgfgo_goban_elements_stack_seq
+																			\pgfgo_kernel_remember_clear:
 																			\bool_set_true:N\l_pgfgo_goban_remember_new_bool
 																			\bool_set_true:N\l_pgfgo_goban_remember_add_bool
 																			\pgfgo_goban_remember_all:
@@ -74,7 +74,7 @@
 
 		%BORRA LA MEMORIA Y NO RECUERDA NADA (SALVO LO MARCADO CON remember).
 		forget								.code:n			= {
-																			\seq_gclear:N\g_pgfgo_goban_elements_stack_seq
+																			\pgfgo_kernel_remember_clear:
 																			\bool_set_false:N\l_pgfgo_goban_remember_new_bool
 																			\bool_set_false:N\l_pgfgo_goban_remember_add_bool
 																			\pgfgo_goban_remember_nothing:
@@ -96,14 +96,16 @@
 		scale							.tl_set:N		= \l_pgfgo_goban_scale_tl,
 		scale							.initial:n	= {1},
 
-		size							.code:n			= {\pgfgo_parse_goban_size:n{#1}},
+		size							.code:n			= {\pgfgo_kernel_board_size:n{#1}},
 
 		use~i					.bool_set:N = \l_pgfgo_use_i_bool,
 
 		use~i					.default:n	= {true},
 
-		unknown						.code:n			= {\pgfgo_parse_goban_size:V\l_keys_key_str},%INTERNTA PARSEAR EL SIZE
+		unknown						.code:n			= {\pgfgo_kernel_board_size:V\l_keys_key_str},%INTERNTA PARSEAR EL SIZE
 		}
+
+	\cs_generate_variant:Nn \pgfgo_kernel_board_size:n {V}
 
 
 
@@ -311,25 +313,8 @@
 	}
 
 
-	\int_new:N\l_pgfgo_goban_tmp_from_x_int
-	\int_new:N\l_pgfgo_goban_tmp_from_y_int
-	\int_new:N\l_pgfgo_goban_tmp_to_x_int
-	\int_new:N\l_pgfgo_goban_tmp_to_y_int
-
-
 	\keys_define:nn {pgfgo / goban / partial}{
-		from				.code:n 	= {
-			\pgfgo_parse_goban_partial_from:n{#1}
-
-			\pgfgo_parse_coordinate:x {\l_pgfgo_goban_partial_from_tl}
-			\int_set:Nn\l_pgfgo_goban_tmp_from_x_int 	{\l_pgfgo_parsed_x_coordinate_tl}
-			\int_set:Nn\l_pgfgo_goban_tmp_from_y_int	{\l_pgfgo_parsed_y_coordinate_tl}
-			
-	
-			\pgfgo_parse_coordinate:x {\l_pgfgo_goban_partial_to_tl}
-			\int_set:Nn\l_pgfgo_goban_tmp_to_x_int 		{\l_pgfgo_parsed_x_coordinate_tl}
-			\int_set:Nn\l_pgfgo_goban_tmp_to_y_int 		{\l_pgfgo_parsed_y_coordinate_tl}
-		},
+		from				.code:n 	= {\pgfgo_kernel_board_window:n{#1}},
 		false							.bool_set:N = \l_pgfgo_goban_partial_bool,
 		false							.default:n = {false}
 	}
@@ -343,41 +328,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-	\int_new:N \l_pgfgo_goban_to_x_int
-	\int_new:N \l_pgfgo_goban_to_y_int
-	\int_new:N \l_pgfgo_goban_from_x_int
-	\int_new:N \l_pgfgo_goban_from_y_int
-	
 	\cs_generate_variant:Nn \int_compare_p:nNn {fNn}
 
-	%TAMANO COMPLETO DEL TABLERO (from/to ES LA PARTE VISIBLE).
-	\int_new:N \l_pgfgo_goban_size_x_int
-	\int_new:N \l_pgfgo_goban_size_y_int
 
-	\msg_new:nnn {pgfgo} {outside-board}
-		{Point~(#1,#2)~is~outside~the~board~and~is~ignored.}
-
-	%VERDADERO SI LA INTERSECCION (#1,#2) ESTA EN LA PARTE VISIBLE DEL TABLERO.
-	%SI ESTA FUERA DEL TABLERO, ADEMAS AVISA.
-	\prg_new_protected_conditional:Npnn \pgfgo_if_visible:nn #1#2 {T, F, TF} {
-		\bool_if:nTF {
-			\int_compare_p:n {1 <= #1 <= \l_pgfgo_goban_size_x_int} &&
-			\int_compare_p:n {1 <= #2 <= \l_pgfgo_goban_size_y_int}
-		}{
-			\bool_if:nTF {
-				\int_compare_p:n {\l_pgfgo_goban_from_x_int <= #1 <= \l_pgfgo_goban_to_x_int} &&
-				\int_compare_p:n {\l_pgfgo_goban_from_y_int <= #2 <= \l_pgfgo_goban_to_y_int}
-			} {\prg_return_true:} {\prg_return_false:}
-		}{
-			\msg_warning:nnnn {pgfgo} {outside-board} {#1} {#2}
-			\prg_return_false:
-		}
-	}
-
-	\int_new:N\l_pgfgo_goban_labels_current_x_int
-	\int_new:N\l_pgfgo_goban_labels_current_y_int
-	
-
+	%DIBUJA EL TABLERO. #2 Y #3 SON EL TAMANO COMPLETO; LA PARTE VISIBLE YA LA CALCULO \pgfgo_kernel_board_init:.
 	\cs_new:Npn\__pgfgo_goban:nnn #1#2#3 {
 		\group_begin:
 		\pgfsetlayers{
@@ -390,25 +344,6 @@
 			pgfgo_layer_stone_mark,
 			pgfgo_layer_mark,
 			main
-		}
-
-		%---------------------------------------------------
-
-		\int_set:Nn \l_pgfgo_goban_size_x_int {#2}
-		\int_set:Nn \l_pgfgo_goban_size_y_int {#3}
-
-		\bool_if:NTF\l_pgfgo_goban_partial_bool{
-			%LA VENTANA SE RECORTA AL TAMANO DEL TABLERO.
-			\int_set:Nn\l_pgfgo_goban_from_x_int	{\int_max:nn{1}{\int_min:nn{\l_pgfgo_goban_tmp_from_x_int}{\l_pgfgo_goban_tmp_to_x_int}}}
-			\int_set:Nn\l_pgfgo_goban_from_y_int 	{\int_max:nn{1}{\int_min:nn{\l_pgfgo_goban_tmp_from_y_int}{\l_pgfgo_goban_tmp_to_y_int}}}
-			\int_set:Nn\l_pgfgo_goban_to_x_int 		{\int_min:nn{#2}{\int_max:nn{\l_pgfgo_goban_tmp_from_x_int}{\l_pgfgo_goban_tmp_to_x_int}}}
-			\int_set:Nn\l_pgfgo_goban_to_y_int 		{\int_min:nn{#3}{\int_max:nn{\l_pgfgo_goban_tmp_from_y_int}{\l_pgfgo_goban_tmp_to_y_int}}}
-
-		}{
-			\int_set:Nn\l_pgfgo_goban_from_x_int 	{1}
-			\int_set:Nn\l_pgfgo_goban_from_y_int	{1}
-			\int_set:Nn\l_pgfgo_goban_to_x_int 		{#2}
-			\int_set:Nn\l_pgfgo_goban_to_y_int 		{#3}
 		}
 
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -610,18 +545,12 @@
 				\pgfsetcolor{\l_pgfgo_goban_labels_color_tl}
 
 				\bool_if:NT\l_pgfgo_goban_labels_pos_north_bool{
-					\foreach \x in {\l_pgfgo_goban_from_x_int,...,\l_pgfgo_goban_to_x_int}{
-						\int_set:Nx\l_pgfgo_goban_labels_current_x_int{\x}
-						\bool_if:NF\l_pgfgo_use_i_bool{
-							\int_compare:nNnT{\l_pgfgo_goban_labels_current_x_int}>{8}{
-								\int_incr:N\l_pgfgo_goban_labels_current_x_int
-						}}
-					
+					\int_step_variable:nnNn {\l_pgfgo_goban_from_x_int} {\l_pgfgo_goban_to_x_int} \l__pgfgo_item_tl {
 						\pgftext[at = \pgfpointadd
-							{\pgfpointxy{\x}{\l_pgfgo_goban_to_y_int}}
+							{\pgfpointxy{\l__pgfgo_item_tl}{\l_pgfgo_goban_to_y_int}}
 							{\pgfpoint{0}{\l_pgfgo_goban_labels_sep_dim + \l_pgfgo_players_stone_radius_dim + 0.5em}}
 						]	{{
-								\__pgfgo_goban_label_font:\int_to_Alph:n{\l_pgfgo_goban_labels_current_x_int}
+								\__pgfgo_goban_label_font:\pgfgo_kernel_column_name:n{\l__pgfgo_item_tl}
 							}}}
 				}
 
@@ -645,18 +574,12 @@
 
 
 				\bool_if:NT\l_pgfgo_goban_labels_pos_south_bool{
-					\foreach \x in {\l_pgfgo_goban_from_x_int,...,\l_pgfgo_goban_to_x_int}{
-						\int_set:Nx\l_pgfgo_goban_labels_current_x_int{\x}
-						\bool_if:NF\l_pgfgo_use_i_bool{
-							\int_compare:nNnT{\l_pgfgo_goban_labels_current_x_int}>{8}{
-								\int_incr:N\l_pgfgo_goban_labels_current_x_int
-						}}
-
+					\int_step_variable:nnNn {\l_pgfgo_goban_from_x_int} {\l_pgfgo_goban_to_x_int} \l__pgfgo_item_tl {
 						\pgftext[at = \pgfpointadd{
-							\pgfpointxy{\x}{\l_pgfgo_goban_from_y_int}}{
+							\pgfpointxy{\l__pgfgo_item_tl}{\l_pgfgo_goban_from_y_int}}{
 							\pgfpoint{0}{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim-0.5em}}
 						]	{{
-								\__pgfgo_goban_label_font:\int_to_Alph:n{\l_pgfgo_goban_labels_current_x_int}
+								\__pgfgo_goban_label_font:\pgfgo_kernel_column_name:n{\l__pgfgo_item_tl}
 							}}}
 				}
 
@@ -683,7 +606,7 @@
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 		\bool_if:NT\l_pgfgo_goban_resume_bool{
-			\seq_map_inline:Nn \g_pgfgo_goban_elements_stack_seq {##1}}
+			\pgfgo_kernel_remember_replay:}
 	}
 
 
@@ -709,10 +632,11 @@
 		\cs_set_eq:NN \mark \__pgfgo_marks_command
 		\cs_set_eq:NN \marks \__pgfgo_marks_command
 		%CADA TABLERO EMPIEZA EN LA JUGADA 1 CON NEGRAS (resume RESTAURA LAS JUGADAS RECORDADAS).
-		\pgfgo_move_reset:
+		\pgfgo_kernel_move_reset:
 		\keys_set:nn {pgfgo / goban} {#1}
+		\pgfgo_kernel_board_init:
 
-		\__pgfgo_goban:nVV{}{\l_pgfgo_goban_to_x_int}{\l_pgfgo_goban_to_y_int}
+		\__pgfgo_goban:nVV{}{\l_pgfgo_goban_size_x_int}{\l_pgfgo_goban_size_y_int}
 		}{\__end_pgfgo_goban:}
 
 

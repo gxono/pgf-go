@@ -1,0 +1,212 @@
+\ProvidesFile{pgf-go-kernel-expl3.sty}[2025/10/13 v0.2025.10.13 pgf-go: expl3 compute kernel]
+\ExplSyntaxOn
+
+%KERNEL DE CALCULO EN expl3 (EL KERNEL POR DEFECTO). LA INTERFAZ ESTA DESCRIPTA EN pgf-go-kernel.sty.
+%NO SABE HACER CAPTURAS NI SGF.
+\clist_gclear:N \g_pgfgo_kernel_features_clist
+
+\__pgfgo_load_module:n {pgf-go-coordinate-parser}
+
+\cs_generate_variant:Nn \int_from_alph:n {V, x, e}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------------------------TABLERO------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\seq_new:N \l__pgfgo_kernel_match_seq
+\int_new:N \l__pgfgo_kernel_x_int
+\tl_new:N \l__pgfgo_kernel_y_tl
+\tl_new:N \l__pgfgo_kernel_to_tl
+
+%VENTANA PEDIDA CON partial, ANTES DE RECORTARLA AL TABLERO.
+\int_new:N \l__pgfgo_kernel_window_from_x_int
+\int_new:N \l__pgfgo_kernel_window_from_y_int
+\int_new:N \l__pgfgo_kernel_window_to_x_int
+\int_new:N \l__pgfgo_kernel_window_to_y_int
+
+
+\cs_new_protected:Npn \pgfgo_kernel_board_size:n #1 {
+	\regex_extract_once:nnNTF {\A([\d]{1,2})\s*x\s*([\d]{1,2})\Z} {#1} \l__pgfgo_kernel_match_seq {
+		\int_set:Nf \l_pgfgo_goban_size_x_int {\seq_item:Nn \l__pgfgo_kernel_match_seq {2}}
+		\int_set:Nf \l_pgfgo_goban_size_y_int {\seq_item:Nn \l__pgfgo_kernel_match_seq {3}}
+	}{
+		\regex_extract_once:nnNTF {\A([\d]{1,2})\Z} {#1} \l__pgfgo_kernel_match_seq {
+			\int_set:Nf \l_pgfgo_goban_size_x_int {\seq_item:Nn \l__pgfgo_kernel_match_seq {2}}
+			\int_set:Nf \l_pgfgo_goban_size_y_int {\seq_item:Nn \l__pgfgo_kernel_match_seq {2}}
+		}{
+			\msg_error:nnn {pgfgo} {unknown-goban-key} {#1}
+		}
+	}
+}
+
+
+%COLUMNA Y FILA DE UNA COORDENADA COMO C3. DEJA \l__pgfgo_kernel_x_int Y \l__pgfgo_kernel_y_tl.
+\cs_new_protected:Npn \__pgfgo_kernel_parse_coordinate:n #1 {
+	\regex_extract_once:nnN {([A-Za-z]*)\s*(\d*)} {#1} \l__pgfgo_kernel_match_seq
+	\int_set:Nn \l__pgfgo_kernel_x_int {\int_from_alph:e {\seq_item:Nn \l__pgfgo_kernel_match_seq {2}}}
+
+	\bool_if:NF \l_pgfgo_use_i_bool {
+		\int_compare:nNnT {\l__pgfgo_kernel_x_int} > {9} {
+			\int_decr:N \l__pgfgo_kernel_x_int
+		}
+	}
+
+	\tl_set:Ne \l__pgfgo_kernel_y_tl {\seq_item:Nn \l__pgfgo_kernel_match_seq {3}}
+}
+\cs_generate_variant:Nn \__pgfgo_kernel_parse_coordinate:n {e, V}
+
+
+\cs_new_protected:Npn \pgfgo_kernel_board_window:n #1 {
+	\regex_extract_once:nnN {
+		\A\s*
+		([a-zA-Z]{1}\s*\d{1,2})
+		\s* to \s*
+		([a-zA-Z]{1}\s*\d{1,2})
+		\s*\Z
+	}{#1} \l__pgfgo_kernel_match_seq
+
+	\tl_set:Ne \l__pgfgo_kernel_to_tl {\seq_item:Nn \l__pgfgo_kernel_match_seq {3}}
+
+	\__pgfgo_kernel_parse_coordinate:e {\seq_item:Nn \l__pgfgo_kernel_match_seq {2}}
+	\int_set_eq:NN \l__pgfgo_kernel_window_from_x_int \l__pgfgo_kernel_x_int
+	\int_set:Nn \l__pgfgo_kernel_window_from_y_int {\l__pgfgo_kernel_y_tl}
+
+	\__pgfgo_kernel_parse_coordinate:V \l__pgfgo_kernel_to_tl
+	\int_set_eq:NN \l__pgfgo_kernel_window_to_x_int \l__pgfgo_kernel_x_int
+	\int_set:Nn \l__pgfgo_kernel_window_to_y_int {\l__pgfgo_kernel_y_tl}
+}
+
+
+\cs_new_protected:Npn \pgfgo_kernel_board_init: {
+	\bool_if:NTF \l_pgfgo_goban_partial_bool {
+		%LA VENTANA SE RECORTA AL TAMANO DEL TABLERO.
+		\int_set:Nn \l_pgfgo_goban_from_x_int {\int_max:nn {1} {\int_min:nn {\l__pgfgo_kernel_window_from_x_int} {\l__pgfgo_kernel_window_to_x_int}}}
+		\int_set:Nn \l_pgfgo_goban_from_y_int {\int_max:nn {1} {\int_min:nn {\l__pgfgo_kernel_window_from_y_int} {\l__pgfgo_kernel_window_to_y_int}}}
+		\int_set:Nn \l_pgfgo_goban_to_x_int {\int_min:nn {\l_pgfgo_goban_size_x_int} {\int_max:nn {\l__pgfgo_kernel_window_from_x_int} {\l__pgfgo_kernel_window_to_x_int}}}
+		\int_set:Nn \l_pgfgo_goban_to_y_int {\int_min:nn {\l_pgfgo_goban_size_y_int} {\int_max:nn {\l__pgfgo_kernel_window_from_y_int} {\l__pgfgo_kernel_window_to_y_int}}}
+	}{
+		\int_set:Nn \l_pgfgo_goban_from_x_int {1}
+		\int_set:Nn \l_pgfgo_goban_from_y_int {1}
+		\int_set_eq:NN \l_pgfgo_goban_to_x_int \l_pgfgo_goban_size_x_int
+		\int_set_eq:NN \l_pgfgo_goban_to_y_int \l_pgfgo_goban_size_y_int
+	}
+}
+
+
+\prg_new_protected_conditional:Npnn \pgfgo_kernel_if_visible:nn #1#2 {T, F, TF} {
+	\bool_if:nTF {
+		\int_compare_p:n {1 <= #1 <= \l_pgfgo_goban_size_x_int} &&
+		\int_compare_p:n {1 <= #2 <= \l_pgfgo_goban_size_y_int}
+	}{
+		\bool_if:nTF {
+			\int_compare_p:n {\l_pgfgo_goban_from_x_int <= #1 <= \l_pgfgo_goban_to_x_int} &&
+			\int_compare_p:n {\l_pgfgo_goban_from_y_int <= #2 <= \l_pgfgo_goban_to_y_int}
+		} {\prg_return_true:} {\prg_return_false:}
+	}{
+		\msg_warning:nnnn {pgfgo} {outside-board} {#1} {#2}
+		\prg_return_false:
+	}
+}
+
+
+\cs_new:Npn \pgfgo_kernel_column_name:n #1 {
+	\int_to_Alph:n {#1 \bool_if:NF \l_pgfgo_use_i_bool {\int_compare:nNnT {#1} > {8} {+ 1}}}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------COORDENADAS----------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cs_new_protected:Npn \pgfgo_kernel_points:n #1 {
+	\pgfgo_coordinate_parser_from_pgfgonce_to_items:n {#1}
+	\seq_set_eq:NN \l_pgfgo_kernel_points_seq \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
+}
+
+
+\prg_new_protected_conditional:Npnn \pgfgo_kernel_point:n #1 {TF} {
+	\regex_match:NnTF \c_pgfgo_coordinate_parser_subset_AN_regex {#1} {
+		\pgfgo_coordinate_parser_from_group_to_items:n {#1}
+		\tl_set:Ne \l_pgfgo_kernel_point_tl {\seq_item:Nn \l_pgfgo_coordinate_parser_items_from_group_seq {1}}
+		\prg_return_true:
+	}{
+		\prg_return_false:
+	}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------------------------JUGADAS------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%NUMERO DE LA PROXIMA JUGADA Y TURNO. SON GLOBALES PORQUE LAS JUGADAS SE ENCADENAN ENTRE \moves.
+\int_new:N \g__pgfgo_kernel_move_int
+\int_gset:Nn \g__pgfgo_kernel_move_int {1}
+\bool_new:N \g__pgfgo_kernel_black_turn_bool
+\bool_gset_true:N \g__pgfgo_kernel_black_turn_bool
+
+
+\cs_new_protected:Npn \pgfgo_kernel_move_reset: {
+	\int_gset:Nn \g__pgfgo_kernel_move_int {1}
+	\bool_gset_true:N \g__pgfgo_kernel_black_turn_bool
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_move_set_number:n #1 {
+	\int_gset:Nn \g__pgfgo_kernel_move_int {#1}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_move_set_player:n #1 {
+	\bool_gset:Nn \g__pgfgo_kernel_black_turn_bool {\str_if_eq_p:nn {#1} {black}}
+}
+
+\cs_new:Npn \pgfgo_kernel_move_number: {\int_use:N \g__pgfgo_kernel_move_int}
+
+\prg_new_conditional:Npnn \pgfgo_kernel_move_if_black: {p, T, F, TF} {
+	\bool_if:NTF \g__pgfgo_kernel_black_turn_bool {\prg_return_true:} {\prg_return_false:}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_move_play:nn #1#2 {
+	\int_gincr:N \g__pgfgo_kernel_move_int
+	\bool_gset_inverse:N \g__pgfgo_kernel_black_turn_bool
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%---------------------------------SECUENCIAS DE MARCAS------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\int_new:N \g__pgfgo_kernel_sequence_int
+\int_gset:Nn \g__pgfgo_kernel_sequence_int {1}
+
+\cs_new_protected:Npn \pgfgo_kernel_sequence_reset:n #1 {
+	\int_gset:Nn \g__pgfgo_kernel_sequence_int {#1}
+}
+
+\cs_new:Npn \pgfgo_kernel_sequence_number: {\int_use:N \g__pgfgo_kernel_sequence_int}
+
+\cs_new_protected:Npn \pgfgo_kernel_sequence_step: {
+	\int_gincr:N \g__pgfgo_kernel_sequence_int
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------------------------MEMORIA------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%PILA GLOBAL CON LOS ELEMENTOS RECORDADOS. CADA ITEM ES CODIGO QUE VUELVE A DIBUJAR EL ELEMENTO.
+\seq_new:N \g__pgfgo_kernel_remember_seq
+
+\cs_new_protected:Npn \pgfgo_kernel_remember_push:n #1 {
+	\seq_gput_right:Ne \g__pgfgo_kernel_remember_seq {#1}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_remember_clear: {
+	\seq_gclear:N \g__pgfgo_kernel_remember_seq
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_remember_replay: {
+	\seq_map_inline:Nn \g__pgfgo_kernel_remember_seq {##1}
+}
+
+\ExplSyntaxOff

@@ -1,0 +1,182 @@
+\ProvidesFile{pgf-go-kernel.sty}[2025/10/13 v0.2025.10.13 pgf-go: compute kernel interface]
+\ExplSyntaxOn
+
+%INTERFAZ ENTRE EL CALCULO Y EL DIBUJO.
+%EL DIBUJO (goban, stones, marks) Y LAS CLAVES SOLO USAN LAS FUNCIONES \pgfgo_kernel_... Y LAS
+%VARIABLES DECLARADAS ACA. UN KERNEL ES UN MODULO pgf-go-kernel-<nombre>.sty QUE DEFINE TODAS LAS
+%FUNCIONES DE \c__pgfgo_kernel_interface_clist. SE ELIGE CON \usepackage[kernel = <nombre>]{pgf-go}.
+%EL KERNEL POR DEFECTO ES expl3. kernel = lua ES OPCIONAL Y NECESITA LuaLaTeX.
+%
+%EL TAMANO Y LA VENTANA DEL TABLERO SON LOCALES (RESPETAN LOS GRUPOS DE TEX, COMO LAS OPCIONES DE goban).
+%LA JUGADA, EL TURNO, LA SECUENCIA DE MARCAS Y LA MEMORIA SON GLOBALES.
+%
+%TABLERO
+%	\pgfgo_kernel_board_size:n {9 | 9x13}
+%		FIJA \l_pgfgo_goban_size_x_int Y \l_pgfgo_goban_size_y_int. ERROR unknown-goban-key SI NO ES UN TAMANO.
+%	\pgfgo_kernel_board_window:n {A1 to E5}
+%		GUARDA LA VENTANA PEDIDA CON partial (TODAVIA SIN RECORTAR). USA \l_pgfgo_use_i_bool.
+%	\pgfgo_kernel_board_init:
+%		FIJA \l_pgfgo_goban_from_x_int, ..._from_y_int, ..._to_x_int Y ..._to_y_int: LA PARTE VISIBLE.
+%		ES TODO EL TABLERO, O LA VENTANA RECORTADA AL TABLERO SI \l_pgfgo_goban_partial_bool.
+%	\pgfgo_kernel_if_visible:nnTF {x}{y}
+%		VERDADERO SI (x,y) ESTA EN LA PARTE VISIBLE. SI ESTA FUERA DEL TABLERO AVISA (outside-board).
+%	\pgfgo_kernel_column_name:n {x}							EXPANDIBLE
+%		LETRA DE LA COLUMNA x. SIN use i SE SALTEA LA I.
+%
+%COORDENADAS
+%	\pgfgo_kernel_points:n {<coordenadas>}
+%		DEJA EN \l_pgfgo_kernel_points_seq LAS INTERSECCIONES {x}{y}, SIN REPETIR, EN EL ORDEN EN QUE APARECEN.
+%		ACEPTA TODA LA SINTAXIS DE \stones (RANGOS, OPERADORES, CORCHETES, ; PARA RESTAR). AVISA CON
+%		unknown-coordinate Y diagonal-line.
+%	\pgfgo_kernel_point:nTF {<coordenada>}
+%		VERDADERO SI ES UNA SOLA INTERSECCION COMO C3; ENTONCES \l_pgfgo_kernel_point_tl ES {x}{y}.
+%
+%JUGADAS
+%	\pgfgo_kernel_move_reset:							JUGADA 1, JUEGAN LAS NEGRAS.
+%	\pgfgo_kernel_move_set_number:n {n}
+%	\pgfgo_kernel_move_set_player:n {black | white}
+%	\pgfgo_kernel_move_number:							EXPANDIBLE. NUMERO DE LA PROXIMA JUGADA.
+%	\pgfgo_kernel_move_if_black:TF							EXPANDIBLE. LA PROXIMA JUGADA ES DE LAS NEGRAS.
+%	\pgfgo_kernel_move_play:nn {x}{y}
+%		JUEGA LA PROXIMA JUGADA EN (x,y): AVANZA EL NUMERO Y CAMBIA EL TURNO.
+%
+%SECUENCIAS DE MARCAS
+%	\pgfgo_kernel_sequence_reset:n {n}
+%	\pgfgo_kernel_sequence_number:							EXPANDIBLE. NUMERO DE LA PROXIMA MARCA.
+%	\pgfgo_kernel_sequence_step:
+%
+%MEMORIA (remember / resume)
+%	\pgfgo_kernel_remember_push:n {<codigo>}
+%		AGREGA <codigo> A LA MEMORIA. SE EXPANDE CON e (USAR \exp_not:n PARA LAS OPCIONES DEL USUARIO).
+%	\pgfgo_kernel_remember_clear:
+%	\pgfgo_kernel_remember_replay:							EJECUTA EL CODIGO GUARDADO, EN ORDEN.
+%
+%CAPACIDADES
+%	EL KERNEL GUARDA EN \g_pgfgo_kernel_features_clist LO QUE SABE HACER ADEMAS DE LO ANTERIOR
+%	(captures, sgf). LAS CAPTURAS Y SGF SOLO LOS DA EL KERNEL lua. \pgfgo_kernel_if_feature:nTF Y
+%	\pgfgo_kernel_require:n LO CONSULTAN.
+
+
+\clist_const:Nn \c__pgfgo_kernel_interface_clist {
+	pgfgo_kernel_board_size:n,
+	pgfgo_kernel_board_window:n,
+	pgfgo_kernel_board_init:,
+	pgfgo_kernel_if_visible:nnT,
+	pgfgo_kernel_if_visible:nnF,
+	pgfgo_kernel_if_visible:nnTF,
+	pgfgo_kernel_column_name:n,
+	pgfgo_kernel_points:n,
+	pgfgo_kernel_point:nTF,
+	pgfgo_kernel_move_reset:,
+	pgfgo_kernel_move_set_number:n,
+	pgfgo_kernel_move_set_player:n,
+	pgfgo_kernel_move_number:,
+	pgfgo_kernel_move_if_black_p:,
+	pgfgo_kernel_move_if_black:T,
+	pgfgo_kernel_move_if_black:F,
+	pgfgo_kernel_move_if_black:TF,
+	pgfgo_kernel_move_play:nn,
+	pgfgo_kernel_sequence_reset:n,
+	pgfgo_kernel_sequence_number:,
+	pgfgo_kernel_sequence_step:,
+	pgfgo_kernel_remember_push:n,
+	pgfgo_kernel_remember_clear:,
+	pgfgo_kernel_remember_replay:
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%ENTRADAS (LAS FIJAN LAS CLAVES)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bool_new:N \l_pgfgo_use_i_bool
+\bool_set_true:N \l_pgfgo_use_i_bool
+\bool_new:N \l_pgfgo_goban_partial_bool
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%SALIDAS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%TAMANO COMPLETO DEL TABLERO.
+\int_new:N \l_pgfgo_goban_size_x_int
+\int_new:N \l_pgfgo_goban_size_y_int
+
+%PARTE VISIBLE DEL TABLERO.
+\int_new:N \l_pgfgo_goban_from_x_int
+\int_new:N \l_pgfgo_goban_from_y_int
+\int_new:N \l_pgfgo_goban_to_x_int
+\int_new:N \l_pgfgo_goban_to_y_int
+
+\seq_new:N \l_pgfgo_kernel_points_seq
+\tl_new:N \l_pgfgo_kernel_point_tl
+
+\clist_new:N \g_pgfgo_kernel_features_clist
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%MENSAJES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\msg_new:nnn {pgfgo} {unknown-goban-key}
+	{Unknown~goban~key~or~size~'#1'.~Use~a~size~like~'9'~or~'9x13'.}
+\msg_new:nnn {pgfgo} {unknown-coordinate}
+	{Coordinate~'#1'~was~not~recognized~and~is~ignored.~Columns~are~upper-case~letters~(for~example~'C3').}
+\msg_new:nnn {pgfgo} {diagonal-line}
+	{'#1'~is~not~a~horizontal~or~vertical~line~and~is~ignored.}
+\msg_new:nnn {pgfgo} {outside-board}
+	{Point~(#1,#2)~is~outside~the~board~and~is~ignored.}
+
+\msg_new:nnn {pgfgo} {kernel-engine}
+	{kernel~=~#1~needs~LuaLaTeX.~Using~kernel~=~expl3.}
+\msg_new:nnn {pgfgo} {kernel-missing}
+	{kernel~=~#1~is~not~available~(pgf-go-kernel-#1.sty~was~not~found).~Using~kernel~=~expl3.}
+\msg_new:nnn {pgfgo} {kernel-incomplete}
+	{kernel~=~#1~does~not~define~'#2'.}
+\msg_new:nnn {pgfgo} {kernel-feature}
+	{'#1'~needs~kernel~=~lua~(the~current~kernel~is~'#2').}
+
+\cs_generate_variant:Nn \msg_warning:nnn {nnV}
+\cs_generate_variant:Nn \msg_error:nnnn {nnnV, nnVe}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%CAPACIDADES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\prg_new_protected_conditional:Npnn \pgfgo_kernel_if_feature:n #1 {T, F, TF} {
+	\clist_if_in:NnTF \g_pgfgo_kernel_features_clist {#1} {\prg_return_true:} {\prg_return_false:}
+}
+
+%ERROR SI EL KERNEL ACTUAL NO SABE HACER #1.
+\cs_new_protected:Npn \pgfgo_kernel_require:n #1 {
+	\pgfgo_kernel_if_feature:nF {#1}
+		{\msg_error:nnnV {pgfgo} {kernel-feature} {#1} \g_pgfgo_kernel_tl}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%CARGA DEL KERNEL
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\g_pgfgo_kernel_tl LO FIJA LA OPCION kernel DE pgf-go.sty. SI EL KERNEL PEDIDO NO SE PUEDE USAR, SE USA expl3.
+\str_if_eq:VnT \g_pgfgo_kernel_tl {lua} {
+	\sys_if_engine_luatex:F {
+		\msg_warning:nnV {pgfgo} {kernel-engine} \g_pgfgo_kernel_tl
+		\tl_gset:Nn \g_pgfgo_kernel_tl {expl3}
+	}
+}
+
+\__pgfgo_module_if_exist:nF {pgf-go-kernel- \g_pgfgo_kernel_tl} {
+	\msg_warning:nnV {pgfgo} {kernel-missing} \g_pgfgo_kernel_tl
+	\tl_gset:Nn \g_pgfgo_kernel_tl {expl3}
+}
+
+\__pgfgo_load_module:e {pgf-go-kernel- \g_pgfgo_kernel_tl}
+
+\clist_map_inline:Nn \c__pgfgo_kernel_interface_clist {
+	\cs_if_exist:cF {#1}
+		{\msg_error:nnVe {pgfgo} {kernel-incomplete} \g_pgfgo_kernel_tl {\c_backslash_str #1}}
+}
+
+\ExplSyntaxOff
