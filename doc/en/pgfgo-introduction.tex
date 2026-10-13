@@ -20,7 +20,7 @@ Regarding the name, although the macros are implemented in \pgfname\ and L3, the
 	\item \version:
 	\begin{itemize}
 			\item The computations (coordinates, move numbers, memory, etc.) have been separated from the drawing. They are done by a \emph{kernel}, chosen with the package option |kernel| (p.~\pageref{subsec:kernel}). Besides the kernel written in L3, a kernel written in Lua has been added, which is the default with Lua\LaTeX.
-			\item With the Lua kernel, captures (|captures|, p.~\pageref{subsec:captures}) and SGF games (|\sgf|, p.~\pageref{subsec:sgf}) have been added.
+			\item With the Lua kernel, captures (|captures|, p.~\pageref{subsec:captures}) and SGF games (|\sgf|, p.~\pageref{subsec:sgf}) have been added. With the |animate| package, |\sgfanimation| steps through a game with buttons.
 	\end{itemize}
 	\item 0.2025.10.13: Bug fixes. Each |goban| starts at move 1 with Black, |\mark| and |\marks| only exist inside |goban|, and what falls outside a partial board is no longer drawn. The full list is in the file |CHANGELOG.md|.
 	\item 0.2025.03.10:

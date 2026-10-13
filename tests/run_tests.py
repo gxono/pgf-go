@@ -95,6 +95,7 @@ def collect_documents(include_manuals, kernel=None):
             expect_warnings=int(header.get("expect-warnings", 0)),
             expect_errors=int(header.get("expect-errors", 0)),
             render=header.get("render", "yes") != "no",
+            passes=int(header.get("passes", 1)),
         ))
     for path in sorted((ROOT / "doc" / "examples").glob("example-*.tex")):
         documents.append(Document(name="examples/" + path.stem, source=path,
@@ -273,17 +274,28 @@ def main():
             sys.exit(f"'{tool}' was not found in the PATH")
 
     documents = collect_documents(args.manuals, args.kernel)
+    check_keys = not args.filters or any(f in "docs/keys" for f in args.filters)
     if args.filters:
         documents = [d for d in documents if any(f in d.name for f in args.filters)]
-    if not documents:
+    if not documents and not check_keys:
         sys.exit("no documents match")
 
     if (BUILD / "diffs").exists():
         clear_dir(BUILD / "diffs")
 
+    results = []
+    # The manuals must document every key and command (see check_docs.py).
+    if check_keys:
+        sys.path.insert(0, str(TESTS))
+        import check_docs
+        problems = check_docs.check()
+        results.append(Result("docs/keys", not problems, problems))
+        print(f"{'ok  ' if not problems else 'FAIL'} docs/keys", flush=True)
+        for problem in problems:
+            print(f"       {problem}", flush=True)
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
         futures = [pool.submit(run_document, doc, args.update) for doc in documents]
-        results = []
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
             results.append(result)

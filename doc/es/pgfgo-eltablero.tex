@@ -182,7 +182,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	El borde del tablero es el contorno que enmarca la cuadrícula y las piedras, proporcionando un límite visual claro. Por defecto, está activo, tiene un fondo blanco y un contorno negro.
 	
-	\begin{key}{/pgfgo/goban/background=\meta{options} (default true)}
+	\begin{key}{/pgfgo/goban/background=\meta{options}}
 		Controla las propiedades del borde del tablero, como su visibilidad, color, grosor y forma, permitiendo una personalización detallada.
 	\end{key}
 	
@@ -208,7 +208,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{stylekey}
 	
-	\begin{key}{/pgfgo/goban/background/fill=\meta{options} (initially true)}
+	\begin{key}{/pgfgo/goban/background/fill=\meta{options}}
 		Controla las opciones relacionadas con el relleno del fondo del tablero.
 	\end{key}
 	
@@ -229,7 +229,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/fill/color =\meta{color} (default white)}
+	\begin{key}{/pgfgo/goban/background/fill/color =\meta{color} (initially white)}
 		
 		Define el color de relleno del tablero.
 		
@@ -264,11 +264,11 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/line=\meta{options} (default true)}
+	\begin{key}{/pgfgo/goban/background/line=\meta{options}}
 		Controla las opciones de la línea de contorno del fondo.
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/line=\meta{boolean}}
+	\begin{key}{/pgfgo/goban/background/line=\meta{boolean} (initially true)}
 		Activa o desactiva la línea del borde.
 		
 		\begin{codeexample}[]
@@ -284,7 +284,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/line/color =\meta{color} (default black)}
+	\begin{key}{/pgfgo/goban/background/line/color =\meta{color} (initially black)}
 		
 		Define el color de la línea del borde, permitiendo distinguirlo del fondo o de las líneas de la cuadrícula.
 		
@@ -301,7 +301,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}		
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/line/opacity =\meta{float} (default 1)}
+	\begin{key}{/pgfgo/goban/background/line/opacity =\meta{float} (initially 1)}
 		
 		Ajusta la opacidad de la línea del borde.
 		
@@ -318,7 +318,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/line/width =\meta{dimension} (default 0.75pt)}
+	\begin{key}{/pgfgo/goban/background/line/width =\meta{dimension} (initially 0.75pt)}
 		
 		Controla el grosor de la línea del borde.
 		
@@ -335,7 +335,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/rounded corners =\meta{dimension} (default 1pt)}
+	\begin{key}{/pgfgo/goban/background/rounded corners =\meta{dimension} (initially 0pt)}
 		
 		Ajusta el redondeo de las esquinas del borde, desde 0pt (esquinas rectas) hasta valores mayores para un efecto más suave y estilizado. 
 		
@@ -353,7 +353,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 	
 	
-	\begin{key}{/pgfgo/goban/background/rounded corners/outer =\meta{dimension} (default 1pt)}
+	\begin{key}{/pgfgo/goban/background/rounded corners/outer =\meta{dimension} (initially 0pt)}
 		
 		Ajusta solamente el redondeo de las esquinas exteriores del borde. 
 		
@@ -371,7 +371,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 	
 	
-	\begin{key}{/pgfgo/goban/background/rounded corners/inner =\meta{dimension} (default 1pt)}
+	\begin{key}{/pgfgo/goban/background/rounded corners/inner =\meta{dimension} (initially 0pt)}
 		
 		Ajusta solamente el redondeo de las esquinas interiores del tablero (solo visibles en tableros parciales). 
 		
@@ -405,6 +405,63 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/background/drop shadow=\meta{options} (default true)}
+		Dibuja una sombra debajo del tablero. Sin valor, la activa.
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+			\begin{goban}[background = {drop shadow}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+
+			\begin{goban}[background = {drop shadow = {color = blue, opacity = 0.3}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/drop shadow=\meta{boolean} (initially false)}
+		Activa (|true|) o desactiva (|false|) la sombra.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/drop shadow/angle =\meta{float} (initially -45)}
+		Dirección de la sombra, en grados.
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+			\begin{goban}[background = {drop shadow}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+
+			\begin{goban}[background = {drop shadow = {angle = 45}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/drop shadow/offset =\meta{dimension} (initially 1.5pt)}
+		Distancia entre el tablero y su sombra.
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+			\begin{goban}[background = {drop shadow}, new remember]
+				\stones[b]{C2,D3}
+				\stone[w]{B4}
+			\end{goban}
+
+			\begin{goban}[background = {drop shadow = {offset = 4pt}}, resume]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/drop shadow/opacity =\meta{float} (initially 0.5)}
+		Opacidad de la sombra.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/drop shadow/color =\meta{color} (initially black)}
+		Color de la sombra.
+	\end{key}
+
 	\subsection{Tablero parcial}
 	
 	En muchas ocasiones, no es necesario representar un tablero completo, sino solo una sección rectangular, ya sea por limitaciones de espacio, para enfocar la atención en una zona específica o para simplificar la creación de diagramas. El entorno |goban| incluye la \emph{key} |partial|, que permite definir esta región mediante la sub-\emph{key} |from|. Esta indica los vértices opuestos de un rectángulo, sin importar el orden en que se especifiquen, lo que facilita su uso. Por ejemplo, |from = A1 to D3| es equivalente a |from = D3 to A1|.
@@ -478,6 +535,10 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{goban}
 	\end{codeexample}	
 	
+	\begin{key}{/pgfgo/goban/partial/false}
+		Vuelve a mostrar el tablero completo (por ejemplo, después de un |partial| global hecho con |\pgfgoset|).
+	\end{key}
+
 	\subsection{Etiquetas del tablero}
 	
 	Las etiquetas son los indicadores alfanuméricos (letras y números) que aparecen en los lados del tablero para identificar las intersecciones.
@@ -627,27 +688,39 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{stylekey}
 
 	\subsection{Recordar un tablero}
-	El sistema de «recordar» permite almacenar y reutilizar el estado de un tablero entre diferentes entornos |goban|. Esta funcionalidad es extremadamente experimental y, en rigor, no debería estar documentada aún.
-	
+	El sistema de «recordar» guarda lo que se dibuja en un |goban| (piedras, jugadas y marcas, con sus opciones) para volver a dibujarlo en otro con |resume|. Las jugadas mantienen su número y su color, y la numeración sigue desde ahí. Solo se guarda lo que se dibuja: las opciones del tablero (tamaño, |partial|, etiquetas) se dan en cada |goban|.
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+		\begin{goban}[new remember]
+			\stones[b]{C2,D3}
+			\moves*[w]{B4}
+		\end{goban}
+
+		\begin{goban}[resume]
+			\moves*{C3} % Sigue con la 2 (negras).
+		\end{goban}
+	\end{codeexample}
+
 	\begin{stylekey}{/pgfgo/goban/new remember}
-		
-		Inicia un nuevo estado de memoria, guardando las piedras y configuraciones del tablero actual para usarlas más adelante.
+		Vacía la memoria y guarda lo que se dibuje en este |goban|.
 	\end{stylekey}
-	
+
+	\begin{stylekey}{/pgfgo/goban/remember}
+		Agrega a la memoria lo que se dibuje en este |goban|, sin borrar lo anterior.
+	\end{stylekey}
+
 	\begin{stylekey}{/pgfgo/goban/add to remember}
-		
-		Añade elementos al estado memorizado sin borrar lo anterior, permitiendo construir diagramas incrementalmente.
+		Lo mismo que |remember|.
 	\end{stylekey}
-	
+
 	\begin{stylekey}{/pgfgo/goban/forget}
-		
-		Borra el estado memorizado, reiniciando el sistema de memoria.
+		Vacía la memoria y no guarda nada de este |goban|, salvo lo que se dibuje con la opción |remember| (por ejemplo, |\stone[remember]{C3}|).
 	\end{stylekey}
-	
+
 	\begin{stylekey}{/pgfgo/goban/resume}
-		
-		Recupera el estado memorizado y lo renderiza, útil para continuar desde un punto previo sin reescribir el código.
-		
+		Dibuja lo que hay en la memoria al comienzo del |goban|.
 	\end{stylekey}
-	
+
 \end{environment}

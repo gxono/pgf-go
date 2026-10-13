@@ -1,0 +1,80 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+% passes: 2
+%
+% animate needs two runs.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{animate}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+
+% The frames cannot be rendered inside the animation, so \frames draws them
+% one by one with the same functions: \frames{<options>}{<file>}{<frames>}.
+\ExplSyntaxOn
+\NewDocumentCommand \frames {mmm} {
+	\group_begin:
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\clist_map_inline:nn {#3} {\pgfgo_sgfanimation_frame:n {##1}\quad}
+	\group_end:
+}
+
+% Every frame of an animation must have the same size, or animate stretches
+% some of them: \samesize{<options>}{<file>} checks all the frames.
+\msg_new:nnn {sgf-animation-test} {size}
+	{Frame~#1~is~#2,~but~frame~0~is~#3.}
+\tl_new:N \l__test_size_tl
+\tl_new:N \l__test_first_size_tl
+\NewDocumentCommand \samesize {mm} {
+	\group_begin:
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\int_step_inline:nnn {0} {\seq_count:N \l__pgfgo_sgfanim_moves_seq} {
+			\hbox_set:Nn \l_tmpa_box {\pgfgo_sgfanimation_frame:n {##1}}
+			\tl_set:Ne \l__test_size_tl {
+				\dim_use:N \box_wd:N \l_tmpa_box ~ x ~
+				\dim_eval:n {\box_ht:N \l_tmpa_box + \box_dp:N \l_tmpa_box}
+			}
+			\int_compare:nNnTF {##1} = {0}
+				{\tl_set_eq:NN \l__test_first_size_tl \l__test_size_tl}
+				{
+					\tl_if_eq:NNF \l__test_size_tl \l__test_first_size_tl
+						{\msg_error:nneee {sgf-animation-test} {size} {##1} {\l__test_size_tl} {\l__test_first_size_tl}}
+				}
+		}
+	\group_end:
+}
+\ExplSyntaxOff
+
+\begin{document}
+
+% game.sgf: 9x9, black C7, C6, C5, white G3; then B E5, W G7, B pass,
+% W C3 (comment "Main line."), B G5. The root has a comment too.
+
+\case{The animation (pdftoppm only draws its controls)}
+\sgfanimation[comments, goban = {label = {at = {north, west}}}]{game.sgf}
+
+\case{Frames 0, 1, 3 (a pass: no mark) and 5: the last move is marked}
+\frames{}{game.sgf}{0, 1, 3, 5}
+
+\case{numbers: frames 2 and 5 are numbered and have no mark}
+\frames{numbers}{game.sgf}{2, 5}
+
+\case{Frame 5 with last mark = false and with last mark = {square}}
+\frames{last mark = false}{game.sgf}{5}
+\frames{last mark = {square}}{game.sgf}{5}
+
+\case{comments: root comment (frame 0), none (frame 2), "Main line." (frame 4)}
+\frames{comments, comment height = 2em}{game.sgf}{0, 2, 4}
+
+\case{goban = {captures}: frames 6 and 7 of the manual's game (7 captures 2)}
+\frames{goban = {captures}}{../../doc/en/game.sgf}{6, 7}
+
+% All the frames have the same size, with and without comments (frames with
+% and without a comment, and comments with different first lines).
+\samesize{comments}{game.sgf}
+\samesize{comments, goban = {captures}}{../../doc/en/game.sgf}
+\samesize{numbers}{game.sgf}
+
+\end{document}

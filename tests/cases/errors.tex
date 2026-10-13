@@ -1,6 +1,6 @@
 % engines: lualatex
 % expect-warnings: 0
-% expect-errors: 3
+% expect-errors: 4
 % render: no
 \documentclass{article}
 \usepackage{../../latex/pgf-go}
@@ -11,5 +11,6 @@
 \begin{goban}[5]\marks[trinagle]{C3}\end{goban} % misspelled mark shape
 \begin{goban}[19x]\end{goban}                   % invalid size
 \pgfgousegoban{does-not-exist}                  % unknown profile
+\sgfanimation{game.sgf}                          % animate is not loaded
 
 \end{document}

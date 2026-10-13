@@ -53,6 +53,12 @@ not affect the manuals, create them locally with
 
 ## What is tested
 
+- `docs/keys` (`check_docs.py`): every key and command defined in
+  `latex/*.sty` must be documented in both manuals, and every key and command
+  documented in a manual must exist. Keys that are not documented on purpose
+  are listed in `UNDOCUMENTED` in `check_docs.py`. It can also be run alone:
+  `python tests/check_docs.py`.
+
 - `cases/*.tex`: one document per area (stones, moves, marks, coordinates,
   board, profiles, remember/resume). `keys.tex` uses every option with a
   value that is not the default. Each case says what it should show.
@@ -86,6 +92,7 @@ configure the test:
 % expect-warnings: 0            number of "Package pgfgo Warning" lines (default 0)
 % expect-errors: 0              number of errors in the log (default 0)
 % render: no                    only compile and check the log
+% passes: 2                     number of runs (default 1; animate needs 2)
 ```
 
 Fonts differ slightly between engines, so each engine has its own reference

@@ -121,6 +121,10 @@
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_moves_seq \l__pgfgo_kernel_sgf_moves_clist
 }
 
+\cs_new:Npn \pgfgo_kernel_sgf_comment:n #1 {
+	\lua_now:e {pgfgo.sgf_comment(\int_eval:n {#1})}
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %---------------------------------SECUENCIAS DE MARCAS------------------------------------------%

@@ -16,7 +16,7 @@ Stones, marks and labels that fall outside the visible region of a partial board
 
 It is possible to change an option for all players using |\pgfgoset{stone = {...}}|. This is equivalent to |\pgfgoset{players = {all = {stone = {...}}}}|.
 
-\begin{key}{/pgfgo/stone/fill = \meta{option} (default true)}
+\begin{key}{/pgfgo/stone/fill = \meta{options}}
 	Controls the fill options of a stone.
 \end{key}
 
@@ -190,6 +190,41 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 	Abbreviation for "white," with the same functionality.
 \end{key}
 
+\begin{key}{/pgfgo/stone/neutral}
+	The stone belongs to the neutral player. It is the default player of |\stone|.
+\end{key}
+
+\begin{key}{/pgfgo/stone/n}
+	Abbreviation for "neutral".
+\end{key}
+
+\begin{key}{/pgfgo/stone/drop shadow = \meta{options}}
+	Shadow of the stone: |true|, |false|, |angle|, |offset| and |opacity|. The options are described in the player reference (p.~\pageref{subsec:players}).
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+		\begin{goban}
+			\stones[b, drop shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
+			\stone[w, drop shadow = {true, angle = -45, offset = 1.5pt}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/drop shine = \meta{options}}
+	Highlight of the stone: |true|, |false|, |angle|, |opacity| and |color|. The options are described in the player reference (p.~\pageref{subsec:players}).
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+		\begin{goban}
+			\stones[b, drop shine = true]{C2,D3}
+			\stone[w, drop shine = {true, color = gray}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+
 \begin{key}{/pgfgo/stone/mark = \meta{mark keys}}
 	
 	Places a mark on the stone (e.g., triangle, circle). Marks can be further customized with other keys, such as color or size.
@@ -316,6 +351,14 @@ It is possible to change options for all players using |\pgfgoset{move = {...}}|
 			\move{D3}
 		\end{goban}
 	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/b}
+	Short for |black|.
+\end{key}
+
+\begin{key}{/pgfgo/move/w}
+	Short for |white|.
 \end{key}
 
 \begin{key}{/pgfgo/move/from = \meta{number}}
@@ -530,8 +573,8 @@ When it ends, the numbering and the turn are ready to continue the game with |\m
 
 In the examples, |game.sgf| contains a short 9$\times$9 game:
 \begin{verbatim}
-(;GM[1]FF[4]SZ[9]PB[Black]PW[White]
-;B[ee];W[ef];B[df];W[ce];B[ff];W[gd];B[eg];W[dd];B[cf];W[fd])
+(;GM[1]FF[4]SZ[9]PB[Black]PW[White]C[A short game.]
+;B[ee];W[ef];B[df];W[ce];B[ff];W[gd];B[eg]C[Black captures.];W[dd];B[cf];W[fd])
 \end{verbatim}
 
 \begin{codeexample}[width=5cm]
@@ -567,6 +610,62 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 			\moves*{F5} % Continues with 7 (Black), somewhere else.
 		\end{goban}
 	\end{codeexample}
+\end{key}
+
+
+\begin{command}{\sgfanimation\opt{\oarg{options}}\marg{file}}
+
+	Steps through the game with the |animate| package: it draws one |goban| per move, and the |animate| buttons go forward, back or play it. Frame $k$ shows the position after move $k$; frame 0, the position before the first move. It is used outside |goban|. It needs |\usepackage{animate}| and two runs.
+\end{command}
+
+|animate| animations work in Acrobat Reader and in a few other viewers (Foxit, PDF-XChange). Other viewers only show the first frame. These options can be set for the whole document with |\pgfgoset{sgf animation = {...}}|.
+
+\begin{codeexample}[width=5cm]
+	\sgfanimation[comments, goban = {captures}]{game.sgf}
+\end{codeexample}
+
+\begin{key}{/pgfgo/sgf animation/from = \meta{number} (initially 0)}
+	First frame.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/to = \meta{number} (initially the last move)}
+	Last frame.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/fps = \meta{number} (initially 1)}
+	Frames per second when playing.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/goban = \meta{goban options}}
+	Options of every board, as in |\begin{goban}[...]|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/animate = \meta{animate options} (initially controls)}
+	Options of the |animateinline| environment of |animate|, for example |controls, loop|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/numbers = \meta{boolean} (default true, initially false)}
+	Numbers every move, as |\sgf| does. Without |numbers|, moves have no numbers and the last one is marked.
+
+	\begin{codeexample}[width=5cm]
+		\sgfanimation[from = 6, to = 8, numbers, goban = {captures}]{game.sgf}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/last mark = \meta{mark options or false} (initially circle)}
+	Mark of the last move, in the colour of the player who made it. With |false|, the last move is not marked. It is not used with |numbers|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/comments = \meta{boolean} (default true, initially false)}
+	Shows the comment (|C|) of the move below the board. The one of frame 0 is the comment of the nodes before the first move.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/comment height = \meta{dimension} (initially 4em)}
+	Height of the space for the comments. It is the same in every frame, so that frames do not change size.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/comment font = \meta{font commands} (initially \texttt{\string\small})}
+	Font of the comments.
 \end{key}
 
 \subsection{Prisoners}

@@ -1,11 +1,11 @@
 % engines: pdflatex
 % expect-warnings: 1
-% expect-errors: 2
+% expect-errors: 3
 % render: no
 %
 % kernel = lua needs LuaLaTeX. With pdfLaTeX the package warns once and uses
-% kernel = expl3, so the diagram still works. Captures and \sgf, which only
-% the Lua kernel provides, raise one error each.
+% kernel = expl3, so the diagram still works. Captures, \sgf and \sgfanimation, which
+% only the Lua kernel provides, raise one error each.
 \documentclass{article}
 \usepackage[kernel = lua]{../../latex/pgf-go}
 \begin{document}
@@ -15,5 +15,7 @@
 \begin{goban}[5, captures]\moves{A2,A1,B1}\end{goban}
 
 \begin{goban}[9]\sgf{game.sgf}\end{goban}
+
+\sgfanimation{game.sgf}
 
 \end{document}
