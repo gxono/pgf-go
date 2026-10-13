@@ -1,20 +1,16 @@
-% engines: lualatex, pdflatex
-% expect-warnings: 1
-% expect-errors: 1
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
 % render: no
 %
-% kernel = lua is not available yet: the package warns once (missing kernel
-% with LuaLaTeX, wrong engine with pdfLaTeX) and uses kernel = expl3, so the
-% diagram still works. Features that only the Lua kernel provides raise an
-% error.
+% Runs the kernel interface checks (tests/kernel-checks.tex) with the Lua
+% kernel. kernel.tex runs the same checks with the expl3 kernel.
 \documentclass{article}
 \usepackage[kernel = lua]{../../latex/pgf-go}
 \begin{document}
-
-\begin{goban}[5]\stones{C3}\moves{D4,E5}\marks[triangle]{C3}\end{goban}
-
 \ExplSyntaxOn
-\pgfgo_kernel_require:n {sgf}
+\msg_new:nnn {kernel-test} {wrong-kernel} {The~Lua~kernel~was~not~loaded.}
+\str_if_eq:VnF \g_pgfgo_kernel_tl {lua} {\msg_error:nn {kernel-test} {wrong-kernel}}
 \ExplSyntaxOff
-
+\input{../kernel-checks}
 \end{document}

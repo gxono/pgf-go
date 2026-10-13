@@ -11,10 +11,14 @@ The output is unchanged.
   the drawing code. They live in a compute kernel behind an internal
   interface, described in `pgf-go-kernel.sty`. The current code is the
   `expl3` kernel (`pgf-go-kernel-expl3.sty`).
-- New package option `kernel = expl3 | lua`. The default is `expl3`. The Lua
-  kernel is not available yet: with `kernel = lua` the package warns and uses
-  `expl3`. Captures and SGF will need the Lua kernel.
-- New tests `kernel.tex` and `kernel-lua.tex`.
+- New package option `kernel = expl3 | lua`. The default is `expl3`.
+  `kernel = lua` needs LuaLaTeX and uses the Lua kernel (`pgf-go.lua`, loaded
+  through `pgf-go-kernel-lua.sty`). It gives exactly the same output as
+  `expl3`. With pdfLaTeX, `kernel = lua` warns and uses `expl3`. Captures
+  and SGF will need the Lua kernel.
+- New tests `kernel.tex`, `kernel-lua.tex` and `kernel-fallback.tex`, and a
+  `--kernel lua` option in `tests/run_tests.py` that runs every test with the
+  Lua kernel.
 
 ## 0.2025.10.13 — 2025/10/13
 

@@ -12,6 +12,8 @@ Usage:
     python tests/run_tests.py --update     accept the current output as the
                                            new reference images
     python tests/run_tests.py --manuals    also compare the two manuals
+    python tests/run_tests.py --kernel lua compile everything with kernel = lua
+                                           and compare with the same references
 
 Requirements: lualatex and pdflatex, pdftoppm (Poppler, included in MiKTeX
 and TeX Live), Python 3.8+ and Pillow.
@@ -56,6 +58,7 @@ class Document:
     expect_errors: int = 0
     render: bool = True
     passes: int = 1
+    kernel: str = None   # compile with \usepackage[kernel = ...]{pgf-go}
 
 
 @dataclass
@@ -77,7 +80,7 @@ def read_header(path):
     return options
 
 
-def collect_documents(include_manuals):
+def collect_documents(include_manuals, kernel=None):
     documents = []
     for path in sorted((TESTS / "cases").glob("*.tex")):
         header = read_header(path)
@@ -98,13 +101,28 @@ def collect_documents(include_manuals):
             # The manuals contain two examples that warn on purpose.
             documents.append(Document(name=f"manuals/{lang}", source=path,
                                       expect_warnings=2, passes=2))
+    if kernel:
+        # Another kernel must give exactly the same output, so it is compared
+        # with the references of the first engine (lualatex). The kernel*
+        # documents choose their kernel themselves.
+        documents = [d for d in documents
+                     if not d.name.startswith("cases/kernel") and d.engines[0] == "lualatex"]
+        for doc in documents:
+            doc.engines = ["lualatex"]
+            doc.kernel = kernel
     return documents
 
 
 def compile_document(doc, engine, outdir):
     outdir.mkdir(parents=True, exist_ok=True)
-    command = [engine, "-interaction=nonstopmode",
-               f"-output-directory={outdir}", doc.source.name]
+    source = doc.source.name
+    if doc.kernel:
+        # The documents load the package as ../../latex/pgf-go, but
+        # \ProcessKeyOptions looks the options up by its base name.
+        source = (f"\\PassOptionsToPackage{{kernel={doc.kernel}}}{{pgf-go}}"
+                  f"\\input{{{doc.source.name}}}")
+    command = [engine, "-interaction=nonstopmode", f"-jobname={doc.source.stem}",
+               f"-output-directory={outdir}", source]
     for _ in range(doc.passes):
         subprocess.run(command, cwd=doc.source.parent, stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL, timeout=TIMEOUT)
@@ -165,11 +183,16 @@ def run_document(doc, update):
     ok = True
     for index, engine in enumerate(doc.engines):
         outdir = BUILD / doc.name / engine
+        if doc.kernel:
+            outdir = BUILD / f"kernel-{doc.kernel}" / doc.name / engine
         clear_dir(outdir)
         try:
             log, pdf = compile_document(doc, engine, outdir)
         except subprocess.TimeoutExpired:
             return Result(doc.name, False, [f"{engine}: timed out"])
+
+        if doc.kernel and f"pgf-go-kernel-{doc.kernel}.sty" not in log:
+            return Result(doc.name, False, [f"{engine}: kernel = {doc.kernel} was not loaded"])
 
         errors = len(ERROR_RE.findall(log))
         warnings = len(WARNING_RE.findall(log))
@@ -212,7 +235,7 @@ def run_document(doc, update):
             reference = reference_dir / page.name
             if not reference.exists():
                 continue
-            diff = BUILD / "diffs" / doc.name / engine / page.name
+            diff = BUILD / "diffs" / doc.name / (f"kernel-{doc.kernel}" if doc.kernel else engine) / page.name
             changed = compare(page, reference, diff)
             if changed:
                 ok = False
@@ -229,17 +252,22 @@ def main():
                         help="replace the reference images with the current output")
     parser.add_argument("--manuals", action="store_true",
                         help="also compile and compare the Spanish and English manuals")
+    parser.add_argument("--kernel", choices=["lua"],
+                        help="compile with this compute kernel (lualatex only) and "
+                             "compare with the same references")
     # Parallel lualatex runs can corrupt each other's font cache
     # (luaotfload), so the default is to compile one document at a time.
     parser.add_argument("--jobs", type=int, default=1,
                         help="number of documents compiled in parallel (default 1)")
     args = parser.parse_args()
+    if args.kernel and args.update:
+        sys.exit("--kernel compares with the existing references; it cannot be used with --update")
 
     for tool in ("lualatex", "pdftoppm"):
         if shutil.which(tool) is None:
             sys.exit(f"'{tool}' was not found in the PATH")
 
-    documents = collect_documents(args.manuals)
+    documents = collect_documents(args.manuals, args.kernel)
     if args.filters:
         documents = [d for d in documents if any(f in d.name for f in args.filters)]
     if not documents:

@@ -1,0 +1,121 @@
+\ProvidesFile{pgf-go-kernel-lua.sty}[2025/10/13 v0.2025.10.13 pgf-go: Lua compute kernel]
+\ExplSyntaxOn
+
+%KERNEL DE CALCULO EN Lua (kernel = lua). LA INTERFAZ ESTA DESCRIPTA EN pgf-go-kernel.sty.
+%EL CALCULO ESTA EN pgf-go.lua; ACA SOLO SE LE PASAN LAS ENTRADAS. pgf-go.lua SE BUSCA JUNTO A
+%pgf-go.sty Y, SI NO ESTA AHI, EN EL PATH DE TeX.
+\clist_gclear:N \g_pgfgo_kernel_features_clist
+
+\tl_new:N \l__pgfgo_kernel_lua_file_tl
+\tl_if_empty:NF \c__pgfgo_path_tl
+	{\tl_set:Ne \l__pgfgo_kernel_lua_file_tl {\file_full_name:n {\c__pgfgo_path_tl / pgf-go.lua}}}
+\tl_if_empty:NT \l__pgfgo_kernel_lua_file_tl
+	{\tl_set:Ne \l__pgfgo_kernel_lua_file_tl {\file_full_name:n {pgf-go.lua}}}
+\lua_now:e {pgfgo~=~dofile("\lua_escape:e {\l__pgfgo_kernel_lua_file_tl}")}
+
+%use i COMO ARGUMENTO DE Lua.
+\cs_new:Npn \__pgfgo_kernel_lua_use_i: {\bool_if:NTF \l_pgfgo_use_i_bool {true} {false}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------------------------TABLERO------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%VENTANA PEDIDA CON partial, ANTES DE RECORTARLA AL TABLERO. SON REGISTROS DE TeX PARA QUE SEAN LOCALES.
+\int_new:N \l__pgfgo_kernel_window_from_x_int
+\int_new:N \l__pgfgo_kernel_window_from_y_int
+\int_new:N \l__pgfgo_kernel_window_to_x_int
+\int_new:N \l__pgfgo_kernel_window_to_y_int
+
+\cs_new_protected:Npn \pgfgo_kernel_board_size:n #1 {
+	\lua_now:e {pgfgo.board_size("\lua_escape:e {#1}")}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_board_window:n #1 {
+	\lua_now:e {pgfgo.board_window("\lua_escape:e {#1}", \__pgfgo_kernel_lua_use_i:)}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_board_init: {
+	\lua_now:e {pgfgo.board_init(\bool_if:NTF \l_pgfgo_goban_partial_bool {true} {false})}
+}
+
+\prg_new_protected_conditional:Npnn \pgfgo_kernel_if_visible:nn #1#2 {T, F, TF} {
+	\lua_now:e {pgfgo.if_visible(\int_eval:n {#1}, \int_eval:n {#2})}
+}
+
+\cs_new:Npn \pgfgo_kernel_column_name:n #1 {
+	\lua_now:e {pgfgo.column_name(\int_eval:n {#1}, \__pgfgo_kernel_lua_use_i:)}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------------COORDENADAS----------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Lua DEJA LAS INTERSECCIONES ACA, SEPARADAS POR COMAS.
+\clist_new:N \l__pgfgo_kernel_points_clist
+
+\cs_new_protected:Npn \pgfgo_kernel_points:n #1 {
+	\lua_now:e {pgfgo.points("\lua_escape:e {#1}", \__pgfgo_kernel_lua_use_i:)}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_points_seq \l__pgfgo_kernel_points_clist
+}
+
+\prg_new_protected_conditional:Npnn \pgfgo_kernel_point:n #1 {TF} {
+	\lua_now:e {pgfgo.point("\lua_escape:e {#1}", \__pgfgo_kernel_lua_use_i:)}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------------------------JUGADAS------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cs_new_protected:Npn \pgfgo_kernel_move_reset: {\lua_now:n {pgfgo.move_reset()}}
+
+\cs_new_protected:Npn \pgfgo_kernel_move_set_number:n #1 {
+	\lua_now:e {pgfgo.move_set_number(\int_eval:n {#1})}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_move_set_player:n #1 {
+	\lua_now:e {pgfgo.move_set_player("\lua_escape:e {#1}")}
+}
+
+\cs_new:Npn \pgfgo_kernel_move_number: {\lua_now:n {pgfgo.move_number()}}
+
+\prg_new_conditional:Npnn \pgfgo_kernel_move_if_black: {p, T, F, TF} {
+	\int_compare:nNnTF {\lua_now:n {pgfgo.move_if_black()}} = {1}
+		{\prg_return_true:} {\prg_return_false:}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_move_play:nn #1#2 {
+	\lua_now:e {pgfgo.move_play("\lua_escape:e {#1}", "\lua_escape:e {#2}")}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%---------------------------------SECUENCIAS DE MARCAS------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cs_new_protected:Npn \pgfgo_kernel_sequence_reset:n #1 {
+	\lua_now:e {pgfgo.sequence_reset(\int_eval:n {#1})}
+}
+
+\cs_new:Npn \pgfgo_kernel_sequence_number: {\lua_now:n {pgfgo.sequence_number()}}
+
+\cs_new_protected:Npn \pgfgo_kernel_sequence_step: {\lua_now:n {pgfgo.sequence_step()}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------------------------MEMORIA------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%Lua GUARDA LOS TOKENS DEL GRUPO QUE SIGUE A \lua_now:n.
+\cs_new_protected:Npn \__pgfgo_kernel_lua_push:n #1 {\lua_now:n {pgfgo.remember_push()} {#1}}
+\cs_generate_variant:Nn \__pgfgo_kernel_lua_push:n {e}
+
+\cs_new_protected:Npn \pgfgo_kernel_remember_push:n #1 {\__pgfgo_kernel_lua_push:e {#1}}
+
+\cs_new_protected:Npn \pgfgo_kernel_remember_clear: {\lua_now:n {pgfgo.remember_clear()}}
+
+\cs_new_protected:Npn \pgfgo_kernel_remember_replay: {\lua_now:n {pgfgo.remember_replay()}}
+
+\ExplSyntaxOff

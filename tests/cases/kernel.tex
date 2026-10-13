@@ -3,122 +3,14 @@
 % expect-errors: 0
 % render: no
 %
-% Checks every function of the compute kernel interface (see
-% latex/pgf-go-kernel.sty) without drawing anything. Each wrong result raises
-% an error that names the check. Any kernel must pass this document.
+% Runs the kernel interface checks (tests/kernel-checks.tex) with the expl3
+% kernel. kernel-lua.tex runs the same checks with the Lua kernel.
 \documentclass{article}
 \usepackage[kernel = expl3]{../../latex/pgf-go}
-
-\ExplSyntaxOn
-\msg_new:nnn {kernel-test} {fail} {#1:~got~'#2',~expected~'#3'.}
-\cs_new_protected:Npn \__test:nnn #1#2#3 {
-	\tl_set:Ne \l_tmpa_tl {#2}
-	\str_if_eq:VnF \l_tmpa_tl {#3}
-		{\msg_error:nnnVn {kernel-test} {fail} {#1} \l_tmpa_tl {#3}}
-}
-\cs_generate_variant:Nn \msg_error:nnnnn {nnnVn}
-% #2 is a protected conditional without its TF arguments.
-\cs_new_protected:Npn \__test_if:nnn #1#2#3 {
-	#2 {\tl_set:Nn \l_tmpb_tl {yes}} {\tl_set:Nn \l_tmpb_tl {no}}
-	\__test:nnn {#1} {\l_tmpb_tl} {#3}
-}
-\cs_new:Npn \__test_window: {
-	\int_use:N \l_pgfgo_goban_from_x_int, \int_use:N \l_pgfgo_goban_from_y_int,
-	\int_use:N \l_pgfgo_goban_to_x_int, \int_use:N \l_pgfgo_goban_to_y_int
-}
-\cs_new_protected:Npn \__test_points:nn #1#2 {
-	\pgfgo_kernel_points:n {#1}
-	\__test:nnn {points~'#1'} {\seq_use:Nn \l_pgfgo_kernel_points_seq {,}} {#2}
-}
-\ExplSyntaxOff
-
 \begin{document}
 \ExplSyntaxOn
-
-\__test:nnn {kernel} {\g_pgfgo_kernel_tl} {expl3}
-\__test_if:nnn {captures} {\pgfgo_kernel_if_feature:nTF {captures}} {no}
-\__test_if:nnn {sgf} {\pgfgo_kernel_if_feature:nTF {sgf}} {no}
-
-% Board size and visible part.
-\group_begin:
-	\pgfgo_kernel_board_size:n {9x13}
-	\__test:nnn {size~9x13} {\int_use:N \l_pgfgo_goban_size_x_int, \int_use:N \l_pgfgo_goban_size_y_int} {9,13}
-	\pgfgo_kernel_board_size:n {7}
-	\__test:nnn {size~7} {\int_use:N \l_pgfgo_goban_size_x_int, \int_use:N \l_pgfgo_goban_size_y_int} {7,7}
-
-	\pgfgo_kernel_board_init:
-	\__test:nnn {whole~board} {\__test_window:} {1,1,7,7}
-
-	\bool_set_true:N \l_pgfgo_goban_partial_bool
-	\pgfgo_kernel_board_window:n {E5 to B2}
-	\pgfgo_kernel_board_init:
-	\__test:nnn {window~E5~to~B2} {\__test_window:} {2,2,5,5}
-	\pgfgo_kernel_board_window:n {C3 to K12}
-	\pgfgo_kernel_board_init:
-	\__test:nnn {window~clipped} {\__test_window:} {3,3,7,7}
-
-	\pgfgo_kernel_board_window:n {B2 to D4}
-	\pgfgo_kernel_board_init:
-	\__test_if:nnn {visible~C3} {\pgfgo_kernel_if_visible:nnTF {3} {3}} {yes}
-	\__test_if:nnn {visible~E3} {\pgfgo_kernel_if_visible:nnTF {5} {3}} {no}
-
-	% Coordinates, inside the window B2-D4.
-	\__test_points:nn {C3} {{3}{3}}
-	\__test_points:nn {B2, C3, B2} {{2}{2},{3}{3}}
-	\__test_points:nn {A1:2, D4} {{1}{1},{1}{2},{4}{4}}
-	\__test_points:nn {B2 -- D2} {{2}{2},{3}{2},{4}{2}}
-	\__test_points:nn {B2 R C3} {{2}{2},{2}{3},{3}{2},{3}{3}}
-	\__test_points:nn {B2 R C3; C2} {{2}{2},{2}{3},{3}{3}}
-	\__test_points:nn {C} {{3}{2},{3}{3},{3}{4}}
-	\__test_points:nn {*} {{2}{2},{2}{3},{2}{4},{3}{2},{3}{3},{3}{4},{4}{2},{4}{3},{4}{4}}
-	\__test_points:nn {B[2,4]} {{2}{2},{2}{4}}
-
-	\__test_if:nnn {point~C3} {\pgfgo_kernel_point:nTF {C3}} {yes}
-	\__test:nnn {point~C3~value} {\l_pgfgo_kernel_point_tl} {{3}{3}}
-	\__test_if:nnn {point~C3,D4} {\pgfgo_kernel_point:nTF {C3,D4}} {no}
-
-	% Columns and coordinates without I.
-	\__test:nnn {column~9} {\pgfgo_kernel_column_name:n {9}} {I}
-	\bool_set_false:N \l_pgfgo_use_i_bool
-	\__test:nnn {column~9~without~I} {\pgfgo_kernel_column_name:n {9}} {J}
-	\__test:nnn {column~8~without~I} {\pgfgo_kernel_column_name:n {8}} {H}
-	\pgfgo_kernel_board_size:n {19}
-	\pgfgo_kernel_board_window:n {H8 to K10}
-	\pgfgo_kernel_board_init:
-	\__test:nnn {window~without~I} {\__test_window:} {8,8,10,10}
-	\__test_points:nn {J9} {{9}{9}}
-\group_end:
-
-% Moves.
-\pgfgo_kernel_move_reset:
-\__test:nnn {first~move} {\pgfgo_kernel_move_number: \pgfgo_kernel_move_if_black:TF {b} {w}} {1b}
-\pgfgo_kernel_move_play:nn {3} {3}
-\__test:nnn {second~move} {\pgfgo_kernel_move_number: \pgfgo_kernel_move_if_black:TF {b} {w}} {2w}
-\pgfgo_kernel_move_set_number:n {10}
-\pgfgo_kernel_move_set_player:n {black}
-\__test:nnn {from~10~black} {\pgfgo_kernel_move_number: \pgfgo_kernel_move_if_black:TF {b} {w}} {10b}
-\pgfgo_kernel_move_set_player:n {white}
-\__test:nnn {white} {\bool_if:nTF {\pgfgo_kernel_move_if_black_p:} {b} {w}} {w}
-\pgfgo_kernel_move_reset:
-\__test:nnn {reset} {\pgfgo_kernel_move_number: \pgfgo_kernel_move_if_black:TF {b} {w}} {1b}
-
-% Mark sequences.
-\pgfgo_kernel_sequence_reset:n {5}
-\pgfgo_kernel_sequence_step:
-\__test:nnn {sequence} {\pgfgo_kernel_sequence_number:} {6}
-
-% Memory: code is expanded when it is stored and replayed in order.
-\tl_gclear:N \g_tmpa_tl
-\pgfgo_kernel_remember_clear:
-\pgfgo_kernel_remember_push:n {\tl_gput_right:Nn \exp_not:N \g_tmpa_tl {a \pgfgo_kernel_sequence_number:}}
-\pgfgo_kernel_remember_push:n {\tl_gput_right:Nn \exp_not:N \g_tmpa_tl {\exp_not:n {b}}}
-\pgfgo_kernel_remember_replay:
-\pgfgo_kernel_remember_replay:
-\__test:nnn {replay} {\g_tmpa_tl} {a6ba6b}
-\pgfgo_kernel_remember_clear:
-\pgfgo_kernel_remember_replay:
-\__test:nnn {clear} {\g_tmpa_tl} {a6ba6b}
-
+\msg_new:nnn {kernel-test} {wrong-kernel} {The~expl3~kernel~was~not~loaded.}
+\str_if_eq:VnF \g_pgfgo_kernel_tl {expl3} {\msg_error:nn {kernel-test} {wrong-kernel}}
 \ExplSyntaxOff
-Kernel checks done.
+\input{../kernel-checks}
 \end{document}
