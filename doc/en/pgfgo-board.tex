@@ -575,6 +575,55 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Defines the text color of the labels.
 	\end{key}
 	
+	\subsection{Captures}
+	\label{subsec:captures}
+
+	With the Lua kernel (p.~\pageref{subsec:kernel}), \pgfgoname\ can keep track of the stones on the board and remove the ones left without liberties, as in a game.
+
+	\begin{key}{/pgfgo/goban/captures=\meta{remove, fade or false} (default remove, initially false)}
+
+		Turns captures on. When a move leaves an opposing group without liberties, that group is removed from the board. If it leaves its own group without liberties (a suicide), that group is removed. Stones placed with |\stone| and |\stones| also count; neutral stones and prisoners do not. A move outside a partial board also captures. With |kernel = expl3|, this \emph{key} raises an error.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+
+			\begin{goban}
+				\moves*{B1,A1,A2}
+			\end{goban}
+
+			\begin{goban}[captures]
+				\moves*{B1,A1,A2} % 3 captures 2.
+			\end{goban}
+		\end{codeexample}
+
+		Since \pgfname\ cannot erase what it has already drawn, with |captures| the stones are drawn when the |goban| ends. For this reason, if the style is changed with |\pgfgoset| inside a |goban| with captures, the change does not reach the stones; the options of each command do.
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/captures/remove}
+
+		Captured stones disappear. It is the same as |captures| or |captures = true|.
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/captures/fade}
+
+		Captured stones stay on the board, drawn as prisoners (with the style of |\prisoner| and |/pgfgo/prisoner|).
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A1 to E3}}}
+
+			\begin{goban}[captures = fade]
+				\stones[w]{C1,D1}
+				\stones[b]{B1,C2,D2}
+				\moves*{E1}
+			\end{goban}
+		\end{codeexample}
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/captures/false}
+
+		Turns captures off. It is the initial value.
+	\end{stylekey}
+
 	\subsection{Remembering a Board}
 	The "remember" system allows storing and reusing a board’s state across different |goban| environments. This functionality is highly experimental and, strictly speaking, should not yet be documented.
 	

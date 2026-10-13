@@ -49,11 +49,14 @@
 }
 
 %KERNEL DE CALCULO: \usepackage[kernel = expl3 | lua]{pgf-go}. VER pgf-go-kernel.sty.
+%POR DEFECTO, lua CON LuaLaTeX Y expl3 CON LOS DEMAS MOTORES.
 \tl_new:N \g_pgfgo_kernel_tl
 \keys_define:nn {pgfgo / package} {
 	kernel		.choices:nn = {expl3, lua} {\tl_gset_eq:NN \g_pgfgo_kernel_tl \l_keys_choice_tl},
-	kernel		.initial:n	= {expl3}
 }
+\sys_if_engine_luatex:TF
+	{\tl_gset:Nn \g_pgfgo_kernel_tl {lua}}
+	{\tl_gset:Nn \g_pgfgo_kernel_tl {expl3}}
 \IfFormatAtLeastTF {2022-06-01}
 	{\ProcessKeyOptions [pgfgo / package]}
 	{\RequirePackage{l3keys2e}\ProcessKeysOptions{pgfgo / package}}

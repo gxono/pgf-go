@@ -2,7 +2,7 @@
 
 \subsection{El juego del \texttt{\textbackslash let}}
 
-Para permitir el uso de las macros |\mark| y |\marks|, estas primitivas han sido reasignadas a |\pgfgo_old_mark| y |\pgfgo_old_marks|, respectivamente. Esto se realiza para evitar conflictos con definiciones previas y garantizar que las nuevas funcionalidades del paquete \pgfgoname\ puedan integrarse sin inconvenientes en documentos existentes. En la práctica, si un usuario necesita acceder a las versiones originales, aún puede hacerlo mediante los comandos renombrados.
+|\mark| y |\marks| son primitivas de \TeX. Para no pisarlas, las macros |\mark| y |\marks| de \pgfgoname\ solo existen dentro del entorno |goban|. Fuera de él siguen siendo las primitivas, de modo que las marcas de página y los encabezados no se ven afectados. |\sgf| tampoco existe fuera de |goban|.
 
 \subsection{Configuración}
 
@@ -66,6 +66,25 @@ La macro |\pgfgoset{...}| permite definir configuraciones generales para el paqu
 \end{codeexample}
 
 Los entornos |goban| posteriores heredan estas configuraciones, aunque pueden sobrescribirse localmente si es necesario.
+
+\subsection{El kernel de cálculo}
+\label{subsec:kernel}
+
+\pgfgoname\ separa el cálculo del dibujo. El cálculo (leer las coordenadas, saber qué parte del tablero es visible, numerar las jugadas y llevar el turno, recordar los tableros, etc.) lo hace un \emph{kernel}. El dibujo, las \emph{keys} y los perfiles son siempre los mismos. Hay dos kernels:
+\begin{itemize}
+	\item |lua|: escrito en Lua. Necesita Lua\LaTeX, y es el que se usa por defecto con Lua\LaTeX.
+	\item |expl3|: escrito en L3. Funciona con cualquier motor, y es el que se usa por defecto con los demás.
+\end{itemize}
+
+Ambos producen exactamente los mismos diagramas. El kernel en Lua, además, sabe hacer dos cosas que el otro no: las capturas (pág.~\pageref{subsec:capturas}) y la lectura de partidas en SGF (pág.~\pageref{subsec:sgf}). Este manual está compilado con el kernel en Lua.
+
+\begin{key}{/pgfgo/package/kernel = \meta{expl3 o lua} (initially lua con Lua\LaTeX, expl3 con los demás motores)}
+	Opción del paquete que elige el kernel. Solo hace falta para usar |expl3| con Lua\LaTeX. Solo puede darse al cargar \pgfgoname; no se puede cambiar con |\pgfgoset|. Si se pide |kernel = lua| con pdf\LaTeX, el paquete avisa y usa |expl3|. Con |expl3|, |captures| y |\sgf| producen un error.
+
+	\begin{codeexample}[code only]
+		\usepackage[kernel = expl3]{pgf-go}
+	\end{codeexample}
+\end{key}
 
 \subsection{Sintaxis de coordenadas}
 \label{subsec:sintaxis-de-coordenadas}
@@ -210,7 +229,7 @@ Por ejemplo, |A:E 7:8| crea un rectángulo que abarca las columnas de A a E en l
 
 
 \sssseccion{Productos Cartesianos}
-	En este contexto, el producto cartesiano es una extensi\'on m\'as poderosa de los segmentos, pero a su vez, una generalizaci\'on a todas las notaciones antes presentadas. La idea detr\'as de esto es la siguiente: Supongamos que queremos ingresar un grupo de piedras sobra la columna A: |A1:3, A5, A7:8|. Hasta el momento no hab\'ia forma mas sencilla de escribir esto. Pero todas repiten A al comienzo: ?`qu\'e tal si en lugar de escribirla tres veces la escribimos solo una? Algo como
+	En este contexto, el producto cartesiano es una extensi\'on m\'as poderosa de los segmentos, pero a su vez, una generalizaci\'on a todas las notaciones antes presentadas. La idea detr\'as de esto es la siguiente: Supongamos que queremos ingresar un grupo de piedras sobre la columna A: |A1:3, A5, A7:8|. Hasta el momento no hab\'ia forma mas sencilla de escribir esto. Pero todas repiten A al comienzo: ?`qu\'e tal si en lugar de escribirla tres veces la escribimos solo una? Algo como
 	\begin{center}
 		|A[1:3, 5, 7:8]|
 	\end{center}

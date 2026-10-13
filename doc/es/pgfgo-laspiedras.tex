@@ -525,6 +525,60 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 \end{key}
 
 
+\subsection{Partidas en SGF}
+\label{subsec:sgf}
+
+SGF es el formato que usan casi todos los programas de Go para guardar partidas. Con el kernel en Lua (pág.~\pageref{subsec:kernel}), \pgfgoname\ puede leerlas.
+
+\begin{command}{\sgf\opt{\oarg{options}}\marg{file}}
+
+	Dibuja en el |goban| la línea principal de la primera partida del archivo: las piedras iniciales (|AB| y |AW|) como con |\stones|, y las jugadas como con |\moves*|. Las variantes no se dibujan. Los pases cuentan para la numeración, pero no se dibujan. Solo existe dentro de |goban|.
+\end{command}
+
+Al terminar, la numeración y el turno quedan listos para seguir la partida con |\moves|. |\sgf| funciona con |partial|, |captures|, |remember| y |resume|. Si la partida es para un tablero de otro tamaño, se produce una advertencia. Con |kernel = expl3|, |\sgf| produce un error.
+
+En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
+\begin{verbatim}
+(;GM[1]FF[4]SZ[9]PB[Negras]PW[Blancas]
+;B[ee];W[ef];B[df];W[ce];B[ff];W[gd];B[eg];W[dd];B[cf];W[fd])
+\end{verbatim}
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = {north, west}}]
+		\sgf{partida.sgf} % Sin captures, 2 no se retira.
+	\end{goban}
+\end{codeexample}
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = {north, west}}, captures]
+		\sgf{partida.sgf}
+	\end{goban}
+\end{codeexample}
+
+\begin{key}{/pgfgo/sgf/from = \meta{number} (initially 1)}
+
+	Número de la primera jugada numerada. Las jugadas anteriores se dibujan sin número.
+
+	\begin{codeexample}[width=5cm]
+		\begin{goban}[captures]
+			\sgf[from = 7]{partida.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/to = \meta{number} (initially la última jugada)}
+
+	Número de la última jugada que se juega. Las siguientes no se dibujan.
+
+	\begin{codeexample}[width=5cm]
+		\begin{goban}[captures]
+			\sgf[to = 6]{partida.sgf}
+			\moves*{F5} % Sigue con la 7 (negras), en otro lugar.
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+
 
 
 

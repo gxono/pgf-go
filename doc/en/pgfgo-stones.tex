@@ -516,6 +516,59 @@ It is possible to change options for all players using |\pgfgoset{move = {...}}|
 	Ensures that moves are remembered, preserving them for reuse with |resume|.
 \end{key}
 
+\subsection{SGF Games}
+\label{subsec:sgf}
+
+SGF is the format that almost every Go program uses to save games. With the Lua kernel (p.~\pageref{subsec:kernel}), \pgfgoname\ can read them.
+
+\begin{command}{\sgf\opt{\oarg{options}}\marg{file}}
+
+	Draws on the |goban| the main line of the first game in the file: the setup stones (|AB| and |AW|) as with |\stones|, and the moves as with |\moves*|. Variations are not drawn. Passes count for the numbering, but are not drawn. It only exists inside |goban|.
+\end{command}
+
+When it ends, the numbering and the turn are ready to continue the game with |\moves|. |\sgf| works with |partial|, |captures|, |remember| and |resume|. If the game is for a board of another size, a warning is produced. With |kernel = expl3|, |\sgf| raises an error.
+
+In the examples, |game.sgf| contains a short 9$\times$9 game:
+\begin{verbatim}
+(;GM[1]FF[4]SZ[9]PB[Black]PW[White]
+;B[ee];W[ef];B[df];W[ce];B[ff];W[gd];B[eg];W[dd];B[cf];W[fd])
+\end{verbatim}
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = {north, west}}]
+		\sgf{game.sgf} % Without captures, 2 stays.
+	\end{goban}
+\end{codeexample}
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = {north, west}}, captures]
+		\sgf{game.sgf}
+	\end{goban}
+\end{codeexample}
+
+\begin{key}{/pgfgo/sgf/from = \meta{number} (initially 1)}
+
+	Number of the first numbered move. The moves before it are drawn without numbers.
+
+	\begin{codeexample}[width=5cm]
+		\begin{goban}[captures]
+			\sgf[from = 7]{game.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/to = \meta{number} (initially the last move)}
+
+	Number of the last move that is played. The following ones are not drawn.
+
+	\begin{codeexample}[width=5cm]
+		\begin{goban}[captures]
+			\sgf[to = 6]{game.sgf}
+			\moves*{F5} % Continues with 7 (Black), somewhere else.
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
 \subsection{Prisoners}
 
 \pgfgoname\ provides specific commands to represent prisoners, typically with reduced opacity to distinguish them from active stones.

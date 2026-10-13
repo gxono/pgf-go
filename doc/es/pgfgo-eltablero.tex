@@ -577,6 +577,55 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Define el color del texto de las etiquetas.
 	\end{key}
 	
+	\subsection{Capturas}
+	\label{subsec:capturas}
+
+	Con el kernel en Lua (pág.~\pageref{subsec:kernel}), \pgfgoname\ puede llevar las piedras que hay sobre el tablero y retirar las que quedan sin libertades, como en una partida.
+
+	\begin{key}{/pgfgo/goban/captures=\meta{remove, fade o false} (default remove, initially false)}
+
+		Activa las capturas. Cuando una jugada deja sin libertades a un grupo rival, ese grupo se retira del tablero. Si deja sin libertades a su propio grupo (un suicidio), se retira ese grupo. Las piedras colocadas con |\stone| y |\stones| también cuentan; las neutrales y los prisioneros, no. Una jugada fuera de un tablero parcial también captura. Con |kernel = expl3|, esta \emph{key} produce un error.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+
+			\begin{goban}
+				\moves*{B1,A1,A2}
+			\end{goban}
+
+			\begin{goban}[captures]
+				\moves*{B1,A1,A2} % 3 captura a 2.
+			\end{goban}
+		\end{codeexample}
+
+		Como \pgfname\ no puede borrar lo que ya dibujó, con |captures| las piedras se dibujan al cerrar el |goban|. Por eso, si se cambia el estilo con |\pgfgoset| dentro de un |goban| con capturas, el cambio no llega a las piedras; sí llegan las opciones de cada comando.
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/captures/remove}
+
+		Las piedras capturadas desaparecen. Es lo mismo que |captures| o |captures = true|.
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/captures/fade}
+
+		Las piedras capturadas quedan en el tablero, dibujadas como prisioneros (con el estilo de |\prisoner| y de |/pgfgo/prisoner|).
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A1 to E3}}}
+
+			\begin{goban}[captures = fade]
+				\stones[w]{C1,D1}
+				\stones[b]{B1,C2,D2}
+				\moves*{E1}
+			\end{goban}
+		\end{codeexample}
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/captures/false}
+
+		Desactiva las capturas. Es el valor inicial.
+	\end{stylekey}
+
 	\subsection{Recordar un tablero}
 	El sistema de «recordar» permite almacenar y reutilizar el estado de un tablero entre diferentes entornos |goban|. Esta funcionalidad es extremadamente experimental y, en rigor, no debería estar documentada aún.
 	

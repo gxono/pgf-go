@@ -12,8 +12,11 @@ Usage:
     python tests/run_tests.py --update     accept the current output as the
                                            new reference images
     python tests/run_tests.py --manuals    also compare the two manuals
-    python tests/run_tests.py --kernel lua compile everything with kernel = lua
-                                           and compare with the same references
+    python tests/run_tests.py --kernel expl3
+                                           compile everything with lualatex and
+                                           kernel = expl3 (lualatex uses lua by
+                                           default) and compare with the same
+                                           references; --kernel lua also works
 
 Requirements: lualatex and pdflatex, pdftoppm (Poppler, included in MiKTeX
 and TeX Live), Python 3.8+ and Pillow.
@@ -47,6 +50,7 @@ TIMEOUT = 900
 
 WARNING_RE = re.compile(r"^Package pgfgo Warning:", re.MULTILINE)
 ERROR_RE = re.compile(r"^! ", re.MULTILINE)
+CHOOSES_KERNEL_RE = re.compile(r"\\usepackage\[[^\]]*kernel")
 
 
 @dataclass
@@ -103,10 +107,11 @@ def collect_documents(include_manuals, kernel=None):
                                       expect_warnings=2, passes=2))
     if kernel:
         # Another kernel must give exactly the same output, so it is compared
-        # with the references of the first engine (lualatex). The kernel*
-        # documents choose their kernel themselves.
+        # with the references of the first engine (lualatex). Documents that
+        # choose their kernel themselves are left out.
         documents = [d for d in documents
-                     if not d.name.startswith("cases/kernel") and d.engines[0] == "lualatex"]
+                     if not CHOOSES_KERNEL_RE.search(d.source.read_text(encoding="utf-8"))
+                     and d.engines[0] == "lualatex"]
         for doc in documents:
             doc.engines = ["lualatex"]
             doc.kernel = kernel
@@ -252,7 +257,7 @@ def main():
                         help="replace the reference images with the current output")
     parser.add_argument("--manuals", action="store_true",
                         help="also compile and compare the Spanish and English manuals")
-    parser.add_argument("--kernel", choices=["lua"],
+    parser.add_argument("--kernel", choices=["expl3", "lua"],
                         help="compile with this compute kernel (lualatex only) and "
                              "compare with the same references")
     # Parallel lualatex runs can corrupt each other's font cache

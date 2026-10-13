@@ -11,14 +11,14 @@ The output is unchanged.
   the drawing code. They live in a compute kernel behind an internal
   interface, described in `pgf-go-kernel.sty`. The current code is the
   `expl3` kernel (`pgf-go-kernel-expl3.sty`).
-- New package option `kernel = expl3 | lua`. The default is `expl3`.
-  `kernel = lua` needs LuaLaTeX and uses the Lua kernel (`pgf-go.lua`, loaded
-  through `pgf-go-kernel-lua.sty`). It gives exactly the same output as
-  `expl3`. With pdfLaTeX, `kernel = lua` warns and uses `expl3`. Captures
-  and SGF will need the Lua kernel.
+- New package option `kernel = expl3 | lua`. The default is `lua` with
+  LuaLaTeX and `expl3` with other engines. The Lua kernel (`pgf-go.lua`,
+  loaded through `pgf-go-kernel-lua.sty`) gives exactly the same output as
+  `expl3`. With pdfLaTeX, `kernel = lua` warns and uses `expl3`. Captures and
+  SGF need the Lua kernel.
 - New tests `kernel.tex`, `kernel-lua.tex` and `kernel-fallback.tex`, and a
-  `--kernel lua` option in `tests/run_tests.py` that runs every test with the
-  Lua kernel.
+  `--kernel expl3|lua` option in `tests/run_tests.py` that runs every test
+  under lualatex with that kernel.
 
 ### Captures and SGF (kernel = lua)
 
@@ -39,6 +39,28 @@ The output is unchanged.
   `resume`. A game for a board of another size produces a warning. With
   `kernel = expl3`, `\sgf` raises an error.
 - New tests `captures.tex` and `sgf.tex` (with `game.sgf`).
+
+### Documentation
+
+These changes apply to both manuals (Spanish and English).
+
+- New sections on the compute kernel (`kernel` package option), captures
+  (`goban/captures`) and SGF games (`\sgf`, `sgf/from`, `sgf/to`). The
+  examples use a short game in `doc/es/partida.sgf` and `doc/en/game.sgf`.
+- The manuals are compiled with LuaLaTeX, so they use the Lua kernel.
+- "What's New" lists every version. The features of 0.2025.03.10 were listed
+  under the current version.
+- The section about `\mark` and `\marks` said that the TeX primitives were
+  renamed. Since 0.2025.10.13, `\mark` and `\marks` only exist inside `goban`
+  and the primitives are left untouched.
+- English manual: fixed missing spaces after the package name ("pgfgohas").
+- English manual: translated the parts that were only in the Spanish manual:
+  the rest of the first examples (more stones, moves, partial boards and
+  marks, territory), the Cartesian product syntax (`A[1:3, 5]`,
+  `[A,C]12`, `[A,D:F][2,5]`), and the `pgfgosmooth` and `wain` definitions.
+- Spanish manual: fixed the title "Movivación", a typo ("sobra la
+  columna"), and the first examples, which said that `white` and `black`
+  were the first and second player instead of the second and first.
 
 ## 0.2025.10.13 — 2025/10/13
 
