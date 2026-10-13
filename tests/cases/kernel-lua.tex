@@ -73,6 +73,42 @@
 	{{black}{4}{2},{white}{4}{4},{add-black}{5}{1},{add-white}{5}{5},{black}{2}{2},{remove}{3}{3},{black}{3}{3}}
 \__test:nnn {setup~comment} {\pgfgo_kernel_sgf_comment:n {3}} {White~C3~removed.}
 
+% Variations, marks (TR, SQ, CR, MA, LB) with the colour of the stone below,
+% MN and the game information.
+\pgfgo_kernel_sgf_read:n {variations.sgf}
+\__test:nnn {main~line} {\seq_use:Nn \l_pgfgo_kernel_sgf_moves_seq {,}}
+	{{black}{3}{5},{white}{5}{3},{black}{5}{5},{number}{10}{},{white}{3}{3},{black}{3}{2}}
+\pgfgo_kernel_sgf_marks:n {1}
+\__test:nnn {marks~1} {\seq_use:Nn \l_pgfgo_kernel_sgf_marks_seq {,}} {{triangle}{4}{4}{black}{}}
+\pgfgo_kernel_sgf_marks:n {2}
+\__test:nnn {marks~2} {\seq_use:Nn \l_pgfgo_kernel_sgf_marks_seq {,}}
+	{{square}{3}{5}{black}{},{circle}{5}{3}{white}{},{cross}{1}{7}{neutral}{},{label}{7}{1}{neutral}{1},{label}{1}{1}{neutral}{2}}
+\__test:nnn {label~1} {\pgfgo_kernel_sgf_label:n {1}} {A}
+\__test:nnn {label~2} {\pgfgo_kernel_sgf_label:n {2}} {B}
+\pgfgo_kernel_sgf_marks:n {3}
+\__test:nnn {no~marks} {\seq_use:Nn \l_pgfgo_kernel_sgf_marks_seq {,}} {}
+
+\pgfgo_kernel_sgf_read:nn {variations.sgf} {2}
+\__test:nnn {variation~2} {\seq_use:Nn \l_pgfgo_kernel_sgf_moves_seq {,}}
+	{{black}{3}{5},{white}{3}{3},{black}{5}{5}}
+\pgfgo_kernel_sgf_marks:n {3}
+\__test:nnn {variation~2~marks} {\seq_use:Nn \l_pgfgo_kernel_sgf_marks_seq {,}} {{triangle}{5}{5}{black}{}}
+
+\pgfgo_kernel_sgf_read:nn {variations.sgf} {1.2}
+\__test:nnn {variation~1.2} {\seq_use:Nn \l_pgfgo_kernel_sgf_moves_seq {,}}
+	{{black}{3}{5},{white}{5}{3},{black}{5}{5},{white}{6}{3}}
+
+\cs_new_protected:Npn \__test_info:nn #1#2 {
+	\hbox_set:Nn \l_tmpa_box {\pgfgo_kernel_sgf_info:nn {variations.sgf} {#1}}
+	\tl_set:Ne \l_tmpb_tl {\dim_use:N \box_wd:N \l_tmpa_box}
+	\hbox_set:Nn \l_tmpa_box {\tl_to_str:n {#2}}
+	\tl_set:Ne \l_tmpa_tl {\dim_use:N \box_wd:N \l_tmpa_box}
+	\exp_args:NnnV \__test:nnn {info~#1} {\l_tmpb_tl} \l_tmpa_tl
+}
+\__test_info:nn {PB} {Black~Player}
+\__test_info:nn {RE} {B+R}
+\__test_info:nn {KM} {6.5}
+
 % SGF: size, setup stones (also a compressed list), moves and passes.
 \pgfgo_kernel_sgf_read:n {game.sgf}
 \__test:nnn {sgf~size} {\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int} {9x9}

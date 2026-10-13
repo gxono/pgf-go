@@ -1,5 +1,5 @@
 % engines: lualatex
-% expect-warnings: 2
+% expect-warnings: 3
 % expect-errors: 0
 \documentclass{article}
 \usepackage[margin=1cm]{geometry}
@@ -29,6 +29,19 @@
 \begin{goban}[5, captures]\sgf{setup.sgf}\end{goban}
 \begin{goban}[5, captures]\sgf[to = 3]{setup.sgf}\end{goban}
 \begin{goban}[5]\sgf{setup.sgf}\end{goban}
+
+\case{variations.sgf (7x7, sgf size): up to move 2 with its marks (square and circle on stones, cross and labels A and B on empty points) / marks = false / variation = 2, with a triangle on 3 / variation = 1.2}
+\begin{goban}[sgf size = variations.sgf]\sgf[to = 2]{variations.sgf}\end{goban}
+\begin{goban}[sgf size = variations.sgf]\sgf[to = 2, marks = false]{variations.sgf}\end{goban}
+\begin{goban}[sgf size = variations.sgf]\sgf[variation = 2]{variations.sgf}\end{goban}
+\begin{goban}[sgf size = variations.sgf]\sgf[variation = 1.2]{variations.sgf}\end{goban}
+
+\case{MN[10] on move 4: 1, 2, 3, 10, 11 / restart = 3: 1, 2, 3, 1, 2 / variation = 3 does not exist: one warning, main line}
+\begin{goban}[sgf size = variations.sgf]\sgf{variations.sgf}\end{goban}
+\begin{goban}[sgf size = variations.sgf]\sgf[restart = 3]{variations.sgf}\end{goban}
+\begin{goban}[sgf size = variations.sgf]\sgf[variation = 3]{variations.sgf}\end{goban}
+
+\case{sgfinfo: PB = \sgfinfo{variations.sgf}{PB}, PW = \sgfinfo{variations.sgf}{PW}, RE = \sgfinfo{variations.sgf}{RE}, KM = \sgfinfo{variations.sgf}{KM}, DT = \sgfinfo{variations.sgf}{DT}, missing XX = [\sgfinfo{variations.sgf}{XX}]}
 
 \case{A 9x9 game on a 13x13 board warns once}
 \begin{goban}[13]\sgf{game.sgf}\end{goban}

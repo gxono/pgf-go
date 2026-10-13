@@ -420,23 +420,31 @@ end
 -- PIEDRAS EN EL TABLERO (CAPTURAS)
 ---------------------------------------------------------------------------------------------------
 
--- stones["x,y"] = "black" | "white".
+-- UN TABLERO ES {stones = {["x,y"] = "black" | "white"}, sx = ancho, sy = alto}. EL DEL goban LEE SU
+-- TAMANO DE TeX; LA LECTURA DE UN SGF USA OTRO PARA SIMULAR LA PARTIDA.
 local stones = {}
 
+local function goban_board()
+	return {stones = stones, sx = count("l_pgfgo_goban_size_x_int"), sy = count("l_pgfgo_goban_size_y_int")}
+end
+
+local function inside(b, x, y)
+	return x and y and x >= 1 and y >= 1 and x <= b.sx and y <= b.sy
+end
+
 local function on_board(x, y)
-	return x and y and x >= 1 and y >= 1
-		and x <= count("l_pgfgo_goban_size_x_int") and y <= count("l_pgfgo_goban_size_y_int")
+	return inside(goban_board(), x, y)
 end
 
 local function key(x, y)
 	return x .. "," .. y
 end
 
-local function neighbours(x, y)
+local function neighbours(b, x, y)
 	local list = {}
 	for _, d in ipairs({{-1, 0}, {1, 0}, {0, -1}, {0, 1}}) do
 		local nx, ny = x + d[1], y + d[2]
-		if on_board(nx, ny) then
+		if inside(b, nx, ny) then
 			insert(list, {nx, ny})
 		end
 	end
@@ -444,16 +452,16 @@ local function neighbours(x, y)
 end
 
 -- GRUPO DE LA PIEDRA EN (x,y) Y SI TIENE ALGUNA LIBERTAD.
-local function group(x, y)
-	local color = stones[key(x, y)]
+local function group(b, x, y)
+	local color = b.stones[key(x, y)]
 	local members, seen, free = {}, {[key(x, y)] = true}, false
 	local pending = {{x, y}}
 	while #pending > 0 do
 		local p = table.remove(pending)
 		insert(members, p)
-		for _, n in ipairs(neighbours(p[1], p[2])) do
+		for _, n in ipairs(neighbours(b, p[1], p[2])) do
 			local k = key(n[1], n[2])
-			local there = stones[k]
+			local there = b.stones[k]
 			if there == nil then
 				free = true
 			elseif there == color and not seen[k] then
@@ -465,29 +473,29 @@ local function group(x, y)
 	return members, free
 end
 
-local function remove_group(members, captured)
+local function remove_group(b, members, captured)
 	for _, p in ipairs(members) do
-		stones[key(p[1], p[2])] = nil
+		b.stones[key(p[1], p[2])] = nil
 		insert(captured, point(p[1], p[2]))
 	end
 end
 
 -- PONE UNA PIEDRA Y DEVUELVE LAS QUE SALEN DEL TABLERO.
-local function play(color, x, y)
+local function play(b, color, x, y)
 	local captured = {}
-	stones[key(x, y)] = color
-	for _, n in ipairs(neighbours(x, y)) do
-		local there = stones[key(n[1], n[2])]
+	b.stones[key(x, y)] = color
+	for _, n in ipairs(neighbours(b, x, y)) do
+		local there = b.stones[key(n[1], n[2])]
 		if there and there ~= color then
-			local members, free = group(n[1], n[2])
+			local members, free = group(b, n[1], n[2])
 			if not free then
-				remove_group(members, captured)
+				remove_group(b, members, captured)
 			end
 		end
 	end
-	local members, free = group(x, y)
+	local members, free = group(b, x, y)
 	if not free then
-		remove_group(members, captured)
+		remove_group(b, members, captured)
 	end
 	return captured
 end
@@ -544,7 +552,7 @@ function pgfgo.move_play(x, y)
 	x, y = tonumber(x), tonumber(y)
 	local captured = {}
 	if on_board(x, y) then
-		captured = play(black_turn and "black" or "white", x, y)
+		captured = play(goban_board(), black_turn and "black" or "white", x, y)
 	end
 	token.set_macro("l__pgfgo_kernel_captured_clist", concat(captured, ","))
 	move_number = move_number + 1
@@ -645,14 +653,24 @@ local function parse_sgf(s)
 	return tree()
 end
 
--- NODOS DE LA LINEA PRINCIPAL (SIEMPRE LA PRIMERA VARIANTE).
-local function main_line(t)
-	local nodes = {}
+-- NODOS DE UNA LINEA DE LA PARTIDA. path ES UNA LISTA DE NUMEROS: EN CADA BIFURCACION SE TOMA LA
+-- VARIANTE path[i] (1 ES LA PRINCIPAL). CUANDO path SE TERMINA, SE SIGUE POR LA PRIMERA.
+-- DEVUELVE TAMBIEN SI path PIDE UNA VARIANTE QUE NO EXISTE.
+local function game_line(t, path)
+	local nodes, i, missing = {}, 1, false
 	while t do
 		for _, n in ipairs(t.nodes) do insert(nodes, n) end
-		t = t.children[1]
+		local choice = 1
+		if #t.children > 1 then
+			choice = path[i] or 1
+			i = i + 1
+			if choice < 1 or choice > #t.children then
+				missing, choice = true, 1
+			end
+		end
+		t = t.children[choice]
 	end
-	return nodes
+	return nodes, missing or i <= #path
 end
 
 -- a..z SON 1..26 Y A..Z SON 27..52.
@@ -664,8 +682,8 @@ local function sgf_number(c)
 	return b - 64 + 26
 end
 
--- PUNTOS DE UN VALOR: "pd" O UN RECTANGULO "aa:cc". LA FILA 1 DE pgf-go ES LA DE ABAJO.
-local function sgf_points(v, size_y)
+-- PUNTOS DE UN VALOR: "pd" O UN RECTANGULO "aa:cc", COMO {x, y}. LA FILA 1 DE pgf-go ES LA DE ABAJO.
+local function sgf_coords(v, size_y)
 	local list = {}
 	local a, b = v:match("^(%a%a):(%a%a)$")
 	a = a or v:match("^(%a%a)$")
@@ -673,7 +691,7 @@ local function sgf_points(v, size_y)
 	if a then
 		for x in sorted_range(sgf_number(a:sub(1, 1)), sgf_number(b:sub(1, 1))) do
 			for y in sorted_range(sgf_number(a:sub(2, 2)), sgf_number(b:sub(2, 2))) do
-				insert(list, point(x, size_y - y + 1))
+				insert(list, {x, size_y - y + 1})
 			end
 		end
 	end
@@ -689,35 +707,62 @@ local function find_file(name)
 	return kpse.find_file(name, "other text files") or kpse.find_file(name, "tex")
 end
 
--- COMENTARIOS (C) DE LA ULTIMA PARTIDA LEIDA. sgf_comments[k] ES EL DE LA JUGADA k; sgf_comments[0], EL
--- DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA. UN NODO SIN JUGADA SE SUMA AL COMENTARIO DE LA ANTERIOR.
-local sgf_comments = {}
+local function read_tree(name)
+	local path = find_file(name)
+	if not path then
+		message("error", "sgf-not-found", name)
+		return nil
+	end
+	local f = io.open(path, "rb")
+	local t = parse_sgf(f:read("a"))
+	f:close()
+	return t
+end
+
+-- DATOS DE LA ULTIMA PARTIDA LEIDA, POR JUGADA k (0: LOS NODOS ANTERIORES A LA PRIMERA JUGADA). UN NODO
+-- SIN JUGADA SE SUMA A LA JUGADA ANTERIOR.
+-- sgf_comments[k]: COMENTARIO (C). sgf_marks[k]: MARCAS (TR, SQ, CR, MA, LB), "{forma}{x}{y}{color}{i}"
+-- (color: EL DE LA PIEDRA QUE HAY AHI, O neutral; i: EL TEXTO DE LB EN sgf_labels[i]).
+local sgf_comments, sgf_marks, sgf_labels = {}, {}, {}
 
 function pgfgo.sgf_comment(k)
 	tex.sprint(-2, sgf_comments[k] or "")
 end
 
-function pgfgo.sgf_read(name)
+function pgfgo.sgf_marks(k)
+	token.set_macro("l__pgfgo_kernel_sgf_marks_clist", concat(sgf_marks[k] or {}, ","))
+end
+
+function pgfgo.sgf_label(i)
+	tex.sprint(-2, sgf_labels[i] or "")
+end
+
+local markup = {{"TR", "triangle"}, {"SQ", "square"}, {"CR", "circle"}, {"MA", "cross"}}
+
+function pgfgo.sgf_read(name, path_text)
 	local black, white, moves = {}, {}, {}
-	sgf_comments = {}
+	sgf_comments, sgf_marks, sgf_labels = {}, {}, {}
 	local size_x, size_y = 19, 19
-	local path = find_file(name)
-	if not path then
-		message("error", "sgf-not-found", name)
-	else
-		local f = io.open(path, "rb")
-		local nodes = main_line(parse_sgf(f:read("a")))
-		f:close()
+	local path = {}
+	for d in (path_text or ""):gmatch("%d+") do insert(path, tonumber(d)) end
+	local t = read_tree(name)
+	if t then
+		local nodes, missing = game_line(t, path)
+		if missing then
+			message("warning", "sgf-variation", name, path_text)
+		end
 		local root = nodes[1] or {}
 		if root.SZ then
 			local x, y = root.SZ[1]:match("^%s*(%d+)%s*:%s*(%d+)%s*$")
 			size_x = tonumber(x or root.SZ[1]) or 19
 			size_y = tonumber(y or root.SZ[1]) or 19
 		end
+		-- LA PARTIDA SIMULADA, PARA SABER DE QUE COLOR ES CADA PUNTO MARCADO.
+		local sim = {stones = {}, sx = size_x, sy = size_y}
 		local started, count = false, 0
 		local function each_point(node, property, f)
 			for _, v in ipairs(node[property] or {}) do
-				for _, p in ipairs(sgf_points(v, size_y)) do f(p) end
+				for _, c in ipairs(sgf_coords(v, size_y)) do f(point(c[1], c[2]), c) end
 			end
 		end
 		local function without(list, p)
@@ -727,37 +772,63 @@ function pgfgo.sgf_read(name)
 			end
 			return kept
 		end
+		local function put(c, color)
+			if inside(sim, c[1], c[2]) then sim.stones[key(c[1], c[2])] = color end
+		end
 		for _, n in ipairs(nodes) do
 			if not started then
 				-- LAS PIEDRAS INICIALES SON LAS DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA.
-				each_point(n, "AE", function(p) black, white = without(black, p), without(white, p) end)
-				each_point(n, "AB", function(p) white = without(white, p); insert(black, p) end)
-				each_point(n, "AW", function(p) black = without(black, p); insert(white, p) end)
+				each_point(n, "AE", function(p, c) black, white = without(black, p), without(white, p); put(c, nil) end)
+				each_point(n, "AB", function(p, c) white = without(white, p); insert(black, p); put(c, "black") end)
+				each_point(n, "AW", function(p, c) black = without(black, p); insert(white, p); put(c, "white") end)
 			else
 				-- DESPUES, SON EVENTOS ENTRE LAS JUGADAS: PRIMERO SE QUITA (AE) Y DESPUES SE AGREGA.
-				each_point(n, "AE", function(p) insert(moves, "{remove}" .. p) end)
-				each_point(n, "AB", function(p) insert(moves, "{add-black}" .. p) end)
-				each_point(n, "AW", function(p) insert(moves, "{add-white}" .. p) end)
+				each_point(n, "AE", function(p, c) insert(moves, "{remove}" .. p); put(c, nil) end)
+				each_point(n, "AB", function(p, c) insert(moves, "{add-black}" .. p); put(c, "black") end)
+				each_point(n, "AW", function(p, c) insert(moves, "{add-white}" .. p); put(c, "white") end)
 			end
 			for _, player in ipairs({{"B", "black"}, {"W", "white"}}) do
 				local values = n[player[1]]
 				if values then
 					started = true
+					-- MN CAMBIA EL NUMERO DE ESTA JUGADA (Y LAS SIGUIENTES SIGUEN DESDE AHI).
+					local mn = n.MN and tonumber(n.MN[1])
+					if mn then
+						insert(moves, "{number}{" .. mn .. "}{}")
+					end
 					local v = values[1] or ""
 					-- [] Y, HASTA 19x19, [tt] SON PASES.
-					local p = sgf_points(v, size_y)[1]
-					if not p or (v == "tt" and size_x <= 19 and size_y <= 19) then
-						p = "{}{}"
+					local c = sgf_coords(v, size_y)[1]
+					if not c or (v == "tt" and size_x <= 19 and size_y <= 19) then
+						insert(moves, "{" .. player[2] .. "}{}{}")
+					else
+						insert(moves, "{" .. player[2] .. "}" .. point(c[1], c[2]))
+						if inside(sim, c[1], c[2]) then play(sim, player[2], c[1], c[2]) end
 					end
-					insert(moves, "{" .. player[2] .. "}" .. p)
 					count = count + 1
 				end
 			end
 			if n.C then
 				local text = concat(n.C, " "):gsub("%s+", " "):match("^%s*(.-)%s*$")
-				local k = count
 				if text ~= "" then
-					sgf_comments[k] = sgf_comments[k] and (sgf_comments[k] .. " " .. text) or text
+					sgf_comments[count] = sgf_comments[count] and (sgf_comments[count] .. " " .. text) or text
+				end
+			end
+			-- LAS MARCAS SE GUARDAN CON EL COLOR DE LA PIEDRA QUE HAY EN ESE MOMENTO.
+			local function mark(kind, c, i)
+				local list = sgf_marks[count] or {}
+				sgf_marks[count] = list
+				insert(list, "{" .. kind .. "}" .. point(c[1], c[2]) .. "{"
+					.. (sim.stones[key(c[1], c[2])] or "neutral") .. "}{" .. (i or "") .. "}")
+			end
+			for _, m in ipairs(markup) do
+				each_point(n, m[1], function(p, c) mark(m[2], c) end)
+			end
+			for _, v in ipairs(n.LB or {}) do
+				local where, text = v:match("^(%a%a):(.*)$")
+				if where then
+					insert(sgf_labels, text)
+					for _, c in ipairs(sgf_coords(where, size_y)) do mark("label", c, #sgf_labels) end
 				end
 			end
 		end
@@ -767,6 +838,14 @@ function pgfgo.sgf_read(name)
 	token.set_macro("l__pgfgo_kernel_sgf_black_clist", concat(black, ","))
 	token.set_macro("l__pgfgo_kernel_sgf_white_clist", concat(white, ","))
 	token.set_macro("l__pgfgo_kernel_sgf_moves_clist", concat(moves, ","))
+end
+
+-- PROPIEDAD DE LA RAIZ DE LA PRIMERA PARTIDA (PB, PW, RE, KM, DT, ...), COMO TEXTO. VARIOS VALORES SE
+-- SEPARAN CON COMAS.
+function pgfgo.sgf_info(name, property)
+	local t = read_tree(name)
+	local root = t and t.nodes[1] or {}
+	tex.sprint(-2, concat(root[property] or {}, ", "))
 end
 
 

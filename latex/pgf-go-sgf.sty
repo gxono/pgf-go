@@ -6,18 +6,33 @@
 %ANTES DE from SIN NUMERO, DESDE from NUMERADAS, Y DESPUES DE to NO SE JUEGAN. AL TERMINAR, EL NUMERO
 %Y EL TURNO QUEDAN LISTOS PARA SEGUIR LA PARTIDA CON \moves.
 
+%from Y to SON POSICIONES DE JUGADA EN EL ARCHIVO (1, 2, 3...). EL NUMERO QUE SE MUESTRA PUEDE SER OTRO:
+%MN LO CAMBIA, Y restart = n LO REINICIA CADA n JUGADAS (LA n + 1 SE MUESTRA COMO 1).
 \int_new:N \l__pgfgo_sgf_from_int
 \int_new:N \l__pgfgo_sgf_to_int
+\tl_new:N \l__pgfgo_sgf_variation_tl
+\bool_new:N \l__pgfgo_sgf_marks_bool
+\int_new:N \l__pgfgo_sgf_restart_int
+%POSICION DE LA JUGADA EN EL ARCHIVO Y NUMERO SIN REINICIAR (SIGUE A MN).
+\int_new:N \l__pgfgo_sgf_count_int
 \int_new:N \l__pgfgo_sgf_number_int
+\int_new:N \l__pgfgo_sgf_shown_int
 %LAS ANIMACIONES SOLO COMPRUEBAN EL TAMANO EN EL PRIMER CUADRO.
 \bool_new:N \l__pgfgo_sgf_check_size_bool
 \bool_set_true:N \l__pgfgo_sgf_check_size_bool
 
 \keys_define:nn {pgfgo / sgf} {
-	from		.int_set:N	= \l__pgfgo_sgf_from_int,
-	from		.initial:n	= {1},
-	to			.int_set:N	= \l__pgfgo_sgf_to_int,
-	to			.initial:n	= {\c_max_int},
+	from				.int_set:N	= \l__pgfgo_sgf_from_int,
+	from				.initial:n	= {1},
+	to					.int_set:N	= \l__pgfgo_sgf_to_int,
+	to					.initial:n	= {\c_max_int},
+	%2.1: EN LA PRIMERA BIFURCACION, LA SEGUNDA VARIANTE; EN LA SEGUNDA, LA PRIMERA.
+	variation		.tl_set:N		= \l__pgfgo_sgf_variation_tl,
+	marks				.bool_set:N	= \l__pgfgo_sgf_marks_bool,
+	marks				.default:n	= {true},
+	marks				.initial:n	= {true},
+	restart			.int_set:N	= \l__pgfgo_sgf_restart_int,
+	restart			.initial:n	= {0},
 }
 
 \msg_new:nnn {pgfgo} {sgf-size}
@@ -36,13 +51,14 @@
 \cs_generate_variant:Nn \__pgfgo_sgf_stones:nn {nV}
 
 
-%UN EVENTO DE LA PARTIDA: UNA JUGADA ({black | white}{x}{y}) O UN CAMBIO DE UN NODO POSTERIOR A LA
-%PRIMERA JUGADA ({add-black | add-white | remove}{x}{y}).
+%UN EVENTO DE LA PARTIDA: UNA JUGADA ({black | white}{x}{y}), UN CAMBIO DE UN NODO POSTERIOR A LA
+%PRIMERA JUGADA ({add-black | add-white | remove}{x}{y}) O UN NUMERO DE JUGADA ({number}{n}{}, POR MN).
 \cs_new_protected:Npn \__pgfgo_sgf_event:nnn #1#2#3 {
 	\str_case:nnF {#1} {
 		{add-black}	{\__pgfgo_sgf_stones:nn {black} {{#2}{#3}}}
 		{add-white}	{\__pgfgo_sgf_stones:nn {white} {{#2}{#3}}}
 		{remove}		{\__pgfgo_sgf_remove:nn {#2} {#3}}
+		{number}		{\int_set:Nn \l__pgfgo_sgf_number_int {#2 - 1}}
 	}{
 		\__pgfgo_sgf_move:nnn {#1} {#2} {#3}
 	}
@@ -71,15 +87,21 @@
 
 %UNA JUGADA DE #1 (black O white) EN (#2,#3). x E y VACIOS: PASE.
 \cs_new_protected:Npn \__pgfgo_sgf_move:nnn #1#2#3 {
-	\int_incr:N \l__pgfgo_sgf_number_int
-	\int_compare:nNnTF {\l__pgfgo_sgf_number_int} > {\l__pgfgo_sgf_to_int} {
+	\int_incr:N \l__pgfgo_sgf_count_int
+	\int_compare:nNnTF {\l__pgfgo_sgf_count_int} > {\l__pgfgo_sgf_to_int} {
 		\seq_map_break:
 	}{
-		\pgfgo_kernel_move_set_number:n {\l__pgfgo_sgf_number_int}
+		\int_incr:N \l__pgfgo_sgf_number_int
+		\int_set:Nn \l__pgfgo_sgf_shown_int {
+			\int_compare:nNnTF {\l__pgfgo_sgf_restart_int} > {0}
+				{\int_mod:nn {\l__pgfgo_sgf_number_int - 1} {\l__pgfgo_sgf_restart_int} + 1}
+				{\l__pgfgo_sgf_number_int}
+		}
+		\pgfgo_kernel_move_set_number:n {\l__pgfgo_sgf_shown_int}
 		\pgfgo_kernel_move_set_player:n {#1}
 		\tl_if_blank:nTF {#2} {
 			%UN PASE CUENTA, PERO NO SE DIBUJA.
-			\pgfgo_kernel_move_set_number:n {\l__pgfgo_sgf_number_int + 1}
+			\pgfgo_kernel_move_set_number:n {\l__pgfgo_sgf_shown_int + 1}
 			\pgfgo_kernel_move_set_player:n {\str_if_eq:nnTF {#1} {black} {white} {black}}
 		}{
 			\bool_if:NT \l_pgfgo_goban_remember_move_bool {
@@ -87,27 +109,45 @@
 					\exp_not:N \pgfgo_move_parsed:nnn
 						{
 							\bool_if:nTF {
-								\int_compare_p:nNn {\l__pgfgo_sgf_number_int} < {\l__pgfgo_sgf_from_int} ||
+								\int_compare_p:nNn {\l__pgfgo_sgf_count_int} < {\l__pgfgo_sgf_from_int} ||
 								! \l_pgfgo_goban_remember_move_label_bool
 							} {\exp_not:N \BooleanFalse} {\exp_not:N \BooleanTrue}
 						}
-						{from = \int_use:N \l__pgfgo_sgf_number_int, #1}
+						{from = \int_use:N \l__pgfgo_sgf_shown_int, #1}
 						{{#2}{#3}}
 				}
 			}
-			\int_compare:nNnTF {\l__pgfgo_sgf_number_int} < {\l__pgfgo_sgf_from_int}
+			\int_compare:nNnTF {\l__pgfgo_sgf_count_int} < {\l__pgfgo_sgf_from_int}
 				{\pgfgo_move:nnnn {\BooleanFalse} {} {#2} {#3}}
 				{\pgfgo_move:nnnn {\BooleanTrue} {} {#2} {#3}}
 		}
 	}
 }
 
+%MARCAS DEL ARCHIVO (TR, SQ, CR, MA, LB): #1 FORMA, (#2,#3) PUNTO, #4 COLOR DE LA PIEDRA (black, white O
+%neutral, PARA QUE LA MARCA SE VEA), #5 TEXTO DE LB.
+\cs_new_protected:Npn \__pgfgo_sgf_mark:nnnnn #1#2#3#4#5 {
+	\tl_set:Ne \l__pgfgo_sgf_mark_tl {
+		#4,
+		\str_if_eq:nnTF {#1} {label}
+			{custom = {\pgfgo_kernel_sgf_label:n {#5}}}
+			{#1}
+	}
+	\bool_if:NT \l_pgfgo_goban_remember_mark_bool {
+		\pgfgo_kernel_remember_push:n
+			{\exp_not:N \pgfgo_marks_parsed:nn {\exp_not:V \l__pgfgo_sgf_mark_tl} {{#2}{#3}}}
+	}
+	\pgfgo_marks_parsed:Vn \l__pgfgo_sgf_mark_tl {{#2}{#3}}
+}
+\tl_new:N \l__pgfgo_sgf_mark_tl
+\cs_generate_variant:Nn \pgfgo_marks_parsed:nn {Vn}
+
 
 \cs_new_protected:Npn \pgfgo_sgf:nn #1#2 {
 	\group_begin:
 		\keys_set:nn {pgfgo / sgf} {#1}
 		\tl_set:Nn \l__pgfgo_sgf_file_tl {#2}
-		\pgfgo_kernel_sgf_read:n {#2}
+		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgf_variation_tl
 
 		\bool_if:nF {
 			! \l__pgfgo_sgf_check_size_bool ||
@@ -124,9 +164,23 @@
 		\clist_set_from_seq:NN \l_tmpa_clist \l_pgfgo_kernel_sgf_white_seq
 		\__pgfgo_sgf_stones:nV {white} \l_tmpa_clist
 
+		\int_zero:N \l__pgfgo_sgf_count_int
 		\int_zero:N \l__pgfgo_sgf_number_int
 		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgf_event:nnn ##1}
+
+		%LAS MARCAS DEL ULTIMO NODO QUE SE MUESTRA.
+		\bool_if:NT \l__pgfgo_sgf_marks_bool {
+			\pgfgo_kernel_sgf_marks:n {\int_min:nn {\l__pgfgo_sgf_count_int} {\l__pgfgo_sgf_to_int}}
+			\seq_map_inline:Nn \l_pgfgo_kernel_sgf_marks_seq {\__pgfgo_sgf_mark:nnnnn ##1}
+		}
 	\group_end:
+}
+
+%\sgfinfo{<archivo>}{<propiedad>} ESCRIBE UNA PROPIEDAD DE LA RAIZ (PB, PW, RE, KM, DT, ...).
+\NewDocumentCommand \sgfinfo {mm} {
+	\pgfgo_kernel_if_feature:nTF {sgf}
+		{\pgfgo_kernel_sgf_info:nn {#1} {#2}}
+		{\pgfgo_kernel_require:n {sgf}}
 }
 
 %\sgf SOLO EXISTE DENTRO DE goban (VER pgf-go-goban.sty).
@@ -186,6 +240,13 @@
 	comment~height	.initial:n	= {4em},
 	comment~font		.tl_set:N		= \l__pgfgo_sgfanim_comment_font_tl,
 	comment~font		.initial:n	= {\small},
+	%COMO EN \sgf.
+	variation				.tl_set:N		= \l__pgfgo_sgfanim_variation_tl,
+	marks						.bool_set:N	= \l__pgfgo_sgfanim_marks_bool,
+	marks						.default:n	= {true},
+	marks						.initial:n	= {true},
+	restart					.int_set:N	= \l__pgfgo_sgfanim_restart_int,
+	restart					.initial:n	= {0},
 }
 
 \keys_define:nn {pgfgo} {
@@ -205,7 +266,7 @@
 \cs_new_protected:Npn \pgfgo_sgfanimation_setup:nn #1#2 {
 	\keys_set:nn {pgfgo / sgf~animation} {#1}
 	\tl_set:Nn \l__pgfgo_sgfanim_file_tl {#2}
-	\pgfgo_kernel_sgf_read:n {#2}
+	\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfanim_variation_tl
 	%LOS TABLEROS TIENEN EL TAMANO DE LA PARTIDA (goban = {...} PUEDE CAMBIARLO).
 	\tl_set:Ne \l__pgfgo_sgfanim_size_tl
 		{\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
@@ -246,7 +307,10 @@
 				\exp_not:N \pgfgo_sgf:nn
 					{
 						to = \int_eval:n {#1},
-						from = \bool_if:NTF \l__pgfgo_sgfanim_numbers_bool {1} {\int_eval:n {#1 + 1}}
+						from = \bool_if:NTF \l__pgfgo_sgfanim_numbers_bool {1} {\int_eval:n {#1 + 1}},
+						variation = {\exp_not:V \l__pgfgo_sgfanim_variation_tl},
+						marks = \bool_if:NTF \l__pgfgo_sgfanim_marks_bool {true} {false},
+						restart = \int_use:N \l__pgfgo_sgfanim_restart_int
 					}
 					{\exp_not:V \l__pgfgo_sgfanim_file_tl}
 			}

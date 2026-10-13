@@ -310,15 +310,109 @@
 		\msg_warning:nnee {pgfgo} {occupied-point}
 			{\pgfgo_kernel_move_number:} {\pgfgo_kernel_column_name:n {#3} \int_eval:n {#4}}
 	}
-	\pgfgo_kernel_if_visible:nnT {#3} {#4} {
-		\__pgfgo_captures_defer:nne {#3} {#4} {
-			\exp_not:N \__pgfgo_move_draw:nnnnnn
-				{\exp_not:n {#1}} {\exp_not:n {#2}} {\exp_not:n {#3}} {\exp_not:n {#4}}
-				{\pgfgo_kernel_move_number:} {\pgfgo_kernel_move_if_black:TF {black} {white}}
+	\bool_if:NF \l__pgfgo_notes_noted_bool {
+		\pgfgo_kernel_if_visible:nnT {#3} {#4} {
+			\__pgfgo_captures_defer:nne {#3} {#4} {
+				\exp_not:N \__pgfgo_move_draw:nnnnnn
+					{\exp_not:n {#1}} {\exp_not:n {#2}} {\exp_not:n {#3}} {\exp_not:n {#4}}
+					{\pgfgo_kernel_move_number:} {\pgfgo_kernel_move_if_black:TF {black} {white}}
+			}
 		}
 	}
 	\pgfgo_kernel_move_play:nn {#3} {#4}
 	\__pgfgo_captures_apply:
+	%UNA JUGADA ANOTADA ("N at M") DEJA VER LA PIEDRA M, AUNQUE HAYA SIDO CAPTURADA.
+	\bool_if:NT \l__pgfgo_notes_noted_bool {\__pgfgo_notes_show_first:nn {#3} {#4}}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%------------------------------------NOTAS "N at M"---------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%CON goban/notes, UNA JUGADA NUMERADA N EN UN PUNTO DONDE YA HUBO UNA JUGADA NUMERADA M DEL MISMO goban
+%NO SE DIBUJA: EL PUNTO SIGUE MOSTRANDO M Y SE ANOTA "N at M" (COMO EN LOS LIBROS: "7 at 3").
+%\pgfgomovenotes IMPRIME LAS NOTAS DEL ULTIMO goban. SOLO CUENTAN LAS JUGADAS NUMERADAS Y VISIBLES.
+\bool_new:N \l_pgfgo_goban_notes_bool
+\bool_new:N \l__pgfgo_notes_noted_bool
+%NOTAS DEL ULTIMO goban, {N}{M}.
+\seq_new:N \g_pgfgo_move_notes_seq
+%"x,y" -> NUMERO Y CODIGO DE LA PRIMERA JUGADA NUMERADA EN ESE PUNTO.
+\prop_new:N \g__pgfgo_notes_number_prop
+\prop_new:N \g__pgfgo_notes_code_prop
+\tl_new:N \l__pgfgo_notes_tl
+\tl_new:N \l_pgfgo_notes_at_tl
+\tl_new:N \l_pgfgo_notes_separator_tl
+\cs_generate_variant:Nn \prop_get:NnNTF {NV}
+\cs_generate_variant:Nn \prop_get:NnNT {NV}
+\cs_generate_variant:Nn \prop_gput:Nnn {NVe, NVV}
+
+\cs_new_protected:Npn \pgfgo_notes_begin: {
+	\seq_gclear:N \g_pgfgo_move_notes_seq
+	\prop_gclear:N \g__pgfgo_notes_number_prop
+	\prop_gclear:N \g__pgfgo_notes_code_prop
+}
+
+%(#1,#2) ESTA EN LA PARTE VISIBLE (SIN AVISAR SI ESTA FUERA DEL TABLERO).
+\prg_new_conditional:Npnn \__pgfgo_notes_if_visible:nn #1#2 {p} {
+	\bool_if:nTF {
+		\int_compare_p:n {\l_pgfgo_goban_from_x_int <= #1 <= \l_pgfgo_goban_to_x_int} &&
+		\int_compare_p:n {\l_pgfgo_goban_from_y_int <= #2 <= \l_pgfgo_goban_to_y_int}
+	} {\prg_return_true:} {\prg_return_false:}
+}
+
+%ANTES DE JUGAR: DECIDE SI LA JUGADA (#1: NUMERADA, #2: OPCIONES, #3,#4: PUNTO) SE ANOTA EN VEZ DE
+%DIBUJARSE (\l__pgfgo_notes_noted_bool), O LA REGISTRA COMO LA PRIMERA JUGADA NUMERADA DEL PUNTO.
+\cs_new_protected:Npn \__pgfgo_notes_check:nnnn #1#2#3#4 {
+	\bool_set_false:N \l__pgfgo_notes_noted_bool
+	\bool_lazy_and:nnT {\l_pgfgo_goban_notes_bool} {\__pgfgo_notes_if_visible_p:nn {#3} {#4}} {
+		\IfBooleanT {#1} {
+			\__pgfgo_captures_key:nn {#3} {#4}
+			\prop_get:NVNTF \g__pgfgo_notes_number_prop \l__pgfgo_captures_key_tl \l__pgfgo_notes_tl {
+				\bool_set_true:N \l__pgfgo_notes_noted_bool
+				\seq_gput_right:Ne \g_pgfgo_move_notes_seq
+					{{\pgfgo_kernel_move_number:} {\exp_not:V \l__pgfgo_notes_tl}}
+			}{
+				\prop_gput:NVe \g__pgfgo_notes_number_prop \l__pgfgo_captures_key_tl
+					{\pgfgo_kernel_move_number:}
+				\prop_gput:NVe \g__pgfgo_notes_code_prop \l__pgfgo_captures_key_tl {
+					\exp_not:N \__pgfgo_move_draw:nnnnnn
+						{\exp_not:n {#1}} {\exp_not:n {#2}} {\exp_not:n {#3}} {\exp_not:n {#4}}
+						{\pgfgo_kernel_move_number:} {\pgfgo_kernel_move_if_black:TF {black} {white}}
+				}
+			}
+		}
+	}
+}
+
+%CON CAPTURAS: VUELVE A DIBUJAR LA PRIMERA JUGADA NUMERADA DEL PUNTO.
+\cs_new_protected:Npn \__pgfgo_notes_show_first:nn #1#2 {
+	\__pgfgo_captures_key:nn {#1} {#2}
+	\prop_get:NVNT \g__pgfgo_notes_code_prop \l__pgfgo_captures_key_tl \l__pgfgo_notes_tl {
+		\prop_gput:NVV \g__pgfgo_captures_pending_prop \l__pgfgo_captures_key_tl \l__pgfgo_notes_tl
+		\prop_gremove:NV \g__pgfgo_captures_faded_prop \l__pgfgo_captures_key_tl
+	}
+}
+
+\keys_define:nn {pgfgo / notes} {
+	at					.tl_set:N		= \l_pgfgo_notes_at_tl,
+	at					.initial:n	= {at},
+	separator		.tl_set:N		= \l_pgfgo_notes_separator_tl,
+	separator		.initial:n	= {,~},
+}
+\keys_define:nn {pgfgo} {
+	notes				.code:n			= {\keys_set:nn {pgfgo / notes} {#1}}
+}
+
+\NewDocumentCommand \pgfgomovenotes {O{}} {
+	\group_begin:
+		\keys_set:nn {pgfgo / notes} {#1}
+		\seq_clear:N \l_tmpa_seq
+		\seq_map_inline:Nn \g_pgfgo_move_notes_seq {
+			\seq_put_right:Nn \l_tmpa_seq {\use_i:nn ##1 \nobreakspace \l_pgfgo_notes_at_tl \nobreakspace \use_ii:nn ##1}
+		}
+		\seq_use:Nn \l_tmpa_seq {\l_pgfgo_notes_separator_tl}
+	\group_end:
 }
 
 %DIBUJA LO QUE QUEDO, AL CERRAR EL goban.
@@ -429,12 +523,16 @@
 
 %FUERA DE LA PARTE VISIBLE NO SE DIBUJA, PERO LA JUGADA CUENTA (NUMERO Y TURNO).
 \cs_set_protected:Npn\pgfgo_move:nnnn #1#2#3#4 {
+	\__pgfgo_notes_check:nnnn {#1} {#2} {#3} {#4}
 	\bool_if:NTF \l_pgfgo_goban_captures_bool {
 		\__pgfgo_captures_move:nnnn {#1} {#2} {#3} {#4}
 	}{
-		\pgfgo_kernel_if_visible:nnT {#3} {#4} {
-			\__pgfgo_move_draw:nnnnee {#1} {#2} {#3} {#4}
-				{\pgfgo_kernel_move_number:} {\pgfgo_kernel_move_if_black:TF {black} {white}}
+		%UNA JUGADA ANOTADA ("N at M") NO SE DIBUJA.
+		\bool_if:NF \l__pgfgo_notes_noted_bool {
+			\pgfgo_kernel_if_visible:nnT {#3} {#4} {
+				\__pgfgo_move_draw:nnnnee {#1} {#2} {#3} {#4}
+					{\pgfgo_kernel_move_number:} {\pgfgo_kernel_move_if_black:TF {black} {white}}
+			}
 		}
 		\pgfgo_kernel_move_play:nn {#3} {#4}
 	}

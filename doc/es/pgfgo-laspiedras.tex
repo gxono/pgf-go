@@ -624,6 +624,58 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 \end{key}
 
 
+|from| y |to| cuentan las jugadas del archivo. El número que se muestra puede ser otro: la propiedad |MN| del archivo lo cambia (las jugadas siguientes siguen desde ahí), y también |restart|. En los ejemplos que siguen, |variantes.sgf| es una partida de 7$\times$7 con dos bifurcaciones, marcas y |MN[10]| en la cuarta jugada de la línea principal.
+
+\begin{key}{/pgfgo/sgf/variation = \meta{números} (initially la línea principal)}
+	Elige una variante: en cada bifurcación de la partida se toma, en orden, la variante indicada (1 es la principal). Por ejemplo, |variation = 2.1| toma la segunda variante en la primera bifurcación y la primera en la segunda. Cuando la lista se termina, se sigue por la primera variante. Si una variante no existe, se produce una advertencia.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variantes.sgf]
+			\sgf[variation = 2]{variantes.sgf}
+		\end{goban}
+
+		\begin{goban}[sgf size = variantes.sgf]
+			\sgf[variation = 1.2]{variantes.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/marks = \meta{boolean} (default true, initially true)}
+	Dibuja las marcas del archivo (|TR|, |SQ|, |CR|, |MA| y las etiquetas de |LB|) del último nodo que se muestra. Cada marca toma el color de la piedra que hay en ese punto, para que se vea.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variantes.sgf]
+			\sgf[to = 2]{variantes.sgf}
+		\end{goban}
+
+		\begin{goban}[sgf size = variantes.sgf]
+			\sgf[to = 2, marks = false]{variantes.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart = \meta{number} (initially 0)}
+	Reinicia la numeración cada \meta{number} jugadas, como en los libros: con |restart = 100|, la jugada 101 se muestra como 1. Con 0, no se reinicia.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variantes.sgf]
+			\sgf[]{variantes.sgf}
+		\end{goban}
+
+		\begin{goban}[sgf size = variantes.sgf]
+			\sgf[restart = 3]{variantes.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{command}{\sgfinfo\marg{file}\marg{property}}
+	Escribe una propiedad de la raíz de la partida, por ejemplo |PB| y |PW| (los jugadores), |RE| (el resultado), |KM| (el komi) o |DT| (la fecha). Si no está, no escribe nada. Se puede usar fuera de |goban|.
+
+	\begin{codeexample}[]
+		\sgfinfo{variantes.sgf}{PB} (negras) contra \sgfinfo{variantes.sgf}{PW} (blancas), komi \sgfinfo{variantes.sgf}{KM}. Resultado: \sgfinfo{variantes.sgf}{RE}.
+	\end{codeexample}
+\end{command}
+
 \begin{command}{\sgfanimation\opt{\oarg{options}}\marg{file}}
 
 	Recorre la partida con el paquete |animate|: dibuja un |goban| por jugada, y los botones de |animate| permiten avanzar, retroceder o reproducirla. El cuadro $k$ muestra la posición después de la jugada $k$; el cuadro 0, la posición antes de la primera jugada. Se usa fuera de |goban|. Los tableros tienen el tamaño de la partida (|SZ|), salvo que |goban| indique otro. Necesita |\usepackage{animate}| y dos compilaciones.
@@ -677,6 +729,18 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 
 \begin{key}{/pgfgo/sgf animation/comment font = \meta{font commands} (initially \texttt{\string\small})}
 	Fuente de los comentarios.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/variation = \meta{números} (initially la línea principal)}
+	Como |/pgfgo/sgf/variation|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/marks = \meta{boolean} (default true, initially true)}
+	Como |/pgfgo/sgf/marks|: cada cuadro muestra las marcas de su jugada.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart = \meta{number} (initially 0)}
+	Como |/pgfgo/sgf/restart|.
 \end{key}
 
 

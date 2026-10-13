@@ -1,0 +1,10 @@
+(;GM[1]FF[4]SZ[7]PB[Black Player]PW[White Player]RE[B+R]KM[6.5]DT[2026-10-13]
+AB[dd]C[Root.]
+;B[cc]TR[dd]C[Move 1.]
+(;W[ee]SQ[cc]CR[ee]MA[aa]LB[gg:A][ag:B]
+ ;B[ec]
+ (;W[ce]MN[10]
+  ;B[cf])
+ (;W[fe]))
+(;W[ce]
+ ;B[ec]TR[ec]))

@@ -60,6 +60,16 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/sgf size=\meta{file}}
+		Takes the size of the board from an SGF game (its |SZ| property). Only with the Lua kernel (p.~\pageref{subsec:kernel}).
+
+		\begin{codeexample}[]
+			\begin{goban}[sgf size = variations.sgf, label = {at = {north, west}}]
+				\sgf{variations.sgf}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
 	\begin{key}{/pgfgo/goban/scale=\meta{float} (initially 1)}
 		
 		Controls the global scale of the board, affecting both its overall dimensions and the thickness of certain elements (e.g., the "line width" of the lines).
@@ -684,6 +694,46 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 		Turns captures off. It is the initial value.
 	\end{stylekey}
+
+	\subsection{Moves on Points Already Played}
+	\label{subsec:notes}
+
+	In numbered diagrams, when a move is played on a point where there already was a move (for example, when a ko is retaken), books do not draw it: the point still shows the first stone, and below the diagram they write, for example, "3 at 1".
+
+	\begin{key}{/pgfgo/goban/notes=\meta{boolean} (default true, initially false)}
+
+		A numbered move on a point where there already was a numbered move of the same |goban| is not drawn: the point still shows the first one, even if it was captured, and "N at M" is noted. Only numbered moves (|\moves*|) that are visible on the board count. It works with both kernels.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A2 to E4}}}
+
+			\begin{goban}[notes]
+				\stones{B3,C2,C4}
+				\stones[w]{D2,D4,E3}
+				\moves*[w]{C3}
+				\moves*{D3}
+				\moves*[from = 3, w]{C3}
+			\end{goban}
+
+			\pgfgomovenotes
+		\end{codeexample}
+	\end{key}
+
+	\begin{command}{\pgfgomovenotes\opt{\oarg{options}}}
+		Writes the notes of the last |goban|, separated by commas. If there are no notes, it writes nothing. The options are those of |/pgfgo/notes|.
+	\end{command}
+
+	\begin{key}{/pgfgo/notes = \meta{options}}
+		Options of |\pgfgomovenotes| for the whole document, for example |\pgfgoset{notes = {at = en}}|.
+	\end{key}
+
+	\begin{key}{/pgfgo/notes/at = \meta{text} (initially at)}
+		Text between the two numbers.
+	\end{key}
+
+	\begin{key}{/pgfgo/notes/separator = \meta{text} (initially a comma and a space)}
+		Text between the notes.
+	\end{key}
 
 	\subsection{Remembering a Board}
 	The "remember" system stores what is drawn in a |goban| (stones, moves and marks, with their options) to draw it again in another one with |resume|. Moves keep their number and color, and the numbering continues from there. Only what is drawn is stored: the board options (size, |partial|, labels) are given in each |goban|.

@@ -37,6 +37,13 @@
 \case{Move 3 is played on C3, which is not empty: one warning}
 \begin{goban}[5, captures]\moves*{C3, D4}\moves*{C3}\end{goban}
 
+\case{Notes with captures: 2 captures 1, 3 retakes on the point of 1 and captures 2; the board shows 1 and the notes are "3 at 1"}
+\begin{goban}[5, captures, notes]
+	\stones{B3,C2,C4}\stones[w]{D2,D4,E3}
+	\moves*[w]{C3}\moves*{D3}\moves*[from = 3, w]{C3}
+\end{goban}
+Notes: [\pgfgomovenotes]
+
 \case{Marks stay on captured points; resume replays the captures}
 \begin{goban}[5, new remember, captures]
 	\stones[w]{A1}\stones{B1}\moves*{A2}\marks[triangle]{A1}

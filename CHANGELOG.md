@@ -42,6 +42,28 @@ The output is unchanged.
   works with `captures`, `partial`, `remember` and `resume`. A game for a
   board of another size produces a warning. With `kernel = expl3`, `\sgf`
   raises an error.
+- SGF:
+  - `variation = 2.1` (in `\sgf` and `\sgfanimation`) chooses a variation: at
+    each branch, the given one in order (1 is the main one), and then the
+    first. A variation that does not exist produces a warning.
+  - The marks of the file (`TR`, `SQ`, `CR`, `MA` and the labels of `LB`) of
+    the last node shown are drawn, in the colour of the stone on the point
+    (`marks = false` turns them off). In `\sgfanimation`, each frame shows the
+    marks of its move.
+  - `MN` changes the number of a move, and `restart = <n>` restarts the
+    numbering every n moves (move 101 is shown as 1 with `restart = 100`).
+    `from` and `to` still count the moves of the file.
+  - New command `\sgfinfo{<file>}{<property>}`, which writes a property of the
+    root (players, result, komi, date...).
+  - New key `goban/sgf size = <file>`: the size of the board is taken from the
+    file. `\sgfanimation` already used it for its boards.
+  - New test file `variations.sgf`.
+- New key `goban/notes` and command `\pgfgomovenotes`. With `notes`, a
+  numbered move played on a point where there already was a numbered move of
+  the same `goban` is not drawn: the point keeps showing the first stone (also
+  if it was captured), and `\pgfgomovenotes` writes "3 at 1", as in Go books.
+  The text is set with `\pgfgoset{notes = {at = ..., separator = ...}}`. It
+  works with both kernels. New test `notes.tex`.
 - New command `\sgfanimation[<options>]{<file>}`, used outside `goban`. With
   the `animate` package, it draws one board per move of an SGF game, and
   `animate`'s buttons step through the game. By default the last move is
