@@ -615,6 +615,58 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 \end{key}
 
 
+|from| and |to| count the moves of the file. The number that is shown can be different: the |MN| property of the file changes it (the following moves continue from there), and so does |restart|. In the following examples, |variations.sgf| is a 7$\times$7 game with two branches, marks and |MN[10]| on the fourth move of the main line.
+
+\begin{key}{/pgfgo/sgf/variation = \meta{numbers} (initially the main line)}
+	Chooses a variation: at each branch of the game, in order, the given variation is taken (1 is the main one). For example, |variation = 2.1| takes the second variation at the first branch and the first one at the second. When the list ends, the first variation is followed. If a variation does not exist, a warning is produced.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations.sgf]
+			\sgf[variation = 2]{variations.sgf}
+		\end{goban}
+
+		\begin{goban}[sgf size = variations.sgf]
+			\sgf[variation = 1.2]{variations.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/marks = \meta{boolean} (default true, initially true)}
+	Draws the marks of the file (|TR|, |SQ|, |CR|, |MA| and the labels of |LB|) of the last node that is shown. Each mark takes the color of the stone on that point, so that it can be seen.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations.sgf]
+			\sgf[to = 2]{variations.sgf}
+		\end{goban}
+
+		\begin{goban}[sgf size = variations.sgf]
+			\sgf[to = 2, marks = false]{variations.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart = \meta{number} (initially 0)}
+	Restarts the numbering every \meta{number} moves, as books do: with |restart = 100|, move 101 is shown as 1. With 0, it does not restart.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations.sgf]
+			\sgf[]{variations.sgf}
+		\end{goban}
+
+		\begin{goban}[sgf size = variations.sgf]
+			\sgf[restart = 3]{variations.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{command}{\sgfinfo\marg{file}\marg{property}}
+	Writes a property of the root of the game, for example |PB| and |PW| (the players), |RE| (the result), |KM| (the komi) or |DT| (the date). If it is missing, it writes nothing. It can be used outside |goban|.
+
+	\begin{codeexample}[]
+		\sgfinfo{variations.sgf}{PB} (Black) against \sgfinfo{variations.sgf}{PW} (White), komi \sgfinfo{variations.sgf}{KM}. Result: \sgfinfo{variations.sgf}{RE}.
+	\end{codeexample}
+\end{command}
+
 \begin{command}{\sgfanimation\opt{\oarg{options}}\marg{file}}
 
 	Steps through the game with the |animate| package: it draws one |goban| per move, and the |animate| buttons go forward, back or play it. Frame $k$ shows the position after move $k$; frame 0, the position before the first move. It is used outside |goban|. The boards have the size of the game (|SZ|), unless |goban| gives another one. It needs |\usepackage{animate}| and two runs.
@@ -668,6 +720,18 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 
 \begin{key}{/pgfgo/sgf animation/comment font = \meta{font commands} (initially \texttt{\string\small})}
 	Font of the comments.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/variation = \meta{numbers} (initially the main line)}
+	Like |/pgfgo/sgf/variation|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/marks = \meta{boolean} (default true, initially true)}
+	Like |/pgfgo/sgf/marks|: each frame shows the marks of its move.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart = \meta{number} (initially 0)}
+	Like |/pgfgo/sgf/restart|.
 \end{key}
 
 \subsection{Prisoners}

@@ -98,6 +98,10 @@
 																			},
 		captures					.default:n	= {remove},
 
+		%"N at M": UNA JUGADA NUMERADA EN UN PUNTO DONDE YA HUBO OTRA NO SE DIBUJA (VER pgf-go-stones.sty).
+		notes							.bool_set:N	= \l_pgfgo_goban_notes_bool,
+		notes							.default:n	= {true},
+
 		grid							.code:n 		= {\keys_set:nx{pgfgo / goban / grid}		{#1}},
 
 		border						.code:n 		= {\keys_set:nx{pgfgo / goban / border} {#1}}, %DEPRECATED
@@ -113,6 +117,17 @@
 		scale							.initial:n	= {1},
 
 		size							.code:n			= {\pgfgo_kernel_board_size:n{#1}},
+
+		%EL TAMANO DE LA PARTIDA DE UN ARCHIVO SGF (SZ). SOLO CON kernel = lua.
+		sgf~size					.code:n			= {
+																			\pgfgo_kernel_if_feature:nTF {sgf} {
+																				\pgfgo_kernel_sgf_read:n {#1}
+																				\int_set_eq:NN \l_pgfgo_goban_size_x_int \l_pgfgo_kernel_sgf_size_x_int
+																				\int_set_eq:NN \l_pgfgo_goban_size_y_int \l_pgfgo_kernel_sgf_size_y_int
+																			}{
+																				\pgfgo_kernel_require:n {sgf}
+																			}
+																		},
 
 		use~i					.bool_set:N = \l_pgfgo_use_i_bool,
 
@@ -651,6 +666,7 @@
 		\cs_set_eq:NN \sgf \__pgfgo_sgf_command
 		%CADA TABLERO EMPIEZA EN LA JUGADA 1 CON NEGRAS (resume RESTAURA LAS JUGADAS RECORDADAS).
 		\pgfgo_kernel_move_reset:
+		\pgfgo_notes_begin:
 		\keys_set:nn {pgfgo / goban} {#1}
 		\pgfgo_kernel_board_init:
 		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_begin:}

@@ -68,17 +68,28 @@
 %		SIN LA CAPACIDAD captures, \l_pgfgo_kernel_captured_seq QUEDA VACIA.
 %
 %sgf: LECTURA DE PARTIDAS.
-%	\pgfgo_kernel_sgf_read:n {<archivo>}
-%		LEE LA LINEA PRINCIPAL DE LA PRIMERA PARTIDA DEL ARCHIVO. DEJA:
+%	\pgfgo_kernel_sgf_read:nn {<archivo>}{<variante>}
+%		LEE UNA LINEA DE LA PRIMERA PARTIDA DEL ARCHIVO. <variante> ES UNA LISTA DE NUMEROS (2.1): EN CADA
+%		BIFURCACION SE TOMA ESA VARIANTE (1 ES LA PRINCIPAL); CUANDO SE TERMINA, SE SIGUE POR LA PRIMERA.
+%		AVISO sgf-variation SI PIDE UNA VARIANTE QUE NO EXISTE. \pgfgo_kernel_sgf_read:n LEE LA PRINCIPAL. DEJA:
 %		\l_pgfgo_kernel_sgf_size_x_int, \l_pgfgo_kernel_sgf_size_y_int	TAMANO (SZ; 19 SI NO ESTA).
 %		\l_pgfgo_kernel_sgf_black_seq, \l_pgfgo_kernel_sgf_white_seq		PIEDRAS INICIALES (AB, AW), {x}{y}.
 %		\l_pgfgo_kernel_sgf_moves_seq		JUGADAS, {black | white}{x}{y} (UN PASE TIENE x E y VACIOS), Y
-%			ENTRE ELLAS LOS CAMBIOS DE LOS NODOS SIGUIENTES (AB, AW, AE): {add-black | add-white | remove}{x}{y}.
+%			ENTRE ELLAS LOS CAMBIOS DE LOS NODOS SIGUIENTES (AB, AW, AE): {add-black | add-white | remove}{x}{y},
+%			Y {number}{n}{} ANTES DE UNA JUGADA CON MN (SU NUMERO ES n).
 %		LAS COORDENADAS YA ESTAN EN EL SISTEMA DE pgf-go (LA FILA 1 ES LA DE ABAJO).
 %		ERROR sgf-not-found SI NO ENCUENTRA EL ARCHIVO.
 %	\pgfgo_kernel_sgf_comment:n {k}							EXPANDIBLE
 %		COMENTARIO (C) DE LA JUGADA k DE LA ULTIMA PARTIDA LEIDA, COMO TEXTO (CATCODES 12 Y ESPACIOS).
 %		k = 0 ES EL DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA. VACIO SI NO HAY.
+%	\pgfgo_kernel_sgf_marks:n {k}
+%		DEJA EN \l_pgfgo_kernel_sgf_marks_seq LAS MARCAS (TR, SQ, CR, MA, LB) DE LA JUGADA k, COMO
+%		{triangle | square | circle | cross | label}{x}{y}{black | white | neutral}{i}: EL COLOR ES EL DE LA
+%		PIEDRA QUE HAY AHI EN ESE MOMENTO; i, PARA label, EL NUMERO DE SU TEXTO.
+%	\pgfgo_kernel_sgf_label:n {i}							EXPANDIBLE
+%		TEXTO DE LA ETIQUETA i (LB), COMO TEXTO.
+%	\pgfgo_kernel_sgf_info:nn {<archivo>}{<propiedad>}
+%		ESCRIBE UNA PROPIEDAD DE LA RAIZ (PB, PW, RE, KM, DT, ...), COMO TEXTO.
 
 
 \clist_const:Nn \c__pgfgo_kernel_interface_clist {
@@ -118,7 +129,11 @@
 }
 \clist_const:Nn \c__pgfgo_kernel_sgf_clist {
 	pgfgo_kernel_sgf_read:n,
-	pgfgo_kernel_sgf_comment:n
+	pgfgo_kernel_sgf_read:nn,
+	pgfgo_kernel_sgf_comment:n,
+	pgfgo_kernel_sgf_marks:n,
+	pgfgo_kernel_sgf_label:n,
+	pgfgo_kernel_sgf_info:nn
 }
 
 
@@ -155,6 +170,7 @@
 \seq_new:N \l_pgfgo_kernel_sgf_black_seq
 \seq_new:N \l_pgfgo_kernel_sgf_white_seq
 \seq_new:N \l_pgfgo_kernel_sgf_moves_seq
+\seq_new:N \l_pgfgo_kernel_sgf_marks_seq
 
 \clist_new:N \g_pgfgo_kernel_features_clist
 
@@ -182,6 +198,8 @@
 	{'#1'~needs~kernel~=~lua~(the~current~kernel~is~'#2').}
 \msg_new:nnn {pgfgo} {sgf-not-found}
 	{SGF~file~'#1'~was~not~found.}
+\msg_new:nnn {pgfgo} {sgf-variation}
+	{'#1'~has~no~variation~'#2'.~The~first~variation~is~used~from~there.}
 
 \cs_generate_variant:Nn \msg_warning:nnn {nnV}
 \cs_generate_variant:Nn \msg_error:nnnn {nnnV, nnVe}

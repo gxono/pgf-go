@@ -118,8 +118,10 @@
 \clist_new:N \l__pgfgo_kernel_sgf_white_clist
 \clist_new:N \l__pgfgo_kernel_sgf_moves_clist
 
-\cs_new_protected:Npn \pgfgo_kernel_sgf_read:n #1 {
-	\lua_now:e {pgfgo.sgf_read("\lua_escape:e {#1}")}
+\cs_new_protected:Npn \pgfgo_kernel_sgf_read:n #1 {\pgfgo_kernel_sgf_read:nn {#1} {}}
+
+\cs_new_protected:Npn \pgfgo_kernel_sgf_read:nn #1#2 {
+	\lua_now:e {pgfgo.sgf_read("\lua_escape:e {#1}", "\lua_escape:e {#2}")}
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_black_seq \l__pgfgo_kernel_sgf_black_clist
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_white_seq \l__pgfgo_kernel_sgf_white_clist
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_moves_seq \l__pgfgo_kernel_sgf_moves_clist
@@ -127,6 +129,21 @@
 
 \cs_new:Npn \pgfgo_kernel_sgf_comment:n #1 {
 	\lua_now:e {pgfgo.sgf_comment(\int_eval:n {#1})}
+}
+
+\clist_new:N \l__pgfgo_kernel_sgf_marks_clist
+
+\cs_new_protected:Npn \pgfgo_kernel_sgf_marks:n #1 {
+	\lua_now:e {pgfgo.sgf_marks(\int_eval:n {#1})}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_marks_seq \l__pgfgo_kernel_sgf_marks_clist
+}
+
+\cs_new:Npn \pgfgo_kernel_sgf_label:n #1 {
+	\lua_now:e {pgfgo.sgf_label(\int_eval:n {#1})}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_sgf_info:nn #1#2 {
+	\lua_now:e {pgfgo.sgf_info("\lua_escape:e {#1}", "\lua_escape:e {#2}")}
 }
 
 

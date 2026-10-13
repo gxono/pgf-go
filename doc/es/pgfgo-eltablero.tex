@@ -60,6 +60,16 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/sgf size=\meta{file}}
+		Toma el tamaño del tablero de una partida SGF (su propiedad |SZ|). Solo con el kernel en Lua (pág.~\pageref{subsec:kernel}).
+
+		\begin{codeexample}[]
+			\begin{goban}[sgf size = variantes.sgf, label = {at = {north, west}}]
+				\sgf{variantes.sgf}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
 	\begin{key}{/pgfgo/goban/scale=\meta{float} (initially 1)}
 		
 		Controla la escala global del tablero, afectando tanto las dimensiones generales como el grosor de ciertos elementos (como el «line width» de las líneas).
@@ -686,6 +696,46 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 		Desactiva las capturas. Es el valor inicial.
 	\end{stylekey}
+
+	\subsection{Jugadas en puntos ya jugados}
+	\label{subsec:notas}
+
+	En los diagramas numerados, cuando una jugada cae en un punto donde ya se jugó (por ejemplo, al retomar un ko), los libros no la dibujan: el punto sigue mostrando la primera piedra y debajo del diagrama se anota, por ejemplo, «3 en 1».
+
+	\begin{key}{/pgfgo/goban/notes=\meta{boolean} (default true, initially false)}
+
+		Una jugada numerada en un punto donde ya hubo una jugada numerada del mismo |goban| no se dibuja: el punto sigue mostrando la primera, aunque haya sido capturada, y se anota «N at M». Solo cuentan las jugadas numeradas (|\moves*|) que se ven en el tablero. Funciona con los dos kernels.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A2 to E4}}}
+
+			\begin{goban}[notes]
+				\stones{B3,C2,C4}
+				\stones[w]{D2,D4,E3}
+				\moves*[w]{C3}
+				\moves*{D3}
+				\moves*[from = 3, w]{C3}
+			\end{goban}
+
+			\pgfgomovenotes[at = en]
+		\end{codeexample}
+	\end{key}
+
+	\begin{command}{\pgfgomovenotes\opt{\oarg{options}}}
+		Escribe las notas del último |goban|, separadas por comas. Si no hay notas, no escribe nada. Las opciones son las de |/pgfgo/notes|.
+	\end{command}
+
+	\begin{key}{/pgfgo/notes = \meta{options}}
+		Opciones de |\pgfgomovenotes| para todo el documento, por ejemplo |\pgfgoset{notes = {at = en}}|.
+	\end{key}
+
+	\begin{key}{/pgfgo/notes/at = \meta{text} (initially at)}
+		Texto entre los dos números.
+	\end{key}
+
+	\begin{key}{/pgfgo/notes/separator = \meta{text} (initially una coma y un espacio)}
+		Texto entre las notas.
+	\end{key}
 
 	\subsection{Recordar un tablero}
 	El sistema de «recordar» guarda lo que se dibuja en un |goban| (piedras, jugadas y marcas, con sus opciones) para volver a dibujarlo en otro con |resume|. Las jugadas mantienen su número y su color, y la numeración sigue desde ahí. Solo se guarda lo que se dibuja: las opciones del tablero (tamaño, |partial|, etiquetas) se dan en cada |goban|.
