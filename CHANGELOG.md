@@ -20,6 +20,26 @@ The output is unchanged.
   `--kernel lua` option in `tests/run_tests.py` that runs every test with the
   Lua kernel.
 
+### Captures and SGF (kernel = lua)
+
+- New key `goban/captures`. With `captures` (or `captures = remove`), stones
+  without liberties are taken off the board when a move captures them, as in
+  a real game: first the opponent's groups, then the player's own group if
+  the move is a suicide. With `captures = fade`, captured stones stay on the
+  board drawn as prisoners (the style of `\prisoner` and `/pgfgo/prisoner`).
+  `captures = false` is the default. Stones placed with `\stones` count;
+  neutral stones and prisoners do not. Moves outside a `partial` board also
+  capture. With `kernel = expl3`, `captures` raises an error.
+- New command `\sgf[from = <n>, to = <m>]{<file>}`, available inside
+  `goban`. It draws the main line of the first game in an SGF file: setup
+  stones (`AB`, `AW`) as with `\stones`, and moves as with `\moves`. Moves
+  before `from` have no numbers and moves after `to` are not played. Passes
+  count but are not drawn. After `\sgf`, `\moves` continues the game with the
+  next number and colour. It works with `captures`, `partial`, `remember` and
+  `resume`. A game for a board of another size produces a warning. With
+  `kernel = expl3`, `\sgf` raises an error.
+- New tests `captures.tex` and `sgf.tex` (with `game.sgf`).
+
 ## 0.2025.10.13 — 2025/10/13
 
 Bug-fix release. The user-level syntax is unchanged, but some diagrams render

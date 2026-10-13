@@ -417,6 +417,94 @@ end
 
 
 ---------------------------------------------------------------------------------------------------
+-- PIEDRAS EN EL TABLERO (CAPTURAS)
+---------------------------------------------------------------------------------------------------
+
+-- stones["x,y"] = "black" | "white".
+local stones = {}
+
+local function on_board(x, y)
+	return x and y and x >= 1 and y >= 1
+		and x <= count("l_pgfgo_goban_size_x_int") and y <= count("l_pgfgo_goban_size_y_int")
+end
+
+local function key(x, y)
+	return x .. "," .. y
+end
+
+local function neighbours(x, y)
+	local list = {}
+	for _, d in ipairs({{-1, 0}, {1, 0}, {0, -1}, {0, 1}}) do
+		local nx, ny = x + d[1], y + d[2]
+		if on_board(nx, ny) then
+			insert(list, {nx, ny})
+		end
+	end
+	return list
+end
+
+-- GRUPO DE LA PIEDRA EN (x,y) Y SI TIENE ALGUNA LIBERTAD.
+local function group(x, y)
+	local color = stones[key(x, y)]
+	local members, seen, free = {}, {[key(x, y)] = true}, false
+	local pending = {{x, y}}
+	while #pending > 0 do
+		local p = table.remove(pending)
+		insert(members, p)
+		for _, n in ipairs(neighbours(p[1], p[2])) do
+			local k = key(n[1], n[2])
+			local there = stones[k]
+			if there == nil then
+				free = true
+			elseif there == color and not seen[k] then
+				seen[k] = true
+				insert(pending, n)
+			end
+		end
+	end
+	return members, free
+end
+
+local function remove_group(members, captured)
+	for _, p in ipairs(members) do
+		stones[key(p[1], p[2])] = nil
+		insert(captured, point(p[1], p[2]))
+	end
+end
+
+-- PONE UNA PIEDRA Y DEVUELVE LAS QUE SALEN DEL TABLERO.
+local function play(color, x, y)
+	local captured = {}
+	stones[key(x, y)] = color
+	for _, n in ipairs(neighbours(x, y)) do
+		local there = stones[key(n[1], n[2])]
+		if there and there ~= color then
+			local members, free = group(n[1], n[2])
+			if not free then
+				remove_group(members, captured)
+			end
+		end
+	end
+	local members, free = group(x, y)
+	if not free then
+		remove_group(members, captured)
+	end
+	return captured
+end
+
+function pgfgo.board_clear()
+	stones = {}
+end
+
+function pgfgo.board_put(color, x, y)
+	x, y = tonumber(x), tonumber(y)
+	if on_board(x, y) then
+		stones[key(x, y)] = color
+	end
+end
+
+
+---------------------------------------------------------------------------------------------------
 -- JUGADAS
 ---------------------------------------------------------------------------------------------------
 
@@ -443,6 +531,12 @@ function pgfgo.move_if_black()
 end
 
 function pgfgo.move_play(x, y)
+	x, y = tonumber(x), tonumber(y)
+	local captured = {}
+	if on_board(x, y) then
+		captured = play(black_turn and "black" or "white", x, y)
+	end
+	token.set_macro("l__pgfgo_kernel_captured_clist", concat(captured, ","))
 	move_number = move_number + 1
 	black_turn = not black_turn
 end
@@ -464,6 +558,174 @@ end
 
 function pgfgo.sequence_step()
 	sequence_number = sequence_number + 1
+end
+
+
+---------------------------------------------------------------------------------------------------
+-- SGF
+---------------------------------------------------------------------------------------------------
+
+-- ARBOL DE UNA PARTIDA: {nodes = {{PROPIEDAD = {valores}}, ...}, children = {arboles}}.
+local function parse_sgf(s)
+	local i = 1
+	local function skip()
+		i = s:find("%S", i) or #s + 1
+	end
+	local function value()
+		-- i ESTA EN [. \] NO CIERRA EL VALOR.
+		local out = {}
+		i = i + 1
+		while i <= #s do
+			local c = s:sub(i, i)
+			if c == "\\" then
+				insert(out, s:sub(i + 1, i + 1))
+				i = i + 2
+			elseif c == "]" then
+				i = i + 1
+				break
+			else
+				insert(out, c)
+				i = i + 1
+			end
+		end
+		return concat(out)
+	end
+	local function node()
+		local properties = {}
+		while true do
+			skip()
+			local ident = s:match("^%a+", i)
+			if not ident then
+				return properties
+			end
+			i = i + #ident
+			-- LOS NOMBRES VIEJOS (AddBlack) SE QUEDAN CON LAS MAYUSCULAS (AB).
+			ident = ident:gsub("%l", "")
+			local values = properties[ident] or {}
+			skip()
+			while s:sub(i, i) == "[" do
+				insert(values, value())
+				skip()
+			end
+			properties[ident] = values
+		end
+	end
+	local function tree()
+		local t = {nodes = {}, children = {}}
+		i = i + 1
+		while true do
+			skip()
+			local c = s:sub(i, i)
+			if c == ";" then
+				i = i + 1
+				insert(t.nodes, node())
+			elseif c == "(" then
+				insert(t.children, tree())
+			else
+				i = i + 1
+				return t
+			end
+		end
+	end
+	local start = s:find("(", 1, true)
+	if not start then
+		return {nodes = {}, children = {}}
+	end
+	i = start
+	return tree()
+end
+
+-- NODOS DE LA LINEA PRINCIPAL (SIEMPRE LA PRIMERA VARIANTE).
+local function main_line(t)
+	local nodes = {}
+	while t do
+		for _, n in ipairs(t.nodes) do insert(nodes, n) end
+		t = t.children[1]
+	end
+	return nodes
+end
+
+-- a..z SON 1..26 Y A..Z SON 27..52.
+local function sgf_number(c)
+	local b = c:byte()
+	if b >= 97 then
+		return b - 96
+	end
+	return b - 64 + 26
+end
+
+-- PUNTOS DE UN VALOR: "pd" O UN RECTANGULO "aa:cc". LA FILA 1 DE pgf-go ES LA DE ABAJO.
+local function sgf_points(v, size_y)
+	local list = {}
+	local a, b = v:match("^(%a%a):(%a%a)$")
+	a = a or v:match("^(%a%a)$")
+	b = b or a
+	if a then
+		for x in sorted_range(sgf_number(a:sub(1, 1)), sgf_number(b:sub(1, 1))) do
+			for y in sorted_range(sgf_number(a:sub(2, 2)), sgf_number(b:sub(2, 2))) do
+				insert(list, point(x, size_y - y + 1))
+			end
+		end
+	end
+	return list
+end
+
+local function find_file(name)
+	local f = io.open(name, "r")
+	if f then
+		f:close()
+		return name
+	end
+	return kpse.find_file(name, "other text files") or kpse.find_file(name, "tex")
+end
+
+function pgfgo.sgf_read(name)
+	local black, white, moves = {}, {}, {}
+	local size_x, size_y = 19, 19
+	local path = find_file(name)
+	if not path then
+		message("error", "sgf-not-found", name)
+	else
+		local f = io.open(path, "rb")
+		local nodes = main_line(parse_sgf(f:read("a")))
+		f:close()
+		local root = nodes[1] or {}
+		if root.SZ then
+			local x, y = root.SZ[1]:match("^%s*(%d+)%s*:%s*(%d+)%s*$")
+			size_x = tonumber(x or root.SZ[1]) or 19
+			size_y = tonumber(y or root.SZ[1]) or 19
+		end
+		local started = false
+		for _, n in ipairs(nodes) do
+			-- LAS PIEDRAS INICIALES SON LAS DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA.
+			if not started then
+				for _, v in ipairs(n.AB or {}) do
+					for _, p in ipairs(sgf_points(v, size_y)) do insert(black, p) end
+				end
+				for _, v in ipairs(n.AW or {}) do
+					for _, p in ipairs(sgf_points(v, size_y)) do insert(white, p) end
+				end
+			end
+			for _, player in ipairs({{"B", "black"}, {"W", "white"}}) do
+				local values = n[player[1]]
+				if values then
+					started = true
+					local v = values[1] or ""
+					-- [] Y, HASTA 19x19, [tt] SON PASES.
+					local p = sgf_points(v, size_y)[1]
+					if not p or (v == "tt" and size_x <= 19 and size_y <= 19) then
+						p = "{}{}"
+					end
+					insert(moves, "{" .. player[2] .. "}" .. p)
+				end
+			end
+		end
+	end
+	tex.setcount("l_pgfgo_kernel_sgf_size_x_int", size_x)
+	tex.setcount("l_pgfgo_kernel_sgf_size_y_int", size_y)
+	token.set_macro("l__pgfgo_kernel_sgf_black_clist", concat(black, ","))
+	token.set_macro("l__pgfgo_kernel_sgf_white_clist", concat(white, ","))
+	token.set_macro("l__pgfgo_kernel_sgf_moves_clist", concat(moves, ","))
 end
 
 

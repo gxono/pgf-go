@@ -23,9 +23,6 @@
 	\__test:nnn {points~'#1'} {\seq_use:Nn \l_pgfgo_kernel_points_seq {,}} {#2}
 }
 
-\__test_if:nnn {captures} {\pgfgo_kernel_if_feature:nTF {captures}} {no}
-\__test_if:nnn {sgf} {\pgfgo_kernel_if_feature:nTF {sgf}} {no}
-
 % Board size and visible part.
 \group_begin:
 	\pgfgo_kernel_board_size:n {9x13}

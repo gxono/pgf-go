@@ -13,4 +13,8 @@
 \str_if_eq:VnF \g_pgfgo_kernel_tl {expl3} {\msg_error:nn {kernel-test} {wrong-kernel}}
 \ExplSyntaxOff
 \input{../kernel-checks}
+\ExplSyntaxOn
+\__test_if:nnn {captures} {\pgfgo_kernel_if_feature:nTF {captures}} {no}
+\__test_if:nnn {sgf} {\pgfgo_kernel_if_feature:nTF {sgf}} {no}
+\ExplSyntaxOff
 \end{document}
