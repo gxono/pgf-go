@@ -1,6 +1,8 @@
 \ProvidesFile{pgf-go-coordinate-parser.sty}[2025/10/13 v0.2025.10.13 pgf-go: coordinate parser]
 \ExplSyntaxOn
 
+%PARTE DEL KERNEL expl3 (LO CARGA pgf-go-kernel-expl3.sty). EL RESTO DEL PAQUETE USA \pgfgo_kernel_points:n.
+
 
 % LN : A3 : Unica interseccion.
 % LLN : A-C 2 : Linea horizontal.
@@ -384,10 +386,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \tl_new:N \l_pgfgo_coordinate_parser_expanded_subset_tl
 
-\msg_new:nnn {pgfgo} {unknown-coordinate}
-	{Coordinate~'#1'~was~not~recognized~and~is~ignored.~Columns~are~upper-case~letters~(for~example~'C3').}
-\msg_new:nnn {pgfgo} {diagonal-line}
-	{'#1'~is~not~a~horizontal~or~vertical~line~and~is~ignored.}
 \cs_generate_variant:Nn \msg_warning:nnn {nnV}
 \cs_generate_variant:Nn \tl_if_blank:nF {V}
 

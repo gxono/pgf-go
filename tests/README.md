@@ -55,6 +55,12 @@ not affect the manuals, create them locally with
     undeclared variable is an error.
   - `primitives.tex` checks that `\mark` and `\marks` still work as TeX
     primitives outside `goban`.
+  - `kernel.tex` calls every function of the compute kernel interface
+    (`latex/pgf-go-kernel.sty`) and raises an error for each wrong result.
+    Every kernel must pass it.
+  - `kernel-lua.tex` checks that `kernel = lua` falls back to `expl3` with a
+    warning while the Lua kernel is not available, and that features that
+    need it raise an error.
 - `doc/examples/example-*.tex`: the examples shipped with the package.
 - With `--manuals`: `doc/es/pgfgo-es.tex` and `doc/en/pgfgo-en.tex`.
 

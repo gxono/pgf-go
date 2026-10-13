@@ -2,9 +2,7 @@
 %REMEMBER
 \ExplSyntaxOn
 
-%PILA GLOBAL CON LOS ELEMENTOS RECORDADOS. CADA ITEM ES CODIGO QUE VUELVE A DIBUJAR EL ELEMENTO.
-\seq_new:N\g_pgfgo_goban_elements_stack_seq
-
+%QUE SE RECUERDA. LA MEMORIA EN SI LA GUARDA EL KERNEL (\pgfgo_kernel_remember_...).
 \bool_new:N\l_pgfgo_goban_resume_bool
 \bool_new:N\l_pgfgo_goban_remember_new_bool
 \bool_new:N\l_pgfgo_goban_remember_add_bool
@@ -38,11 +36,6 @@
 	\bool_set_false:N\l_pgfgo_goban_remember_mark_bool
 	\bool_set_false:N\l_pgfgo_goban_remember_label_bool
 	\bool_set_false:N\l_pgfgo_goban_remember_territory_bool
-}
-
-%AGREGA UN ELEMENTO A LA PILA. #1 SE EXPANDE CON e (USAR \exp_not:n PARA LAS OPCIONES DEL USUARIO).
-\cs_new_protected:Nn \pgfgo_goban_remember_push:n {
-	\seq_gput_right:Ne \g_pgfgo_goban_elements_stack_seq {#1}
 }
 
 \ExplSyntaxOff
