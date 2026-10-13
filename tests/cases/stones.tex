@@ -1,0 +1,48 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{Default players: \textbackslash stone is neutral (C3), \textbackslash stones is black (B2, D2)}
+\begin{goban}[5]\stone{C3}\stones{B2,D2}\end{goban}
+
+\case{Explicit players: b, w, n and their long names}
+\begin{goban}[5]
+	\stones[b]{A1}\stones[w]{B1}\stones[n]{C1}
+	\stone[black]{A2}\stone[white]{B2}\stone[neutral]{C2}
+\end{goban}
+
+\case{Stone options: radius 3pt (B2), scale 1.4 (C3), red 2pt line (D4)}
+\begin{goban}[5]
+	\stones[radius = 3pt]{B2}
+	\stones[scale = 1.4]{C3}
+	\stones[w, line = {color = red, width = 2pt}]{D4}
+\end{goban}
+
+\case{Drop shine and drop shadow with the default profile}
+\begin{goban}[5]
+	\stones[drop shine = {true}]{B3}
+	\stones[w, drop shadow = {true, offset = 1pt, angle = -45}]{D3}
+\end{goban}
+
+\case{Prisoners: global red option (C3), per-stone blue option (D3), \textbackslash prisoner (B3)}
+\pgfgoset{prisoner = {fill = {color = red}}}
+\begin{goban}[5]
+	\prisoners[w]{C3}
+	\stones[b, prisoner = {fill = {color = blue}}]{D3}
+	\prisoner[b]{B3}
+\end{goban}
+\pgfgoset{prisoner = {}}
+
+\case{use i = false: J is the 9th column}
+\begin{goban}[9, use i = false, label = {at = south}]\stone[b]{J1}\stones[w]{J2}\end{goban}
+
+\case{Stone with a mark: white stone with triangle, black stone with circle}
+\begin{goban}[5]\stone[w, mark = triangle]{B2}\stone[b, mark = circle]{D2}\end{goban}
+
+\end{document}

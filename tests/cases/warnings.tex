@@ -1,0 +1,20 @@
+% engines: lualatex
+% expect-warnings: 5
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{Each command below must produce one warning and draw nothing}
+\begin{goban}[5]
+	\stones{c3}      % lower-case column
+	\stone{B 3}      % space inside the coordinate
+	\stones{A1 -- C3} % diagonal line
+	\stones{Z9}      % outside the board
+	\marks[circle]{E9} % outside the board
+\end{goban}
+
+\end{document}

@@ -1,0 +1,22 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+% render: no
+%
+% Runs a bit of everything with expl3's check-declarations enabled:
+% any variable used without being declared raises an error.
+\RequirePackage{expl3}
+\ExplSyntaxOn \debug_on:n {check-declarations} \ExplSyntaxOff
+\documentclass{article}
+\usepackage{../../latex/pgf-go}
+\begin{document}
+
+\begin{goban}[5, new remember, partial = {from = A1 to E4}, label = {at = all, font size = 7pt}]
+	\stones[b]{C3}\stone[w]{D4}\prisoners[w]{A4}
+	\marks[sequence]{A1,B1}\marks[b, triangle]{C3}
+	\moves*{E1,E2}
+\end{goban}
+\begin{goban}[5x5, resume, use i = false]\stones{A1 R B2; A1}\end{goban}
+{\pgfgouseprofile{wain}\begin{goban}[3]\stones[drop shine = true]{B2}\end{goban}}
+
+\end{document}
