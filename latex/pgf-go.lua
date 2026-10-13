@@ -496,10 +496,20 @@ function pgfgo.board_clear()
 	stones = {}
 end
 
+-- color = "empty" QUITA LA PIEDRA.
 function pgfgo.board_put(color, x, y)
 	x, y = tonumber(x), tonumber(y)
 	if on_board(x, y) then
-		stones[key(x, y)] = color
+		stones[key(x, y)] = color ~= "empty" and color or nil
+	end
+end
+
+function pgfgo.board_if_occupied(x, y)
+	x, y = tonumber(x), tonumber(y)
+	if on_board(x, y) and stones[key(x, y)] then
+		tex_code("\\prg_return_true:")
+	else
+		tex_code("\\prg_return_false:")
 	end
 end
 
@@ -704,16 +714,30 @@ function pgfgo.sgf_read(name)
 			size_x = tonumber(x or root.SZ[1]) or 19
 			size_y = tonumber(y or root.SZ[1]) or 19
 		end
-		local started = false
+		local started, count = false, 0
+		local function each_point(node, property, f)
+			for _, v in ipairs(node[property] or {}) do
+				for _, p in ipairs(sgf_points(v, size_y)) do f(p) end
+			end
+		end
+		local function without(list, p)
+			local kept = {}
+			for _, q in ipairs(list) do
+				if q ~= p then insert(kept, q) end
+			end
+			return kept
+		end
 		for _, n in ipairs(nodes) do
-			-- LAS PIEDRAS INICIALES SON LAS DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA.
 			if not started then
-				for _, v in ipairs(n.AB or {}) do
-					for _, p in ipairs(sgf_points(v, size_y)) do insert(black, p) end
-				end
-				for _, v in ipairs(n.AW or {}) do
-					for _, p in ipairs(sgf_points(v, size_y)) do insert(white, p) end
-				end
+				-- LAS PIEDRAS INICIALES SON LAS DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA.
+				each_point(n, "AE", function(p) black, white = without(black, p), without(white, p) end)
+				each_point(n, "AB", function(p) white = without(white, p); insert(black, p) end)
+				each_point(n, "AW", function(p) black = without(black, p); insert(white, p) end)
+			else
+				-- DESPUES, SON EVENTOS ENTRE LAS JUGADAS: PRIMERO SE QUITA (AE) Y DESPUES SE AGREGA.
+				each_point(n, "AE", function(p) insert(moves, "{remove}" .. p) end)
+				each_point(n, "AB", function(p) insert(moves, "{add-black}" .. p) end)
+				each_point(n, "AW", function(p) insert(moves, "{add-white}" .. p) end)
 			end
 			for _, player in ipairs({{"B", "black"}, {"W", "white"}}) do
 				local values = n[player[1]]
@@ -726,11 +750,12 @@ function pgfgo.sgf_read(name)
 						p = "{}{}"
 					end
 					insert(moves, "{" .. player[2] .. "}" .. p)
+					count = count + 1
 				end
 			end
 			if n.C then
 				local text = concat(n.C, " "):gsub("%s+", " "):match("^%s*(.-)%s*$")
-				local k = #moves
+				local k = count
 				if text ~= "" then
 					sgf_comments[k] = sgf_comments[k] and (sgf_comments[k] .. " " .. text) or text
 				end

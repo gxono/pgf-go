@@ -643,7 +643,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/goban/captures=\meta{remove, fade or false} (default remove, initially false)}
 
-		Turns captures on. When a move leaves an opposing group without liberties, that group is removed from the board. If it leaves its own group without liberties (a suicide), that group is removed. Stones placed with |\stone| and |\stones| also count; neutral stones and prisoners do not. A move outside a partial board also captures. With |kernel = expl3|, this \emph{key} raises an error.
+		Turns captures on. When a move leaves an opposing group without liberties, that group is removed from the board. If it leaves its own group without liberties (a suicide), that group is removed. Stones placed with |\stone| and |\stones| also count; neutral stones and prisoners do not. A move outside a partial board also captures. A move on an occupied point produces a warning, because it is not possible in a game. With |kernel = expl3|, this \emph{key} raises an error.
 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}

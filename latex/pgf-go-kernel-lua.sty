@@ -105,6 +105,10 @@
 	\lua_now:e {pgfgo.board_put("\lua_escape:e {#1}", "\lua_escape:e {#2}", "\lua_escape:e {#3}")}
 }
 
+\prg_new_protected_conditional:Npnn \pgfgo_kernel_board_if_occupied:nn #1#2 {T, F, TF} {
+	\lua_now:e {pgfgo.board_if_occupied("\lua_escape:e {#1}", "\lua_escape:e {#2}")}
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %------------------------------------------SGF--------------------------------------------------%

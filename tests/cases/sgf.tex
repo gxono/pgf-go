@@ -1,5 +1,5 @@
 % engines: lualatex
-% expect-warnings: 1
+% expect-warnings: 2
 % expect-errors: 0
 \documentclass{article}
 \usepackage[margin=1cm]{geometry}
@@ -24,6 +24,11 @@
 	\sgf{game.sgf}\marks[b, triangle]{C6}
 \end{goban}
 \begin{goban}[9, resume]\end{goban}
+
+\case{setup.sgf: AB, AW and AE after the first move. With captures, C3 is removed before black 4 plays there / up to move 3 / without captures AE cannot be applied: one warning}
+\begin{goban}[5, captures]\sgf{setup.sgf}\end{goban}
+\begin{goban}[5, captures]\sgf[to = 3]{setup.sgf}\end{goban}
+\begin{goban}[5]\sgf{setup.sgf}\end{goban}
 
 \case{A 9x9 game on a 13x13 board warns once}
 \begin{goban}[13]\sgf{game.sgf}\end{goban}

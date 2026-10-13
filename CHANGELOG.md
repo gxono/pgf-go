@@ -29,15 +29,19 @@ The output is unchanged.
   board drawn as prisoners (the style of `\prisoner` and `/pgfgo/prisoner`).
   `captures = false` is the default. Stones placed with `\stones` count;
   neutral stones and prisoners do not. Moves outside a `partial` board also
-  capture. With `kernel = expl3`, `captures` raises an error.
+  capture. A move on an occupied point produces a warning. With
+  `kernel = expl3`, `captures` raises an error.
 - New command `\sgf[from = <n>, to = <m>]{<file>}`, available inside
   `goban`. It draws the main line of the first game in an SGF file: setup
   stones (`AB`, `AW`) as with `\stones`, and moves as with `\moves`. Moves
   before `from` have no numbers and moves after `to` are not played. Passes
-  count but are not drawn. After `\sgf`, `\moves` continues the game with the
-  next number and colour. It works with `captures`, `partial`, `remember` and
-  `resume`. A game for a board of another size produces a warning. With
-  `kernel = expl3`, `\sgf` raises an error.
+  count but are not drawn. Stones added (`AB`, `AW`) or removed (`AE`) by the
+  nodes after the first move are applied together with the previous move;
+  removing stones needs `captures`, and without it `\sgf` warns once. After
+  `\sgf`, `\moves` continues the game with the next number and colour. It
+  works with `captures`, `partial`, `remember` and `resume`. A game for a
+  board of another size produces a warning. With `kernel = expl3`, `\sgf`
+  raises an error.
 - New command `\sgfanimation[<options>]{<file>}`, used outside `goban`. With
   the `animate` package, it draws one board per move of an SGF game, and
   `animate`'s buttons step through the game. By default the last move is
@@ -45,11 +49,13 @@ The output is unchanged.
   shows the comment (`C`) of each move below the board. Other keys: `from`,
   `to`, `fps`, `goban`, `animate`, `comment height`, `comment font`. They can
   be set with `\pgfgoset{sgf animation = {...}}`. It needs `\usepackage{animate}`
-  and two runs. All the frames have the same size, with or without a comment,
+  and two runs. The boards have the size of the game (`SZ`) unless `goban`
+  sets another one. All the frames have the same size, with or without a comment,
   so that `animate` does not stretch any of them; `sgf-animation.tex` checks
   it.
 - New tests `captures.tex`, `sgf.tex` (with `game.sgf`) and
-  `sgf-animation.tex`. Test documents can ask for two runs with
+  `sgf-animation.tex` (with `setup.sgf` for `AB`, `AW` and `AE` after the
+  first move). Test documents can ask for two runs with
   `% passes: 2`.
 
 ### Documentation

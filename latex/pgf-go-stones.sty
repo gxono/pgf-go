@@ -292,7 +292,24 @@
 	\group_end:
 }
 
+%QUITA LA PIEDRA DE (#1,#2): DEL TABLERO DEL KERNEL Y DE LO QUE SE VA A DIBUJAR.
+\cs_new_protected:Npn \pgfgo_captures_remove:nn #1#2 {
+	\pgfgo_kernel_board_put:nnn {empty} {#1} {#2}
+	\__pgfgo_captures_key:nn {#1} {#2}
+	\prop_gremove:NV \g__pgfgo_captures_pending_prop \l__pgfgo_captures_key_tl
+	\prop_gremove:NV \g__pgfgo_captures_faded_prop \l__pgfgo_captures_key_tl
+}
+
+%CON CAPTURAS, UNA JUGADA EN UN PUNTO OCUPADO ES UN ERROR DE LA PARTIDA (SIN CAPTURAS PUEDE SER BUSCADO).
+\msg_new:nnn {pgfgo} {occupied-point}
+	{Move~#1~is~played~on~#2,~which~is~not~empty.}
+\cs_generate_variant:Nn \msg_warning:nnnn {nnee}
+
 \cs_new_protected:Npn \__pgfgo_captures_move:nnnn #1#2#3#4 {
+	\pgfgo_kernel_board_if_occupied:nnT {#3} {#4} {
+		\msg_warning:nnee {pgfgo} {occupied-point}
+			{\pgfgo_kernel_move_number:} {\pgfgo_kernel_column_name:n {#3} \int_eval:n {#4}}
+	}
 	\pgfgo_kernel_if_visible:nnT {#3} {#4} {
 		\__pgfgo_captures_defer:nne {#3} {#4} {
 			\exp_not:N \__pgfgo_move_draw:nnnnnn

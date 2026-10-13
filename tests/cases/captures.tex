@@ -1,5 +1,5 @@
 % engines: lualatex
-% expect-warnings: 0
+% expect-warnings: 1
 % expect-errors: 0
 \documentclass{article}
 \usepackage[margin=1cm]{geometry}
@@ -33,6 +33,9 @@
 \begin{goban}[5, captures, partial = {from = A1 to C3}, label = {at = all}]
 	\stones[w]{C1}\stones{B1,C2}\moves*{D1}
 \end{goban}
+
+\case{Move 3 is played on C3, which is not empty: one warning}
+\begin{goban}[5, captures]\moves*{C3, D4}\moves*{C3}\end{goban}
 
 \case{Marks stay on captured points; resume replays the captures}
 \begin{goban}[5, new remember, captures]
