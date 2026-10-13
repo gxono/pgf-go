@@ -46,6 +46,7 @@ your LaTeX document:
 You can find examples on doc directory.
 
 ## History
+   - version 0.2025.10.13 : bug fixes. `remember`/`resume` now restore moves with their original colors and numbers, `forget` clears the memory, and `add to remember` is available. Every `goban` starts at move 1 with black. `\mark`/`\marks` only exist inside `goban`. Fixed the `n` (neutral) alias, `use i = false` with `\stone`, `A:B` ranges on non-square partial boards, and `sequence = false`.
    - version 0.2025.03.10 : added features to system coordinates and rounded corners.
    - version 0.2025.03.07 : partial realease.
 

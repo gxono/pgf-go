@@ -1,20 +1,22 @@
+\ProvidesFile{pgf-go-remember.sty}[2025/10/13 v0.2025.10.13 pgf-go: remember]
 %REMEMBER
 \ExplSyntaxOn
 
-\tl_new:N\l_pgfgo_goban_elements_stack_tl
-\seq_new:N\l_pgfgo_goban_elements_stack_seq
+%PILA GLOBAL CON LOS ELEMENTOS RECORDADOS. CADA ITEM ES CODIGO QUE VUELVE A DIBUJAR EL ELEMENTO.
+\seq_new:N\g_pgfgo_goban_elements_stack_seq
 
-\bool_set_false:N\l_pgfgo_goban_resume_bool
-\bool_set_false:N\l_pgfgo_goban_remember_new_bool
-\bool_set_false:N\l_pgfgo_goban_remember_add_bool
+\bool_new:N\l_pgfgo_goban_resume_bool
+\bool_new:N\l_pgfgo_goban_remember_new_bool
+\bool_new:N\l_pgfgo_goban_remember_add_bool
 
 
-\bool_set_false:N\l_pgfgo_goban_remember_stone_bool
-\bool_set_false:N\l_pgfgo_goban_remember_prisoner_bool%useless
-\bool_set_false:N\l_pgfgo_goban_remember_move_bool
-\bool_set_false:N\l_pgfgo_goban_remember_mark_bool
-\bool_set_false:N\l_pgfgo_goban_remember_label_bool
-\bool_set_false:N\l_pgfgo_goban_remember_territory_bool
+\bool_new:N\l_pgfgo_goban_remember_stone_bool
+\bool_new:N\l_pgfgo_goban_remember_prisoner_bool%useless
+\bool_new:N\l_pgfgo_goban_remember_move_bool
+\bool_new:N\l_pgfgo_goban_remember_move_label_bool
+\bool_new:N\l_pgfgo_goban_remember_mark_bool
+\bool_new:N\l_pgfgo_goban_remember_label_bool
+\bool_new:N\l_pgfgo_goban_remember_territory_bool
 
 
 
@@ -36,6 +38,11 @@
 	\bool_set_false:N\l_pgfgo_goban_remember_mark_bool
 	\bool_set_false:N\l_pgfgo_goban_remember_label_bool
 	\bool_set_false:N\l_pgfgo_goban_remember_territory_bool
+}
+
+%AGREGA UN ELEMENTO A LA PILA. #1 SE EXPANDE CON e (USAR \exp_not:n PARA LAS OPCIONES DEL USUARIO).
+\cs_new_protected:Nn \pgfgo_goban_remember_push:n {
+	\seq_gput_right:Ne \g_pgfgo_goban_elements_stack_seq {#1}
 }
 
 \ExplSyntaxOff

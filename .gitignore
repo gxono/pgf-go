@@ -1,2 +1,12 @@
+# Archivos auxiliares de LaTeX
+*.aux
 *.log
+*.out
+*.toc
+*.idx
+*.ilg
+*.ind
+*.fls
+*.fdb_latexmk
 *.synctex.gz
+*.synctex(busy)

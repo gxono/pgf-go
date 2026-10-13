@@ -1,24 +1,20 @@
+\ProvidesFile{pgf-go-stones.sty}[2025/10/13 v0.2025.10.13 pgf-go: stones and moves]
 \ExplSyntaxOn
-\usepackage{pgf}
 
-
-%STONE
-\bool_set_false:N\l_pgfgo_stone_mark_bool
 
 %MOVE
-\int_new:N\l_pgfgo_move_from_int
-\int_set:Nn\l_pgfgo_move_from_int{1}
-\int_new:N\l_pgfgo_move_current_int
-\int_set:Nn\l_pgfgo_move_current_int{1}
-%MIDE LOS INTERCALOS ENTRE LOS MOVIMIENTOS
-\bool_set_true:N\l_pgfgo_move_player_black_bool
-\bool_set_false:N\l_pgfgo_move_player_white_bool
+%NUMERO DE LA PROXIMA JUGADA Y TURNO. SON GLOBALES PORQUE LAS JUGADAS SE ENCADENAN ENTRE \moves.
+\int_new:N\g_pgfgo_move_current_int
+\int_gset:Nn\g_pgfgo_move_current_int{1}
+\bool_new:N\g_pgfgo_move_black_turn_bool
+\bool_gset_true:N\g_pgfgo_move_black_turn_bool
 
+%CADA goban EMPIEZA EN LA JUGADA 1 CON NEGRAS.
+\cs_new_protected:Nn \pgfgo_move_reset: {
+	\int_gset:Nn\g_pgfgo_move_current_int{1}
+	\bool_gset_true:N\g_pgfgo_move_black_turn_bool
+}
 
-\tl_new:N \l_pgfgo_stones_mark_tl
-
-
-\bool_set_false:N\l_pgfgo_prisoner_bool
 
 
 \keys_define:nn { pgfgo / stone }{
@@ -53,9 +49,9 @@
 		\bool_set_true:N	\l_pgfgo_players_neutral_bool
 	},
 	neutral				.groups:n = { player-id },
-	n						.code:n	= {\keys_set:nn{ pgfgo / stone }{white}},
+	n						.code:n	= {\keys_set:nn{ pgfgo / stone }{neutral}},
 	n						.groups:n = { player-id },
-	
+
 	mark								.code:n = {
 			\pgfgo_mark:nee{#1}{\l_pgfgo_parsed_x_coordinate_tl}{\l_pgfgo_parsed_y_coordinate_tl}
 	},
@@ -76,32 +72,22 @@
 	remember					.groups:n	=	{preset, local},
 
 
-	black			.code:n			= {
-		\bool_set_true:N\l_pgfgo_players_black_bool
-		\bool_set_false:N\l_pgfgo_players_white_bool
-	},
+	%FIJAN DE QUIEN ES EL TURNO; LAS JUGADAS SIGUIENTES ALTERNAN DESDE AHI.
+	black			.code:n			= {\bool_gset_true:N\g_pgfgo_move_black_turn_bool},
 	black			.groups:n		= {player-id},
 	b						.code:n	= {\keys_set:nn{ pgfgo / move }{black}},
 	b						.groups:n = { player-id, local },
 
 
-	white			.code:n			= {
-		\bool_set_false:N\l_pgfgo_players_black_bool
-		\bool_set_true:N\l_pgfgo_players_white_bool
-	},
+	white			.code:n			= {\bool_gset_false:N\g_pgfgo_move_black_turn_bool},
 	white			.groups:n		= { player-id },
 	w						.code:n	= {\keys_set:nn{ pgfgo / move }{white}},
 	w						.groups:n = { player-id, local },
 
 
-	from				.code:n			=	{
-		\int_set:Nn\l_pgfgo_move_from_int{#1}
-		\int_set:Nn\l_pgfgo_move_current_int{\int_use:N\l_pgfgo_move_from_int}
-	},
+	from				.code:n			=	{\int_gset:Nn\g_pgfgo_move_current_int{#1}},
 	from				.groups:n		= {first stone, preset, local},
 }
-
-\keys_set:nn { pgfgo / move} {black}
 
 
 
@@ -117,7 +103,7 @@
 	\pgfscope
 	\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_drop_shine_opacity_fp}
 	\pgftransformrotate{-45}
-	\pgftransformrotate{\l_pgfgo_players_stone_drop_shine_angle_fp}
+	\pgftransformrotate{\fp_to_decimal:N\l_pgfgo_players_stone_drop_shine_angle_fp}
 	\pgfsetfillcolor{\l_pgfgo_players_stone_drop_shine_color_tl}
 	\fp_set:Nn\l_tmpa_fp{0.8}
 	\pgfpathmoveto{\pgfpointpolar{135}{\fp_use:N\l_tmpa_fp * \l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}}
@@ -195,20 +181,25 @@
 
 
 
+%DIBUJA UNA PIEDRA. SI #1 NO INDICA EL JUGADOR, LA PIEDRA ES NEGRA.
+%SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO.
 \cs_set_protected:Npn\pgfgo_stone:nnn #1#2#3 {
+	\pgfgo_if_visible:nnT {#2} {#3} {\__pgfgo_stone_draw:nnn {#1} {#2} {#3}}
+}
+
+\cs_set_protected:Npn\__pgfgo_stone_draw:nnn #1#2#3 {
 	\group_begin:
-	\pgfgo_parse_coordinate:n {#2}
-		
+	\keys_set:nn { pgfgo / stone }{black}
 	\keys_set_groups:nnn{ pgfgo / stone }{ player-id }{#1}
-	\bool_if:NTF \l_pgfgo_players_black_bool 
+	\bool_if:NTF \l_pgfgo_players_black_bool
 		{\keys_set_exclude_groups:nnn{ pgfgo / players / black / stone } { external } {#1}}
-		{\bool_if:NTF \l_pgfgo_players_white_bool 
+		{\bool_if:NTF \l_pgfgo_players_white_bool
 			{\keys_set_exclude_groups:nnn{ pgfgo / players / white / stone } { external } {#1}}
 			{\keys_set_exclude_groups:nnn{ pgfgo / players / neutral / stone } { external } {#1}}}
 	\keys_set_groups:nnn{ pgfgo / stone }{ at-end }{#1}
 	\pgfgo_get_variables_from_current_player:
-	
-	
+
+
 	\pgfgo_stone_set_render_options:
 	\pgfscope
 	\pgftransformshift{\pgfpointxy{#2}{#3}}
@@ -216,7 +207,7 @@
 	\endpgfscope
 	\tl_set:Nn\l_pgfgo_parsed_x_coordinate_tl{#2}
 	\tl_set:Nn\l_pgfgo_parsed_y_coordinate_tl{#3}
-	
+
 	%-----MARCAS-------------------------
 
 		\pgfscope
@@ -234,29 +225,30 @@
 
 
 \DeclareDocumentCommand{\stone}{O{}m}{
+	\group_begin:
 	\keys_set_groups:nnn{ pgfgo / stone }{ preset }{#1}
-	\bool_set_false:N	\l_pgfgo_players_white_bool
-	\bool_set_false:N	\l_pgfgo_players_black_bool
-	\bool_set_true:N	\l_pgfgo_players_neutral_bool
-	\regex_extract_all:NnN\l_pgfgo_coordinate_parser_subset_AN_regex{#2}\l_tmpa_seq
-	\seq_if_empty:NF \l_tmpa_seq {
-		\pgfgo_coordinate_parser_AN:ff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}} %Devuelve \l_pgfgo_coordinate_parser_inmediate_seq
+	\regex_extract_once:NnNTF\c_pgfgo_coordinate_parser_subset_AN_regex{#2}\l_tmpa_seq {
+		\pgfgo_coordinate_parser_from_group_to_items:n {#2} %Devuelve \l_pgfgo_coordinate_parser_items_from_group_seq
+		%\stone SIN JUGADOR DIBUJA UNA PIEDRA NEUTRAL (\stones, EN CAMBIO, UNA NEGRA).
 		%RECORDAR LAS PIEDAS
 		\bool_if:NT \l_pgfgo_goban_remember_stone_bool {
-			\seq_gput_right:Ne \l_pgfgo_goban_elements_stack_seq {
-				\exp_not:N\pgfgo_stone:nf{#1}{\seq_item:Nn \l_pgfgo_coordinate_parser_inmediate_seq {1}}}
+			\pgfgo_goban_remember_push:n {
+				\exp_not:N\pgfgo_stone:nn{neutral, \exp_not:n{#1}}{\seq_item:Nn \l_pgfgo_coordinate_parser_items_from_group_seq {1}}}
 		}
-		
-		\pgfgo_stone:nf{#1}{\seq_item:Nn \l_pgfgo_coordinate_parser_inmediate_seq {1}}
+
+		\pgfgo_stone:nf{neutral, #1}{\seq_item:Nn \l_pgfgo_coordinate_parser_items_from_group_seq {1}}
+	}{
+		\msg_warning:nnn {pgfgo} {unknown-coordinate} {#2}
 	}
+	\group_end:
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------------------------PIEDRAS------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\cs_new:Nn \pgfgo_stones_parsed:nn {
-	\clist_map_variable:nNn {#2} \variable {\pgfgo_stone:nV{#1}\variable}
+\cs_new_protected:Nn \pgfgo_stones_parsed:nn {
+	\clist_map_inline:nn {#2} {\pgfgo_stone:nn{#1}{##1}}
 }
 
 
@@ -266,21 +258,21 @@
 
 
 
-\cs_set:Npn\pgfgo_stones:nn #1#2 {
+\cs_set_protected:Npn\pgfgo_stones:nn #1#2 {
 	\group_begin:
-	
+
 	\pgfgo_coordinate_parser_from_pgfgonce_to_items:n{#2} %Devuelve \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
-	
+
 	\keys_set_groups:nnn{ pgfgo / stone }{ preset }{#1}
 	%RECORDAR LAS PIEDAS
 	\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
 	\bool_if:NT \l_pgfgo_goban_remember_stone_bool {
-		\seq_gput_right:Ne \l_pgfgo_goban_elements_stack_seq {\exp_not:N\pgfgo_stones_parsed:nn{#1}{\l_tmpa_clist}}
+		\pgfgo_goban_remember_push:n {\exp_not:N\pgfgo_stones_parsed:nn{\exp_not:n{#1}}{\exp_not:V\l_tmpa_clist}}
 	}
-	
-	\seq_map_variable:NNn \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq\variable {
+
+	\seq_map_variable:NNn \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq\l__pgfgo_item_tl {
 		%DIBUJAR LAS PIEDRAS
-		\pgfgo_stone:nV{#1}\variable
+		\pgfgo_stone:nV{#1}\l__pgfgo_item_tl
 	}
 	\group_end:
 }
@@ -303,34 +295,45 @@
 %----------------------------------------PRISIONEROS--------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\NewDocumentCommand{\prisoners}{O{}m}{\stones[prisoner, #1]{#2}}
-\NewDocumentCommand{\prisoner}{O{}m}{\stone[prisoner, #1]{#2}}
+%/pgfgo/prisoner GUARDA OPCIONES QUE SE APLICAN A TODOS LOS PRISIONEROS.
+\tl_new:N \l_pgfgo_prisoner_options_tl
+\keys_define:nn {pgfgo} {prisoner .tl_set:N = \l_pgfgo_prisoner_options_tl}
+
+\NewDocumentCommand{\prisoners}{O{}m}{
+	\use:e {\exp_not:N\stones[prisoner, \exp_not:V\l_pgfgo_prisoner_options_tl, \exp_not:n{#1}]{\exp_not:n{#2}}}
+}
+\NewDocumentCommand{\prisoner}{O{}m}{
+	\use:e {\exp_not:N\stone[prisoner, \exp_not:V\l_pgfgo_prisoner_options_tl, \exp_not:n{#1}]{\exp_not:n{#2}}}
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %-------------------------------------------MOVE------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+\tl_new:N \l_pgfgo_move_x_tl
+\tl_new:N \l_pgfgo_move_y_tl
 
 \cs_set_protected:Npn\pgfgo_move:nnnn #1#2#3#4 {
 	\group_begin:
-	\pgfgo_get_variables_from_current_player:
-
-	\tl_set:Nn\l_pgfgo_move_x_int{#3}
-	\tl_set:Nn\l_pgfgo_move_y_int{#4}
+	\tl_set:Nn\l_pgfgo_move_x_tl{#3}
+	\tl_set:Nn\l_pgfgo_move_y_tl{#4}
 
 
-	%CALCULA Y ALTERNA LOS COLORES
-	\bool_if:NT\l_pgfgo_players_black_bool{
+	%FUERA DE LA PARTE VISIBLE NO SE DIBUJA, PERO LA JUGADA CUENTA (NUMERO Y TURNO).
+	\pgfgo_if_visible:nnT {#3} {#4} {
+
+	%EL COLOR SALE DEL TURNO ACTUAL
+	\bool_if:NTF\g_pgfgo_move_black_turn_bool{
+		\keys_set:nn { pgfgo / stone }{black}
 		\keys_set_exclude_groups:nnn {pgfgo / players / black / move} {external} {#2}
 		\pgfgo_get_variables_from_current_player:
-		\pgfgo_stone:nnn{black}{#3}{#4}
-	}
-
-	\bool_if:NT\l_pgfgo_players_white_bool{
+		\__pgfgo_stone_draw:nnn{black}{#3}{#4}
+	}{
+		\keys_set:nn { pgfgo / stone }{white}
 		\keys_set_exclude_groups:nnn {pgfgo / players / white / move} {external} {#2}
 		\pgfgo_get_variables_from_current_player:
-		\pgfgo_stone:nnn{white}{#3}{#4}
+		\__pgfgo_stone_draw:nnn{white}{#3}{#4}
 	}
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -338,7 +341,7 @@
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-	\tl_set:Ne \l_tmpb_tl {\pgfgo_players_move_label_format:n{\l_pgfgo_move_current_int}}
+	\tl_set:Ne \l_tmpb_tl {\pgfgo_players_move_label_format:n{\g_pgfgo_move_current_int}}
 	\tl_set:Nn\l_tmpa_tl{0.45em}
 	%Ajustar el tamano de acuerdo a la cantidad de caracteres <--------
 	\regex_count:nVN{[a-zA-Z\d]}\l_tmpb_tl\l_tmpa_int
@@ -348,24 +351,27 @@
 		{3}{\tl_set:Nn\l_tmpa_tl{0.45em}}
 	}
 	%------------------------------------------------------------------
-	
+
+	%label/font size FIJA EL TAMANO
+	\tl_if_empty:NF \l_pgfgo_players_move_label_font_size_tl
+		{\tl_set_eq:NN \l_tmpa_tl \l_pgfgo_players_move_label_font_size_tl}
+
 	\IfBooleanT{#1}{
 		\pgfscope
 		%TOMA EL COLOR CALCULADO ARRIBA
 		\pgfsetcolor{\l_pgfgo_players_move_label_color_tl}
-		\pgftext[at=\pgfpointxy{\l_pgfgo_move_x_int}{\l_pgfgo_move_y_int}]{
+		\pgftext[at=\pgfpointxy{\l_pgfgo_move_x_tl}{\l_pgfgo_move_y_tl}]{
 			\bfseries\fontsize{ \l_tmpa_tl }{0pt}\selectfont
-			\pgfgo_players_move_label_format:n{\l_pgfgo_move_current_int}
+			\pgfgo_players_move_label_format:n{\g_pgfgo_move_current_int}
 		}
 		\pgfusepath{stroke}
 		\endpgfscope
 	}
-
-	\int_gincr:N\l_pgfgo_move_current_int
+	}
 
 	\group_end:
-	\bool_gset_inverse:N\l_pgfgo_players_black_bool
-	\bool_gset_inverse:N\l_pgfgo_players_white_bool
+	\int_gincr:N\g_pgfgo_move_current_int
+	\bool_gset_inverse:N\g_pgfgo_move_black_turn_bool
 }
 
 
@@ -382,10 +388,13 @@
 
 
 
-
-\cs_new:Nn \pgfgo_move_parsed:nnn {
+%VUELVE A DIBUJAR JUGADAS RECORDADAS. #2 TRAE LAS OPCIONES ORIGINALES MAS from Y EL COLOR CON QUE EMPEZARON.
+\cs_new_protected:Nn \pgfgo_move_parsed:nnn {
+	\group_begin:
 	\keys_set_groups:nnn { pgfgo / move} {player-id, first stone} {#2}
-	\clist_map_variable:nNn {#3} \variable {\pgfgo_move:nnV{#1}{#2}\variable}
+	\keys_set_groups:nnn { pgfgo / players / neutral / move} { label } {#2}
+	\clist_map_inline:nn {#3} {\pgfgo_move:nnn{#1}{#2}{##1}}
+	\group_end:
 }
 
 
@@ -395,32 +404,30 @@
 \NewDocumentCommand{\moves}{sO{}m}{
 	\group_begin:
 	\pgfgo_coordinate_parser_from_pgfgonce_to_items:n{#3} %Devuelve \l_pgfgo_coordinate_parser_items_from_group_seq
-	%Eliminar la key from para que no la usen las marcas posteriores.
-	
-	
-	\keys_set_groups:nnn { pgfgo / move} {player-id, first stone} {#2}
+
+	\keys_set_groups:nnn { pgfgo / move} {preset, player-id, first stone} {#2}
 	\keys_set_groups:nnn { pgfgo / players / neutral / move} { label } {#2}
-	%RECORDAR LAS PIEDAS
+	%RECORDAR LAS PIEDAS (CON EL NUMERO Y EL COLOR DE LA PRIMERA JUGADA)
 	\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
 	\bool_if:NT \l_pgfgo_goban_remember_move_bool {
-		\bool_if:NTF \l_pgfgo_goban_remember_move_label_bool{
-			\seq_gput_right:Ne \l_pgfgo_goban_elements_stack_seq {
-				\exp_not:N\pgfgo_move_parsed:nnn{\exp_not:N \BooleanTrue}{from = \int_use:N\l_pgfgo_move_current_int, #2}{\l_tmpa_clist}
-			}
-		} {
-			\seq_gput_right:Ne \l_pgfgo_goban_elements_stack_seq {
-				\exp_not:N\pgfgo_move_parsed:nnn{\exp_not:N \BooleanFalse}{from = \int_use:N\l_pgfgo_move_current_int, #2}{\l_tmpa_clist}
-			}
+		\pgfgo_goban_remember_push:n {
+			\exp_not:N\pgfgo_move_parsed:nnn
+				{\bool_if:NTF \l_pgfgo_goban_remember_move_label_bool {\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}}
+				{
+					\exp_not:n{#2},
+					from = \int_use:N\g_pgfgo_move_current_int,
+					\bool_if:NTF \g_pgfgo_move_black_turn_bool {black} {white}
+				}
+				{\exp_not:V\l_tmpa_clist}
 		}
-		\seq_log:N \l_pgfgo_goban_elements_stack_seq
 	}
-	
+
 	%-------------------------------------------------------------------------
-	
-	
-	\seq_map_variable:NNn \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq\variable{
+
+
+	\seq_map_variable:NNn \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq\l__pgfgo_item_tl{
 		%PIEDRAS RESTANTES
-		\pgfgo_move:nnV {#1}{#2}\variable
+		\pgfgo_move:nnV {#1}{#2}\l__pgfgo_item_tl
 	}
 	\group_end:
 }
@@ -428,6 +435,3 @@
 \let\move\moves
 
 \ExplSyntaxOff
-
-
-

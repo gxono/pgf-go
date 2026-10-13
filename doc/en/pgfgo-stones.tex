@@ -5,12 +5,14 @@ Stones are the fundamental elements. In \pgfgoname, commands and options are pro
 \subsection{Stones}
 
 \begin{command}{\stone\opt{\oarg{options}}\marg{intersection}}
-	This command draws an individual stone at the specified intersection. The mandatory argument is the coordinate (e.g., "C2"), while optional options allow adjusting its style, such as color, size, or markings, following the convention of the first player in Go.
+	This command draws an individual stone at the specified intersection. The mandatory argument is the coordinate (e.g., "C2"), while optional options allow adjusting its style, such as color, size, or markings. If no player is given (|b|, |w| or |n|), the stone is \emph{neutral}.
 \end{command}
 
 \begin{command}{\stones\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
-	Similar to |\stone|, but allows placing multiple stones using the corresponding syntax (see Coordinate Syntax).
+	Similar to |\stone|, but allows placing multiple stones using the corresponding syntax (see Coordinate Syntax). If no player is given, the stones are \emph{black}.
 \end{command}
+
+Stones, marks and labels that fall outside the visible region of a partial board are not drawn. A coordinate that does not exist on the board (for example, |E9| on a 5$\times$5 board) is ignored and produces a warning.
 
 It is possible to change an option for all players using |\pgfgoset{stone = {...}}|. This is equivalent to |\pgfgoset{players = {all = {stone = {...}}}}|.
 
@@ -97,7 +99,7 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/stone/line/width = \meta{dimension} (initially 0.9pt)}
+\begin{key}{/pgfgo/stone/line/width = \meta{dimension} (initially 0.7pt)}
 	
 	Controls the thickness of the stone’s border.
 	
@@ -116,7 +118,7 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/stone/radius = \meta{dimension} (initially 0.55em)}
+\begin{key}{/pgfgo/stone/radius = \meta{dimension} (initially 5.5pt)}
 	
 	Sets the size of the stone by its radius.
 	
@@ -142,7 +144,7 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 
 \begin{key}{/pgfgo/stone/black}
 	
-	Assigns the stone the characteristics of the first player (black by default), including fill and border color. This is the initial state of any stone unless another option is specified.
+	Assigns the stone the characteristics of the first player (black by default), including fill and border color. This is the player used by |\stones| unless another one is specified; |\stone|, instead, uses the neutral player.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -274,6 +276,8 @@ Move commands allow representing sequences of plays, automatically alternating b
 	Similar to |\move|, but applies the sequence to multiple intersections in a single line.
 \end{command}
 
+Within the same |goban|, numbering and turn carry over from one |\moves| to the next. Each new |goban| starts at move 1 with Black; to continue a game in another diagram, use |from| and |b| or |w|, or |resume|.
+
 It is possible to change options for all players using |\pgfgoset{move = {...}}|, which is equivalent to |\pgfgoset{players = {all = {move = {...}}}}|.
 
 \begin{key}{/pgfgo/move/black}
@@ -338,24 +342,24 @@ It is possible to change options for all players using |\pgfgoset{move = {...}}|
 	Controls the properties of numeric labels in starred moves, such as size, color, or format.
 \end{key}
 
-%\begin{key}{/pgfgo/move/label/font size=\meta{dimension} (initially 0.5em)}
-%	
-%	Adjusts the font size of the labels, allowing them to adapt to the stone size or overall design.
-%	
-%	\begin{codeexample}[]
-%		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
-%		
-%		\begin{goban}
-%			\stones[b]{C2,D3}
-%			\stone[w]{B4}
-%		\end{goban}
-%		
-%		\begin{goban}
-%			\moves*[from = 7]{C2,B4}
-%			\move*[label = {font size = 0.125em}]{D3}
-%		\end{goban}
-%	\end{codeexample}
-%\end{key}
+\begin{key}{/pgfgo/move/label/font size=\meta{dimension} (initially automatic)}
+
+	Adjusts the font size of the labels, allowing them to adapt to the stone size or overall design. If it is not set, the size adapts to the number of digits.
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+
+		\begin{goban}
+			\moves*[from = 7]{C2,B4}
+			\move*[label = {font size = 0.5em}]{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
 
 \begin{key}{/pgfgo/move/label/format = \meta{options} (initially arabic)}
 	

@@ -108,7 +108,7 @@ Adds all the \textbf{visible} intersections of the board to the corresponding gr
 \begin{codeexample}[]
 	\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
 	
-	\begin{goban}[3, label = {at = {south, west}}]
+	\begin{goban}[label = {at = {south, west}}]
 		\stones[b]{*}
 	\end{goban}
 \end{codeexample}
@@ -837,7 +837,7 @@ Each player has access to the same key tree. For this reason, the following, alt
 \begin{key}{/pgfgo/players/white/move/label = \meta{stone options}}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/move/label/font size = \meta{stone options}}
+\begin{key}{/pgfgo/players/white/move/label/font size = \meta{dimension}}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/color = \meta{stone options}}

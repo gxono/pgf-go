@@ -1,6 +1,9 @@
-\usepackage{tikz}
+\NeedsTeXFormat{LaTeX2e}[2020/10/01]
+\ProvidesPackage{pgf-go}[2025/10/13 v0.2025.10.13 Go diagrams with PGF]
+
+\RequirePackage{tikz}
 \usetikzlibrary{patterns}
-\usepackage{xparse}
+\RequirePackage{xparse}
 
 \definecolor{pgfgo}{RGB}{220,179,92}
 \colorlet{tablero2}{red!10!blue!10}
@@ -20,19 +23,35 @@
 \NewDocumentCommand{\pgfgosetallplayers}{m}{\keys_set:nn {pgfgo / players / all}{#1}}
 
 
-\IfFileExists{../../latex/pgf-go-remember.sty}{\usepackage{../../latex/pgf-go-remember}}{\usepackage{pgf-go-remember}}
-\IfFileExists{../../latex/pgf-go-profiles.sty}{\usepackage{../../latex/pgf-go-profiles}}{\usepackage{pgf-go-profiles}}
-\IfFileExists{../../latex/pgf-go-players.sty}{\usepackage{../../latex/pgf-go-players}}{\usepackage{pgf-go-players}}
-\IfFileExists{../../latex/pgf-go-coordinate-parser.sty}{\usepackage{../../latex/pgf-go-coordinate-parser}}{\usepackage{pgf-go-coordinate-parser}}
-\IfFileExists{../../latex/pgf-go-stones.sty}{\usepackage{../../latex/pgf-go-stones}}{\usepackage{pgf-go-stones}}
-\IfFileExists{../../latex/pgf-go-goban.sty}{\usepackage{../../latex/pgf-go-goban}}{\usepackage{pgf-go-goban}}
-\IfFileExists{../../latex/pgf-go-marks.sty}{\usepackage{../../latex/pgf-go-marks}}{\usepackage{pgf-go-marks}}
+%LOS MODULOS SE BUSCAN EN LA MISMA CARPETA QUE pgf-go.sty (POR EJ. \usepackage{../../latex/pgf-go}).
+%SI NO ESTAN AHI, SE BUSCAN EN EL PATH DE TEX.
+\tl_const:Ne \c__pgfgo_path_tl {\CurrentFilePath}
 
+\cs_new_protected:Npn \__pgfgo_load_module:n #1 {
+	\tl_if_empty:NTF \c__pgfgo_path_tl
+		{\file_input:n {#1 .sty}}
+		{
+			\file_if_exist:nTF {\c__pgfgo_path_tl / #1 .sty}
+				{\file_input:n {\c__pgfgo_path_tl / #1 .sty}}
+				{\file_input:n {#1 .sty}}
+		}
+	\ExplSyntaxOn
+}
 
+%VARIABLES DE LOS RECORRIDOS (MAP/STEP) QUE USAN LOS MODULOS.
+\tl_new:N \l__pgfgo_item_tl
+\tl_new:N \l__pgfgo_letter_tl
+\tl_new:N \l__pgfgo_number_tl
+\tl_new:N \l__pgfgo_element_tl
+\tl_new:N \l__pgfgo_subset_tl
 
-
-\cs_set_eq:NN\pgfgo_old_mark:\mark
-\cs_set_eq:NN\pgfgo_old_marks:\marks
+\__pgfgo_load_module:n {pgf-go-remember}
+\__pgfgo_load_module:n {pgf-go-profiles}
+\__pgfgo_load_module:n {pgf-go-players}
+\__pgfgo_load_module:n {pgf-go-coordinate-parser}
+\__pgfgo_load_module:n {pgf-go-stones}
+\__pgfgo_load_module:n {pgf-go-goban}
+\__pgfgo_load_module:n {pgf-go-marks}
 
 
 
@@ -49,10 +68,15 @@
 \int_new:N\l_pgfgo_parsed_x_coordinate_int
 \int_new:N\l_pgfgo_parsed_y_coordinate_int
 
-\cs_set:Nn\pgfgo_parse_coordinate:n{
-    \regex_extract_once:nnN{([A-Za-z]*)\s*(\d*)}{#1}\l_coordinates_seq
+\seq_new:N \l_pgfgo_parsed_coordinates_seq
+\tl_new:N \l_pgfgo_parsed_aux_x_coordinate_tl
+\tl_new:N \l_pgfgo_parsed_x_coordinate_tl
+\tl_new:N \l_pgfgo_parsed_y_coordinate_tl
 
-    \tl_set:Nx\l_pgfgo_parsed_aux_x_coordinate_tl{\seq_item:Nn\l_coordinates_seq{2}}
+\cs_set:Nn\pgfgo_parse_coordinate:n{
+    \regex_extract_once:nnN{([A-Za-z]*)\s*(\d*)}{#1}\l_pgfgo_parsed_coordinates_seq
+
+    \tl_set:Nx\l_pgfgo_parsed_aux_x_coordinate_tl{\seq_item:Nn\l_pgfgo_parsed_coordinates_seq{2}}
     \int_set:Nn
         \l_pgfgo_parsed_x_coordinate_int
         {\int_from_alph:V\l_pgfgo_parsed_aux_x_coordinate_tl}
@@ -63,8 +87,8 @@
         }
     }
 
-    \tl_gset:Nn\l_pgfgo_parsed_x_coordinate_tl{\int_use:N\l_pgfgo_parsed_x_coordinate_int}
-    \tl_gset:Nn\l_pgfgo_parsed_y_coordinate_tl{\seq_item:Nn\l_coordinates_seq{3}}
+    \tl_set:Ne\l_pgfgo_parsed_x_coordinate_tl{\int_use:N\l_pgfgo_parsed_x_coordinate_int}
+    \tl_set:Ne\l_pgfgo_parsed_y_coordinate_tl{\seq_item:Nn\l_pgfgo_parsed_coordinates_seq{3}}
 }
 
 \cs_set_eq:NN\pgfgo_parse_coordinate:n\pgfgo_parse_coordinate:n
@@ -74,24 +98,31 @@
 
 
 
+\msg_new:nnn {pgfgo} {unknown-goban-key}
+    {Unknown~goban~key~or~size~'#1'.~Use~a~size~like~'9'~or~'9x13'.}
+
+\seq_new:N \l_pgfgo_goban_dimen_seq
+
 \cs_set:Npn\pgfgo_parse_goban_size:n #1{
     \regex_extract_once:nnNTF{\A([\d]{1,2})\s*x\s*([\d]{1,2})\Z}{#1}\l_pgfgo_goban_dimen_seq{
         \int_set:Nf\l_pgfgo_goban_to_x_int{\seq_item:Nn\l_pgfgo_goban_dimen_seq{2}}
         \int_set:Nf\l_pgfgo_goban_to_y_int{\seq_item:Nn\l_pgfgo_goban_dimen_seq{3}}
-      	\int_log:N\l_pgfgo_goban_to_x_int
-      	\int_log:N\l_pgfgo_goban_to_y_int
     }{
         \regex_extract_once:nnNTF{\A([\d]{1,2})\Z}{#1}\l_pgfgo_goban_dimen_seq{
             \int_set:Nf\l_pgfgo_goban_to_x_int{\seq_item:Nn\l_pgfgo_goban_dimen_seq{2}}
             \int_set:Nf\l_pgfgo_goban_to_y_int{\seq_item:Nn\l_pgfgo_goban_dimen_seq{2}}
         }{
-            You~tried~to~set~key~’\l_keys_key_str’~to~’#1’.
+            \msg_error:nnn {pgfgo} {unknown-goban-key} {#1}
         }
     }
 }
 
 \cs_generate_variant:Nn\pgfgo_parse_goban_size:n {V}
 
+
+\seq_new:N \l_pgfgo_goban_partial_seq
+\tl_new:N \l_pgfgo_goban_partial_from_tl
+\tl_new:N \l_pgfgo_goban_partial_to_tl
 
 \cs_set:Npn\pgfgo_parse_goban_partial_from:n #1 {
     \regex_extract_once:nnN {
@@ -102,11 +133,11 @@
         ([a-zA-Z]{1}\s*\d{1,2})
         \s*\Z
 
-        }{#1}\l_seq
+        }{#1}\l_pgfgo_goban_partial_seq
 
 
-    \tl_set:Nx\l_temp_a_tl{\seq_item:Nn\l_seq{2}}
-    \tl_set:Nx\l_temp_b_tl{\seq_item:Nn\l_seq{3}}
+    \tl_set:Nx\l_pgfgo_goban_partial_from_tl{\seq_item:Nn\l_pgfgo_goban_partial_seq{2}}
+    \tl_set:Nx\l_pgfgo_goban_partial_to_tl{\seq_item:Nn\l_pgfgo_goban_partial_seq{3}}
 }
 
 
@@ -124,10 +155,8 @@
 \cs_generate_variant:Nn \regex_match:nnT {nVT}
 \cs_generate_variant:Nn \regex_match:nnTF {nVTF}
 \cs_generate_variant:Nn \regex_extract_once:nnNTF {nVNTF}
-\cs_generate_variant:Nn \seq_gset:Nn {Nx}
 
 
-\bool_set_true:N\l_pgfgo_remember_bool
 \bool_set_true:N\l_pgfgo_use_i_bool
 
 

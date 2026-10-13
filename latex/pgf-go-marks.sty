@@ -1,20 +1,20 @@
+\ProvidesFile{pgf-go-marks.sty}[2025/10/13 v0.2025.10.13 pgf-go: marks]
 \ExplSyntaxOn
-\usepackage{tikz}
 
 
 
 %MARK
-\int_new:N\l_pgfgo_mark_sequence_current_int
-\int_set:Nn\l_pgfgo_mark_sequence_current_int{1}
+\int_new:N\g_pgfgo_mark_sequence_current_int
+\int_gset:Nn\g_pgfgo_mark_sequence_current_int{1}
 
 
 
 
-\bool_set_false:N\l_pgfgo_mark_color_bool
-\bool_set_false:N\l_pgfgo_players_mark_fill_bool
-\bool_set_false:N\l_pgfgo_mark_hatched_lines_bool
-\bool_set_false:N\l_pgfgo_mark_t_bool
+\bool_new:N\l_pgfgo_mark_hatched_lines_bool
+\bool_new:N\l_pgfgo_mark_t_bool
+\tl_new:N\l_pgfgo_mark_shadow_scale_tl
 
+\tl_new:N\l_pgfgo_mark_custom_tl
 \tl_set:Nn\l_pgfgo_mark_custom_tl{!}
 
 
@@ -60,6 +60,12 @@
 	
 	t-square			.groups:n		=	{ shape },
 
+	%ALIAS SIN GUION (USADOS EN EL CATALOGO DEL MANUAL)
+	tcircle				.code:n			= {\keys_set:nn { pgfgo / mark }{t-circle}},
+	tcircle				.groups:n		=	{ shape },
+	tsquare				.code:n			= {\keys_set:nn { pgfgo / mark }{t-square}},
+	tsquare				.groups:n		=	{ shape },
+
 	hatched~lines	.code:n			=	{
 		\bool_set_true:N\l_pgfgo_mark_hatched_lines_bool
 		\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_hatched_lines:
@@ -71,8 +77,8 @@
 																\tl_set:Nn\l_pgfgo_mark_custom_tl{#1}
 																\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_custom:
 															},
-	
-	hatched~lines		.groups:n		=	{ shape },
+
+	custom					.groups:n		=	{ shape },
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%-------------------OTRAS KEYS---------------------%
@@ -103,7 +109,7 @@
 		\bool_set_true:N	\l_pgfgo_players_neutral_bool
 	},
 	neutral				.groups:n = { player-id },
-	n						.code:n	= {\keys_set:nn{ pgfgo / mark }{white}},
+	n						.code:n	= {\keys_set:nn{ pgfgo / mark }{neutral}},
 	n						.groups:n = { player-id },
 }
 
@@ -264,7 +270,7 @@
 \cs_set:Nn\pgfgo_mark_sequence: {
 	%Ajustar el tamano de acuerdo a la cantidad de caracteres <--------
 	\tl_set:Nn\l_tmpa_tl{0.45em}
-	\tl_set:Nx\l_tmpb_tl{\pgfgo_players_mark_sequence_format:n{\l_pgfgo_mark_sequence_current_int}}
+	\tl_set:Nx\l_tmpb_tl{\pgfgo_players_mark_sequence_format:n{\g_pgfgo_mark_sequence_current_int}}
 	\regex_count:nVN{[a-zA-Z\d]}\l_tmpb_tl\l_tmpa_int
 	\int_case:nn{\l_tmpa_int}{
 		{1}{\tl_set:Nn\l_tmpa_tl{0.7em}}
@@ -276,11 +282,11 @@
 	\pgftext{{
 			\fontsize{\l_tmpa_tl}{0pt}\selectfont
 			\l_pgfgo_players_mark_label_font_tl
-			\pgfgo_players_mark_sequence_format:n{\l_pgfgo_mark_sequence_current_int}
+			\pgfgo_players_mark_sequence_format:n{\g_pgfgo_mark_sequence_current_int}
 	}}
 	\pgfusepath{stroke}
 
-	\int_gincr:N\l_pgfgo_mark_sequence_current_int
+	\int_gincr:N\g_pgfgo_mark_sequence_current_int
 }
 
 
@@ -288,9 +294,14 @@
 %----------------------------------------MARCA--------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO.
 \cs_set_protected:Npn\pgfgo_mark:nnn #1#2#3 {
+	\pgfgo_if_visible:nnT {#2} {#3} {\__pgfgo_mark_draw:nnn {#1} {#2} {#3}}
+}
+
+\cs_set_protected:Npn\__pgfgo_mark_draw:nnn #1#2#3 {
 	\group_begin:
-	
+
 	\keys_set_groups:nnn{ pgfgo / mark }{ player-id }{#1}
 	\bool_if:NTF \l_pgfgo_players_black_bool 
 	{\keys_set_exclude_groups:nnn{ pgfgo / players / black / mark } { external }{#1}}
@@ -311,13 +322,13 @@
 		\pgfsetfillcolor{\l_pgfgo_goban_border_fill_color_tl}
 
 		\bool_if:NTF\l_pgfgo_mark_hatched_lines_bool{
-			\tl_set:Nn\l_pgfgo_mark_shadow_scale{1}
+			\tl_set:Nn\l_pgfgo_mark_shadow_scale_tl{1}
 		}{
-			\tl_set:Nn\l_pgfgo_mark_shadow_scale{0.8}
+			\tl_set:Nn\l_pgfgo_mark_shadow_scale_tl{0.8}
 		}
-		
+
 		\pgftransformshift{\pgfpointxy{#2}{#3}}
-		\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * \l_pgfgo_mark_shadow_scale}
+		\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * \l_pgfgo_mark_shadow_scale_tl}
 
 		\pgfusepath{fill}
 		\endpgfonlayer
@@ -348,40 +359,38 @@
 
 
 
-\cs_new:Nn \pgfgo_marks_parsed:nn {
-	\clist_map_variable:nNn {#2} \variable {\pgfgo_mark:nV{#1}\variable}
-}
-
-
-
-%\l_pgfgo_mark_sequence_current_int
-
-\cs_set_protected:Npn\pgfgo_marks:nn #1#2 {
+%DIBUJA LAS MARCAS #2 (LISTA DE {x}{y}). SI #1 NO INDICA EL JUGADOR, LAS MARCAS SON NEUTRALES.
+%TAMBIEN SE USA PARA VOLVER A DIBUJAR LAS MARCAS RECORDADAS.
+\cs_new_protected:Nn \pgfgo_marks_parsed:nn {
 	\group_begin:
-		\keys_set_groups:nnn{ pgfgo / mark }{ preset }{#1}
-		\pgfgo_coordinate_parser_from_pgfgonce_to_items:n{#2}
-		%RECORDAR LAS PIEDAS
-		\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
-		\bool_if:NT \l_pgfgo_goban_remember_mark_bool {
-			\seq_gput_right:Ne \l_pgfgo_goban_elements_stack_seq {\exp_not:N\pgfgo_marks_parsed:nn{#1}{\l_tmpa_clist}}
-		}
-		
+		\keys_set:nn { pgfgo / mark }{neutral}
 		\keys_set_exclude_groups:nnn{ pgfgo / players / neutral / mark } { external }{#1}
-		\int_set:NV\l_pgfgo_mark_sequence_current_int\l_pgfgo_neutral_mark_sequence_from_int
-		
-		 %Devuelve \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
-		
-		\seq_map_variable:NNn \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq\variable{
-			\pgfgo_mark:nV{#1}\variable
-		}
+		\int_gset_eq:NN\g_pgfgo_mark_sequence_current_int\l_pgfgo_neutral_mark_sequence_from_int
+		\clist_map_inline:nn {#2} {\pgfgo_mark:nn{#1}{##1}}
 	\group_end:
 }
 
 
 
-\DeclareDocumentCommand{\marks}{O{}m}{\pgfgo_marks:nn{#1}{#2}}
+\cs_set_protected:Npn\pgfgo_marks:nn #1#2 {
+	\group_begin:
+		\keys_set_groups:nnn{ pgfgo / mark }{ preset }{#1}
+		\pgfgo_coordinate_parser_from_pgfgonce_to_items:n{#2} %Devuelve \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
+		%RECORDAR LAS MARCAS
+		\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
+		\bool_if:NT \l_pgfgo_goban_remember_mark_bool {
+			\pgfgo_goban_remember_push:n {\exp_not:N\pgfgo_marks_parsed:nn{\exp_not:n{#1}}{\exp_not:V\l_tmpa_clist}}
+		}
 
-\let\mark\marks
+		\pgfgo_marks_parsed:nV {#1} \l_tmpa_clist
+	\group_end:
+}
+\cs_generate_variant:Nn \pgfgo_marks_parsed:nn {nV}
+
+
+
+%\mark Y \marks SE ACTIVAN SOLO DENTRO DE goban (VER pgf-go-goban.sty), PARA NO PISAR LAS PRIMITIVAS DE TEX.
+\NewDocumentCommand{\__pgfgo_marks_command}{O{}m}{\pgfgo_marks:nn{#1}{#2}}
 
 
 

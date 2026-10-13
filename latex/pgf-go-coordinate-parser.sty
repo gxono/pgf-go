@@ -1,3 +1,4 @@
+\ProvidesFile{pgf-go-coordinate-parser.sty}[2025/10/13 v0.2025.10.13 pgf-go: coordinate parser]
 \ExplSyntaxOn
 
 
@@ -48,9 +49,9 @@
 %* : 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cs_new:Nn\pgfgo_coordinate_parser_star:{	
-	\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_x_int}{\l_pgfgo_goban_to_x_int}\variableA{
-		\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_y_int}{\l_pgfgo_goban_to_y_int} \variableN {
-			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variableA}{\variableN}}
+	\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_x_int}{\l_pgfgo_goban_to_x_int}\l__pgfgo_letter_tl{
+		\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_y_int}{\l_pgfgo_goban_to_y_int} \l__pgfgo_number_tl {
+			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_letter_tl}{\l__pgfgo_number_tl}}
 		}
 	}
 }
@@ -64,9 +65,9 @@
 	\seq_clear:N \l_pgfgo_coordinate_parser_inmediate_seq
 	\int_set:Nf\l_tmpa_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#1}}
 	
-	\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_y_int}{\l_pgfgo_goban_to_y_int}\variable
+	\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_y_int}{\l_pgfgo_goban_to_y_int}\l__pgfgo_item_tl
 		{
-			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpa_int}{\variable}}
+			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpa_int}{\l__pgfgo_item_tl}}
 		}
 }
 \cs_generate_variant:Nn \pgfgo_coordinate_parser_A:n {f}
@@ -79,9 +80,9 @@
 %N : 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cs_new:Nn\pgfgo_coordinate_parser_N:n{ %5 {5}	
-	\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_x_int}{\l_pgfgo_goban_to_x_int}\variable
+	\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_x_int}{\l_pgfgo_goban_to_x_int}\l__pgfgo_item_tl
 	{
-		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variable}{#1}}
+		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_item_tl}{#1}}
 	}
 }
 \cs_generate_variant:Nn \pgfgo_coordinate_parser_N:n {f}
@@ -111,9 +112,9 @@
 	\int_set:Nf\l_tmpa_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#1}}
 	\int_set:Nf\l_tmpb_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#2}}
 	
-	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\variableA{
-		\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_x_int}{\l_pgfgo_goban_to_y_int} \variableN {
-			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variableA}{\variableN}}
+	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\l__pgfgo_letter_tl{
+		\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_y_int}{\l_pgfgo_goban_to_y_int} \l__pgfgo_number_tl {
+			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_letter_tl}{\l__pgfgo_number_tl}}
 		}
 	}
 }
@@ -126,9 +127,9 @@
 %N-N : 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cs_new:Nn\pgfgo_coordinate_parser_NN:nn{ %5:10 {5}{10}	
-	\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_x_int}{\l_pgfgo_goban_to_x_int}\variableA{
-		\pgfgo_int_step_sorted_variable:nnNn{#1}{#2} \variableN {
-			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variableA}{\variableN}}
+	\pgfgo_int_step_sorted_variable:nnNn{\l_pgfgo_goban_from_x_int}{\l_pgfgo_goban_to_x_int}\l__pgfgo_letter_tl{
+		\pgfgo_int_step_sorted_variable:nnNn{#1}{#2} \l__pgfgo_number_tl {
+			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_letter_tl}{\l__pgfgo_number_tl}}
 		}
 	}
 }
@@ -146,8 +147,8 @@
 	\int_set:Nf\l_tmpa_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#1}}
 	\int_set:Nf\l_tmpb_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#2}}
 	
-	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\variable{
-		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variable}{#3}}
+	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\l__pgfgo_item_tl{
+		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_item_tl}{#3}}
 	}
 }
 \cs_generate_variant:Nn \pgfgo_coordinate_parser_AAN:nnn {fff}
@@ -162,8 +163,8 @@
 	\seq_clear:N \l_pgfgo_coordinate_parser_inmediate_seq
 	\int_set:Nf\l_tmpa_int {\prop_item:Ne\l_pgfgo_coordinate_parser_biyection_current_prop {#1}}
 	
-	\pgfgo_int_step_sorted_variable:nnNn{#2}{#3}\variable{
-		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpa_int}{\variable}}
+	\pgfgo_int_step_sorted_variable:nnNn{#2}{#3}\l__pgfgo_item_tl{
+		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpa_int}{\l__pgfgo_item_tl}}
 	}
 }
 \cs_generate_variant:Nn \pgfgo_coordinate_parser_ANN:nnn {fff}
@@ -179,9 +180,9 @@
 	\int_set:Nf\l_tmpa_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#1}}
 	\int_set:Nf\l_tmpb_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#2}}
 	
-	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\variableA{
-		\pgfgo_int_step_sorted_variable:nnNn{#3}{#4} \variableN {
-			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variableA}{\variableN}}
+	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\l__pgfgo_letter_tl{
+		\pgfgo_int_step_sorted_variable:nnNn{#3}{#4} \l__pgfgo_number_tl {
+			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_letter_tl}{\l__pgfgo_number_tl}}
 		}
 	}
 }
@@ -198,12 +199,12 @@
 	\int_set:Nf\l_tmpa_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#1}}
 	\int_set:Nf\l_tmpb_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#3}}
 	
-	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\variableA{
-			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variableA}{#2}}
+	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\l__pgfgo_letter_tl{
+			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_letter_tl}{#2}}
 	}
 	
-	\pgfgo_int_step_sorted_variable:nnNn{#2}{#4}\variableN{
-		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpb_int}{\variableN}}
+	\pgfgo_int_step_sorted_variable:nnNn{#2}{#4}\l__pgfgo_number_tl{
+		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpb_int}{\l__pgfgo_number_tl}}
 	}
 	
 	\seq_remove_duplicates:N \l_pgfgo_coordinate_parser_inmediate_seq
@@ -223,12 +224,12 @@
 	\int_set:Nf\l_tmpb_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#3}}
 	
 	
-	\pgfgo_int_step_sorted_variable:nnNn{#2}{#4}\variableN{
-		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpa_int}{\variableN}}
+	\pgfgo_int_step_sorted_variable:nnNn{#2}{#4}\l__pgfgo_number_tl{
+		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpa_int}{\l__pgfgo_number_tl}}
 	}
 	
-	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\variableA{
-		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variableA}{#4}}
+	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\l__pgfgo_letter_tl{
+		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_letter_tl}{#4}}
 	}
 	
 	\seq_remove_duplicates:N \l_pgfgo_coordinate_parser_inmediate_seq
@@ -246,14 +247,16 @@
 	\int_set:Nf\l_tmpb_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#3}}
 	
 	\int_compare:nNnTF {#2}={#4} {
-		\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\variableA{
-			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variableA}{#2}}
+		\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\l__pgfgo_letter_tl{
+			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_letter_tl}{#2}}
 		}
 	}{
-		\int_compare:nNnT{\l_tmpa_int}={\l_tmpb_int}{
-			\pgfgo_int_step_sorted_variable:nnNn{#2}{#4}\variableN{
-				\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpa_int}{\variableN}}
+		\int_compare:nNnTF{\l_tmpa_int}={\l_tmpb_int}{
+			\pgfgo_int_step_sorted_variable:nnNn{#2}{#4}\l__pgfgo_number_tl{
+				\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpa_int}{\l__pgfgo_number_tl}}
 			}
+		}{
+			\msg_warning:nnn {pgfgo} {diagonal-line} {#1#2~--~#3#4}
 		}
 	}
 	\seq_remove_duplicates:N \l_pgfgo_coordinate_parser_inmediate_seq
@@ -275,9 +278,9 @@
 	\int_set:Nf\l_tmpa_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#1}}
 	\int_set:Nf\l_tmpb_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#3}}
 	
-	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\variableA{
-		\pgfgo_int_step_sorted_variable:nnNn{#2}{#4} \variableN {
-			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variableA}{\variableN}}
+	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\l__pgfgo_letter_tl{
+		\pgfgo_int_step_sorted_variable:nnNn{#2}{#4} \l__pgfgo_number_tl {
+			\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_letter_tl}{\l__pgfgo_number_tl}}
 		}
 	}
 }
@@ -295,13 +298,13 @@
 	\int_set:Nf\l_tmpa_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#1}}
 	\int_set:Nf\l_tmpb_int {\prop_item:Ne \l_pgfgo_coordinate_parser_biyection_current_prop {#3}}
 	
-	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\variableA{
-		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variableA}{#2}}
-		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\variableA}{#4}}
+	\pgfgo_int_step_sorted_variable:nnNn{\l_tmpa_int}{\l_tmpb_int}\l__pgfgo_letter_tl{
+		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_letter_tl}{#2}}
+		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\l__pgfgo_letter_tl}{#4}}
 	}
-	\pgfgo_int_step_sorted_variable:nnNn{#2}{#4} \variableN {
-		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpa_int}{\variableN}}
-		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpb_int}{\variableN}}
+	\pgfgo_int_step_sorted_variable:nnNn{#2}{#4} \l__pgfgo_number_tl {
+		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpa_int}{\l__pgfgo_number_tl}}
+		\seq_put_right:Ne\l_pgfgo_coordinate_parser_inmediate_seq {{\int_use:N\l_tmpb_int}{\l__pgfgo_number_tl}}
 	}
 	\seq_remove_duplicates:N \l_pgfgo_coordinate_parser_inmediate_seq
 }
@@ -381,21 +384,28 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \tl_new:N \l_pgfgo_coordinate_parser_expanded_subset_tl
 
+\msg_new:nnn {pgfgo} {unknown-coordinate}
+	{Coordinate~'#1'~was~not~recognized~and~is~ignored.~Columns~are~upper-case~letters~(for~example~'C3').}
+\msg_new:nnn {pgfgo} {diagonal-line}
+	{'#1'~is~not~a~horizontal~or~vertical~line~and~is~ignored.}
+\cs_generate_variant:Nn \msg_warning:nnn {nnV}
+\cs_generate_variant:Nn \tl_if_blank:nF {V}
+
 %NO HAY ESPACIOS AL PRINCIPIO Y AL FINAL PORQUE SE ELIMINAN EN EL SPLIT DE CLIST A SEQ
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_star_regex 		{\A*\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_AN_regex 			{\A([A-Z]{1})(\d{1,2})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_A_regex 			{\A([A-Z]{1})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_N_regex 			{\A(\d{1,2})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_AA_regex 			{\A([A-Z]{1}):([A-Z]{1})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_NN_regex 			{\A(\d{1,2}):(\d{1,2})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_AAN_regex 		{\A([A-Z]{1}):([A-Z]{1})			\s*(\d{1,2})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_ANN_regex 		{\A([A-Z]{1})									\s*(\d{1,2}):(\d{1,2})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_AANN_regex 		{\A([A-Z]{1}):([A-Z]{1})			\s*(\d{1,2}):(\d{1,2})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_ANHVAN_regex 	{\A([A-Z]{1})(\d{1,2})				\s*-\|			\s*([A-Z]{1})(\d{1,2})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_ANVHAN_regex 	{\A([A-Z]{1})(\d{1,2})				\s*\|-			\s*([A-Z]{1})(\d{1,2})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_ANHHAN_regex 	{\A([A-Z]{1})(\d{1,2})				\s*--				\s*([A-Z]{1})(\d{1,2})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_ANrAN_regex 	{\A([A-Z]{1})(\d{1,2})				\s*r				\s*([A-Z]{1})(\d{1,2})\Z}
-\regex_const:Nn \l_pgfgo_coordinate_parser_subset_ANRAN_regex 	{\A([A-Z]{1})(\d{1,2})				\s*R				\s*([A-Z]{1})(\d{1,2})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_star_regex 		{\A*\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_AN_regex 			{\A([A-Z]{1})(\d{1,2})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_A_regex 			{\A([A-Z]{1})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_N_regex 			{\A(\d{1,2})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_AA_regex 			{\A([A-Z]{1}):([A-Z]{1})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_NN_regex 			{\A(\d{1,2}):(\d{1,2})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_AAN_regex 		{\A([A-Z]{1}):([A-Z]{1})			\s*(\d{1,2})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_ANN_regex 		{\A([A-Z]{1})									\s*(\d{1,2}):(\d{1,2})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_AANN_regex 		{\A([A-Z]{1}):([A-Z]{1})			\s*(\d{1,2}):(\d{1,2})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_ANHVAN_regex 	{\A([A-Z]{1})(\d{1,2})				\s*-\|			\s*([A-Z]{1})(\d{1,2})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_ANVHAN_regex 	{\A([A-Z]{1})(\d{1,2})				\s*\|-			\s*([A-Z]{1})(\d{1,2})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_ANHHAN_regex 	{\A([A-Z]{1})(\d{1,2})				\s*--				\s*([A-Z]{1})(\d{1,2})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_ANrAN_regex 	{\A([A-Z]{1})(\d{1,2})				\s*r				\s*([A-Z]{1})(\d{1,2})\Z}
+\regex_const:Nn \c_pgfgo_coordinate_parser_subset_ANRAN_regex 	{\A([A-Z]{1})(\d{1,2})				\s*R				\s*([A-Z]{1})(\d{1,2})\Z}
 
 
 
@@ -403,64 +413,68 @@
 \cs_new:Nn\pgfgo_coordinate_parser_expand_subset:n{
 	\tl_set:Ne\l_pgfgo_coordinate_parser_expanded_subset_tl{#1}
 	\seq_clear:N \l_tmpa_seq
+	%CADA SUBCONJUNTO EMPIEZA DE CERO (N, N:N, * Y LOS NO RECONOCIDOS NO LIMPIAN LA SECUENCIA).
+	\seq_clear:N \l_pgfgo_coordinate_parser_inmediate_seq
 	
-	\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_AN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+	\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_AN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 		{
 			\pgfgo_coordinate_parser_AN:ff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}}
 		}{
-			\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_AAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+			\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_AAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 				{
 					\pgfgo_coordinate_parser_AAN:fff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}}{\seq_item:Nn \l_tmpa_seq {4}}
 				}{
-					\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_ANN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+					\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_ANN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 						{
 							\pgfgo_coordinate_parser_ANN:fff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}}{\seq_item:Nn \l_tmpa_seq {4}}
 						}{
-							\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_AANN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+							\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_AANN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 								{
 									\pgfgo_coordinate_parser_AANN:ffff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}}{\seq_item:Nn \l_tmpa_seq {4}}{\seq_item:Nn \l_tmpa_seq {5}}
 								}{
-									\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_ANHVAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+									\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_ANHVAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 										{	
 											\pgfgo_coordinate_parser_ANHVAN:ffff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}}{\seq_item:Nn \l_tmpa_seq {4}}{\seq_item:Nn \l_tmpa_seq {5}}
 										}{
-											\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_ANVHAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+											\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_ANVHAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 												{	
 													\pgfgo_coordinate_parser_ANVHAN:ffff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}}{\seq_item:Nn \l_tmpa_seq {4}}{\seq_item:Nn \l_tmpa_seq {5}}
 												}{
-													\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_ANHHAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+													\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_ANHHAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 														{	
 															\pgfgo_coordinate_parser_ANHHAN:ffff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}}{\seq_item:Nn \l_tmpa_seq {4}}{\seq_item:Nn \l_tmpa_seq {5}}
 														}{
-															\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_ANRAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+															\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_ANRAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 																{	
 																	\pgfgo_coordinate_parser_ANRAN:ffff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}}{\seq_item:Nn \l_tmpa_seq {4}}{\seq_item:Nn \l_tmpa_seq {5}}
 																}{
-																	\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_ANrAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+																	\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_ANrAN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 																		{	
 																			\pgfgo_coordinate_parser_ANrAN:ffff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}}{\seq_item:Nn \l_tmpa_seq {4}}{\seq_item:Nn \l_tmpa_seq {5}}
 																		}{
-																			\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_A_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+																			\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_A_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 																			{	
 																				\pgfgo_coordinate_parser_A:f{\seq_item:Nn \l_tmpa_seq {2}}
 																			}{
-																				\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_N_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+																				\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_N_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 																				{	
 																					\pgfgo_coordinate_parser_N:f{\seq_item:Nn \l_tmpa_seq {2}}
 																				}{
-																					\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_AA_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+																					\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_AA_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 																					{	
 																						\pgfgo_coordinate_parser_AA:ff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}}
 																					}{
-																						\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_NN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
+																						\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_NN_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq
 																						{	
 																							\pgfgo_coordinate_parser_NN:ff{\seq_item:Nn \l_tmpa_seq {2}}{\seq_item:Nn \l_tmpa_seq {3}}
 																						}{
-																							\regex_extract_once:NVNTF \l_pgfgo_coordinate_parser_subset_star_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq %REALMENTE BASTA CON EL MATCH
+																							\regex_extract_once:NVNTF \c_pgfgo_coordinate_parser_subset_star_regex \l_pgfgo_coordinate_parser_expanded_subset_tl \l_tmpa_seq %REALMENTE BASTA CON EL MATCH
 																							{	
 																								\pgfgo_coordinate_parser_star:
 																							}{
-																							
+																								\tl_if_blank:VF \l_pgfgo_coordinate_parser_expanded_subset_tl {
+																									\msg_warning:nnV {pgfgo} {unknown-coordinate} \l_pgfgo_coordinate_parser_expanded_subset_tl
+																								}
 																							}
 																						}
 																					}
@@ -483,7 +497,13 @@
 
 
 
-\seq_new:N \l_pgfgo_coordinate_parser_process_BABBNB_syntax_seq %CONTIENE LOS ELEMENTOS YA PROCESADOS. 
+\tl_new:N \l_pgfgo_coordinate_parser_clist_letter_tl
+\tl_new:N \l_pgfgo_coordinate_parser_clist_number_tl
+\tl_new:N \l_pgfgo_coordinate_parser_letter_tl
+\tl_new:N \l_pgfgo_coordinate_parser_number_tl
+\tl_new:N \l_pgfgo_coordinate_parser_clist_tl
+
+\seq_new:N \l_pgfgo_coordinate_parser_process_BABBNB_syntax_seq %CONTIENE LOS ELEMENTOS YA PROCESADOS.
 
 %PROCESA LO QUE RECIBE EL REGEX DE A[1,2,3:7]
 \cs_new:Nn \pgfgo_coordinate_parser_process_BABBNB_syntax:N	{
@@ -494,9 +514,9 @@
 		\seq_pop:NN #1\l_pgfgo_coordinate_parser_clist_number_tl
 		\clist_set:NV \l_tmpa_clist\l_pgfgo_coordinate_parser_clist_letter_tl %LETRAS O INTERVALOS DE LETRAS.
 		\clist_set:NV \l_tmpb_clist\l_pgfgo_coordinate_parser_clist_number_tl %NUMEROS O INTERVALOS DE NUMEROS.
-		\clist_map_variable:NNn \l_tmpa_clist \variableA {
-			\clist_map_variable:NNn \l_tmpb_clist \variableN {
-				\seq_put_right:Ne \l_pgfgo_coordinate_parser_process_BABBNB_syntax_seq {\variableA\variableN}
+		\clist_map_variable:NNn \l_tmpa_clist \l__pgfgo_letter_tl {
+			\clist_map_variable:NNn \l_tmpb_clist \l__pgfgo_number_tl {
+				\seq_put_right:Ne \l_pgfgo_coordinate_parser_process_BABBNB_syntax_seq {\l__pgfgo_letter_tl\l__pgfgo_number_tl}
 			}
 		}
 	}
@@ -513,8 +533,8 @@
 		\seq_pop:NN #1\l_pgfgo_coordinate_parser_letter_tl
 		\seq_pop:NN #1\l_pgfgo_coordinate_parser_clist_tl
 		\clist_set:NV \l_tmpa_clist\l_pgfgo_coordinate_parser_clist_tl %NUMEROS O INTERVALOS DE NUMEROS.
-		\clist_map_variable:NNn \l_tmpa_clist \variable {
-			\seq_put_right:Ne \l_pgfgo_coordinate_parser_process_ABNB_syntax_seq {\l_pgfgo_coordinate_parser_letter_tl\variable}
+		\clist_map_variable:NNn \l_tmpa_clist \l__pgfgo_item_tl {
+			\seq_put_right:Ne \l_pgfgo_coordinate_parser_process_ABNB_syntax_seq {\l_pgfgo_coordinate_parser_letter_tl\l__pgfgo_item_tl}
 		}
 	}
 }
@@ -532,8 +552,8 @@
 		\seq_pop:NN #1\l_pgfgo_coordinate_parser_clist_tl
 		\seq_pop:NN #1\l_pgfgo_coordinate_parser_number_tl
 		\clist_set:NV \l_tmpa_clist\l_pgfgo_coordinate_parser_clist_tl %LETRAS O INTERVALOS DE LETRAS
-		\clist_map_variable:NNn \l_tmpa_clist \variable {
-			\seq_put_right:Ne \l_pgfgo_coordinate_parser_process_BABN_syntax_seq {\variable\l_pgfgo_coordinate_parser_number_tl}
+		\clist_map_variable:NNn \l_tmpa_clist \l__pgfgo_item_tl {
+			\seq_put_right:Ne \l_pgfgo_coordinate_parser_process_BABN_syntax_seq {\l__pgfgo_item_tl\l_pgfgo_coordinate_parser_number_tl}
 		}
 	}
 }
@@ -604,8 +624,8 @@
 	\seq_concat:NNN \l_pgfgo_coordinate_parser_expanded_group_seq\l_pgfgo_coordinate_parser_expanded_group_seq\l_pgfgo_coordinate_parser_process_BABN_syntax_seq %(AGREGA LOS ELEMENTOS DE [A,B]1)
 	
 	
-	\seq_map_variable:NNn	\l_pgfgo_coordinate_parser_expanded_group_seq\__pgfgo_subset{
-		\pgfgo_coordinate_parser_expand_subset:V \__pgfgo_subset
+	\seq_map_variable:NNn	\l_pgfgo_coordinate_parser_expanded_group_seq\l__pgfgo_subset_tl{
+		\pgfgo_coordinate_parser_expand_subset:V \l__pgfgo_subset_tl
 		\seq_concat:NNN
 			\l_pgfgo_coordinate_parser_items_from_group_seq
 			\l_pgfgo_coordinate_parser_items_from_group_seq
@@ -627,8 +647,8 @@
 	\seq_clear:N \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
 	\bool_set_true:N \l_pgfgo_coordinate_parser_add_to_list
 	\seq_set_split:Nnn \l_tmpa_seq {;} {#1}
-	\seq_map_variable:NNn \l_tmpa_seq\variable{
-		\pgfgo_coordinate_parser_from_group_to_items:V\variable %Devuelve \l_pgfgo_coordinate_parser_items_from_group_seq
+	\seq_map_variable:NNn \l_tmpa_seq\l__pgfgo_item_tl{
+		\pgfgo_coordinate_parser_from_group_to_items:V\l__pgfgo_item_tl %Devuelve \l_pgfgo_coordinate_parser_items_from_group_seq
 		\bool_if:NTF \l_pgfgo_coordinate_parser_add_to_list {
 			\seq_concat:NNN
 				\l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
@@ -636,8 +656,8 @@
 				\l_pgfgo_coordinate_parser_items_from_group_seq
 			\bool_set_false:N \l_pgfgo_coordinate_parser_add_to_list
 		}{
-			\seq_map_variable:NNn\l_pgfgo_coordinate_parser_items_from_group_seq\elemento {
-				\seq_remove_all:NV\l_pgfgo_coordinate_parser_items_from_pgfgonce_seq\elemento
+			\seq_map_variable:NNn\l_pgfgo_coordinate_parser_items_from_group_seq\l__pgfgo_element_tl {
+				\seq_remove_all:NV\l_pgfgo_coordinate_parser_items_from_pgfgonce_seq\l__pgfgo_element_tl
 			}
 			\bool_set_true:N \l_pgfgo_coordinate_parser_add_to_list
 		}

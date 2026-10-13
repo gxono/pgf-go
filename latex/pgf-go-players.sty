@@ -1,7 +1,9 @@
+\ProvidesFile{pgf-go-players.sty}[2025/10/13 v0.2025.10.13 pgf-go: players]
 \ExplSyntaxOn
 
 \cs_generate_variant:Nn \keys_define:nn {ee}
 \cs_generate_variant:Nn \keys_define:nn {en}
+\cs_generate_variant:Nn \keys_set:nn {ne}
 
 
 \keys_define:nn {pgfgo} {players .code:n = {\keys_set:nn {pgfgo/players} {#1}}}
@@ -30,7 +32,7 @@
 	\dim_set_eq:cc 	{l_pgfgo_players_ #1 _stone_radius_dim} {l_pgfgo_players_ #2 _stone_radius_dim}
 	\fp_set_eq:cc 	{l_pgfgo_players_ #1 _stone_scale_fp} {l_pgfgo_players_ #2 _stone_scale_fp}
 
-	\bool_set_eq:cc {l_pgfgo_players_ #1 _stone_line_bool} {l_pgfgo_players_ #1 _stone_line_bool}
+	\bool_set_eq:cc {l_pgfgo_players_ #1 _stone_line_bool} {l_pgfgo_players_ #2 _stone_line_bool}
 	\tl_set_eq:cc 	{l_pgfgo_players_ #1 _stone_line_color_tl} {l_pgfgo_players_ #2 _stone_line_color_tl}
 	\dim_set_eq:cc 	{l_pgfgo_players_ #1 _stone_line_width_dim} {l_pgfgo_players_ #2 _stone_line_width_dim}
 	\fp_set_eq:cc 	{l_pgfgo_players_ #1 _stone_line_opacity_fp} {l_pgfgo_players_ #2 _stone_line_opacity_fp}
@@ -49,7 +51,7 @@
 	\fp_set_eq:cc		{l_pgfgo_players_ #1 _stone_drop_shine_opacity_fp} {l_pgfgo_players_ #2 _stone_drop_shine_opacity_fp}
 	\tl_set_eq:cc 	{l_pgfgo_players_ #1 _stone_drop_shine_color_tl}	{l_pgfgo_players_ #2 _stone_drop_shine_color_tl}
 	
-	\dim_set_eq:cc 	{l_pgfgo_players_ #1 _move_label_font_size_dim} {l_pgfgo_players_ #2 _move_label_font_size_dim}
+	\tl_set_eq:cc 	{l_pgfgo_players_ #1 _move_label_font_size_tl} {l_pgfgo_players_ #2 _move_label_font_size_tl}
 	\tl_set_eq:cc 	{l_pgfgo_players_ #1 _move_label_color_tl} {l_pgfgo_players_ #2 _move_label_color_tl}
 	\cs_set_eq:cc		{pgfgo_players_ #1 _move_label_format:n}{pgfgo_players_ #2 _move_label_format:n}
 	
@@ -109,9 +111,8 @@
 \fp_new:N		\l_pgfgo_players_stone_drop_shine_opacity_fp 
 \tl_new:N		\l_pgfgo_players_stone_drop_shine_color_tl
 
-\dim_new:N 	\l_pgfgo_players_move_label_font_size_dim 		
+\tl_new:N 	\l_pgfgo_players_move_label_font_size_tl
 \tl_new:N 	\l_pgfgo_players_move_label_color_tl
-\bool_new:N \l_pgfgo_goban_remember_move_label_bool
 
 
 \tl_new:N 	\l_pgfgo_players_mark_line_color_tl
@@ -156,7 +157,7 @@
 	\fp_set_eq:Nc		\l_pgfgo_players_stone_drop_shine_opacity_fp 	{l_pgfgo_players_ #1 _stone_drop_shine_opacity_fp}
 	\tl_set_eq:Nc		\l_pgfgo_players_stone_drop_shine_color_tl 		{l_pgfgo_players_ #1 _stone_drop_shine_color_tl}
 	
-	\dim_set_eq:Nc 	\l_pgfgo_players_move_label_font_size_dim 		{l_pgfgo_players_ #1 _move_label_font_size_dim}
+	\tl_set_eq:Nc 	\l_pgfgo_players_move_label_font_size_tl 			{l_pgfgo_players_ #1 _move_label_font_size_tl}
 	\tl_set_eq:Nc 	\l_pgfgo_players_move_label_color_tl 					{l_pgfgo_players_ #1 _move_label_color_tl}
 	\cs_set_eq:Nc  	\pgfgo_players_move_label_format:n						{pgfgo_players_ #1 _move_label_format:n}
 	
@@ -196,40 +197,43 @@
 
 	\def\pgfgonewplayers#1{
 		\clist_set:Nn \l_tmpa_clist {#1}
-		\clist_map_variable:NNn \l_tmpa_clist\variable{
+		\clist_map_variable:NNn \l_tmpa_clist\l__pgfgo_item_tl{
 			
 			%SIRVE PARA DETERMINAR SI UNA PIEDRA ES O NO DE ESTE JUGADOR
-			\bool_new:c {l_pgfgo_players_ \variable _bool}
+			\bool_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _bool}
 			
 			
 			
 			
-			\keys_define:ne {pgfgo / players} {\variable .code:n = {\exp_not:N\keys_set:nn {pgfgo / players / \variable} {##1}}}
+			\keys_define:ne {pgfgo / players} {\l__pgfgo_item_tl .code:n = {\exp_not:N\keys_set:nn {pgfgo / players / \l__pgfgo_item_tl} {##1}}}
 			
-			\keys_define:ee { pgfgo / players / \variable } {
-				stone                   .code:n = {\exp_not:N\keys_set:nn {pgfgo / players / \variable / stone}         {##1}},
-				move                    .code:n = {\exp_not:N\keys_set:nn {pgfgo / players / \variable / move}          {##1}},
-				mark                    .code:n = {\exp_not:N\keys_set:nn {pgfgo / players / \variable / mark}          {##1}},
-				territory           		.code:n = {\exp_not:N\keys_set:nn {pgfgo / players / \variable / territory} 		 {##1}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl } {
+				stone                   .code:n = {\exp_not:N\keys_set:nn {pgfgo / players / \l__pgfgo_item_tl / stone}         {##1}},
+				move                    .code:n = {\exp_not:N\keys_set:nn {pgfgo / players / \l__pgfgo_item_tl / move}          {##1}},
+				mark                    .code:n = {\exp_not:N\keys_set:nn {pgfgo / players / \l__pgfgo_item_tl / mark}          {##1}},
+				territory           		.code:n = {\exp_not:N\keys_set:nn {pgfgo / players / \l__pgfgo_item_tl / territory} 		 {##1}},
 			}
 			
 			
 			
 			%----------------------------------------------------------------------------------------------------
 			%PIEDRA
-			\dim_new:c {l_pgfgo_players_ \variable _stone_radius_dim}
-			\fp_new:c {l_pgfgo_players_ \variable _stone_scale_fp}
+			\dim_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _stone_radius_dim}
+			\fp_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _stone_scale_fp}
 		
-			\keys_define:ee { pgfgo / players / \variable / stone } {
-				prisoner						.code:n = {\keys_set:nn { pgfgo / players / \variable / stone / fill } {opacity = 0.5}},
-				line 								.code:n = {\keys_set:nn { pgfgo / players / \variable / stone / line } {##1}},
-				fill 								.code:n = {\keys_set:nn { pgfgo / players / \variable / stone / fill } {##1}},
-				radius							.code:n = {\dim_set:cn{l_pgfgo_players_ \variable _stone_radius_dim}{##1}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / stone } {
+				prisoner						.code:n = {
+					\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / stone / fill } {opacity = 0.5}
+					\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / stone } {##1}
+				},
+				line 								.code:n = {\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / stone / line } {##1}},
+				fill 								.code:n = {\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / stone / fill } {##1}},
+				radius							.code:n = {\dim_set:cn{l_pgfgo_players_ \l__pgfgo_item_tl _stone_radius_dim}{##1}},
 				radius							.initial:n = {5.5pt},
-				scale								.code:n = {\fp_set:cn{l_pgfgo_players_ \variable _stone_scale_fp}{##1}},
+				scale								.code:n = {\fp_set:cn{l_pgfgo_players_ \l__pgfgo_item_tl _stone_scale_fp}{##1}},
 				scale								.initial:n = {1},
-				drop~shadow					.code:n = {\keys_set:nn{ pgfgo / players / \variable / stone / drop~shadow }{##1}},
-				drop~shine					.code:n = {\keys_set:nn{ pgfgo / players / \variable / stone / drop~shine }{##1}},
+				drop~shadow					.code:n = {\keys_set:nn{ pgfgo / players / \l__pgfgo_item_tl / stone / drop~shadow }{##1}},
+				drop~shine					.code:n = {\keys_set:nn{ pgfgo / players / \l__pgfgo_item_tl / stone / drop~shine }{##1}},
 				mark								.groups:n	= { external },
 				black								.groups:n = { external },
 				b										.groups:n = { external },
@@ -242,81 +246,82 @@
 			}
 			
 			
-			\bool_new:c {l_pgfgo_players_ \variable _stone_line_bool}
-			\bool_set_true:c {l_pgfgo_players_ \variable _stone_line_bool}
-			\tl_new:c 	{l_pgfgo_players_ \variable _stone_line_color_tl}
-			\dim_new:c 	{l_pgfgo_players_ \variable _stone_line_width_dim}
-			\fp_new:c 	{l_pgfgo_players_ \variable _stone_line_opacity_fp}
+			\bool_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _stone_line_bool}
+			\bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _stone_line_bool}
+			\tl_new:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_line_color_tl}
+			\dim_new:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_line_width_dim}
+			\fp_new:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_line_opacity_fp}
 			
-			\keys_define:ee { pgfgo / players / \variable / stone / line } {
-				true 				.code:n 		= {\exp_not:N\bool_set_true:c 	{l_pgfgo_players_ \variable _stone_line_bool}},
-				false 			.code:n 		= {\exp_not:N\bool_set_false:c 	{l_pgfgo_players_ \variable _stone_line_bool}},
-				color				.code:n 		= {\exp_not:N\tl_set:cn 				{l_pgfgo_players_ \variable _stone_line_color_tl}{##1}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / stone / line } {
+				true 				.code:n 		= {\exp_not:N\bool_set_true:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_line_bool}},
+				false 			.code:n 		= {\exp_not:N\bool_set_false:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_line_bool}},
+				color				.code:n 		= {\exp_not:N\tl_set:cn 				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_line_color_tl}{##1}},
 				color				.initial:n 	= {black},
-				width				.code:n 		= {\exp_not:N\dim_set:cn 				{l_pgfgo_players_ \variable _stone_line_width_dim}{##1}},
+				width				.code:n 		= {\exp_not:N\dim_set:cn 				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_line_width_dim}{##1}},
 				width				.initial:n	= {0.7pt},
-				opacity			.code:n 		= {\exp_not:N\fp_set:cn 				{l_pgfgo_players_ \variable _stone_line_opacity_fp}{##1}},
+				opacity			.code:n 		= {\exp_not:N\fp_set:cn 				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_line_opacity_fp}{##1}},
 				opacity			.initial:n	= {1}
 			}
 			
 			
 			
-			\bool_new:c {l_pgfgo_players_ \variable _stone_fill_bool}
-			\bool_set_true:c {l_pgfgo_players_ \variable _stone_fill_bool}
-			\tl_new:c 	{l_pgfgo_players_ \variable _stone_fill_color_tl}
-			\fp_new:c 	{l_pgfgo_players_ \variable _stone_fill_opacity_fp}
+			\bool_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _stone_fill_bool}
+			\bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _stone_fill_bool}
+			\tl_new:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_fill_color_tl}
+			\fp_new:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_fill_opacity_fp}
 			
-			\keys_define:ee { pgfgo / players / \variable / stone / fill } {
-				true 				.code:n 		= {\exp_not:N\bool_set_true:c 	{l_pgfgo_players_ \variable _stone_fill_bool}},
-				false 			.code:n 		= {\exp_not:N\bool_set_false:c 	{l_pgfgo_players_ \variable _stone_fill_bool}},
-				color				.code:n 		= {\exp_not:N\tl_set:cn 				{l_pgfgo_players_ \variable _stone_fill_color_tl}{##1}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / stone / fill } {
+				true 				.code:n 		= {\exp_not:N\bool_set_true:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_fill_bool}},
+				false 			.code:n 		= {\exp_not:N\bool_set_false:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_fill_bool}},
+				color				.code:n 		= {\exp_not:N\tl_set:cn 				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_fill_color_tl}{##1}},
 				color				.initial:n 	= {gray},
-				opacity			.code:n 		= {\exp_not:N\fp_set:cn 				{l_pgfgo_players_ \variable _stone_fill_opacity_fp}{##1}},
+				opacity			.code:n 		= {\exp_not:N\fp_set:cn 				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_fill_opacity_fp}{##1}},
 				opacity			.initial:n	=	{1}
 			}
 			
 			
 			
-			\bool_new:c				{l_pgfgo_players_ \variable _stone_drop_shadow_bool}
-			\bool_set_false:c	{l_pgfgo_players_ \variable _stone_drop_shadow_bool}
-			\fp_new:c					{l_pgfgo_players_ \variable _stone_drop_shadow_angle_fp}
-			\dim_new:c				{l_pgfgo_players_ \variable _stone_drop_shadow_offset_dim}
-			\fp_new:c					{l_pgfgo_players_ \variable _stone_drop_shadow_opacity_fp}
+			\bool_new:c				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shadow_bool}
+			\bool_set_false:c	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shadow_bool}
+			\fp_new:c					{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shadow_angle_fp}
+			\dim_new:c				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shadow_offset_dim}
+			\fp_new:c					{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shadow_opacity_fp}
 			
-			\keys_define:ee { pgfgo / players / \variable / stone / drop~shadow } {
-				true 				.code:n 		= {\exp_not:N\bool_set_true:c 	{l_pgfgo_players_ \variable _stone_drop_shadow_bool}},
-				false 			.code:n 		= {\exp_not:N\bool_set_false:c 	{l_pgfgo_players_ \variable _stone_drop_shadow_bool}},
-				angle				.code:n 		= {\exp_not:N\fp_set:cn 				{l_pgfgo_players_ \variable _stone_drop_shadow_angle_fp}{##1}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / stone / drop~shadow } {
+				true 				.code:n 		= {\exp_not:N\bool_set_true:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shadow_bool}},
+				false 			.code:n 		= {\exp_not:N\bool_set_false:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shadow_bool}},
+				angle				.code:n 		= {\exp_not:N\fp_set:cn 				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shadow_angle_fp}{##1}},
 				angle				.initial:n 	= {0},
-				offset			.code:n 		= {\exp_not:N\dim_set:cn 				{l_pgfgo_players_ \variable _stone_drop_shadow_offset_dim}{##1}},
+				offset			.code:n 		= {\exp_not:N\dim_set:cn 				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shadow_offset_dim}{##1}},
 				offset			.initial:n	=	{0pt},
-				opacity			.code:n 		= {\exp_not:N\fp_set:cn 				{l_pgfgo_players_ \variable _stone_drop_shadow_opacity_fp}{##1}},
+				opacity			.code:n 		= {\exp_not:N\fp_set:cn 				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shadow_opacity_fp}{##1}},
 				opacity			.initial:n	= {0.5}
 			}
 			
 			
-			\bool_new:c				{l_pgfgo_players_ \variable _stone_drop_shine_bool}
-			\bool_set_false:c	{l_pgfgo_players_ \variable _stone_drop_shine_bool}
-			\fp_new:c					{l_pgfgo_players_ \variable _stone_drop_shine_angle_fp}
-			\fp_new:c					{l_pgfgo_players_ \variable _stone_drop_shine_opacity_fp}
-			\tl_new:c					{l_pgfgo_players_ \variable _stone_drop_shine_color_tl}
+			\bool_new:c				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shine_bool}
+			\bool_set_false:c	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shine_bool}
+			\fp_new:c					{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shine_angle_fp}
+			\fp_new:c					{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shine_opacity_fp}
+			\tl_new:c					{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shine_color_tl}
 			
-			\keys_define:ee { pgfgo / players / \variable / stone / drop~shine } {
-				true 				.code:n 		= {\exp_not:N\bool_set_true:c 	{l_pgfgo_players_ \variable _stone_drop_shine_bool}},
-				false 			.code:n			= {\exp_not:N\bool_set_false:c 	{l_pgfgo_players_ \variable _stone_drop_shine_bool}},
-				angle				.code:n 		= {\exp_not:N\tl_set:cn 				{l_pgfgo_players_ \variable _stone_drop_shine_angle_fp}{##1}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / stone / drop~shine } {
+				true 				.code:n 		= {\exp_not:N\bool_set_true:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shine_bool}},
+				false 			.code:n			= {\exp_not:N\bool_set_false:c 	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shine_bool}},
+				angle				.code:n 		= {\exp_not:N\fp_set:cn 				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shine_angle_fp}{##1}},
 				angle				.initial:n 	= {0},
-				opacity			.code:n 		= {\exp_not:N\fp_set:cn 				{l_pgfgo_players_ \variable _stone_drop_shine_opacity_fp}{##1}},
+				opacity			.code:n 		= {\exp_not:N\fp_set:cn 				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shine_opacity_fp}{##1}},
 				opacity			.initial:n	= {1},
-				color				.code:n 		= {\exp_not:N\tl_set:cn 				{l_pgfgo_players_ \variable _stone_drop_shine_color_tl}{##1}},
+				color				.code:n 		= {\exp_not:N\tl_set:cn 				{l_pgfgo_players_ \l__pgfgo_item_tl _stone_drop_shine_color_tl}{##1}},
 				color				.default:n	= {gray!50!white},
+				color				.initial:n	= {gray!50!white},
 			}
 			
 			
 			%--------------------------------------------------------------------------------------------
 			%MOVE
-			\keys_define:ee { pgfgo / players / \variable / move } {
-				label 			.code:n = {\keys_set:nn { pgfgo / players / \variable / move / label } {##1}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / move } {
+				label 			.code:n = {\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / move / label } {##1}},
 				label				.groups:n = {label},
 				from				.groups:n = {external},
 				black				.groups:n = {external},
@@ -327,22 +332,22 @@
 				forget			.groups:n = {external},
 			}
 			
-			\dim_new:c {l_pgfgo_players_ \variable _move_label_font_size_dim}
-			\tl_new:c {l_pgfgo_players_ \variable _move_label_color_tl}
-						
-			\keys_define:ee { pgfgo / players / \variable / move / label } {
-				font~size 					.code:n 		= {\exp_not:N\dim_set:cn{l_pgfgo_players_ \variable _move_label_font_size_dim}{##1}},
-				font~size						.initial:n	= {8pt},
-				color								.code:n 		= {\tl_set:cn{l_pgfgo_players_ \variable _move_label_color_tl}{##1}},
+			%VACIO: EL TAMANO SE AJUSTA SOLO SEGUN LA CANTIDAD DE CARACTERES DE LA ETIQUETA.
+			\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _move_label_font_size_tl}
+			\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _move_label_color_tl}
+
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / move / label } {
+				font~size 					.code:n 		= {\exp_not:N\tl_set:cn{l_pgfgo_players_ \l__pgfgo_item_tl _move_label_font_size_tl}{##1}},
+				color								.code:n 		= {\tl_set:cn{l_pgfgo_players_ \l__pgfgo_item_tl _move_label_color_tl}{##1}},
 				color								.initial:n	= {black},
 				forget							.code:n			= {\bool_set_false:N \l_pgfgo_goban_remember_move_label_bool},
 				remember						.code:n 		= {\bool_set_true:N \l_pgfgo_goban_remember_move_label_bool},
 				format							.choice:,
-				format / arabic			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \variable _move_label_format:n}\exp_not:N\int_to_arabic:n},
-				format / alph				.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \variable _move_label_format:n}\exp_not:N\int_to_alph:n},
-				format / Alph				.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \variable _move_label_format:n}\exp_not:N\int_to_Alph:n},
-				format / roman			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \variable _move_label_format:n}\exp_not:N\int_to_roman:n},
-				format / Roman			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \variable _move_label_format:n}\exp_not:N\int_to_Roman:n},
+				format / arabic			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \l__pgfgo_item_tl _move_label_format:n}\exp_not:N\int_to_arabic:n},
+				format / alph				.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \l__pgfgo_item_tl _move_label_format:n}\exp_not:N\int_to_alph:n},
+				format / Alph				.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \l__pgfgo_item_tl _move_label_format:n}\exp_not:N\int_to_Alph:n},
+				format / roman			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \l__pgfgo_item_tl _move_label_format:n}\exp_not:N\int_to_roman:n},
+				format / Roman			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \l__pgfgo_item_tl _move_label_format:n}\exp_not:N\int_to_Roman:n},
 				format							.initial:n	= {arabic},
 			}
 			
@@ -353,69 +358,75 @@
 				
 			
 			
-			\keys_define:ee { pgfgo / players / \variable / mark } {
-				line		  .code:n = {\keys_set:nn { pgfgo / players / \variable / mark / line } {##1}},
-				fill		  .code:n = {\keys_set:nn { pgfgo / players / \variable / mark / fill } {##1}},
-				label		 	.code:n = {\keys_set:nn { pgfgo / players / \variable / mark / label } {##1}},
-				sequence	.code:n = {\keys_set:nn { pgfgo / players / \variable / mark / sequence } {##1}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / mark } {
+				line		  .code:n = {\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / mark / line } {##1}},
+				fill		  .code:n = {\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / mark / fill } {##1}},
+				label		 	.code:n = {\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / mark / label } {##1}},
+				sequence	.code:n = {\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / mark / sequence } {##1}},
 				sequence 	.default:n = {from = 1},
 				custom		.code:n = {\keys_set:nn { pgfgo } {mark = { custom = { ##1 }}}},
+				%EL RESTO (FORMAS, JUGADOR, ...) VA A /pgfgo/mark; UNA CLAVE MAL ESCRITA DA ERROR.
 				unknown		.code:n = {
-						\keys_set:nn {pgfgo / mark}{\l_keys_key_str}
+						\exp_not:N\keys_set:ne {pgfgo / mark}{\exp_not:N\l_keys_key_str}
 					}
 			}
 			
 			
 			
-			\tl_new:c {l_pgfgo_players_ \variable _mark_line_color_tl}
-			\dim_new:c {l_pgfgo_players_ \variable _mark_line_width_dim}
+			\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_line_color_tl}
+			\dim_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_line_width_dim}
 			
-			\keys_define:ee { pgfgo / players / \variable / mark / line } {
-				color			.code:n 		= {\tl_set:cn{l_pgfgo_players_ \variable _mark_line_color_tl}{##1}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / mark / line } {
+				color			.code:n 		= {\tl_set:cn{l_pgfgo_players_ \l__pgfgo_item_tl _mark_line_color_tl}{##1}},
 				color			.initial:n 	= {black},
-				width			.code:n 		= {\dim_set:cn{l_pgfgo_players_ \variable _mark_line_width_dim}{##1}},
+				width			.code:n 		= {\dim_set:cn{l_pgfgo_players_ \l__pgfgo_item_tl _mark_line_width_dim}{##1}},
 				width			.initial:n	=	{1pt}
 			}
 			
 			
-			\bool_new:c {l_pgfgo_players_ \variable _mark_fill_bool}
-			\bool_set_false:c {l_pgfgo_players_ \variable _mark_fill_bool}
-			\tl_new:c {l_pgfgo_players_ \variable _mark_fill_color_tl}
+			\bool_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_fill_bool}
+			\bool_set_false:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_fill_bool}
+			\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_fill_color_tl}
 			
-			\keys_define:ee { pgfgo / players / \variable / mark / fill } {
-				true			.code:n = {\bool_set_true:c {l_pgfgo_players_ \variable _mark_fill_bool}},
-				false			.code:n = {\bool_set_false:c {l_pgfgo_players_ \variable _mark_fill_bool}},
-				color			.code:n = {\tl_set:cn{l_pgfgo_players_ \variable _mark_fill_color_tl}{##1}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / mark / fill } {
+				true			.code:n = {\bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_fill_bool}},
+				false			.code:n = {\bool_set_false:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_fill_bool}},
+				color			.code:n = {\tl_set:cn{l_pgfgo_players_ \l__pgfgo_item_tl _mark_fill_color_tl}{##1}},
 				color			.initial:n = {gray!50!black}
 			}
 			
 			
-			\tl_new:c {l_pgfgo_players_ \variable _mark_label_color_tl}
-			\tl_new:c {l_pgfgo_players_ \variable _mark_label_font_tl}
+			\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_label_color_tl}
+			\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_label_font_tl}
 			
-			\keys_define:ee { pgfgo / players / \variable / mark / label } {
-				color			.code:n = {\tl_set:cn{l_pgfgo_players_ \variable _mark_label_color_tl}{##1}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / mark / label } {
+				color			.code:n = {\tl_set:cn{l_pgfgo_players_ \l__pgfgo_item_tl _mark_label_color_tl}{##1}},
 				color			.initial:n = {black},
-				font			.code:n		 = {\tl_set:cn{l_pgfgo_players_ \variable _mark_label_font_tl}{##1}},	
+				font			.code:n		 = {\tl_set:cn{l_pgfgo_players_ \l__pgfgo_item_tl _mark_label_font_tl}{##1}},	
 				format							.choice:,
-				format / arabic			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \variable _mark_sequence_format:n}\exp_not:N\int_to_arabic:n},
-				format / alph				.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \variable _mark_sequence_format:n}\exp_not:N\int_to_alph:n},
-				format / Alph				.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \variable _mark_sequence_format:n}\exp_not:N\int_to_Alph:n},
-				format / roman			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \variable _mark_sequence_format:n}\exp_not:N\int_to_roman:n},
-				format / Roman			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \variable _mark_sequence_format:n}\exp_not:N\int_to_Roman:n},
+				format / arabic			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_format:n}\exp_not:N\int_to_arabic:n},
+				format / alph				.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_format:n}\exp_not:N\int_to_alph:n},
+				format / Alph				.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_format:n}\exp_not:N\int_to_Alph:n},
+				format / roman			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_format:n}\exp_not:N\int_to_roman:n},
+				format / Roman			.code:n			= {\exp_not:N\cs_set_eq:cN{pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_format:n}\exp_not:N\int_to_Roman:n},
 				format							.initial:n	= {arabic},
 			}
 			
-			\bool_new:c {l_pgfgo_players_ \variable _mark_sequence_bool}
-			\int_new:c {l_pgfgo_ \variable _mark_sequence_from_int}
+			\bool_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_bool}
+			\int_new:c {l_pgfgo_ \l__pgfgo_item_tl _mark_sequence_from_int}
 			
-			\keys_define:ee { pgfgo / players / \variable / mark / sequence } {
-				true								.code:n			=	{\bool_set_true:c {l_pgfgo_players_ \variable _mark_sequence_bool}},
-				false								.code:n			=	{\bool_set_true:c {l_pgfgo_players_ \variable _mark_sequence_bool}},
-				use									.code:n			=	{\bool_set_true:c {l_pgfgo_players_ \variable _mark_sequence_bool}},
+			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / mark / sequence } {
+				true								.code:n			=	{\bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_bool}},
+				false								.code:n			=	{\bool_set_false:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_bool}},
+				use									.code:n			=	{\bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_bool}},
+				%ALIAS DOCUMENTADO DE mark/label/format
+				format							.code:n			= {
+					\bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_bool}
+					\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / mark / label } {format = ##1}
+				},
 				from								.code:n			= {
-					\bool_set_true:c {l_pgfgo_players_ \variable _mark_sequence_bool}
-					\int_set:cn {l_pgfgo_ \variable _mark_sequence_from_int} {##1}
+					\bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_bool}
+					\int_set:cn {l_pgfgo_ \l__pgfgo_item_tl _mark_sequence_from_int} {##1}
 					},
 			}
 		}
@@ -426,3 +437,5 @@
 %LOS JUGADORES REALES. TODO SE ASIGNA ACA
 \pgfgonewplayers{neutral, black, white}
 \pgfgochooseplayers{neutral}{black}{white}
+
+\ExplSyntaxOff
