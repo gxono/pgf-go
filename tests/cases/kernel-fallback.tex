@@ -1,0 +1,19 @@
+% engines: pdflatex
+% expect-warnings: 1
+% expect-errors: 1
+% render: no
+%
+% kernel = lua needs LuaLaTeX. With pdfLaTeX the package warns once and uses
+% kernel = expl3, so the diagram still works. Features that only the Lua
+% kernel provides raise an error.
+\documentclass{article}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\begin{document}
+
+\begin{goban}[5]\stones{C3}\moves{D4,E5}\marks[triangle]{C3}\end{goban}
+
+\ExplSyntaxOn
+\pgfgo_kernel_require:n {sgf}
+\ExplSyntaxOff
+
+\end{document}

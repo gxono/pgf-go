@@ -19,7 +19,13 @@ From the repository root:
 python tests/run_tests.py               # all tests (about 40 seconds)
 python tests/run_tests.py marks moves   # only documents whose name contains "marks" or "moves"
 python tests/run_tests.py --manuals     # also the Spanish and English manuals (about 1 minute more)
+python tests/run_tests.py --kernel lua  # everything again with kernel = lua (lualatex only)
 ```
+
+With `--kernel lua`, every document is compiled with the Lua compute kernel
+and compared with the same references, so both kernels must give exactly the
+same output, warnings and errors. It cannot be combined with `--update`. It
+can be combined with `--manuals`.
 
 The script ends with `N passed, M failed` and returns a non-zero exit code if
 something failed. For every page that changed, it saves an image with the
@@ -55,12 +61,13 @@ not affect the manuals, create them locally with
     undeclared variable is an error.
   - `primitives.tex` checks that `\mark` and `\marks` still work as TeX
     primitives outside `goban`.
-  - `kernel.tex` calls every function of the compute kernel interface
-    (`latex/pgf-go-kernel.sty`) and raises an error for each wrong result.
-    Every kernel must pass it.
-  - `kernel-lua.tex` checks that `kernel = lua` falls back to `expl3` with a
-    warning while the Lua kernel is not available, and that features that
-    need it raise an error.
+  - `kernel.tex` and `kernel-lua.tex` call every function of the compute
+    kernel interface (`latex/pgf-go-kernel.sty`) with the expl3 and the Lua
+    kernel, and raise an error for each wrong result. The checks themselves
+    are in `tests/kernel-checks.tex`.
+  - `kernel-fallback.tex` checks that `kernel = lua` falls back to `expl3`
+    with a warning under pdfLaTeX, and that features that need the Lua
+    kernel raise an error.
 - `doc/examples/example-*.tex`: the examples shipped with the package.
 - With `--manuals`: `doc/es/pgfgo-es.tex` and `doc/en/pgfgo-en.tex`.
 
