@@ -50,3 +50,230 @@ Now he is ready to place the stones. For this, \karu\ has several macros. Let’
 		\stone[b] {H7}
 	\end{goban}
 \end{codeexample}
+
+\karu\ suspects that this is not the best option if he needs to add 200 stones or more. To simplify the syntax, he finds in the documentation the macro |\stones[options]{intersection, intersection, ...}|, which accepts the same optional \emph{keys} as |\stone|.\footnote{Between \texttt{\textbackslash stone\{A1\}} and \texttt{\textbackslash stones\{A1\}}, the first one is much faster. We will see later that many processes are involved in reading the mandatory argument of the plural macros.}
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[label = {at = {north, west}}, use i = false]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+	\end{goban}
+\end{codeexample}
+
+\karu\ also notices that there is a syntax (p.~\pageref{subsec:coordinate-syntax}) to add several coordinates at once. For example, for a line of stones from C5 to G5, he can write |C:G5| or |C5--G5|.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[label = {at = {north, west}}, use i = false]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,E6,G6,C:G5}
+	\end{goban}
+\end{codeexample}
+
+To add white stones, \karu\ must include the \emph{key} |white| in the |\stones| command. He knows that |white| and |black| do not literally refer to the colors white and black, but to the second and first player, respectively, and that when these \emph{keys} are applied, the objects inherit their properties.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[label = {at = {north, west}}, use i = false]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,E6,G6,C:G5}
+		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,B4,E4,H2,J3:5}
+	\end{goban}
+\end{codeexample}
+
+Finally, the style of his board remains. For this, he looks through the catalog (p.~\pageref{sec:catalog}) and finds a style he likes: |pgfgo|. To apply it, he reads the section on profiles (p.~\pageref{subsec:profiles}) and decides to use the macro |\pgfgouseprofile{<name>}|.
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgouseprofile{pgfgo}
+
+	\begin{goban}[label = {at = {north, west}}, use i = false]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,E6,G6,C:G5}
+		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,B4,E4,H2,J3:5}
+	\end{goban}
+\end{codeexample}
+
+\subsection{Moves}
+
+When the stones are to be placed in order, following the sequence "black, white, black, white", it can be tedious and unnecessary to give the \emph{key} of each player.
+
+\begin{codeexample}[code only]
+	\begin{goban}
+		\stone[b]	{F7}
+		\stone[w] {E6}
+		\stone[b]	{G3}
+		\stone[w]	{D6}
+	\end{goban}
+\end{codeexample}
+
+That is why \pgfgoname\ includes macros that make this easier. Let’s start with the singular one:
+\begin{command}{\move\opt{\oarg{options}}\marg{intersection}}
+\end{command}
+This command works like |\stone|, but alternates the colors automatically.
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = all}]
+		\move	{F7}
+		\move	{E6}
+		\move	{G3}
+		\move	{D6}
+	\end{goban}
+\end{codeexample}
+
+The macro |\move|, like |\stone|, has a plural version:
+\begin{command}{\moves\opt{\oarg{options}}\marg{intersection}}
+\end{command}
+In this case, giving the \emph{key} |black| or |white| only sets who is the first player of the sequence.
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = all}]
+		\stone[b] {F7}
+		\moves[white] {	E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
+			G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
+			I3,I2,I5,H3}
+	\end{goban}
+\end{codeexample}
+
+The macros |\move| and |\moves| also have "starred" versions (|\move*| and |\moves*|), which label the moves. The \emph{key} |from| sets the number where the labels start.
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = all}]
+		\moves[white] {	E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
+			G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
+			I3,I2,I5,H3}
+
+		\moves*[from = 26]{F6,E5,I4,G6}
+		\move* {H2} % Black and labeled 30, without saying so.
+	\end{goban}
+\end{codeexample}
+
+In this last example, |H2| was placed with |\move*| and, although it is separate from |\moves*|, it is black and labeled 30, because the last stone placed (|G6|) was black and labeled 29.
+
+\subsection{Partial Board and Marks}
+
+Sometimes we want to focus on a particular region of the board. For this reason, it is possible to show only a portion of it.
+
+\begin{figure}[H]
+	\centering
+	\begin{goban}[partial = {from = B2 to E4}, background = false]
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2}
+		\stone[w, mark = {circle, line = {color = red}}] {C3}
+		\mark[custom = {!}] {D3}
+	\end{goban}
+\end{figure}
+
+To draw this board, we start by placing the stones.
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2,C3}
+	\end{goban}
+\end{codeexample}
+
+With the \emph{key} |partial|, we can set the range of the board through its \emph{key} |from|. It takes a value of the form |LN to LN|, where each |LN| is one of a pair of opposite vertices of the rectangle.
+
+\begin{codeexample}[]
+	\begin{goban}[partial = {from = B2 to E4}]
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2,C3}
+	\end{goban}
+\end{codeexample}
+
+To remove the line of the board, we use the \emph{key} |line| of the |background| of the |goban|.
+
+\begin{codeexample}[]
+	\begin{goban}[partial = {from = B2 to E4}, background = {line = false}]
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2,C3}
+	\end{goban}
+\end{codeexample}
+
+Now, to place marks we have the macro
+\begin{command}{\mark\opt{\oarg{options}}\marg{intersection}}
+\end{command}
+and its plural version.
+
+This macro is quite broad and is documented on its own page. For now, we need to know two things:
+\begin{itemize}
+	\item The mark for the circle is called |circle|.
+	\item The mark "!" can be added with |custom|.
+\end{itemize}
+
+\begin{codeexample}[]
+	\begin{goban}[partial = {from = B2 to E4}, background = {line = false}]
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2}
+		\mark[custom = {!}] {D3}
+		\stone[w, mark = circle] {C3}
+	\end{goban}
+\end{codeexample}
+
+We can change the line color of a mark with the \emph{key} |mark/line/color|.
+
+\begin{codeexample}[]
+	\begin{goban}[partial = {from = B2 to E4}, background = {line = false}]
+		\stones[b] {C2,B3,C4}
+		\stones[w] {D4,E3,D2}
+		\mark[custom = {!}] {D3}
+		\stone[w, mark = {circle, line = {color = red}}] {C3}
+	\end{goban}
+\end{codeexample}
+
+\subsection{The End of the Game: Territory}
+
+\begin{figure}[H]
+	\centering
+	\pgfgouseprofile{wain}
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A5,A6,B1,B2,B3,B4,B5,C1,C4,D1,D2,D5,D7,E2,E5,E7,E9,F4,F5,F6,F7,F8,F9,G5,G6,G7,H6,H8,I7}
+		\stones[w] {A7,B6,B8,C2,C3,C5,C6,C7,C8,D3,D4,D6,D8,D9,E3,E4,E6,E8,F1,F2,F3,G4,H2,H3,H5,I5,I6}
+		\prisoners{H1,I1,I2}
+		\prisoner[white] {A1}
+
+		\marks[b, t-circle] {A1,A2,A3,A4,G8,G9,H9,I9,I8,H7}
+		\marks[w, t-square] {A9,B9,C9,A8,B7,H4,I4,I3,I2,I1,H1,G1,G2,G3}
+		\mark[neutral, t-square] {E1}
+	\end{goban}
+\end{figure}
+
+Let’s start from the following board:
+
+\begin{codeexample}[]
+	\pgfgouseprofile{wain}
+
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+	\end{goban}
+\end{codeexample}
+
+The next step is to identify the prisoner stones. Prisoners can be marked with the \emph{key} |prisoner| or with the macro
+\begin{command}{\prisoner\opt{\oarg{options}}\marg{intersection}}
+\end{command}
+which also has a plural version.
+
+\begin{codeexample}[width=4.75cm]
+	\pgfgouseprofile{wain}
+
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+
+		\stones[b, prisoner]{H1-|I2} % Same as \prisoners[b] {...}
+		\prisoner[w] {A1} % Same as \stone[w, prisoner] {...}
+	\end{goban}
+\end{codeexample}
+
+Now let’s define the territories. This can be done in many ways. In particular, two are implemented for sure: the mark |t-square| and the mark |t-circle|. These marks always take as fill the fill color of the stone they belong to, and as border color and width those of the grid.
+
+\begin{codeexample}[width=4.75cm]
+	\pgfgouseprofile{wain}
+
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+
+		\stones[b, prisoner]{H1-|I2}
+		\prisoner[w] {A1}
+
+		\marks[b, t-circle]{A1:4, G8|-I9, I8, H7}
+		\marks[w, t-square]{G3|-I1|-H4, C9-|A8, B7}
+		\marks[t-square, fill = {color = red}] {E1} % Not filled in red: it takes the neutral color.
+	\end{goban}
+\end{codeexample}

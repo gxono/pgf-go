@@ -2,7 +2,7 @@
 
 \subsection{The \texttt{\textbackslash let} Game}
 
-To enable the use of the macros |\mark| and |\marks|, these primitives have been reassigned to |\pgfgo_old_mark| and |\pgfgo_old_marks|, respectively. This is done to avoid conflicts with previous definitions and ensure that the new functionalities of the \pgfgoname\ package can be seamlessly integrated into existing documents. In practice, if a user needs to access the original versions, they can still do so using the renamed commands.
+|\mark| and |\marks| are \TeX\ primitives. To leave them untouched, the \pgfgoname\ macros |\mark| and |\marks| only exist inside the |goban| environment. Outside it they are still the primitives, so page marks and running heads are not affected. |\sgf| does not exist outside |goban| either.
 
 \subsection{Configuration}
 
@@ -67,6 +67,25 @@ The macro |\pgfgoset{...}| allows defining general configurations for the packag
 
 Subsequent |goban| environments inherit these configurations, although they can be overridden locally if necessary.
 
+\subsection{The Compute Kernel}
+\label{subsec:kernel}
+
+\pgfgoname\ separates computing from drawing. The computations (reading coordinates, knowing which part of the board is visible, numbering moves and keeping track of the turn, remembering boards, etc.) are done by a \emph{kernel}. The drawing, the \emph{keys} and the profiles are always the same. There are two kernels:
+\begin{itemize}
+	\item |lua|: written in Lua. It needs Lua\LaTeX, and it is the default with Lua\LaTeX.
+	\item |expl3|: written in L3. It works with any engine, and it is the default with the other ones.
+\end{itemize}
+
+Both produce exactly the same diagrams. The Lua kernel can also do two things that the other one cannot: captures (p.~\pageref{subsec:captures}) and reading SGF games (p.~\pageref{subsec:sgf}). This manual is compiled with the Lua kernel.
+
+\begin{key}{/pgfgo/package/kernel = \meta{expl3 or lua} (initially lua with Lua\LaTeX, expl3 with other engines)}
+	Package option that chooses the kernel. It is only needed to use |expl3| with Lua\LaTeX. It can only be given when \pgfgoname\ is loaded; it cannot be changed with |\pgfgoset|. If |kernel = lua| is requested with pdf\LaTeX, the package warns and uses |expl3|. With |expl3|, |captures| and |\sgf| raise an error.
+
+	\begin{codeexample}[code only]
+		\usepackage[kernel = expl3]{pgf-go}
+	\end{codeexample}
+\end{key}
+
 \subsection{Coordinate Syntax}
 \label{subsec:coordinate-syntax}
 
@@ -78,12 +97,12 @@ One feature that distinguishes \pgfgoname\ from other packages is the ability to
 
 However, for performance and consistency reasons, some freedoms that were initially unrestricted have been limited. For example, to refer to an intersection, the alphabetical coordinate must be written in uppercase and without spaces. Thus, the B5 intersection must be entered as |B5|, not as |B 5|, |B  5|, or |b5|, since spaces between the letter and number are invalid in this context. Restrictions will be explained in each case.
 
-When \pgfgoname has to read the coordinate argument, it may encounter something like this:
+When \pgfgoname\ has to read the coordinate argument, it may encounter something like this:
 \begin{center}
 	|\stones{|{\color{red}|<item>, <item>, |\dots;} {\color{blue} |<item>, <item>, |\dots; }{\color{red} \dots}|}|
 \end{center}
 
-The first thing it will try to do is split the argument at the |;| and build two groups: the additive group and the subtractive group. The additive group is responsible for adding stones using our syntax. The subtractive group is responsible for removing them. These groups alternate automatically when a |;| is placed. This is explained in more detail in the corresponding subsection. If no |;| is placed, \pgfgoname will add all the stones to the additive group. Multiple stones or multiple groups separated by |,| can be added. Together, all this provides an interface to create complex groups with few \emph{tokens}:
+The first thing it will try to do is split the argument at the |;| and build two groups: the additive group and the subtractive group. The additive group is responsible for adding stones using our syntax. The subtractive group is responsible for removing them. These groups alternate automatically when a |;| is placed. This is explained in more detail in the corresponding subsection. If no |;| is placed, \pgfgoname\ will add all the stones to the additive group. Multiple stones or multiple groups separated by |,| can be added. Together, all this provides an interface to create complex groups with few \emph{tokens}:
 
 \begin{codeexample}[width=0pt]
 	\pgfgouseprofile{pgfgosmooth}
@@ -213,6 +232,44 @@ The segment syntax allows creating ranges between coordinates to insert stones. 
 \end{codeexample}
 
 For example, |A:E 7:8| creates a rectangle spanning columns A to E in rows 7 and 8, while |I:G 9:2| descends from I9 to G2. Although functional, this syntax can be less intuitive, leading to more specific operators we’ll see later.
+
+
+\sssseccion{Cartesian Products}
+	In this context, the Cartesian product is a more powerful extension of segments and, at the same time, a generalization of all the notations presented so far. The idea is the following: suppose we want to enter a group of stones on column A: |A1:3, A5, A7:8|. Until now there was no simpler way to write this. But every item repeats the A at the beginning: what if, instead of writing it three times, we write it only once? Something like
+	\begin{center}
+		|A[1:3, 5, 7:8]|
+	\end{center}
+	In this case, the interpreter distributes the A on the left to each of the elements on the right.
+
+	The elements of the list on the right do not have to be numbers. Something like |A:D 5:7, A1:2, A3, A:G9| can also be rewritten as
+	\begin{center}
+		|A[:D 5:7, 1:2, 3, :G9]|
+	\end{center}
+	Of course, nobody abstracts that much when entering coordinates, so this is a mere whim. The only restriction on the content between brackets is that brackets cannot be nested.
+
+	Just as there is a syntax for letters on the left, there is one for numbers on the right, and it works the same way. The expression |A12, C12, E:G12| can be written as |[A,C,E:G]12|.
+
+	There is a third operator, which, yes, is more of a whim than anything else: the unrestricted Cartesian product. I will not dwell on it, because it requires a higher degree of abstraction and has no real human use. This operator is a combination of the previous two: the expression |[A,D:F][2,5,7:9]| is read as
+	\begin{center}
+		|A2, A5, A7:9, D:F2, D:F5, D:F 7:9|.
+	\end{center}
+
+	\begin{codeexample}[width=4cm]
+		\begin{goban}
+			\stones[b]{[A, D:F][2, 5, 7:9]}
+			\marks[b]{A2, A5, A7:9, D:F2, D:F5, D:F 7:9} %<- what the interpreter reads.
+		\end{goban}
+	\end{codeexample}
+
+	The Cartesian product syntax can therefore be used in three different ways:
+\begin{itemize}
+	\item |L[itm1, itm2,...]|.
+	\item |[itm1, itm2,...]N|.
+	\item |[itm1,itm2,...][itm3,itm4,...]|.
+\end{itemize}
+where brackets cannot be nested.
+
+It can also be combined with some of the operators we will see next to create nodes along paths.
 
 So far, we’ve covered commands for intersections that cannot be combined with others in the same instruction and therefore \textbf{must} be separated by commas. Now, we’ll explore commands that can be chained together, offering greater flexibility for complex patterns.
 

@@ -8,16 +8,22 @@ The following package offers a collection of macros designed to represent Go boa
 	\item Loading multiple coordinates simultaneously using a syntax that some might find familiar.
 \end{itemize}
 
-The development of \pgfgoname stems from frustration with not finding packages that met my needs. The packages I explored allow for the representation of black-and-white boards, suitable for printing, but impractical when combined with technologies like |beamer| or in documents where a color presentation is desired.
+The development of \pgfgoname\ stems from frustration with not finding packages that met my needs. The packages I explored allow for the representation of black-and-white boards, suitable for printing, but impractical when combined with technologies like |beamer| or in documents where a color presentation is desired.
 
-Initially, \pgfgoname was intended to be limited to these tasks; however, I now envision it more as an interface for managing styles and states, avoiding excessive use of direct formatting. This will be reflected primarily in the structure of the \emph{keys} tree.
+Initially, \pgfgoname\ was intended to be limited to these tasks; however, I now envision it more as an interface for managing styles and states, avoiding excessive use of direct formatting. This will be reflected primarily in the structure of the \emph{keys} tree.
 
-Regarding the name, although the macros are implemented in \pgfname and L3, the board is built on |\tikzpicture| so that users familiar with this environment can take advantage of its macros.
+Regarding the name, although the macros are implemented in \pgfname\ and L3, the board is built on |\tikzpicture| so that users familiar with this environment can take advantage of its macros.
 
 \subsection{What’s New}
 
 \begin{itemize}
 	\item \version:
+	\begin{itemize}
+			\item The computations (coordinates, move numbers, memory, etc.) have been separated from the drawing. They are done by a \emph{kernel}, chosen with the package option |kernel| (p.~\pageref{subsec:kernel}). Besides the kernel written in L3, a kernel written in Lua has been added, which is the default with Lua\LaTeX.
+			\item With the Lua kernel, captures (|captures|, p.~\pageref{subsec:captures}) and SGF games (|\sgf|, p.~\pageref{subsec:sgf}) have been added.
+	\end{itemize}
+	\item 0.2025.10.13: Bug fixes. Each |goban| starts at move 1 with Black, |\mark| and |\marks| only exist inside |goban|, and what falls outside a partial board is no longer drawn. The full list is in the file |CHANGELOG.md|.
+	\item 0.2025.03.10:
 	\begin{itemize}
 			\item The \emph{keys} |inner| and |outer| have been added for the \emph{rounded corner} of the board.
 			\item Three new coordinate operators have been added: |*| for all intersections, |L| for vertical lines, and |N| for horizontal lines.

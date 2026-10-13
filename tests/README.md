@@ -19,13 +19,15 @@ From the repository root:
 python tests/run_tests.py               # all tests (about 40 seconds)
 python tests/run_tests.py marks moves   # only documents whose name contains "marks" or "moves"
 python tests/run_tests.py --manuals     # also the Spanish and English manuals (about 1 minute more)
-python tests/run_tests.py --kernel lua  # everything again with kernel = lua (lualatex only)
+python tests/run_tests.py --kernel expl3  # everything again with kernel = expl3 under lualatex
 ```
 
-With `--kernel lua`, every document is compiled with the Lua compute kernel
-and compared with the same references, so both kernels must give exactly the
-same output, warnings and errors. It cannot be combined with `--update`. It
-can be combined with `--manuals`.
+By default, the package uses the Lua compute kernel with LuaLaTeX and the
+expl3 kernel with pdfLaTeX. With `--kernel expl3` (or `--kernel lua`), every
+document is compiled with lualatex and that kernel, and compared with the same
+references, so both kernels must give exactly the same output, warnings and
+errors. Documents that choose their kernel in `\usepackage` are left out. It
+cannot be combined with `--update`. It can be combined with `--manuals`.
 
 The script ends with `N passed, M failed` and returns a non-zero exit code if
 something failed. For every page that changed, it saves an image with the
