@@ -1,0 +1,19 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+% render: no
+%
+% \mark and \marks must remain the TeX primitives outside goban,
+% so running heads keep working.
+\documentclass{article}
+\usepackage{../../latex/pgf-go}
+\pagestyle{headings}
+\begin{document}
+\section{First}
+\markright{Manual head}
+\mark{plain mark}\marks0{plain marks}
+\begin{goban}[5]\marks[circle]{C3}\mark[triangle]{B2}\end{goban}
+\newpage
+\section{Second}
+Text.
+\end{document}

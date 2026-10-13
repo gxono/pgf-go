@@ -1,0 +1,96 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+%
+% Uses every option with a value that is not the default, so that a change
+% in how any of them is applied shows up in the images.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+
+% Profiles built with "from" and "append".
+\pgfgodefinegoban[from = default]{keysgoban}{grid = {line = {color = blue}}}
+\pgfgodefinegoban[append]{keysgoban}{background = {fill = {color = yellow!20}}}
+\pgfgodefineplayer[from = default-black]{keys-black}{stone = {fill = {color = green!50!black}}}
+\pgfgodefineplayer[append]{keys-black}{stone = {line = {color = red}}}
+
+% A new player whose settings are copied into black.
+\pgfgonewplayers{extra}
+\pgfgosetplayer{extra}{stone = {fill = {color = purple}, radius = 4pt}}
+
+\begin{document}
+
+\case{Stone line and fill: colour, width, opacity, line false}
+\begin{goban}[5]
+	\stones[line = {color = red, width = 1.5pt, opacity = 0.5}]{A1}
+	\stones[fill = {color = cyan, opacity = 0.4}]{B1}
+	\stones[w, line = false]{C1}
+	\stones[fill = false]{D1}
+	\stones[w, line = {color = blue}, fill = {color = yellow}]{E1}
+\end{goban}
+
+\case{Drop shadow (angle, offset, opacity) and drop shine (angle, opacity, colour)}
+\begin{goban}[5]
+	\stones[drop shadow = {true, angle = 45, offset = 2pt, opacity = 0.8}]{B2}
+	\stones[w, drop shadow = {true, angle = -135, offset = 1pt, opacity = 0.3}]{D2}
+	\stones[drop shine = {true, angle = 90, opacity = 0.7, color = red}]{B4}
+	\stones[w, drop shine = {true, angle = 0, opacity = 1, color = blue}]{D4}
+\end{goban}
+
+\case{Mark fill and line options, label font and colour}
+\begin{goban}[5]
+	\marks[filled square, fill = {true, color = red}]{A1}
+	\marks[filled circle, fill = {true, color = blue}]{B1}
+	\marks[hatched lines, fill = {true, color = green!50!black}]{C1}
+	\marks[circle, line = {color = orange, width = 2pt}]{D1}
+	\marks[sequence, label = {color = magenta, font = \itshape}]{A3,B3}
+	\marks[custom = {xyz}, label = {color = blue}]{D3}
+	\stones[w]{E5}\marks[w, sequence = {from = 7}, label = {format = roman}]{E5}
+\end{goban}
+
+\case{Per-player settings with \textbackslash pgfgoset\{players = \ldots\} and \textbackslash pgfgosetallplayers}
+{\pgfgoset{players = {black = {stone = {fill = {color = brown}}, move = {label = {color = yellow}}},
+                      white = {move = {label = {color = red, format = alph}}}}}
+\begin{goban}[5]\moves*{B2,C2,D2}\end{goban}}
+{\pgfgosetallplayers{stone = {radius = 4pt}}
+\begin{goban}[5]\moves*{B2,C2}\stone{D2}\end{goban}}
+{\pgfgoset{move = {label = {color = green}}}
+\begin{goban}[5]\moves*{B2,C2}\end{goban}}
+{\pgfgoset{mark = {square}}
+\begin{goban}[5]\marks{C3}\end{goban}}
+
+\case{New player copied into black with \textbackslash pgfgochooseplayers}
+{\pgfgochooseplayers{neutral}{extra}{white}
+\begin{goban}[5]\stones[b]{B2}\stones[w]{D2}\stone{C4}\end{goban}}
+
+\case{Profiles built with from and append}
+{\pgfgousegoban{keysgoban}\pgfgouseblack{keys-black}
+\begin{goban}[5]\stones[b]{B2}\stones[w]{D2}\end{goban}}
+
+\case{Grid: x sep, y sep, line opacity and width}
+\begin{goban}[5, grid = {x sep = 1.6em, y sep = 1em, line = {opacity = 0.4, width = 1.2pt}}]\stones{C3}\end{goban}
+\begin{goban}[5, grid = {sep = 1em}]\stones{C3}\end{goban}
+
+\case{Background: line colour, width, opacity, line false, fill opacity, sep, corners, shadow}
+\begin{goban}[5, background = {line = {color = red, width = 2pt, opacity = 0.5}}]\end{goban}
+\begin{goban}[5, background = {line = false, fill = {color = blue!20, opacity = 0.5}}]\end{goban}
+\begin{goban}[5, background = {sep = 1.5em, rounded corners = {inner = 3pt, outer = 9pt}}]\end{goban}
+\begin{goban}[5, background = {drop shadow = {true, angle = 45, offset = 3pt, opacity = 0.3, color = blue}}]\end{goban}
+\begin{goban}[5, partial = {from = A1 to C3}, background = {rounded corners = {inner = 2pt, outer = 8pt}, drop shadow = true}]\end{goban}
+
+\case{Label positions: north, east, above, right, below, left, none; sep}
+\begin{goban}[3, label = {at = north}]\end{goban}
+\begin{goban}[3, label = {at = east}]\end{goban}
+\begin{goban}[3, label = {at = {above, right}}]\end{goban}
+\begin{goban}[3, label = {at = {below, left}, sep = 0.1cm}]\end{goban}
+\begin{goban}[3, label = {at = {all}, at = {none}}]\end{goban}
+\begin{goban}[5, partial = {from = B2 to D4}, label = {at = all}]\end{goban}
+
+\case{Global use i = false and remembered move labels with label = remember}
+{\pgfgoset{use i = false}
+\begin{goban}[9, label = {at = south}, new remember]\stones{H1,J1}\moves*[label = remember]{H3,J3}\end{goban}
+\begin{goban}[9, label = {at = south}, resume]\end{goban}}
+
+\end{document}

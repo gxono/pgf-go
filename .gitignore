@@ -10,3 +10,7 @@
 *.fdb_latexmk
 *.synctex.gz
 *.synctex(busy)
+
+# Pruebas: salida de compilación y referencias locales de los manuales
+tests/_build/
+tests/reference/manuals/

@@ -1,0 +1,32 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{Moves alternate colours and numbering continues within a goban: 1-3 then 4-5}
+\begin{goban}[5]\moves*{C3,D3,C4}\moves*{D4,B3}\end{goban}
+
+\case{Every goban starts at move 1 with Black (both boards: 1 black, 2 white)}
+\begin{goban}[5]\moves*{C3,D3}\end{goban}
+\begin{goban}[5]\moves*{C3,D3}\end{goban}
+
+\case{from = 7 and starting with White}
+\begin{goban}[5]\moves*[from = 7, w]{C3,D3,C4}\end{goban}
+
+\case{Unstarred moves advance the counter: unlabelled C3, D3, then 3 and 4}
+\begin{goban}[5]\moves{C3,D3}\moves*{C4,D4}\end{goban}
+
+\case{Label options: red labels, Roman numerals, fixed font size 0.5em}
+\begin{goban}[5]\moves*[label = {color = red}]{B2,C2}\end{goban}
+\begin{goban}[5]\moves*[label = {format = Roman}]{B2,C2,D2}\end{goban}
+\begin{goban}[5]\moves*[label = {font size = 0.5em}]{B2,C2}\end{goban}
+
+\case{\textbackslash move is an alias of \textbackslash moves}
+\begin{goban}[5]\move*{C3}\move*{D3}\end{goban}
+
+\end{document}

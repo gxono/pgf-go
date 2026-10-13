@@ -70,6 +70,10 @@ document is now fixed. See *Behaviour changes* below.
   `\pgfgoset{prisoner = {fill = {color = red}}}`.
 - New key `players/<player>/mark/sequence/format` (documented but missing).
   It is an alias of `mark/label/format` that also turns the sequence on.
+- Mark sequences turned on with `sequence = {true}`, `sequence = {use}` or
+  `sequence = {format = …}` started at 0 instead of 1. Only `sequence` without
+  a value started at 1.
+- A misspelled mark option raised the same error twice. It now raises it once.
 - New mark shape aliases `tcircle` and `tsquare` for `t-circle` and
   `t-square`. The manual's catalogue uses them.
 - The `n` shorthand selected the white player for stones and marks. It now
@@ -113,6 +117,8 @@ document is now fixed. See *Behaviour changes* below.
   previous definition when none was given. For example, after
   `\pgfgodefinegoban[from = wain]{a}{...}`, a later `\pgfgodefinegoban{b}{...}`
   also inherited from `wain`. Each definition now starts without `from`.
+- `\pgfgosetallplayers` raised an "unknown key" error and did nothing. It now
+  applies its options to the neutral, black and white players.
 - Removed leftover debug output (`\seq_log`, `\int_log`) that filled the
   `.log` file.
 
@@ -132,6 +138,9 @@ document is now fixed. See *Behaviour changes* below.
   coordinate regexes now use `\c_` names.
 - Removed build artefacts (`.aux`, `.log`, `.synctex.gz`) from the repository
   and extended `.gitignore`.
+- Added regression tests (`tests/`). They compile test documents and the
+  examples, check errors and warnings, and compare every page with reference
+  images. See `tests/README.md`.
 
 ### Documentation
 

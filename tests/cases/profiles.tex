@@ -1,0 +1,36 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+
+% A definition without "from" must not inherit the "from" of the previous one.
+\pgfgodefinegoban[from = wain]{testA}{grid = {line = {width = 2pt}}}
+\pgfgodefinegoban{testB}{grid = {line = {color = red}}}
+
+\pgfgodefineplayer[from = default-neutral]{test-neutral}{stone = {fill = {color = gray}}}
+\pgfgodefineplayer[from = test-neutral]{test-black}{stone = {fill = {color = blue}}}
+\pgfgodefineplayer[from = test-neutral]{test-white}{stone = {fill = {color = yellow}}}
+
+\begin{document}
+
+\case{Built-in profiles: default, pgfgo, pgfgosmooth, wain}
+\newcommand\sample{\begin{goban}[5, label = {at = {south, west}}]\moves*{C3,D3}\stone{B2}\marks[b, triangle]{C3}\end{goban}}
+{\pgfgouseprofile{default}\sample}
+{\pgfgouseprofile{pgfgo}\sample}
+{\pgfgouseprofile{pgfgosmooth}\sample}
+{\pgfgouseprofile{wain}\sample}
+
+\case{testB has a red grid on a plain board (it does not inherit wain)}
+{\pgfgouseprofile{default}\pgfgousegoban{testB}\sample}
+
+\case{Custom players: blue black stones, yellow white stones, grey neutral}
+{\pgfgouseprofile{default}\pgfgouseplayers{test-neutral}{test-black}{test-white}\sample}
+
+\case{Changing options on the fly: \textbackslash pgfgoset\{stone = \ldots\} for all players}
+{\pgfgouseprofile{default}\pgfgoset{stone = {line = {color = red}}}\sample}
+
+\end{document}

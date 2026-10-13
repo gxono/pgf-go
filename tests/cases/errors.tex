@@ -1,0 +1,15 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 3
+% render: no
+\documentclass{article}
+\usepackage{../../latex/pgf-go}
+\pagestyle{empty}
+\begin{document}
+
+% Each of these must raise exactly one error.
+\begin{goban}[5]\marks[trinagle]{C3}\end{goban} % misspelled mark shape
+\begin{goban}[19x]\end{goban}                   % invalid size
+\pgfgousegoban{does-not-exist}                  % unknown profile
+
+\end{document}

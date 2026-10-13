@@ -20,7 +20,7 @@
 
 \let\pgfgoset\pgfgo_set:n
 
-\NewDocumentCommand{\pgfgosetallplayers}{m}{\keys_set:nn {pgfgo / players / all}{#1}}
+\NewDocumentCommand{\pgfgosetallplayers}{m}{\keys_set:nn {pgfgo / players}{all = {#1}}}
 
 
 %LOS MODULOS SE BUSCAN EN LA MISMA CARPETA QUE pgf-go.sty (POR EJ. \usepackage{../../latex/pgf-go}).

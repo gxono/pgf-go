@@ -364,7 +364,8 @@
 \cs_new_protected:Nn \pgfgo_marks_parsed:nn {
 	\group_begin:
 		\keys_set:nn { pgfgo / mark }{neutral}
-		\keys_set_exclude_groups:nnn{ pgfgo / players / neutral / mark } { external }{#1}
+		%SOLO PARA EL NUMERO INICIAL DE LA SECUENCIA; EL RESTO LO APLICA CADA MARCA.
+		\keys_set_groups:nnn{ pgfgo / players / neutral / mark } { sequence }{#1}
 		\int_gset_eq:NN\g_pgfgo_mark_sequence_current_int\l_pgfgo_neutral_mark_sequence_from_int
 		\clist_map_inline:nn {#2} {\pgfgo_mark:nn{#1}{##1}}
 	\group_end:

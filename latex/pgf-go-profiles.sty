@@ -47,7 +47,7 @@
 
 \keys_define:nn {pgfgo / profiles / goban} {
 	from 		.tl_set:N = \l_pgfgo_profile_goban_from_tl,
-	append 	.code:n = {\keys_set:nn {pgfgo / profiles / goban} {from = { \l_pgfgo_profile_define_goban_name_tl }}}
+	append 	.code:n = {\tl_set_eq:NN \l_pgfgo_profile_goban_from_tl \l_pgfgo_profile_define_goban_name_tl}
 }
 
 
@@ -68,7 +68,7 @@
 
 \keys_define:nn {pgfgo / profiles / player} {
 	from 		.tl_set:N = \l_pgfgo_profile_player_from_tl,
-	append 	.code:n = {\keys_set:nn {pgfgo / profiles / player} {from = { \l_pgfgo_profile_define_player_name_tl }}}
+	append 	.code:n = {\tl_set_eq:NN \l_pgfgo_profile_player_from_tl \l_pgfgo_profile_define_player_name_tl}
 }
 
 

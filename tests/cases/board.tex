@@ -1,0 +1,43 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{Sizes: 3, 9, 5x7 and a goban option does not leak into the next goban}
+\begin{goban}[3]\end{goban}
+\begin{goban}[5x7]\end{goban}
+\begin{goban}\end{goban}
+
+\case{Labels: all sides, font size 6pt, bold font, text colour}
+\begin{goban}[5, label = {at = all}]\end{goban}
+\begin{goban}[5, label = {at = {south, west}, font size = 6pt}]\end{goban}
+\begin{goban}[5, label = {at = {south, west}, font = \bfseries, text color = red}]\end{goban}
+
+\case{Labels without I}
+\begin{goban}[9, use i = false, label = {at = {south}}]\end{goban}
+
+\case{Partial boards hide what is outside the window (only C3 visible)}
+\begin{goban}[5, partial = {from = B2 to D4}]\stones{A1,E5}\stones[w]{C3}\marks[circle]{A5}\moves*{A2,C2}\end{goban}
+
+\case{A partial window larger than the board is clipped}
+\begin{goban}[3, partial = {from = B2 to D4}]\stones{*}\end{goban}
+
+\case{Grid and background: false, then true again after a global false}
+\begin{goban}[5, grid = false]\stone{C3}\end{goban}
+\begin{goban}[5, background = false]\stone{C3}\end{goban}
+\pgfgoset{goban = {background = false}}
+\begin{goban}[5, background = true]\stone{C3}\end{goban}
+\pgfgoset{goban = {background = true}}
+
+\case{Background options: rounded corners, drop shadow, fill colour}
+\begin{goban}[5, background = {rounded corners = {outer = 6pt}, drop shadow = true, fill = {color = orange!30}}]\end{goban}
+
+\case{Scale 0.6}
+\begin{goban}[5, scale = 0.6]\stones{C3}\end{goban}
+
+\end{document}

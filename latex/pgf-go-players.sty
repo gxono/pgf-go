@@ -364,6 +364,7 @@
 				label		 	.code:n = {\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / mark / label } {##1}},
 				sequence	.code:n = {\keys_set:nn { pgfgo / players / \l__pgfgo_item_tl / mark / sequence } {##1}},
 				sequence 	.default:n = {from = 1},
+				sequence	.groups:n = {sequence},
 				custom		.code:n = {\keys_set:nn { pgfgo } {mark = { custom = { ##1 }}}},
 				%EL RESTO (FORMAS, JUGADOR, ...) VA A /pgfgo/mark; UNA CLAVE MAL ESCRITA DA ERROR.
 				unknown		.code:n = {
@@ -414,6 +415,7 @@
 			
 			\bool_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_bool}
 			\int_new:c {l_pgfgo_ \l__pgfgo_item_tl _mark_sequence_from_int}
+			\int_set:cn {l_pgfgo_ \l__pgfgo_item_tl _mark_sequence_from_int} {1}
 			
 			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / mark / sequence } {
 				true								.code:n			=	{\bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _mark_sequence_bool}},

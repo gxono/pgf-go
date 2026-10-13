@@ -1,0 +1,52 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{new remember / resume / a plain goban stays empty}
+\begin{goban}[5, new remember]\stones[b]{C3}\stone[w]{D4}\end{goban}
+\begin{goban}[5, resume]\end{goban}
+\begin{goban}[5]\end{goban}
+
+\case{stone[forget] is not remembered and does not affect the next stones (resume: B2, D2)}
+\begin{goban}[5, new remember]\stone[forget]{C3}\stone{B2}\stones[w]{D2}\end{goban}
+\begin{goban}[5, resume]\end{goban}
+
+\case{goban forget clears the memory; stone[remember] is kept (resume: only B4)}
+\begin{goban}[5, forget]\stones[b]{C2,D3}\stone[w, remember]{B4}\end{goban}
+\begin{goban}[5, resume]\end{goban}
+
+\case{remember and add to remember append to the memory (resume: C3 and E5)}
+\begin{goban}[5, new remember]\stone{C3}\end{goban}
+\begin{goban}[5, remember]\stone[w]{E5}\end{goban}
+\begin{goban}[5, resume]\end{goban}
+\begin{goban}[5, new remember]\stone{C3}\end{goban}
+\begin{goban}[5, add to remember]\stone[w]{E5}\end{goban}
+\begin{goban}[5, resume]\end{goban}
+
+\case{Moves keep colour and number; label = forget; numbering continues after resume (4 white, 5 black)}
+\begin{goban}[5, new remember]\moves*[label = forget]{C2,B4,D3}\end{goban}
+\begin{goban}[5, resume]\moves*{C:D4}\end{goban}
+
+\case{moves[forget] is not remembered (resume: only C3)}
+\begin{goban}[5, new remember]\stone{C3}\moves*[forget]{D3,D4}\end{goban}
+\begin{goban}[5, resume]\end{goban}
+
+\case{Marks and sequences are replayed (sequence restarts at 1)}
+\begin{goban}[5, new remember]\stones[b]{C3}\marks[b, triangle]{C3}\marks[sequence]{A1,B1,C1}\end{goban}
+\begin{goban}[5, resume]\end{goban}
+
+\case{Fragile options survive the memory}
+\begin{goban}[5, new remember]\stone[w, mark = {custom = \textbf{A}}]{C3}\marks[custom = \emph{x}]{B2}\end{goban}
+\begin{goban}[5, resume]\end{goban}
+
+\case{resume on a partial view of a remembered full board}
+\begin{goban}[9, new remember]\stones{C3,G7}\stones[w]{D3,G6}\end{goban}
+\begin{goban}[9, resume, partial = {from = A1 to E5}]\end{goban}
+
+\end{document}
