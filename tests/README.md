@@ -66,8 +66,10 @@ not affect the manuals, create them locally with
     kernel, and raise an error for each wrong result. The checks themselves
     are in `tests/kernel-checks.tex`.
   - `kernel-fallback.tex` checks that `kernel = lua` falls back to `expl3`
-    with a warning under pdfLaTeX, and that features that need the Lua
-    kernel raise an error.
+    with a warning under pdfLaTeX, and that `captures` and `\sgf`, which need
+    the Lua kernel, raise an error.
+- `captures.tex` and `sgf.tex` (with `game.sgf`) render captures and SGF
+  games. They use `kernel = lua`, so they only run with LuaLaTeX.
 - `doc/examples/example-*.tex`: the examples shipped with the package.
 - With `--manuals`: `doc/es/pgfgo-es.tex` and `doc/en/pgfgo-en.tex`.
 

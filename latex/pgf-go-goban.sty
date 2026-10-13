@@ -82,6 +82,22 @@
 
 		resume						.code:n			= {\bool_set_true:N\l_pgfgo_goban_resume_bool},
 
+		%LAS PIEDRAS CAPTURADAS DESAPARECEN (remove) O QUEDAN COMO PRISIONEROS (fade). SOLO CON kernel = lua.
+		captures					.choices:nn = {true, remove, fade, false} {
+																			\str_if_eq:VnTF \l_keys_choice_tl {false}
+																				{\bool_set_false:N \l_pgfgo_goban_captures_bool}
+																				{
+																					\pgfgo_kernel_if_feature:nTF {captures} {
+																						\bool_set_true:N \l_pgfgo_goban_captures_bool
+																						\bool_set:Nn \l_pgfgo_goban_captures_fade_bool
+																							{\str_if_eq_p:Vn \l_keys_choice_tl {fade}}
+																					}{
+																						\pgfgo_kernel_require:n {captures}
+																					}
+																				}
+																			},
+		captures					.default:n	= {remove},
+
 		grid							.code:n 		= {\keys_set:nx{pgfgo / goban / grid}		{#1}},
 
 		border						.code:n 		= {\keys_set:nx{pgfgo / goban / border} {#1}}, %DEPRECATED
@@ -616,6 +632,7 @@
 
 
 	\cs_new:Npn\__end_pgfgo_goban: {
+		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_end:}
 		\endtikzpicture
 		\group_end:
 	}
@@ -631,10 +648,12 @@
 		%\mark Y \marks SOLO EXISTEN DENTRO DEL TABLERO (AFUERA SON LAS PRIMITIVAS DE TEX).
 		\cs_set_eq:NN \mark \__pgfgo_marks_command
 		\cs_set_eq:NN \marks \__pgfgo_marks_command
+		\cs_set_eq:NN \sgf \__pgfgo_sgf_command
 		%CADA TABLERO EMPIEZA EN LA JUGADA 1 CON NEGRAS (resume RESTAURA LAS JUGADAS RECORDADAS).
 		\pgfgo_kernel_move_reset:
 		\keys_set:nn {pgfgo / goban} {#1}
 		\pgfgo_kernel_board_init:
+		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_begin:}
 
 		\__pgfgo_goban:nVV{}{\l_pgfgo_goban_size_x_int}{\l_pgfgo_goban_size_y_int}
 		}{\__end_pgfgo_goban:}

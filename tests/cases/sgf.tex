@@ -1,0 +1,31 @@
+% engines: lualatex
+% expect-warnings: 1
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% game.sgf: 9x9, black C7, C6, C5 (C6 and C5 from a compressed list), white
+% G3; then B E5, W G7, B pass, W C3, B G5. A variation (B A9) is not drawn.
+
+\case{The whole game (move 3 is a pass, so there is no 3)}
+\begin{goban}[9]\sgf{game.sgf}\end{goban}
+
+\case{from = 4: moves 1 and 2 without numbers / to = 2 / the game continues with moves (6 white)}
+\begin{goban}[9]\sgf[from = 4]{game.sgf}\end{goban}
+\begin{goban}[9]\sgf[to = 2]{game.sgf}\end{goban}
+\begin{goban}[9]\sgf{game.sgf}\moves*{E7}\end{goban}
+
+\case{Partial board, with captures and marks; resume}
+\begin{goban}[9, captures, new remember, partial = {from = A1 to E9}, label = {at = all}]
+	\sgf{game.sgf}\marks[b, triangle]{C6}
+\end{goban}
+\begin{goban}[9, resume]\end{goban}
+
+\case{A 9x9 game on a 13x13 board warns once}
+\begin{goban}[13]\sgf{game.sgf}\end{goban}
+
+\end{document}
