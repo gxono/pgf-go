@@ -569,6 +569,8 @@ SGF is the format that almost every Go program uses to save games. With the Lua 
 	Draws on the |goban| the main line of the first game in the file: the setup stones (|AB| and |AW|) as with |\stones|, and the moves as with |\moves*|. Variations are not drawn. Passes count for the numbering, but are not drawn. It only exists inside |goban|.
 \end{command}
 
+The stones that the nodes after the first move add (|AB|, |AW|) or remove (|AE|) are applied together with the previous move. Removing stones needs |captures|; without |captures|, |\sgf| warns once and does not remove them.
+
 When it ends, the numbering and the turn are ready to continue the game with |\moves|. |\sgf| works with |partial|, |captures|, |remember| and |resume|. If the game is for a board of another size, a warning is produced. With |kernel = expl3|, |\sgf| raises an error.
 
 In the examples, |game.sgf| contains a short 9$\times$9 game:
@@ -615,7 +617,7 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 
 \begin{command}{\sgfanimation\opt{\oarg{options}}\marg{file}}
 
-	Steps through the game with the |animate| package: it draws one |goban| per move, and the |animate| buttons go forward, back or play it. Frame $k$ shows the position after move $k$; frame 0, the position before the first move. It is used outside |goban|. It needs |\usepackage{animate}| and two runs.
+	Steps through the game with the |animate| package: it draws one |goban| per move, and the |animate| buttons go forward, back or play it. Frame $k$ shows the position after move $k$; frame 0, the position before the first move. It is used outside |goban|. The boards have the size of the game (|SZ|), unless |goban| gives another one. It needs |\usepackage{animate}| and two runs.
 \end{command}
 
 |animate| animations work in Acrobat Reader and in a few other viewers (Foxit, PDF-XChange). Other viewers only show the first frame. These options can be set for the whole document with |\pgfgoset{sgf animation = {...}}|.

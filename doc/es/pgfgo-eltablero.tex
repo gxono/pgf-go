@@ -645,7 +645,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/goban/captures=\meta{remove, fade o false} (default remove, initially false)}
 
-		Activa las capturas. Cuando una jugada deja sin libertades a un grupo rival, ese grupo se retira del tablero. Si deja sin libertades a su propio grupo (un suicidio), se retira ese grupo. Las piedras colocadas con |\stone| y |\stones| también cuentan; las neutrales y los prisioneros, no. Una jugada fuera de un tablero parcial también captura. Con |kernel = expl3|, esta \emph{key} produce un error.
+		Activa las capturas. Cuando una jugada deja sin libertades a un grupo rival, ese grupo se retira del tablero. Si deja sin libertades a su propio grupo (un suicidio), se retira ese grupo. Las piedras colocadas con |\stone| y |\stones| también cuentan; las neutrales y los prisioneros, no. Una jugada fuera de un tablero parcial también captura. Una jugada en un punto ocupado produce una advertencia, porque en una partida no es posible. Con |kernel = expl3|, esta \emph{key} produce un error.
 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}

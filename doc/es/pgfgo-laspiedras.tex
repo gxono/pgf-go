@@ -578,6 +578,8 @@ SGF es el formato que usan casi todos los programas de Go para guardar partidas.
 	Dibuja en el |goban| la línea principal de la primera partida del archivo: las piedras iniciales (|AB| y |AW|) como con |\stones|, y las jugadas como con |\moves*|. Las variantes no se dibujan. Los pases cuentan para la numeración, pero no se dibujan. Solo existe dentro de |goban|.
 \end{command}
 
+Las piedras que agregan (|AB|, |AW|) o quitan (|AE|) los nodos posteriores a la primera jugada se aplican junto con la jugada anterior. Quitar piedras necesita |captures|; sin |captures|, |\sgf| avisa una vez y no las quita.
+
 Al terminar, la numeración y el turno quedan listos para seguir la partida con |\moves|. |\sgf| funciona con |partial|, |captures|, |remember| y |resume|. Si la partida es para un tablero de otro tamaño, se produce una advertencia. Con |kernel = expl3|, |\sgf| produce un error.
 
 En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
@@ -624,7 +626,7 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 
 \begin{command}{\sgfanimation\opt{\oarg{options}}\marg{file}}
 
-	Recorre la partida con el paquete |animate|: dibuja un |goban| por jugada, y los botones de |animate| permiten avanzar, retroceder o reproducirla. El cuadro $k$ muestra la posición después de la jugada $k$; el cuadro 0, la posición antes de la primera jugada. Se usa fuera de |goban|. Necesita |\usepackage{animate}| y dos compilaciones.
+	Recorre la partida con el paquete |animate|: dibuja un |goban| por jugada, y los botones de |animate| permiten avanzar, retroceder o reproducirla. El cuadro $k$ muestra la posición después de la jugada $k$; el cuadro 0, la posición antes de la primera jugada. Se usa fuera de |goban|. Los tableros tienen el tamaño de la partida (|SZ|), salvo que |goban| indique otro. Necesita |\usepackage{animate}| y dos compilaciones.
 \end{command}
 
 Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros visores (Foxit, PDF-XChange). En los demás se ve solo el primer cuadro. Estas opciones pueden fijarse para todo el documento con |\pgfgoset{sgf animation = {...}}|.

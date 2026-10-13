@@ -36,6 +36,39 @@
 \cs_generate_variant:Nn \__pgfgo_sgf_stones:nn {nV}
 
 
+%UN EVENTO DE LA PARTIDA: UNA JUGADA ({black | white}{x}{y}) O UN CAMBIO DE UN NODO POSTERIOR A LA
+%PRIMERA JUGADA ({add-black | add-white | remove}{x}{y}).
+\cs_new_protected:Npn \__pgfgo_sgf_event:nnn #1#2#3 {
+	\str_case:nnF {#1} {
+		{add-black}	{\__pgfgo_sgf_stones:nn {black} {{#2}{#3}}}
+		{add-white}	{\__pgfgo_sgf_stones:nn {white} {{#2}{#3}}}
+		{remove}		{\__pgfgo_sgf_remove:nn {#2} {#3}}
+	}{
+		\__pgfgo_sgf_move:nnn {#1} {#2} {#3}
+	}
+}
+
+%AE: SOLO SE PUEDE QUITAR UNA PIEDRA CON goban/captures (LAS PIEDRAS SE DIBUJAN AL FINAL). SIN CAPTURAS,
+%\sgf AVISA UNA VEZ.
+\tl_new:N \l__pgfgo_sgf_file_tl
+\bool_new:N \l__pgfgo_sgf_remove_warned_bool
+\msg_new:nnn {pgfgo} {sgf-remove}
+	{'#1'~removes~stones~(AE).~That~needs~goban/captures,~so~they~are~not~removed.}
+\cs_generate_variant:Nn \msg_warning:nnn {nnV}
+
+\cs_new_protected:Npn \__pgfgo_sgf_remove:nn #1#2 {
+	\bool_if:NTF \l_pgfgo_goban_captures_bool {
+		\bool_if:NT \l_pgfgo_goban_remember_stone_bool
+			{\pgfgo_kernel_remember_push:n {\exp_not:N \pgfgo_captures_remove:nn {#1} {#2}}}
+		\pgfgo_captures_remove:nn {#1} {#2}
+	}{
+		\bool_if:NF \l__pgfgo_sgf_remove_warned_bool {
+			\msg_warning:nnV {pgfgo} {sgf-remove} \l__pgfgo_sgf_file_tl
+			\bool_set_true:N \l__pgfgo_sgf_remove_warned_bool
+		}
+	}
+}
+
 %UNA JUGADA DE #1 (black O white) EN (#2,#3). x E y VACIOS: PASE.
 \cs_new_protected:Npn \__pgfgo_sgf_move:nnn #1#2#3 {
 	\int_incr:N \l__pgfgo_sgf_number_int
@@ -73,6 +106,7 @@
 \cs_new_protected:Npn \pgfgo_sgf:nn #1#2 {
 	\group_begin:
 		\keys_set:nn {pgfgo / sgf} {#1}
+		\tl_set:Nn \l__pgfgo_sgf_file_tl {#2}
 		\pgfgo_kernel_sgf_read:n {#2}
 
 		\bool_if:nF {
@@ -91,7 +125,7 @@
 		\__pgfgo_sgf_stones:nV {white} \l_tmpa_clist
 
 		\int_zero:N \l__pgfgo_sgf_number_int
-		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgf_move:nnn ##1}
+		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgf_event:nnn ##1}
 	\group_end:
 }
 
@@ -122,6 +156,7 @@
 \dim_new:N \l__pgfgo_sgfanim_comment_height_dim
 \tl_new:N \l__pgfgo_sgfanim_comment_font_tl
 \tl_new:N \l__pgfgo_sgfanim_file_tl
+\tl_new:N \l__pgfgo_sgfanim_size_tl
 \seq_new:N \l__pgfgo_sgfanim_moves_seq
 \box_new:N \l__pgfgo_sgfanim_box
 
@@ -161,12 +196,22 @@
 	{\iow_char:N\\sgfanimation~needs~the~animate~package.~Add~\iow_char:N\\usepackage{animate}.}
 
 
+\cs_new_protected:Npn \__pgfgo_sgfanim_keep_move:nnn #1#2#3 {
+	\str_case:nnT {#1} {{black} {} {white} {}}
+		{\seq_put_right:Nn \l__pgfgo_sgfanim_moves_seq {{#1}{#2}{#3}}}
+}
+
 %LEE LA PARTIDA Y FIJA LOS CUADROS. SEPARADO DE \pgfgo_sgfanimation:nn PARA PODER DIBUJAR CUADROS SUELTOS.
 \cs_new_protected:Npn \pgfgo_sgfanimation_setup:nn #1#2 {
 	\keys_set:nn {pgfgo / sgf~animation} {#1}
 	\tl_set:Nn \l__pgfgo_sgfanim_file_tl {#2}
 	\pgfgo_kernel_sgf_read:n {#2}
-	\seq_set_eq:NN \l__pgfgo_sgfanim_moves_seq \l_pgfgo_kernel_sgf_moves_seq
+	%LOS TABLEROS TIENEN EL TAMANO DE LA PARTIDA (goban = {...} PUEDE CAMBIARLO).
+	\tl_set:Ne \l__pgfgo_sgfanim_size_tl
+		{\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
+	%SOLO LAS JUGADAS (SIN LOS CAMBIOS DE NODOS POSTERIORES): UN CUADRO POR JUGADA.
+	\seq_clear:N \l__pgfgo_sgfanim_moves_seq
+	\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgfanim_keep_move:nnn ##1}
 	\int_compare:nNnT {\l__pgfgo_sgfanim_to_int} < {0}
 		{\int_set:Nn \l__pgfgo_sgfanim_to_int {\seq_count:N \l__pgfgo_sgfanim_moves_seq}}
 	\int_set:Nn \l__pgfgo_sgfanim_to_int
@@ -189,7 +234,10 @@
 \cs_new_protected:Npn \pgfgo_sgfanimation_frame:n #1 {
 	\group_begin:
 	\hbox_set:Nn \l__pgfgo_sgfanim_box {
-		\use:e {\exp_not:N \begin{goban} [\exp_not:V \l__pgfgo_sgfanim_goban_tl]}
+		\use:e {
+			\exp_not:N \begin{goban}
+				[size = \l__pgfgo_sgfanim_size_tl, \exp_not:V \l__pgfgo_sgfanim_goban_tl]
+		}
 			%CADA CUADRO ES UN TABLERO NUEVO: NO SE RECUERDA NADA.
 			\pgfgo_goban_remember_nothing:
 			\bool_set:Nn \l__pgfgo_sgf_check_size_bool

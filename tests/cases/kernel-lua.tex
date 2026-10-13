@@ -54,7 +54,24 @@
 
 	% A move outside the board captures nothing.
 	\__test_play:nnn {9} {9} {}
+
+	% Occupied points; empty removes a stone.
+	\pgfgo_kernel_board_clear:
+	\pgfgo_kernel_board_put:nnn {black} {1} {1}
+	\__test_if:nnn {occupied~A1} {\pgfgo_kernel_board_if_occupied:nnTF {1} {1}} {yes}
+	\__test_if:nnn {occupied~B1} {\pgfgo_kernel_board_if_occupied:nnTF {2} {1}} {no}
+	\__test_if:nnn {occupied~outside} {\pgfgo_kernel_board_if_occupied:nnTF {9} {9}} {no}
+	\pgfgo_kernel_board_put:nnn {empty} {1} {1}
+	\__test_if:nnn {A1~removed} {\pgfgo_kernel_board_if_occupied:nnTF {1} {1}} {no}
 \group_end:
+
+% SGF setup in later nodes: AE on the setup, AB/AW/AE between the moves.
+\pgfgo_kernel_sgf_read:n {setup.sgf}
+\__test:nnn {setup~black} {\seq_use:Nn \l_pgfgo_kernel_sgf_black_seq {,}} {{2}{4}}
+\__test:nnn {setup~white} {\seq_use:Nn \l_pgfgo_kernel_sgf_white_seq {,}} {{3}{3}}
+\__test:nnn {setup~events} {\seq_use:Nn \l_pgfgo_kernel_sgf_moves_seq {,}}
+	{{black}{4}{2},{white}{4}{4},{add-black}{5}{1},{add-white}{5}{5},{black}{2}{2},{remove}{3}{3},{black}{3}{3}}
+\__test:nnn {setup~comment} {\pgfgo_kernel_sgf_comment:n {3}} {White~C3~removed.}
 
 % SGF: size, setup stones (also a compressed list), moves and passes.
 \pgfgo_kernel_sgf_read:n {game.sgf}
