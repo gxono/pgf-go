@@ -1,15 +1,12 @@
+\ProvidesFile{pgf-go-goban.sty}[2025/10/13 v0.2025.10.13 pgf-go: goban]
 \ExplSyntaxOn
-	\usepackage{tikz}
 
 
-	\bool_set_false:N\l_pgfgo_goban_partial_bool
-	\tl_set:Nn\l_pgfgo_goban_from_x_tl{1}
-	\tl_set:Nn\l_pgfgo_goban_from_y_tl{1}
-	\tl_set:Nn\l_pgfgo_goban_to_x_tl{9}
-	\tl_set:Nn\l_pgfgo_goban_to_y_tl{9}
+	\bool_new:N\l_pgfgo_goban_partial_bool
 
 
 	%GRID
+	\bool_new:N\l_pgfgo_goban_grid_bool
 	\bool_set_true:N\l_pgfgo_goban_grid_bool
 	\dim_new:N\l_pgfgo_goban_grid_line_width_dim
 	\dim_new:N\l_pgfgo_goban_grid_x_sep_dim
@@ -18,6 +15,9 @@
 
 
 	%BORDER
+	\bool_new:N\l_pgfgo_goban_border_bool
+	\bool_new:N\l_pgfgo_goban_border_line_bool
+	\bool_new:N\l_pgfgo_goban_border_fill_bool
 	\bool_set_true:N\l_pgfgo_goban_border_bool
 	\bool_set_true:N\l_pgfgo_goban_border_line_bool
 	\bool_set_true:N\l_pgfgo_goban_border_fill_bool
@@ -29,13 +29,14 @@
 	\dim_new:N\l_pgfgo_goban_border_inner_rounded_corners_dim
 
 	%LABEL
+	\tl_new:N\l_pgfgo_goban_labels_color_tl
 	\tl_set:Nn\l_pgfgo_goban_labels_color_tl{black}
 	\dim_new:N\l_pgfgo_goban_labels_sep_dim
 	\dim_set:Nn\l_pgfgo_goban_labels_sep_dim{0.5em}
-	\bool_set_false:N\l_pgfgo_goban_labels_pos_north_bool
-	\bool_set_false:N\l_pgfgo_goban_labels_pos_east_bool
-	\bool_set_false:N\l_pgfgo_goban_labels_pos_south_bool
-	\bool_set_false:N\l_pgfgo_goban_labels_pos_west_bool
+	\bool_new:N\l_pgfgo_goban_labels_pos_north_bool
+	\bool_new:N\l_pgfgo_goban_labels_pos_east_bool
+	\bool_new:N\l_pgfgo_goban_labels_pos_south_bool
+	\bool_new:N\l_pgfgo_goban_labels_pos_west_bool
 	\tl_new:N \l_pgfgo_goban_label_font_tl
 
 
@@ -54,20 +55,26 @@
 
 
 	\keys_define:nn {pgfgo / goban}{
+		%EMPIEZA UNA MEMORIA NUEVA Y RECUERDA TODO LO QUE SE DIBUJE.
 		new~remember					.code:n			= {
-																			\seq_gclear:N\l_pgfgo_goban_elements_stack_seq
+																			\seq_gclear:N\g_pgfgo_goban_elements_stack_seq
 																			\bool_set_true:N\l_pgfgo_goban_remember_new_bool
 																			\bool_set_true:N\l_pgfgo_goban_remember_add_bool
 																			\pgfgo_goban_remember_all:
 																		},
 
+		%AGREGA A LA MEMORIA EXISTENTE.
 		remember				.code:n			= {
 																			\bool_set_false:N\l_pgfgo_goban_remember_new_bool
 																			\bool_set_true:N\l_pgfgo_goban_remember_add_bool
 																			\pgfgo_goban_remember_all:
 																		},
 
+		add~to~remember	.code:n			= {\keys_set:nn {pgfgo / goban} {remember}},
+
+		%BORRA LA MEMORIA Y NO RECUERDA NADA (SALVO LO MARCADO CON remember).
 		forget								.code:n			= {
+																			\seq_gclear:N\g_pgfgo_goban_elements_stack_seq
 																			\bool_set_false:N\l_pgfgo_goban_remember_new_bool
 																			\bool_set_false:N\l_pgfgo_goban_remember_add_bool
 																			\pgfgo_goban_remember_nothing:
@@ -81,7 +88,7 @@
 		
 		background						.code:n 		= {\keys_set:nx{pgfgo / goban / background} {#1}},
 
-		label							.code:n 		= {\keys_set:nx{pgfgo / goban / label} {#1}},
+		label							.code:n 		= {\keys_set:nn{pgfgo / goban / label} {#1}},
 
 		partial						.code:n 		= {	\bool_set_true:N\l_pgfgo_goban_partial_bool
 																			\keys_set:nx{pgfgo / goban / partial} {#1}},
@@ -101,8 +108,8 @@
 
 
 	\keys_define:nn {pgfgo / goban / grid}{
-		false							.bool_set:N	= \l_pgfgo_goban_grid_bool,
-		false							.default:n	= {false},
+		false							.code:n			= {\bool_set_false:N \l_pgfgo_goban_grid_bool},
+		true							.code:n			= {\bool_set_true:N \l_pgfgo_goban_grid_bool},
 		
 		line							.code:n			= {\keys_set:nn {pgfgo / goban / grid / line} {#1}},
 		
@@ -129,8 +136,8 @@
 	
 
 	\keys_define:nn {pgfgo / goban / background}{
-		false										.bool_set:N = \l_pgfgo_goban_border_bool,
-		false										.default:n = {false},
+		false										.code:n = {\bool_set_false:N \l_pgfgo_goban_border_bool},
+		true										.code:n = {\bool_set_true:N \l_pgfgo_goban_border_bool},
 
 		sep											.dim_set:N 	= \l_pgfgo_goban_border_sep_dim,
 		sep											.initial:n	= {0.825em},
@@ -245,9 +252,20 @@
 		sep					.dim_set:N 	= \l_pgfgo_goban_labels_sep_dim,
 
 		font				.tl_set:N 	= \l_pgfgo_goban_label_font_tl,
+		font				.initial:n	= {\sffamily},
 
+		%VACIO: TAMANO DEL TEXTO ACTUAL.
+		font~size		.tl_set:N 	= \l_pgfgo_goban_label_font_size_tl,
 
 		at					.code:n 		= {\keys_set:nx{pgfgo / goban / label / at} {#1}}
+	}
+
+	%FUENTE DE LAS COORDENADAS DEL BORDE.
+	\cs_new_protected:Nn \__pgfgo_goban_label_font: {
+		\tl_if_empty:NF \l_pgfgo_goban_label_font_size_tl {
+			\fontsize{\l_pgfgo_goban_label_font_size_tl}{\l_pgfgo_goban_label_font_size_tl}\selectfont
+		}
+		\l_pgfgo_goban_label_font_tl
 	}
 
 
@@ -303,12 +321,12 @@
 		from				.code:n 	= {
 			\pgfgo_parse_goban_partial_from:n{#1}
 
-			\pgfgo_parse_coordinate:x {\l_temp_a_tl}
+			\pgfgo_parse_coordinate:x {\l_pgfgo_goban_partial_from_tl}
 			\int_set:Nn\l_pgfgo_goban_tmp_from_x_int 	{\l_pgfgo_parsed_x_coordinate_tl}
 			\int_set:Nn\l_pgfgo_goban_tmp_from_y_int	{\l_pgfgo_parsed_y_coordinate_tl}
 			
 	
-			\pgfgo_parse_coordinate:x {\l_temp_b_tl}			
+			\pgfgo_parse_coordinate:x {\l_pgfgo_goban_partial_to_tl}
 			\int_set:Nn\l_pgfgo_goban_tmp_to_x_int 		{\l_pgfgo_parsed_x_coordinate_tl}
 			\int_set:Nn\l_pgfgo_goban_tmp_to_y_int 		{\l_pgfgo_parsed_y_coordinate_tl}
 		},
@@ -332,7 +350,30 @@
 	
 	\cs_generate_variant:Nn \int_compare_p:nNn {fNn}
 
-	\cs_generate_variant:Nn \__pgfgo_goban:nnn {nVV}
+	%TAMANO COMPLETO DEL TABLERO (from/to ES LA PARTE VISIBLE).
+	\int_new:N \l_pgfgo_goban_size_x_int
+	\int_new:N \l_pgfgo_goban_size_y_int
+
+	\msg_new:nnn {pgfgo} {outside-board}
+		{Point~(#1,#2)~is~outside~the~board~and~is~ignored.}
+
+	%VERDADERO SI LA INTERSECCION (#1,#2) ESTA EN LA PARTE VISIBLE DEL TABLERO.
+	%SI ESTA FUERA DEL TABLERO, ADEMAS AVISA.
+	\prg_new_protected_conditional:Npnn \pgfgo_if_visible:nn #1#2 {T, F, TF} {
+		\bool_if:nTF {
+			\int_compare_p:n {1 <= #1 <= \l_pgfgo_goban_size_x_int} &&
+			\int_compare_p:n {1 <= #2 <= \l_pgfgo_goban_size_y_int}
+		}{
+			\bool_if:nTF {
+				\int_compare_p:n {\l_pgfgo_goban_from_x_int <= #1 <= \l_pgfgo_goban_to_x_int} &&
+				\int_compare_p:n {\l_pgfgo_goban_from_y_int <= #2 <= \l_pgfgo_goban_to_y_int}
+			} {\prg_return_true:} {\prg_return_false:}
+		}{
+			\msg_warning:nnnn {pgfgo} {outside-board} {#1} {#2}
+			\prg_return_false:
+		}
+	}
+
 	\int_new:N\l_pgfgo_goban_labels_current_x_int
 	\int_new:N\l_pgfgo_goban_labels_current_y_int
 	
@@ -353,11 +394,15 @@
 
 		%---------------------------------------------------
 
+		\int_set:Nn \l_pgfgo_goban_size_x_int {#2}
+		\int_set:Nn \l_pgfgo_goban_size_y_int {#3}
+
 		\bool_if:NTF\l_pgfgo_goban_partial_bool{
-			\int_set:Nn\l_pgfgo_goban_from_x_int	{\int_min:nn{\l_pgfgo_goban_tmp_from_x_int}{\l_pgfgo_goban_tmp_to_x_int}}
-			\int_set:Nn\l_pgfgo_goban_from_y_int 	{\int_min:nn{\l_pgfgo_goban_tmp_from_y_int}{\l_pgfgo_goban_tmp_to_y_int}}
-			\int_set:Nn\l_pgfgo_goban_to_x_int 		{\int_max:nn{\l_pgfgo_goban_tmp_from_x_int}{\l_pgfgo_goban_tmp_to_x_int}}
-			\int_set:Nn\l_pgfgo_goban_to_y_int 		{\int_max:nn{\l_pgfgo_goban_tmp_from_y_int}{\l_pgfgo_goban_tmp_to_y_int}}
+			%LA VENTANA SE RECORTA AL TAMANO DEL TABLERO.
+			\int_set:Nn\l_pgfgo_goban_from_x_int	{\int_max:nn{1}{\int_min:nn{\l_pgfgo_goban_tmp_from_x_int}{\l_pgfgo_goban_tmp_to_x_int}}}
+			\int_set:Nn\l_pgfgo_goban_from_y_int 	{\int_max:nn{1}{\int_min:nn{\l_pgfgo_goban_tmp_from_y_int}{\l_pgfgo_goban_tmp_to_y_int}}}
+			\int_set:Nn\l_pgfgo_goban_to_x_int 		{\int_min:nn{#2}{\int_max:nn{\l_pgfgo_goban_tmp_from_x_int}{\l_pgfgo_goban_tmp_to_x_int}}}
+			\int_set:Nn\l_pgfgo_goban_to_y_int 		{\int_min:nn{#3}{\int_max:nn{\l_pgfgo_goban_tmp_from_y_int}{\l_pgfgo_goban_tmp_to_y_int}}}
 
 		}{
 			\int_set:Nn\l_pgfgo_goban_from_x_int 	{1}
@@ -559,11 +604,6 @@
 		%----------------------LABELS----------------------%
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 		
-		\int_log:N\l_pgfgo_goban_from_x_int 
-		\int_log:N\l_pgfgo_goban_from_y_int	
-		\int_log:N\l_pgfgo_goban_to_x_int
-		\int_log:N\l_pgfgo_goban_to_y_int 	
-		
 
 		\pgfonlayer{pgfgo_layer_goban_labels}
 			\pgfscope
@@ -581,20 +621,20 @@
 							{\pgfpointxy{\x}{\l_pgfgo_goban_to_y_int}}
 							{\pgfpoint{0}{\l_pgfgo_goban_labels_sep_dim + \l_pgfgo_players_stone_radius_dim + 0.5em}}
 						]	{{
-								\sffamily\int_to_Alph:n{\l_pgfgo_goban_labels_current_x_int}
+								\__pgfgo_goban_label_font:\int_to_Alph:n{\l_pgfgo_goban_labels_current_x_int}
 							}}}
 				}
 
 				
 				
 				\bool_if:NT\l_pgfgo_goban_labels_pos_east_bool{
-					\int_step_variable:nnNn {\l_pgfgo_goban_from_y_int} {\l_pgfgo_goban_to_y_int}\variable
+					\int_step_variable:nnNn {\l_pgfgo_goban_from_y_int} {\l_pgfgo_goban_to_y_int}\l__pgfgo_item_tl
 					{
 						\pgftext[at = \pgfpointadd{
-							\pgfpointxy{\l_pgfgo_goban_to_x_int}{\variable}}{
+							\pgfpointxy{\l_pgfgo_goban_to_x_int}{\l__pgfgo_item_tl}}{
 							\pgfpoint{\l_pgfgo_goban_labels_sep_dim+\l_pgfgo_players_stone_radius_dim+0.5em}{0}}
 						]	{{
-								\sffamily\variable
+								\__pgfgo_goban_label_font:\l__pgfgo_item_tl
 						}}
 					}
 				}
@@ -616,7 +656,7 @@
 							\pgfpointxy{\x}{\l_pgfgo_goban_from_y_int}}{
 							\pgfpoint{0}{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim-0.5em}}
 						]	{{
-								\sffamily\int_to_Alph:n{\l_pgfgo_goban_labels_current_x_int}
+								\__pgfgo_goban_label_font:\int_to_Alph:n{\l_pgfgo_goban_labels_current_x_int}
 							}}}
 				}
 
@@ -624,12 +664,12 @@
 
 
 				\bool_if:NT\l_pgfgo_goban_labels_pos_west_bool{
-					\int_step_variable:nnNn {\l_pgfgo_goban_from_y_int} {\l_pgfgo_goban_to_y_int} \variable {
+					\int_step_variable:nnNn {\l_pgfgo_goban_from_y_int} {\l_pgfgo_goban_to_y_int} \l__pgfgo_item_tl {
 						\pgftext[at = \pgfpointadd{
-							\pgfpointxy{\l_pgfgo_goban_from_x_int}{\variable}}{
+							\pgfpointxy{\l_pgfgo_goban_from_x_int}{\l__pgfgo_item_tl}}{
 							\pgfpoint{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim-0.5em}{0}}
 						]	{{
-								\sffamily\variable
+								\__pgfgo_goban_label_font:\l__pgfgo_item_tl
 						}}
 					}
 				}
@@ -643,15 +683,18 @@
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 		\bool_if:NT\l_pgfgo_goban_resume_bool{
-			\seq_map_inline:Nn \l_pgfgo_goban_elements_stack_seq {##1}}
+			\seq_map_inline:Nn \g_pgfgo_goban_elements_stack_seq {##1}}
 	}
+
+
+
+	\cs_generate_variant:Nn \__pgfgo_goban:nnn {nVV}
 
 
 
 	\cs_new:Npn\__end_pgfgo_goban: {
 		\endtikzpicture
 		\group_end:
-		\int_set:Nn\l_pgfgo_move_from_int{1}
 	}
 
 
@@ -662,6 +705,11 @@
 
 
 	\NewDocumentEnvironment{goban}{O{}}{
+		%\mark Y \marks SOLO EXISTEN DENTRO DEL TABLERO (AFUERA SON LAS PRIMITIVAS DE TEX).
+		\cs_set_eq:NN \mark \__pgfgo_marks_command
+		\cs_set_eq:NN \marks \__pgfgo_marks_command
+		%CADA TABLERO EMPIEZA EN LA JUGADA 1 CON NEGRAS (resume RESTAURA LAS JUGADAS RECORDADAS).
+		\pgfgo_move_reset:
 		\keys_set:nn {pgfgo / goban} {#1}
 
 		\__pgfgo_goban:nVV{}{\l_pgfgo_goban_to_x_int}{\l_pgfgo_goban_to_y_int}

@@ -87,6 +87,11 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Controla el comportamiento y la apariencia de las líneas centrales del tablero. Este conjunto de opciones permite modificar su visibilidad, color, grosor y separación, ofreciendo un alto grado de personalización.
 	\end{key}
 	
+	\begin{stylekey}{/pgfgo/goban/grid/true}
+
+		Vuelve a activar las líneas centrales después de un |grid = false| (por ejemplo, uno global hecho con |\pgfgoset|).
+	\end{stylekey}
+
 	\begin{stylekey}{/pgfgo/goban/grid/false}
 		
 		Desactiva las líneas centrales, dejando visibles solo el borde y las piedras.
@@ -181,6 +186,11 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Controla las propiedades del borde del tablero, como su visibilidad, color, grosor y forma, permitiendo una personalización detallada.
 	\end{key}
 	
+	\begin{stylekey}{/pgfgo/goban/background/true}
+
+		Vuelve a activar el fondo y el borde del tablero después de un |background = false|.
+	\end{stylekey}
+
 	\begin{stylekey}{/pgfgo/goban/background/false}
 		
 		Desactiva completamente el borde del tablero, eliminando tanto el contorno como el relleno. Esto es útil para diagramas minimalistas o cuando el fondo del documento ya proporciona el contraste necesario.
@@ -378,7 +388,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/sep =\meta{dimension} (default /pgfgo/goban/stone/radius * 1.5)}
+	\begin{key}{/pgfgo/goban/background/sep =\meta{dimension} (initially 0.825em)}
 		
 		Define la separación entre la cuadrícula y el borde, basada por defecto en el radio de las piedras multiplicado por 1.5. Este ajuste asegura que las piedras cercanas al borde no se superpongan con él.
 		
@@ -534,12 +544,30 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially 0.75em)}
-		
+	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially el tamaño de la fuente actual)}
+
 		Ajusta el tamaño de la fuente de las etiquetas.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, label = {at = {south, west}}]
+			\end{goban}
+
+			\begin{goban}[5, label = {at = {south, west}, font size = 6pt}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/font = \meta{font commands} (initially \texttt{\string\sffamily})}
+
+		Establece la fuente de las etiquetas.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, label = {at = {south, west}, font = \bfseries}]
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/label/sep = \meta{dimension} (initially 0.5em)}
+	\begin{key}{/pgfgo/goban/label/sep = \meta{dimension} (initially 0.35cm)}
 		
 		Controla la distancia entre las etiquetas y el borde del tablero.
 	\end{key}

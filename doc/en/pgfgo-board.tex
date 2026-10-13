@@ -87,6 +87,11 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Controls the behavior and appearance of the board’s central lines. This set of options allows modifying their visibility, color, thickness, and spacing, offering a high degree of customization.
 	\end{key}
 	
+	\begin{stylekey}{/pgfgo/goban/grid/true}
+
+		Turns the central lines back on after a |grid = false| (for example, a global one set with |\pgfgoset|).
+	\end{stylekey}
+
 	\begin{stylekey}{/pgfgo/goban/grid/false}
 		
 		Disables the central lines, leaving only the border and stones visible.
@@ -181,6 +186,11 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Controls the properties of the board’s border, such as its visibility, color, thickness, and shape, allowing detailed customization.
 	\end{key}
 	
+	\begin{stylekey}{/pgfgo/goban/background/true}
+
+		Turns the board’s background and border back on after a |background = false|.
+	\end{stylekey}
+
 	\begin{stylekey}{/pgfgo/goban/background/false}
 		
 		Completely disables the board’s border, removing both the outline and fill. This is useful for minimalist diagrams or when the document’s background already provides sufficient contrast.
@@ -376,7 +386,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/sep =\meta{dimension} (default /pgfgo/goban/stone/radius * 1.5)}
+	\begin{key}{/pgfgo/goban/background/sep =\meta{dimension} (initially 0.825em)}
 		
 		Defines the separation between the grid and the border, based by default on the stone radius multiplied by 1.5. This adjustment ensures that stones near the border do not overlap with it.
 		
@@ -532,12 +542,30 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
-%	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially 0.75em)}
-%		
-%		Adjusts the font size of the labels.
-%	\end{key}
+	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially the current font size)}
+
+		Adjusts the font size of the labels.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, label = {at = {south, west}}]
+			\end{goban}
+
+			\begin{goban}[5, label = {at = {south, west}, font size = 6pt}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/font = \meta{font commands} (initially \texttt{\string\sffamily})}
+
+		Sets the font of the labels.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, label = {at = {south, west}, font = \bfseries}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
 	
-	\begin{key}{/pgfgo/goban/label/sep = \meta{dimension} (initially 0.5em)}
+	\begin{key}{/pgfgo/goban/label/sep = \meta{dimension} (initially 0.35cm)}
 		
 		Controls the distance between the labels and the board’s border.
 	\end{key}

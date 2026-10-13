@@ -5,13 +5,15 @@ Las piedras son los elementos fundamentales. En \pgfgoname, se proporcionan coma
 \subsection{Piedras}
 
 \begin{command}{\stone\opt{\oarg{options}}\marg{intersection}}
-	Este comando dibuja una piedra individual en la intersección especificada. El argumento obligatorio es la coordenada (ej. «C2»), mientras que las opciones opcionales permiten ajustar su estilo, como color, tamaño o mar, siguiendo la convención del primer jugador en Go.
+	Este comando dibuja una piedra individual en la intersección especificada. El argumento obligatorio es la coordenada (ej. «C2»), mientras que las opciones opcionales permiten ajustar su estilo, como color, tamaño o marca. Si no se indica el jugador (|b|, |w| o |n|), la piedra es \emph{neutral}.
 \end{command}
 
 
 \begin{command}{\stones\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
-	Similar a |\stone|, pero permite colocar múltiples piedras con la sintaxis correspondiente (Ver Sintaxis de coordenadas).
+	Similar a |\stone|, pero permite colocar múltiples piedras con la sintaxis correspondiente (Ver Sintaxis de coordenadas). Si no se indica el jugador, las piedras son \emph{negras}.
 \end{command}
+
+Las piedras, marcas y etiquetas que caen fuera de la región visible de un tablero parcial no se dibujan. Una coordenada que no existe en el tablero (por ejemplo, |E9| en un tablero de 5$\times$5) se ignora y produce una advertencia.
 
 Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone = {...}}|. Esto es equivalente a |\pgfgoset{players = {all = {stone = {...}}}}|.
 
@@ -101,7 +103,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/stone/line/width = \meta{dimension} (initially 0.9pt)}
+\begin{key}{/pgfgo/stone/line/width = \meta{dimension} (initially 0.7pt)}
 	
 	Controla el grosor del borde de la piedra.
 	
@@ -120,7 +122,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	\end{codeexample}	
 \end{key}
 
-\begin{key}{/pgfgo/stone/radius = \meta{dimension} (initially 0.55em)}
+\begin{key}{/pgfgo/stone/radius = \meta{dimension} (initially 5.5pt)}
 	
 	Establece el tamaño de la piedra mediante su radio.
 	
@@ -146,7 +148,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/black}
 	
-	Asigna a la piedra las características del primer jugador (negro por defecto), incluyendo color de relleno y borde. Es el estado inicial de toda piedra si no se especifica otra opción.
+	Asigna a la piedra las características del primer jugador (negro por defecto), incluyendo color de relleno y borde. Es el jugador que usa |\stones| si no se especifica otro; |\stone|, en cambio, usa el jugador neutral.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -282,6 +284,8 @@ Los comandos de movimientos permiten representar secuencias de jugadas alternand
 	Similar a |\move|, pero aplica la secuencia a múltiples intersecciones en una sola línea.
 \end{command}
 
+Dentro de un mismo |goban|, la numeración y el turno continúan de un |\moves| al siguiente. Cada |goban| nuevo empieza en la jugada 1 con negras; para continuar una partida en otro diagrama, se usan |from| y |b| o |w|, o bien |resume|.
+
 Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move = {...}}| que es equivalente a |\pgfgoset{players = {all = {move = {...}}}}|.
 
 \begin{key}{/pgfgo/move/black}
@@ -346,9 +350,9 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Controla las propiedades de las etiquetas numéricas en los movimientos estrellados, como tamaño, color o formato.
 \end{key}
 
-\begin{key}{/pgfgo/move/label/font size=\meta{dimension} (initially 0.5em)}
-	
-	Ajusta el tamaño de la fuente de las etiquetas, permitiendo adaptarlas al tamaño de las piedras o al diseño general.
+\begin{key}{/pgfgo/move/label/font size=\meta{dimension} (initially automático)}
+
+	Ajusta el tamaño de la fuente de las etiquetas, permitiendo adaptarlas al tamaño de las piedras o al diseño general. Si no se indica, el tamaño se ajusta solo según la cantidad de cifras del número.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -360,7 +364,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		
 		\begin{goban}
 			\moves*[from = 7]{C2,B4}
-			\move*[label = {font size = 0.125em}]{D3}
+			\move*[label = {font size = 0.5em}]{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
