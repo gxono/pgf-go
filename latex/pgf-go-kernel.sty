@@ -31,6 +31,7 @@
 %COORDENADAS
 %	\pgfgo_kernel_points:n {<coordenadas>}
 %		DEJA EN \l_pgfgo_kernel_points_seq LAS INTERSECCIONES {x}{y}, SIN REPETIR, EN EL ORDEN EN QUE APARECEN.
+%		LAS <coordenadas> SE EXPANDEN CON e.
 %		ACEPTA TODA LA SINTAXIS DE \stones (RANGOS, OPERADORES, CORCHETES, ; PARA RESTAR). AVISA CON
 %		unknown-coordinate Y diagonal-line.
 %	\pgfgo_kernel_point:nTF {<coordenada>}
@@ -38,6 +39,14 @@
 %	\pgfgo_kernel_polygon:n {{x}{y},{x}{y},...}
 %		DEJA EN \l_pgfgo_kernel_points_seq LAS INTERSECCIONES DEL TABLERO DENTRO DEL POLIGONO CERRADO DE ESOS
 %		VERTICES O SOBRE SU BORDE, {x}{y}, FILA POR FILA DESDE ABAJO (Y CADA FILA DE IZQUIERDA A DERECHA).
+%	\pgfgo_kernel_region:n {{x}{y},{x}{y},...}
+%		RECIBE LOS PUNTOS DE TERRITORIO DE UN COLOR Y DEJA EN \l_pgfgo_kernel_region_seq LOS CONTORNOS DE LA
+%		REGION QUE PINTAN: CADA CASILLA [x,x+1]x[y,y+1] DEL TABLERO CON ALGUNA ESQUINA EN ESOS PUNTOS. CADA
+%		CONTORNO ES UNA clist DE VERTICES {x}{y} (SIN REPETIR EL PRIMERO), SOLO LOS DE LOS PUNTOS DONDE EL BORDE
+%		GIRA. EN UN CONTACTO POR UNA SOLA ESQUINA EL BORDE GIRA A LA IZQUIERDA (SEPARA LAS ZONAS). CADA CONTORNO
+%		EMPIEZA EN SU VERTICE MAS BAJO Y, ENTRE ESOS, EL DE MAS A LA IZQUIERDA: UN EXTERIOR SIGUE HACIA EL ESTE
+%		(SENTIDO ANTIHORARIO) Y UN HUECO HACIA EL NORTE (HORARIO). VAN ORDENADOS POR ESE PRIMER VERTICE, FILA
+%		POR FILA DESDE ABAJO.
 %
 %JUGADAS
 %	\pgfgo_kernel_move_reset:							JUGADA 1, JUEGAN LAS NEGRAS.
@@ -156,6 +165,7 @@
 	pgfgo_kernel_points:n,
 	pgfgo_kernel_point:nTF,
 	pgfgo_kernel_polygon:n,
+	pgfgo_kernel_region:n,
 	pgfgo_kernel_move_reset:,
 	pgfgo_kernel_move_set_number:n,
 	pgfgo_kernel_move_set_player:n,
@@ -226,6 +236,7 @@
 
 \seq_new:N \l_pgfgo_kernel_points_seq
 \tl_new:N \l_pgfgo_kernel_point_tl
+\seq_new:N \l_pgfgo_kernel_region_seq
 
 \seq_new:N \l_pgfgo_kernel_captured_seq
 \seq_new:N \l_pgfgo_kernel_territory_seq

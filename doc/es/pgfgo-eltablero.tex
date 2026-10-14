@@ -914,7 +914,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Abreviatura de |neutral|.
 	\end{key}
 
-	\begin{key}{/pgfgo/territory/draw=\meta{marks o fill} (initially marks)}
+	\begin{key}{/pgfgo/territory/draw=\meta{marks, fill o region} (initially marks)}
 		Con |marks|, cada punto lleva la marca de territorio del jugador. Con |fill|, la región se rellena debajo de las piedras.
 
 		\begin{codeexample}[width=4.75cm]
@@ -925,6 +925,19 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\prisoner[w] {A1}
 
 				\territory[draw = fill]{auto}
+			\end{goban}
+		\end{codeexample}
+
+		Con |region|, el territorio de cada color es un solo polígono: se pinta cada casilla de la cuadrícula que tiene alguna esquina en el territorio (las piedras muertas cuentan como territorio). Sus lados van por las líneas del tablero, sus vértices están siempre en intersecciones, y llega hasta el borde del tablero. Dos zonas que se tocan por una sola esquina quedan separadas. Todos los |\territory| de un color en el mismo |goban| (también el territorio |TB| y |TW| de |\sgf|) forman una sola región, que se dibuja al terminar el |goban| con el estilo del último. Los puntos neutrales se rellenan uno por uno, como con |fill|. El contorno y sus vértices pueden dibujarse encima, con |line| y |vertices|, y |\pgfgoregion| da sus propiedades.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[draw = region]{auto}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -941,7 +954,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Este territorio no se guarda en la memoria del tablero, aunque el |goban| use |remember|.
 	\end{key}
 
-	Las demás opciones de |\territory| cambian el estilo del jugador solo para ese comando, como |mark| y |fill| en |\territory[w, mark = {cross}]{auto}|. El estilo de cada jugador se fija con |/pgfgo/players|:
+	Las demás opciones de |\territory| cambian el estilo del jugador solo para ese comando, como |mark| y |fill| en |\territory[w, mark = {cross}]{auto}|. Sin jugador, cambian el de los tres. El estilo de cada jugador se fija con |/pgfgo/players|:
 
 	\begin{key}{/pgfgo/players/black/territory=\meta{territory options}}
 		Estilo del territorio de cada jugador (|black|, |white| o |neutral|).
@@ -952,7 +965,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/fill=\meta{fill options}}
-		Relleno, con |draw = fill|.
+		Relleno, con |draw = fill| y |draw = region|.
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/fill/color=\meta{color} (initially black)}
@@ -961,6 +974,68 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/players/black/territory/fill/opacity=\meta{number} (initially 0.35)}
 		Opacidad del relleno: |0.35| para las negras y los puntos neutrales, |0.7| para las blancas.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line=\meta{line options} (default true)}
+		Contorno de la región, con |draw = region|. Darla, con opciones o sin ellas, dibuja el contorno.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[b, draw = region, line,
+					vertices]{auto}
+				\territory[w, draw = region,
+					line = {color = red}]{auto}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/true}
+		Dibuja el contorno.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/false}
+		No dibuja el contorno. Es el valor inicial.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/color=\meta{color} (initially black)}
+		Color del contorno: |black| para las negras y |white!40!black| para las blancas.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/width=\meta{dimension} (initially 1.2pt)}
+		Grosor del contorno.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/opacity=\meta{number} (initially 1)}
+		Opacidad del contorno y de los vértices.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/above=\meta{boolean} (default true, initially true)}
+		Con |true|, el contorno y los vértices se dibujan encima de las piedras y de las marcas. Con |false|, debajo de las piedras, junto con el relleno.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices=\meta{options} (default true)}
+		Puntos en los vértices del contorno, con |draw = region|, como los puntos de estrella. Se dibujan en la misma capa que el contorno. Darla, con opciones o sin ellas, los dibuja.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/true}
+		Dibuja los vértices.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/false}
+		No dibuja los vértices. Es el valor inicial.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/radius=\meta{dimension} (initially 2pt)}
+		Radio de los puntos.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/color=\meta{color}}
+		Color de los puntos. Sin esta \emph{key}, toman el color del contorno.
 	\end{key}
 
 	\begin{command}{\pgfgoscore\opt{\oarg{options}}\marg{player}}
@@ -976,6 +1051,32 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\begin{key}{/pgfgo/score/komi=\meta{number} (initially 0)}
 		Komi que se suma al puntaje de las blancas. Puede fijarse para todo el documento con |\pgfgoset{score = {komi = 6.5}}|.
 	\end{key}
+
+	\begin{command}{\pgfgoregion\marg{player}\marg{property}}
+		Escribe una propiedad de la región (|draw = region|) del jugador (|black| o |b|, |white| o |w|) en el |goban| actual o en el último. Es expandible, así que puede usarse en una cuenta o dentro de las coordenadas de |\marks|. Las propiedades son del contorno completo, aunque el tablero sea parcial. Sin región, los números son 0. Las propiedades son:
+		\begin{itemize}
+			\item |polygons|: la cantidad de contornos, exteriores y huecos.
+			\item |outlines|: la cantidad de contornos exteriores, uno por cada zona separada.
+			\item |holes|: la cantidad de huecos.
+			\item |vertices|: la cantidad de vértices de todos los contornos.
+			\item |area|: la cantidad de casillas pintadas.
+			\item |perimeter|: el largo de todos los contornos, en casillas.
+			\item |polygon| \meta{i}: los vértices del contorno \meta{i}, como coordenadas separadas por comas (por ejemplo, |A1,D1,D4,A4|). Vacío si no hay tantos contornos.
+		\end{itemize}
+		Cada contorno empieza en su vértice más bajo y, entre esos, en el de más a la izquierda. Los exteriores van en sentido antihorario y los huecos, en sentido horario. Los contornos están ordenados por ese primer vértice, de abajo hacia arriba.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+				\stones[w]{D4 R F6}
+				\territory[b, draw = region, line]{B2,B8,H8,H2}
+				\marks[triangle]{\pgfgoregion{b}{polygon 2}}
+			\end{goban}
+
+			Contornos: \pgfgoregion{b}{polygons}
+			(\pgfgoregion{b}{holes} hueco).
+			Casillas: \pgfgoregion{b}{area}.
+		\end{codeexample}
+	\end{command}
 
 	\subsection{Jugadas en puntos ya jugados}
 	\label{subsec:notas}

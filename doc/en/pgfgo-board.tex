@@ -912,7 +912,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Short for |neutral|.
 	\end{key}
 
-	\begin{key}{/pgfgo/territory/draw=\meta{marks or fill} (initially marks)}
+	\begin{key}{/pgfgo/territory/draw=\meta{marks, fill or region} (initially marks)}
 		With |marks|, every point gets the territory mark of the player. With |fill|, the region is filled below the stones.
 
 		\begin{codeexample}[width=4.75cm]
@@ -923,6 +923,19 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\prisoner[w] {A1}
 
 				\territory[draw = fill]{auto}
+			\end{goban}
+		\end{codeexample}
+
+		With |region|, the territory of each color is a single polygon: every square of the grid with a corner in the territory is painted (dead stones count as territory). Its sides run along the lines of the board, its vertices are always on intersections, and it reaches the edge of the board. Two areas that touch at a single corner are kept apart. All the |\territory| of a color in the same |goban| (also the |TB| and |TW| territory of |\sgf|) make a single region, which is drawn at the end of the |goban| with the style of the last one. Neutral points are filled one by one, as with |fill|. The outline and its vertices can be drawn on top, with |line| and |vertices|, and |\pgfgoregion| gives its properties.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[draw = region]{auto}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -939,7 +952,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		This territory is not saved in the memory of the board, even if the |goban| uses |remember|.
 	\end{key}
 
-	The other options of |\territory| change the style of the player only for that command, like |mark| and |fill| in |\territory[w, mark = {cross}]{auto}|. The style of each player is set with |/pgfgo/players|:
+	The other options of |\territory| change the style of the player only for that command, like |mark| and |fill| in |\territory[w, mark = {cross}]{auto}|. Without a player, they change the style of all three. The style of each player is set with |/pgfgo/players|:
 
 	\begin{key}{/pgfgo/players/black/territory=\meta{territory options}}
 		Style of the territory of each player (|black|, |white| or |neutral|).
@@ -950,7 +963,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/fill=\meta{fill options}}
-		Fill, with |draw = fill|.
+		Fill, with |draw = fill| and |draw = region|.
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/fill/color=\meta{color} (initially black)}
@@ -959,6 +972,68 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/players/black/territory/fill/opacity=\meta{number} (initially 0.35)}
 		Opacity of the fill: |0.35| for Black and the neutral points, |0.7| for White.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line=\meta{line options} (default true)}
+		Outline of the region, with |draw = region|. Giving it, with or without options, draws the outline.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[b, draw = region, line,
+					vertices]{auto}
+				\territory[w, draw = region,
+					line = {color = red}]{auto}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/true}
+		Draws the outline.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/false}
+		Does not draw the outline. This is the initial value.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/color=\meta{color} (initially black)}
+		Color of the outline: |black| for Black and |white!40!black| for White.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/width=\meta{dimension} (initially 1.2pt)}
+		Width of the outline.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/opacity=\meta{number} (initially 1)}
+		Opacity of the outline and of the vertices.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/above=\meta{boolean} (default true, initially true)}
+		With |true|, the outline and the vertices are drawn above the stones and the marks. With |false|, below the stones, together with the fill.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices=\meta{options} (default true)}
+		Dots on the vertices of the outline, with |draw = region|, like the star points. They are drawn on the same layer as the outline. Giving it, with or without options, draws them.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/true}
+		Draws the vertices.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/false}
+		Does not draw the vertices. This is the initial value.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/radius=\meta{dimension} (initially 2pt)}
+		Radius of the dots.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/color=\meta{color}}
+		Color of the dots. Without this key, they take the color of the outline.
 	\end{key}
 
 	\begin{command}{\pgfgoscore\opt{\oarg{options}}\marg{player}}
@@ -974,6 +1049,32 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\begin{key}{/pgfgo/score/komi=\meta{number} (initially 0)}
 		Komi added to the score of White. It can be set for the whole document with |\pgfgoset{score = {komi = 6.5}}|.
 	\end{key}
+
+	\begin{command}{\pgfgoregion\marg{player}\marg{property}}
+		Writes a property of the region (|draw = region|) of the player (|black| or |b|, |white| or |w|) in the current |goban| or in the last one. It is expandable, so it can be used in a computation or inside the coordinates of |\marks|. The properties are those of the whole outline, even on a partial board. Without a region, the numbers are 0. The properties are:
+		\begin{itemize}
+			\item |polygons|: the number of outlines, outer ones and holes.
+			\item |outlines|: the number of outer outlines, one for each separate area.
+			\item |holes|: the number of holes.
+			\item |vertices|: the number of vertices of all the outlines.
+			\item |area|: the number of painted squares.
+			\item |perimeter|: the length of all the outlines, in squares.
+			\item |polygon| \meta{i}: the vertices of outline \meta{i}, as coordinates separated by commas (for example, |A1,D1,D4,A4|). Empty if there are not that many outlines.
+		\end{itemize}
+		Each outline starts at its lowest vertex and, among those, at the leftmost one. Outer outlines go counterclockwise and holes, clockwise. The outlines are sorted by that first vertex, from bottom to top.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+				\stones[w]{D4 R F6}
+				\territory[b, draw = region, line]{B2,B8,H8,H2}
+				\marks[triangle]{\pgfgoregion{b}{polygon 2}}
+			\end{goban}
+
+			Outlines: \pgfgoregion{b}{polygons}
+			(\pgfgoregion{b}{holes} hole).
+			Area: \pgfgoregion{b}{area} squares.
+		\end{codeexample}
+	\end{command}
 
 	\subsection{Moves on Points Already Played}
 	\label{subsec:notes}

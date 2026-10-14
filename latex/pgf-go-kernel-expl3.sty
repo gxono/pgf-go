@@ -174,10 +174,12 @@
 %--------------------------------------COORDENADAS----------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%LAS COORDENADAS SE EXPANDEN ANTES (COMO EN EL KERNEL lua).
 \cs_new_protected:Npn \pgfgo_kernel_points:n #1 {
-	\pgfgo_coordinate_parser_from_pgfgonce_to_items:n {#1}
+	\pgfgo_coordinate_parser_from_pgfgonce_to_items:e {#1}
 	\seq_set_eq:NN \l_pgfgo_kernel_points_seq \l_pgfgo_coordinate_parser_items_from_pgfgonce_seq
 }
+\cs_generate_variant:Nn \pgfgo_coordinate_parser_from_pgfgonce_to_items:n {e}
 
 
 \prg_new_protected_conditional:Npnn \pgfgo_kernel_point:n #1 {TF} {
@@ -262,6 +264,153 @@
 			(\int_compare_p:nNn {#6 - #4} < {0} &&
 				\int_compare_p:nNn {(#1 - #3) * (#6 - #4)} > {(#2 - #4) * (#5 - #3)})
 		} {\bool_set:Nn \l__pgfgo_kernel_inside_bool {! \l__pgfgo_kernel_inside_bool}}
+	}
+}
+
+
+%REGION: LAS CASILLAS PINTADAS ("x,y" DE SU ESQUINA DE ABAJO A LA IZQUIERDA) Y, POR VERTICE, LAS
+%DIRECCIONES DE LOS LADOS QUE SALEN DE EL (0 ESTE, 1 NORTE, 2 OESTE, 3 SUR). EL METODO ESTA EXPLICADO EN
+%pgfgo.region (pgf-go.lua); LOS DOS KERNELS DAN LO MISMO.
+\prop_new:N \l__pgfgo_kernel_region_own_prop
+\prop_new:N \l__pgfgo_kernel_region_cells_prop
+\prop_new:N \l__pgfgo_kernel_region_out_prop
+\seq_new:N \l__pgfgo_kernel_region_vertices_seq
+\int_new:N \l__pgfgo_kernel_region_x_int
+\int_new:N \l__pgfgo_kernel_region_y_int
+\int_new:N \l__pgfgo_kernel_region_d_int
+\int_new:N \l__pgfgo_kernel_region_last_int
+\bool_new:N \l__pgfgo_kernel_region_found_bool
+\tl_new:N \l__pgfgo_kernel_region_key_tl
+\tl_new:N \l__pgfgo_kernel_region_tl
+
+\cs_new_protected:Npn \pgfgo_kernel_region:n #1 {
+	\prop_clear:N \l__pgfgo_kernel_region_own_prop
+	\prop_clear:N \l__pgfgo_kernel_region_cells_prop
+	\prop_clear:N \l__pgfgo_kernel_region_out_prop
+	\seq_clear:N \l_pgfgo_kernel_region_seq
+	\clist_map_inline:nn {#1} {\__pgfgo_kernel_region_own:nn ##1}
+	\int_step_inline:nn {\l_pgfgo_goban_size_y_int - 1} {
+		\int_step_inline:nn {\l_pgfgo_goban_size_x_int - 1} {\__pgfgo_kernel_region_cell:nn {####1} {##1}}
+	}
+	\int_step_inline:nn {\l_pgfgo_goban_size_y_int - 1} {
+		\int_step_inline:nn {\l_pgfgo_goban_size_x_int - 1} {\__pgfgo_kernel_region_sides:nn {####1} {##1}}
+	}
+	\int_step_inline:nn {\l_pgfgo_goban_size_y_int} {
+		\int_step_inline:nn {\l_pgfgo_goban_size_x_int} {\__pgfgo_kernel_region_start:nn {####1} {##1}}
+	}
+}
+
+\cs_new_protected:Npn \__pgfgo_kernel_region_own:nn #1#2 {
+	\prop_put:Nen \l__pgfgo_kernel_region_own_prop {\int_eval:n {#1}, \int_eval:n {#2}} {}
+}
+\cs_generate_variant:Nn \prop_put:Nnn {Nen}
+\cs_generate_variant:Nn \prop_if_in_p:Nn {Ne}
+
+\cs_new:Npn \__pgfgo_kernel_region_if_own_p:nn #1#2 {
+	\prop_if_in_p:Ne \l__pgfgo_kernel_region_own_prop {\int_eval:n {#1}, \int_eval:n {#2}}
+}
+\cs_new:Npn \__pgfgo_kernel_region_if_painted_p:nn #1#2 {
+	\prop_if_in_p:Ne \l__pgfgo_kernel_region_cells_prop {\int_eval:n {#1}, \int_eval:n {#2}}
+}
+
+\cs_new_protected:Npn \__pgfgo_kernel_region_cell:nn #1#2 {
+	\bool_lazy_any:nT {
+		{\__pgfgo_kernel_region_if_own_p:nn {#1} {#2}}
+		{\__pgfgo_kernel_region_if_own_p:nn {#1 + 1} {#2}}
+		{\__pgfgo_kernel_region_if_own_p:nn {#1} {#2 + 1}}
+		{\__pgfgo_kernel_region_if_own_p:nn {#1 + 1} {#2 + 1}}
+	} {\prop_put:Nnn \l__pgfgo_kernel_region_cells_prop {#1,#2} {}}
+}
+
+%LOS LADOS DE LA CASILLA (#1,#2), EN SENTIDO ANTIHORARIO, QUE NO TIENEN OTRA CASILLA PINTADA DEL OTRO LADO.
+\cs_new_protected:Npn \__pgfgo_kernel_region_sides:nn #1#2 {
+	\prop_if_in:NnT \l__pgfgo_kernel_region_cells_prop {#1,#2} {
+		\bool_if:nF {\__pgfgo_kernel_region_if_painted_p:nn {#1} {#2 - 1}}
+			{\__pgfgo_kernel_region_side:nnn {#1} {#2} {0}}
+		\bool_if:nF {\__pgfgo_kernel_region_if_painted_p:nn {#1 + 1} {#2}}
+			{\__pgfgo_kernel_region_side:nnn {#1 + 1} {#2} {1}}
+		\bool_if:nF {\__pgfgo_kernel_region_if_painted_p:nn {#1} {#2 + 1}}
+			{\__pgfgo_kernel_region_side:nnn {#1 + 1} {#2 + 1} {2}}
+		\bool_if:nF {\__pgfgo_kernel_region_if_painted_p:nn {#1 - 1} {#2}}
+			{\__pgfgo_kernel_region_side:nnn {#1} {#2 + 1} {3}}
+	}
+}
+\cs_new_protected:Npn \__pgfgo_kernel_region_side:nnn #1#2#3 {
+	\tl_set:Ne \l__pgfgo_kernel_region_key_tl {\int_eval:n {#1}, \int_eval:n {#2}}
+	\prop_get:NVNF \l__pgfgo_kernel_region_out_prop \l__pgfgo_kernel_region_key_tl \l__pgfgo_kernel_region_tl
+		{\tl_clear:N \l__pgfgo_kernel_region_tl}
+	\prop_put:NVe \l__pgfgo_kernel_region_out_prop \l__pgfgo_kernel_region_key_tl
+		{\exp_not:V \l__pgfgo_kernel_region_tl #3}
+}
+\cs_generate_variant:Nn \prop_put:Nnn {NVe}
+
+%LOS CONTORNOS QUE EMPIEZAN EN EL VERTICE (#1,#2).
+\cs_new_protected:Npn \__pgfgo_kernel_region_start:nn #1#2 {
+	\prop_get:NnNT \l__pgfgo_kernel_region_out_prop {#1,#2} \l__pgfgo_kernel_region_tl {
+		\tl_if_empty:NF \l__pgfgo_kernel_region_tl {
+			\clist_map_inline:nn {3, 2, 1, 0} {
+				\tl_if_in:NnT \l__pgfgo_kernel_region_tl {##1} {\int_set:Nn \l__pgfgo_kernel_region_d_int {##1}}
+			}
+			\int_set:Nn \l__pgfgo_kernel_region_x_int {#1}
+			\int_set:Nn \l__pgfgo_kernel_region_y_int {#2}
+			\__pgfgo_kernel_region_remove:
+			\seq_clear:N \l__pgfgo_kernel_region_vertices_seq
+			\seq_put_right:Nn \l__pgfgo_kernel_region_vertices_seq {{#1}{#2}}
+			\__pgfgo_kernel_region_move:
+			\bool_until_do:nn {
+				\int_compare_p:nNn {\l__pgfgo_kernel_region_x_int} = {#1} &&
+				\int_compare_p:nNn {\l__pgfgo_kernel_region_y_int} = {#2}
+			}{
+				\int_set_eq:NN \l__pgfgo_kernel_region_last_int \l__pgfgo_kernel_region_d_int
+				\bool_set_false:N \l__pgfgo_kernel_region_found_bool
+				\__pgfgo_kernel_region_take:n {\int_mod:nn {\l__pgfgo_kernel_region_last_int + 1} {4}}
+				\__pgfgo_kernel_region_take:n {\l__pgfgo_kernel_region_last_int}
+				\__pgfgo_kernel_region_take:n {\int_mod:nn {\l__pgfgo_kernel_region_last_int + 3} {4}}
+				\int_compare:nNnF {\l__pgfgo_kernel_region_d_int} = {\l__pgfgo_kernel_region_last_int} {
+					\seq_put_right:Ne \l__pgfgo_kernel_region_vertices_seq
+						{{\int_use:N \l__pgfgo_kernel_region_x_int}{\int_use:N \l__pgfgo_kernel_region_y_int}}
+				}
+				\__pgfgo_kernel_region_move:
+			}
+			\seq_put_right:Ne \l_pgfgo_kernel_region_seq
+				{\seq_use:Nn \l__pgfgo_kernel_region_vertices_seq {,}}
+			\__pgfgo_kernel_region_start:nn {#1} {#2}
+		}
+	}
+}
+
+%SI DEL VERTICE ACTUAL SALE UN LADO HACIA #1 (Y TODAVIA NO SE ELIGIO OTRO), LO TOMA.
+\cs_new_protected:Npn \__pgfgo_kernel_region_take:n #1 {
+	\bool_if:NF \l__pgfgo_kernel_region_found_bool {
+		\tl_set:Ne \l__pgfgo_kernel_region_key_tl
+			{\int_use:N \l__pgfgo_kernel_region_x_int, \int_use:N \l__pgfgo_kernel_region_y_int}
+		\prop_get:NVNT \l__pgfgo_kernel_region_out_prop \l__pgfgo_kernel_region_key_tl \l__pgfgo_kernel_region_tl {
+			\tl_if_in:NeT \l__pgfgo_kernel_region_tl {\int_eval:n {#1}} {
+				\bool_set_true:N \l__pgfgo_kernel_region_found_bool
+				\int_set:Nn \l__pgfgo_kernel_region_d_int {#1}
+				\__pgfgo_kernel_region_remove:
+			}
+		}
+	}
+}
+\cs_generate_variant:Nn \tl_if_in:NnT {NeT}
+
+%QUITA EL LADO QUE SALE DEL VERTICE ACTUAL HACIA \l__pgfgo_kernel_region_d_int.
+\cs_new_protected:Npn \__pgfgo_kernel_region_remove: {
+	\tl_set:Ne \l__pgfgo_kernel_region_key_tl
+		{\int_use:N \l__pgfgo_kernel_region_x_int, \int_use:N \l__pgfgo_kernel_region_y_int}
+	\prop_get:NVN \l__pgfgo_kernel_region_out_prop \l__pgfgo_kernel_region_key_tl \l__pgfgo_kernel_region_tl
+	\tl_remove_once:Ne \l__pgfgo_kernel_region_tl {\int_use:N \l__pgfgo_kernel_region_d_int}
+	\prop_put:NVV \l__pgfgo_kernel_region_out_prop \l__pgfgo_kernel_region_key_tl \l__pgfgo_kernel_region_tl
+}
+\cs_generate_variant:Nn \tl_remove_once:Nn {Ne}
+
+\cs_new_protected:Npn \__pgfgo_kernel_region_move: {
+	\int_case:nn {\l__pgfgo_kernel_region_d_int} {
+		{0} {\int_incr:N \l__pgfgo_kernel_region_x_int}
+		{1} {\int_incr:N \l__pgfgo_kernel_region_y_int}
+		{2} {\int_decr:N \l__pgfgo_kernel_region_x_int}
+		{3} {\int_decr:N \l__pgfgo_kernel_region_y_int}
 	}
 }
 

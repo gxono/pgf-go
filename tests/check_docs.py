@@ -99,7 +99,7 @@ def code_commands():
     commands = set()
     for sty in sorted((ROOT / "latex").glob("*.sty")):
         source = sty.read_text(encoding="utf-8")
-        commands.update(re.findall(r"(?:New|Declare)DocumentCommand\s*\{?\s*\\([A-Za-z]+)", source))
+        commands.update(re.findall(r"(?:New|Declare)(?:Expandable)?DocumentCommand\s*\{?\s*\\([A-Za-z]+)", source))
         commands.update(re.findall(r"\\def\\(pgfgo[A-Za-z]+)", source))
         commands.update(re.findall(r"\\let\\(pgfgo[A-Za-z]+)", source))
         commands.update("env:" + e for e in re.findall(r"NewDocumentEnvironment\s*\{(\w+)\}", source))
