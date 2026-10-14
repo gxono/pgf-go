@@ -1,0 +1,34 @@
+% engines: lualatex
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% print-mode.sgf: 19x19, PM[2], 103 moves on isolated points (no captures).
+% no-numbers.sgf: 5x5, PM[0]: B C3, W D3, B C2.
+
+\case{PM[2]: from 99, moves 101--103 are shown as 1--3 / restart = 0: 101--103}
+\begin{goban}[sgf size = print-mode.sgf, scale = 0.6, partial = {from = G8 to P10}]
+	\sgf[from = 99]{print-mode.sgf}
+\end{goban}
+\begin{goban}[sgf size = print-mode.sgf, scale = 0.6, partial = {from = G8 to P10}]
+	\sgf[from = 99, restart = 0]{print-mode.sgf}
+\end{goban}
+
+\case{PM[0]: no numbers / numbers: numbered / numbers = false on a file without PM}
+\begin{goban}[sgf size = no-numbers.sgf]
+	\sgf{no-numbers.sgf}
+\end{goban}
+\begin{goban}[sgf size = no-numbers.sgf]
+	\sgf[numbers]{no-numbers.sgf}
+\end{goban}
+\begin{goban}[9x9]
+	\sgf[numbers = false]{game.sgf}
+\end{goban}
+
+\case{PM[0] in sgf diagrams: numbered anyway}
+\sgfdiagrams{no-numbers.sgf}
+
+\end{document}

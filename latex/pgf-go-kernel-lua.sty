@@ -199,6 +199,17 @@
 	\lua_now:e {pgfgo.sgf_info("\lua_escape:e {#1}", "\lua_escape:e {#2}")}
 }
 
+\cs_new_protected:Npn \pgfgo_kernel_sgf_view:nn #1#2 {
+	\lua_now:e {pgfgo.sgf_view(\int_eval:n {#1}, \int_eval:n {#2})}
+}
+
+\clist_new:N \l__pgfgo_kernel_sgf_paths_clist
+
+\cs_new_protected:Npn \pgfgo_kernel_sgf_tree:n #1 {
+	\lua_now:e {pgfgo.sgf_tree("\lua_escape:e {#1}")}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_paths_seq \l__pgfgo_kernel_sgf_paths_clist
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %---------------------------------SECUENCIAS DE MARCAS------------------------------------------%

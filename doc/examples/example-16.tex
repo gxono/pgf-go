@@ -1,0 +1,24 @@
+\documentclass[border=0.5cm, varwidth=12cm]{standalone}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+
+\pgfgoset{goban = {background = {fill = {color = pgfgo}}, label = {at = {south, west}}}}
+
+
+\begin{document}
+	\begin{goban}[7]
+		\stones{D1:7, B5}
+		\stones[w]{E1:7}
+		\prisoner[w]{B3}
+		\territory{auto}
+	\end{goban}
+	\begin{goban}[7, captures]
+		\stones{D1:7, A3, B2, B4}
+		\stones[w]{E1:7, B3}
+		\moves*{C3}
+		\territory[draw = fill]{auto}
+	\end{goban}
+
+	\smallskip
+	Black \pgfgoscore{b}, White \pgfgoscore[komi = 6.5]{w}.
+\end{document}

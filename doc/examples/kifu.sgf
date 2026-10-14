@@ -1,0 +1,6 @@
+(;GM[1]FF[4]CA[UTF-8]SZ[7]KM[6.5]PB[黒]PW[白]RE[B+0.5]
+GN[短い対局]C[七路盤の対局。]
+;B[dd]C[黒は中央の線を取る。]
+(;W[ed];B[de];W[ec];B[dc];W[ee];B[df];W[eb];B[db]C[黒は三列、白は二列。];W[ef];B[da];W[ea];B[dg]TE[1]C[壁の最後の一手。];W[be]BM[1]C[白の打ち込み。しかし二眼を作る余地はない。];B[ce]TR[be]C[黒が急所に打つ。白石は死んでいる。];W[eg];B[];W[]
+;TB[ag][af][ae][ad][ac][ab][aa][bg][bf][be][bd][bc][bb][ba][cg][cf][cd][cc][cb][ca]TW[fg][ff][fe][fd][fc][fb][fa][gg][gf][ge][gd][gc][gb][ga]C[黒は二十目と死石一つ。白は十四目とコミ六目半。])
+(;W[cd]C[近すぎる。];B[ce];W[bd]LB[be:A]))

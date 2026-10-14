@@ -1,0 +1,33 @@
+% engines: lualatex
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% views.sgf: 9x9. VW[aa:ee] at the start (A5 to E9); B C7, W D6; VW[] with B G3 (whole board);
+% W G7; VW[ff:ii] in a node without a move (F1 to I4); B H2.
+
+\case{step = 2: 1--2 in A5:E9, 3--4 on the whole board, 5 in F1:I4}
+\sgfdiagrams[step = 2]{views.sgf}
+
+\case{step = 3: 1--3 on the whole board (one of its moves has no view), 4--5 too}
+\sgfdiagrams[step = 3]{views.sgf}
+
+\case{to = 2: one diagram in A5:E9 / view = false: whole board}
+\sgfdiagrams[to = 2]{views.sgf}
+\sgfdiagrams[to = 2, view = false]{views.sgf}
+
+\case{sgf view move = 5 (F1:I4), in both orders; sgf view move = 3: whole board}
+\begin{goban}[sgf view = views.sgf, sgf view move = 5]
+	\sgf{views.sgf}
+\end{goban}
+\begin{goban}[sgf view move = 5, sgf view = views.sgf]
+	\sgf{views.sgf}
+\end{goban}
+\begin{goban}[sgf view = views.sgf, sgf view move = 3]
+	\sgf{views.sgf}
+\end{goban}
+
+\end{document}

@@ -38,6 +38,11 @@
 	\bool_new:N\l_pgfgo_goban_labels_pos_south_bool
 	\bool_new:N\l_pgfgo_goban_labels_pos_west_bool
 	\tl_new:N \l_pgfgo_goban_label_font_tl
+	%ESTILO DE LAS COORDENADAS: letters, numbers O kanji EN CADA EJE, Y DESDE DONDE SE CUENTAN.
+	\tl_new:N \l_pgfgo_goban_label_columns_tl
+	\tl_new:N \l_pgfgo_goban_label_rows_tl
+	\tl_new:N \l_pgfgo_goban_label_columns_from_tl
+	\tl_new:N \l_pgfgo_goban_label_rows_from_tl
 
 
 	%LAYERS
@@ -138,19 +143,16 @@
 																			}
 																		},
 
-		%LA VISTA DE UN ARCHIVO SGF (VW): EL TAMANO DE LA PARTIDA Y, SI HAY VISTA, ESA PARTE DEL TABLERO.
+		%LA VISTA DE UN ARCHIVO SGF (VW): EL TAMANO DE LA PARTIDA Y, SI HAY VISTA, ESA PARTE DEL TABLERO. LA
+		%VISTA ES LA DE LA JUGADA sgf~view~move (LAS DOS CLAVES SE PUEDEN DAR EN CUALQUIER ORDEN).
 		sgf~view					.code:n			= {
-																			\pgfgo_kernel_if_feature:nTF {sgf} {
-																				\pgfgo_kernel_sgf_read:n {#1}
-																				\int_set_eq:NN \l_pgfgo_goban_size_x_int \l_pgfgo_kernel_sgf_size_x_int
-																				\int_set_eq:NN \l_pgfgo_goban_size_y_int \l_pgfgo_kernel_sgf_size_y_int
-																				\tl_if_empty:NF \l_pgfgo_kernel_sgf_view_tl {
-																					\bool_set_true:N \l_pgfgo_goban_partial_bool
-																					\exp_after:wN \__pgfgo_goban_sgf_view:nnnn \l_pgfgo_kernel_sgf_view_tl
-																				}
-																			}{
-																				\pgfgo_kernel_require:n {sgf}
-																			}
+																			\tl_set:Nn \l__pgfgo_goban_sgf_view_file_tl {#1}
+																			\__pgfgo_goban_sgf_view:
+																		},
+		sgf~view~move			.code:n			= {
+																			\int_set:Nn \l_pgfgo_goban_sgf_view_from_int {#1}
+																			\int_set:Nn \l_pgfgo_goban_sgf_view_to_int {#1}
+																			\tl_if_empty:NF \l__pgfgo_goban_sgf_view_file_tl {\__pgfgo_goban_sgf_view:}
 																		},
 
 		use~i					.bool_set:N = \l_pgfgo_use_i_bool,
@@ -329,8 +331,65 @@
 		%VACIO: TAMANO DEL TEXTO ACTUAL.
 		font~size		.tl_set:N 	= \l_pgfgo_goban_label_font_size_tl,
 
-		at					.code:n 		= {\keys_set:nx{pgfgo / goban / label / at} {#1}}
+		at					.code:n 		= {\keys_set:nx{pgfgo / goban / label / at} {#1}},
+
+		columns			.choices:nn	= {letters, numbers, kanji}
+			{\tl_set_eq:NN \l_pgfgo_goban_label_columns_tl \l_keys_choice_tl},
+		columns			.initial:n	= {letters},
+		rows				.choices:nn	= {letters, numbers, kanji}
+			{\tl_set_eq:NN \l_pgfgo_goban_label_rows_tl \l_keys_choice_tl},
+		rows				.initial:n	= {numbers},
+		columns~from	.choices:nn	= {left, right}
+			{\tl_set_eq:NN \l_pgfgo_goban_label_columns_from_tl \l_keys_choice_tl},
+		columns~from	.initial:n	= {left},
+		rows~from		.choices:nn	= {bottom, top}
+			{\tl_set_eq:NN \l_pgfgo_goban_label_rows_from_tl \l_keys_choice_tl},
+		rows~from		.initial:n	= {bottom},
+
+		%ESTILOS COMPLETOS. japanese: NUMEROS DESDE LA DERECHA ARRIBA Y KANJI DESDE ARRIBA AL COSTADO.
+		%chinese: IGUAL, PERO LOS NUMEROS DESDE LA IZQUIERDA.
+		style				.choice:,
+		style / western		.code:n	= {\keys_set:nn {pgfgo / goban / label}
+			{columns = letters, rows = numbers, columns~from = left, rows~from = bottom}},
+		style / japanese	.code:n	= {\keys_set:nn {pgfgo / goban / label}
+			{columns = numbers, rows = kanji, columns~from = right, rows~from = top}},
+		style / chinese		.code:n	= {\keys_set:nn {pgfgo / goban / label}
+			{columns = numbers, rows = kanji, columns~from = left, rows~from = top}},
 	}
+
+	%EL TEXTO DE LA COORDENADA DE LA COLUMNA O LA FILA #1.
+	\cs_new:Npn \__pgfgo_goban_column_label:n #1 {
+		\__pgfgo_goban_label_text:Vn \l_pgfgo_goban_label_columns_tl {
+			\str_if_eq:VnTF \l_pgfgo_goban_label_columns_from_tl {right}
+				{\l_pgfgo_goban_size_x_int - (#1) + 1} {#1}
+		}
+	}
+	\cs_new:Npn \__pgfgo_goban_row_label:n #1 {
+		\__pgfgo_goban_label_text:Vn \l_pgfgo_goban_label_rows_tl {
+			\str_if_eq:VnTF \l_pgfgo_goban_label_rows_from_tl {top}
+				{\l_pgfgo_goban_size_y_int - (#1) + 1} {#1}
+		}
+	}
+	\cs_new:Npn \__pgfgo_goban_label_text:nn #1#2 {
+		\str_case:nn {#1} {
+			{letters}	{\pgfgo_kernel_column_name:n {#2}}
+			{numbers}	{\int_eval:n {#2}}
+			{kanji}		{\__pgfgo_goban_kanji:e {\int_eval:n {#2}}}
+		}
+	}
+	\cs_generate_variant:Nn \__pgfgo_goban_label_text:nn {V}
+
+	%NUMEROS EN KANJI: 1 A 9, Y DESPUES 十 (10), 十一 (11), 二十 (20), ... NECESITAN UNA FUENTE QUE LOS TENGA.
+	\tl_const:Nn \c__pgfgo_goban_kanji_tl {{一}{二}{三}{四}{五}{六}{七}{八}{九}{十}}
+	\cs_new:Npn \__pgfgo_goban_kanji:n #1 {
+		\int_compare:nNnT {\int_div_truncate:nn {#1} {10}} > {1}
+			{\tl_item:Nn \c__pgfgo_goban_kanji_tl {\int_div_truncate:nn {#1} {10}}}
+		\int_compare:nNnT {\int_div_truncate:nn {#1} {10}} > {0}
+			{\tl_item:Nn \c__pgfgo_goban_kanji_tl {10}}
+		\int_compare:nNnT {\int_mod:nn {#1} {10}} > {0}
+			{\tl_item:Nn \c__pgfgo_goban_kanji_tl {\int_mod:nn {#1} {10}}}
+	}
+	\cs_generate_variant:Nn \__pgfgo_goban_kanji:n {e}
 
 	%FUENTE DE LAS COORDENADAS DEL BORDE.
 	\cs_new_protected:Nn \__pgfgo_goban_label_font: {
@@ -634,7 +693,7 @@
 							{\pgfpointxy{\l__pgfgo_item_tl}{\l_pgfgo_goban_to_y_int}}
 							{\pgfpoint{0}{\l_pgfgo_goban_labels_sep_dim + \l_pgfgo_players_stone_radius_dim + 0.5em}}
 						]	{{
-								\__pgfgo_goban_label_font:\pgfgo_kernel_column_name:n{\l__pgfgo_item_tl}
+								\__pgfgo_goban_label_font:\__pgfgo_goban_column_label:n{\l__pgfgo_item_tl}
 							}}}
 				}
 
@@ -643,12 +702,22 @@
 				\bool_if:NT\l_pgfgo_goban_labels_pos_east_bool{
 					\int_step_variable:nnNn {\l_pgfgo_goban_from_y_int} {\l_pgfgo_goban_to_y_int}\l__pgfgo_item_tl
 					{
-						\pgftext[at = \pgfpointadd{
-							\pgfpointxy{\l_pgfgo_goban_to_x_int}{\l__pgfgo_item_tl}}{
-							\pgfpoint{\l_pgfgo_goban_labels_sep_dim+\l_pgfgo_players_stone_radius_dim+0.5em}{0}}
-						]	{{
-								\__pgfgo_goban_label_font:\l__pgfgo_item_tl
-						}}
+						%LOS KANJI (UNO, DOS O TRES) SE ALINEAN DEL LADO DEL TABLERO, PARA NO PISARLO.
+						\str_if_eq:VnTF \l_pgfgo_goban_label_rows_tl {kanji} {
+							\pgftext[left, at = \pgfpointadd{
+								\pgfpointxy{\l_pgfgo_goban_to_x_int}{\l__pgfgo_item_tl}}{
+								\pgfpoint{\l_pgfgo_goban_labels_sep_dim+\l_pgfgo_players_stone_radius_dim}{0}}
+							]	{{
+									\__pgfgo_goban_label_font:\__pgfgo_goban_row_label:n{\l__pgfgo_item_tl}
+							}}
+						}{
+							\pgftext[at = \pgfpointadd{
+								\pgfpointxy{\l_pgfgo_goban_to_x_int}{\l__pgfgo_item_tl}}{
+								\pgfpoint{\l_pgfgo_goban_labels_sep_dim+\l_pgfgo_players_stone_radius_dim+0.5em}{0}}
+							]	{{
+									\__pgfgo_goban_label_font:\__pgfgo_goban_row_label:n{\l__pgfgo_item_tl}
+							}}
+						}
 					}
 				}
 				
@@ -663,7 +732,7 @@
 							\pgfpointxy{\l__pgfgo_item_tl}{\l_pgfgo_goban_from_y_int}}{
 							\pgfpoint{0}{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim-0.5em}}
 						]	{{
-								\__pgfgo_goban_label_font:\pgfgo_kernel_column_name:n{\l__pgfgo_item_tl}
+								\__pgfgo_goban_label_font:\__pgfgo_goban_column_label:n{\l__pgfgo_item_tl}
 							}}}
 				}
 
@@ -672,12 +741,21 @@
 
 				\bool_if:NT\l_pgfgo_goban_labels_pos_west_bool{
 					\int_step_variable:nnNn {\l_pgfgo_goban_from_y_int} {\l_pgfgo_goban_to_y_int} \l__pgfgo_item_tl {
-						\pgftext[at = \pgfpointadd{
-							\pgfpointxy{\l_pgfgo_goban_from_x_int}{\l__pgfgo_item_tl}}{
-							\pgfpoint{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim-0.5em}{0}}
-						]	{{
-								\__pgfgo_goban_label_font:\l__pgfgo_item_tl
-						}}
+						\str_if_eq:VnTF \l_pgfgo_goban_label_rows_tl {kanji} {
+							\pgftext[right, at = \pgfpointadd{
+								\pgfpointxy{\l_pgfgo_goban_from_x_int}{\l__pgfgo_item_tl}}{
+								\pgfpoint{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim}{0}}
+							]	{{
+									\__pgfgo_goban_label_font:\__pgfgo_goban_row_label:n{\l__pgfgo_item_tl}
+							}}
+						}{
+							\pgftext[at = \pgfpointadd{
+								\pgfpointxy{\l_pgfgo_goban_from_x_int}{\l__pgfgo_item_tl}}{
+								\pgfpoint{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim-0.5em}{0}}
+							]	{{
+									\__pgfgo_goban_label_font:\__pgfgo_goban_row_label:n{\l__pgfgo_item_tl}
+							}}
+						}
 					}
 				}
 			\endpgfscope
@@ -696,6 +774,36 @@
 
 
 	\cs_generate_variant:Nn \__pgfgo_goban:nnn {nVV}
+
+	%LA VISTA DE LAS JUGADAS \l_pgfgo_goban_sgf_view_from_int A \l_pgfgo_goban_sgf_view_to_int (LAS DOS 0
+	%SI NO SE DICE OTRA COSA) DE LA LINEA \l_pgfgo_goban_sgf_view_variation_tl (\sgfdiagrams Y \sgfanimation
+	%LAS FIJAN). SI UNA VISTA ANTERIOR DEL MISMO goban LIMITO EL TABLERO Y ESTA NO, SE VUELVE A VER TODO.
+	\tl_new:N \l__pgfgo_goban_sgf_view_file_tl
+	\int_new:N \l_pgfgo_goban_sgf_view_from_int
+	\int_new:N \l_pgfgo_goban_sgf_view_to_int
+	\tl_new:N \l_pgfgo_goban_sgf_view_variation_tl
+	\bool_new:N \l__pgfgo_goban_sgf_view_bool
+	\cs_new_protected:Npn \__pgfgo_goban_sgf_view: {
+		\pgfgo_kernel_if_feature:nTF {sgf} {
+			\exp_args:NVV \pgfgo_kernel_sgf_read:nn
+				\l__pgfgo_goban_sgf_view_file_tl \l_pgfgo_goban_sgf_view_variation_tl
+			\int_set_eq:NN \l_pgfgo_goban_size_x_int \l_pgfgo_kernel_sgf_size_x_int
+			\int_set_eq:NN \l_pgfgo_goban_size_y_int \l_pgfgo_kernel_sgf_size_y_int
+			\pgfgo_kernel_sgf_view:nn {\l_pgfgo_goban_sgf_view_from_int} {\l_pgfgo_goban_sgf_view_to_int}
+			\tl_if_empty:NTF \l_pgfgo_kernel_sgf_view_tl {
+				\bool_if:NT \l__pgfgo_goban_sgf_view_bool {
+					\bool_set_false:N \l_pgfgo_goban_partial_bool
+					\bool_set_false:N \l__pgfgo_goban_sgf_view_bool
+				}
+			}{
+				\bool_set_true:N \l_pgfgo_goban_partial_bool
+				\bool_set_true:N \l__pgfgo_goban_sgf_view_bool
+				\exp_after:wN \__pgfgo_goban_sgf_view:nnnn \l_pgfgo_kernel_sgf_view_tl
+			}
+		}{
+			\pgfgo_kernel_require:n {sgf}
+		}
+	}
 
 	\cs_new_protected:Npn \__pgfgo_goban_sgf_view:nnnn #1#2#3#4 {
 		\pgfgo_kernel_board_window:e

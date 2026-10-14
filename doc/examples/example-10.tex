@@ -1,0 +1,12 @@
+% passes: 2
+\documentclass[border=0.5cm]{standalone}
+\usepackage{animate}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+
+\pgfgoset{goban = {background = {fill = {color = pgfgo}}, label = {at = {south, west}}}}
+
+
+\begin{document}
+	\sgfanimation[comments, comment height = 5em, goban = {captures}, animate = {controls, loop}]{commented.sgf}
+\end{document}

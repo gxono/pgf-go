@@ -1,0 +1,26 @@
+% engines: lualatex
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% result.sgf: score.sgf with KM[0.5] and RE[B+0.5]. Black: 5 points and a dead stone (6);
+% White: 5 points and komi (5.5).
+% score.sgf: the same without KM and RE. game.sgf: no RE and no territory.
+
+\case{Result and score under the last diagram; step = 1: only under the last one}
+\sgfdiagrams{result.sgf}
+\sgfdiagrams[step = 1]{result.sgf}
+
+\case{Without RE: only the score / without territory nor RE: nothing / to = 1: nothing}
+\sgfdiagrams{score.sgf}
+\sgfdiagrams{game.sgf}
+\sgfdiagrams[to = 1]{result.sgf}
+
+\case{result title, black name, white name / result = false}
+\sgfdiagrams[result title = Resultado, black name = Negras, white name = Blancas]{result.sgf}
+\sgfdiagrams[result = false]{result.sgf}
+
+\end{document}

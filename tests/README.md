@@ -78,7 +78,8 @@ not affect the manuals, create them locally with
     the Lua kernel, raise an error.
 - `captures.tex` and `sgf.tex` (with `game.sgf`) render captures and SGF
   games. They use `kernel = lua`, so they only run with LuaLaTeX.
-- `doc/examples/example-*.tex`: the examples shipped with the package.
+- `doc/examples/example-*.tex`: the examples shipped with the package. They
+  can use the `% passes:` header line.
 - With `--manuals`: `doc/es/pgfgo-es.tex` and `doc/en/pgfgo-en.tex`.
 
 ## Writing a test document

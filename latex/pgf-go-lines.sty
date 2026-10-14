@@ -104,11 +104,26 @@
 						{\tl_set_eq:NN \l__pgfgo_lines_halo_tl \l_pgfgo_goban_border_fill_color_tl}
 						{\tl_set_eq:Nc \l__pgfgo_lines_halo_tl {l__pgfgo_ #1 _halo_color_tl}}
 					\pgfscope
-						\pgfsetlinewidth {\dim_eval:n {\dim_use:c {l__pgfgo_ #1 _width_dim} + \dim_use:c {l__pgfgo_ #1 _halo_width_dim} * 2}}
 						\pgfsetstrokecolor {\l__pgfgo_lines_halo_tl}
 						\pgfsetfillcolor {\l__pgfgo_lines_halo_tl}
-						\__pgfgo_lines_path:nnnn {#3} {#4} {#5} {#6}
-						\pgfusepath{stroke}
+						\str_if_eq:nnTF {#1} {arrow} {
+							%LA PUNTA DE arrows.meta CRECE CON EL GROSOR DE LA LINEA (SOBRE TODO A LO LARGO): EL HALO
+							%NO PUEDE SER LA MISMA FLECHA MAS GRUESA. ES LA FLECHA DIBUJADA 32 VECES, CORRIDA EL ANCHO
+							%DEL HALO EN CADA DIRECCION: ASI RODEA IGUAL A CUALQUIER PUNTA.
+							\pgfsetlinewidth {\dim_use:c {l__pgfgo_ #1 _width_dim}}
+							\int_step_inline:nnn {0} {31} {
+								\pgfscope
+									\pgftransformshift
+										{\pgfpointpolar {##1 * 11.25} {\dim_use:c {l__pgfgo_ #1 _halo_width_dim}}}
+									\__pgfgo_lines_path:nnnn {#3} {#4} {#5} {#6}
+									\pgfusepath{stroke}
+								\endpgfscope
+							}
+						}{
+							\pgfsetlinewidth {\dim_eval:n {\dim_use:c {l__pgfgo_ #1 _width_dim} + \dim_use:c {l__pgfgo_ #1 _halo_width_dim} * 2}}
+							\__pgfgo_lines_path:nnnn {#3} {#4} {#5} {#6}
+							\pgfusepath{stroke}
+						}
 					\endpgfscope
 				}
 				\pgfsetlinewidth {\dim_use:c {l__pgfgo_ #1 _width_dim}}

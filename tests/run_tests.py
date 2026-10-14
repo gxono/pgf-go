@@ -98,8 +98,10 @@ def collect_documents(include_manuals, kernel=None):
             passes=int(header.get("passes", 1)),
         ))
     for path in sorted((ROOT / "doc" / "examples").glob("example-*.tex")):
+        header = read_header(path)
         documents.append(Document(name="examples/" + path.stem, source=path,
-                                  expect_warnings=0))
+                                  expect_warnings=0,
+                                  passes=int(header.get("passes", 1))))
     if include_manuals:
         for lang in ("es", "en"):
             path = ROOT / "doc" / lang / f"pgfgo-{lang}.tex"

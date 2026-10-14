@@ -1,0 +1,29 @@
+% engines: lualatex
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% problem.sgf: 19x19, PL[B], root comment. Three first moves; the first one has two answers. So four
+% lines: 1.1, 1.2, 2, 3. 2 and 3 are captured by White's answer.
+
+\case{Statement (cropped to A16:F19) and the four variations, with comments}
+\sgfproblem{problem.sgf}
+
+\case{title, variation title, caption font and texts / comments = false, notes = false}
+\sgfproblem[title = Problem 1, variation title = Variante, caption font = \itshape,
+	black to play = Juegan negras, comments = false, notes = false]{problem.sgf}
+
+\case{statement only, crop = false (whole board), goban options}
+\sgfproblem[solutions = false, crop = false, goban = {scale = 0.4}]{problem.sgf}
+
+\case{solutions only, margin = 3 (A14:H19), annotations = false}
+\sgfproblem[statement = false, margin = 3, annotations = false]{problem.sgf}
+
+\case{A game with a view: the view is used; with view = false, the crop}
+\sgfproblem[solutions = false]{views.sgf}
+\sgfproblem[solutions = false, view = false]{views.sgf}
+
+\end{document}

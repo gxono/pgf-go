@@ -645,8 +645,8 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/sgf/restart = \meta{number} (initially 0)}
-	Restarts the numbering every \meta{number} moves, as books do: with |restart = 100|, move 101 is shown as 1. With 0, it does not restart.
+\begin{key}{/pgfgo/sgf/restart = \meta{number or auto} (initially auto)}
+	Restarts the numbering every \meta{number} moves, as books do: with |restart = 100|, move 101 is shown as 1. With 0, it does not restart. With |auto|, it does what the file asks for with |PM|: with |PM[2]|, it restarts every 100 moves; otherwise, it does not restart.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variations.sgf]
@@ -655,6 +655,16 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 
 		\begin{goban}[sgf size = variations.sgf]
 			\sgf[restart = 3]{variations.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/numbers = \meta{true, false or auto} (default true, initially auto)}
+	With |false|, the moves are drawn without numbers. With |auto|, it does what the file asks for with |PM|: with |PM[0]|, they are not numbered. |\sgfdiagrams| and |\sgfproblem| always number them.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations.sgf]
+			\sgf[numbers = false]{variations.sgf}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -824,7 +834,7 @@ The texts of the annotations are in English, and they can be changed for the who
 	Like |/pgfgo/sgf/marks|: each frame shows the marks of its move.
 \end{key}
 
-\begin{key}{/pgfgo/sgf animation/restart = \meta{number} (initially 0)}
+\begin{key}{/pgfgo/sgf animation/restart = \meta{number or auto} (initially auto)}
 	Like |/pgfgo/sgf/restart|.
 \end{key}
 
@@ -837,7 +847,7 @@ The texts of the annotations are in English, and they can be changed for the who
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/view = \meta{boolean} (default true, initially true)}
-	If the file has a view (|VW|), the boards only show that part, like |sgf view|.
+	If the file has a view (|VW|), the boards only show that part, like |sgf view|. All the frames have the same board: if the view changes during the game, the board covers the views of all the frames (and if one of them shows the whole board, the whole board is shown).
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/layers = \meta{boolean} (default true, initially true)}
@@ -863,7 +873,7 @@ The texts of the annotations are in English, and they can be changed for the who
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/restart = \meta{boolean} (default true, initially false)}
-	Each diagram is numbered from 1, as some books do.
+	Each diagram is numbered from 1, as some books do. Without |restart|, the numbering follows what the file asks for with |PM|, like |/pgfgo/sgf/restart = auto|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/notes = \meta{boolean} (default true, initially true)}
@@ -899,11 +909,97 @@ The texts of the annotations are in English, and they can be changed for the who
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/view = \meta{boolean} (default true, initially true)}
-	Like |/pgfgo/sgf animation/view|.
+	If the file has a view (|VW|), each diagram only shows that part, like |sgf view|. If the view changes during the game, each diagram covers the views of its moves.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/game = \meta{number} (initially 1)}
 	Like |/pgfgo/sgf/game|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/result = \meta{boolean} (default true, initially true)}
+	Writes below the last diagram, if it reaches the end of the game, the result (|RE|) and, if the file marks the territory (|TB|, |TW|), the score of each player: "Result: B+0.5 (Black 6, White 5.5)". The score is counted as with |\pgfgoscore| (p.~\pageref{subsec:territory}), with the komi of the file (|KM|).
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/result title = \meta{text} (initially Result)}
+	Word before the result.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/black name = \meta{text} (initially Black)}
+	Name of Black in the score.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/white name = \meta{text} (initially White)}
+	Name of White in the score.
+\end{key}
+
+\begin{command}{\sgfproblem\opt{\oarg{options}}\marg{file}}
+	Draws a problem (tsumego). First, the statement: the initial position with its marks, who plays (|PL|, or the color of the first move) and the comment at the start. Then, one diagram for each line of the tree of the file (each variation of the solution, right or wrong), numbered from 1, with its "N at M" notes and the comments and annotations of its moves, which usually say whether the variation is right. The diagrams are drawn like those of |\sgfdiagrams|. If the file has no view (|VW|), only the part of the board that the problem uses is shown. It is used outside |goban|. The options can be set for the whole document with |\pgfgoset{sgf problem = {...}}|.
+
+	\begin{codeexample}[code only]
+		\sgfproblem[title = Problem 1]{problem.sgf}
+	\end{codeexample}
+\end{command}
+
+\sgfproblem[title = Problem 1]{problem.sgf}
+
+\begin{key}{/pgfgo/sgf problem/statement = \meta{boolean} (default true, initially true)}
+	Draws the statement.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/solutions = \meta{boolean} (default true, initially true)}
+	Draws the variations. With |solutions = false|, only the statement is left, to put the solutions somewhere else (for example, with |statement = false| at the end of the chapter).
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/title = \meta{text} (initially empty)}
+	Beginning of the caption of the statement: "Problem 1: Black to play".
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/variation title = \meta{text} (initially Variation)}
+	Word of the caption of each variation: "Variation 2".
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/black to play = \meta{text} (initially Black to play)}
+	Text of the statement when Black plays.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/white to play = \meta{text} (initially White to play)}
+	Text of the statement when White plays.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments = \meta{boolean} (default true, initially true)}
+	Writes the comment at the start below the statement, and those of each variation below its diagram, like |/pgfgo/sgf diagrams/comments|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/annotations = \meta{boolean} (default true, initially true)}
+	With |comments|, it also writes the name and the annotations of each move (|TE|, |BM|, etc.).
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/notes = \meta{boolean} (default true, initially true)}
+	Writes the "N at M" notes of each variation.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/caption font = \meta{font commands} (initially \texttt{\string\small})}
+	Font of the captions, the notes and the comments.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/goban = \meta{goban options}}
+	Options of every board, like |/pgfgo/sgf diagrams/goban|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/view = \meta{boolean} (default true, initially true)}
+	If the file has a view (|VW|) at the start, all the diagrams show that part.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/crop = \meta{boolean} (default true, initially true)}
+	If the view of the file is not used, it only shows the part of the board with stones, moves or marks in some line of the problem, plus |margin| lines. A side that is two lines or less from the edge reaches the edge. It is the same in all the diagrams. With |crop = false|, the whole board is shown.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/margin = \meta{number} (initially 1)}
+	Lines that |crop| adds around the problem.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/game = \meta{number} (initially 1)}
+	Like |/pgfgo/sgf/game|: in a collection, the problem that is drawn.
 \end{key}
 
 
