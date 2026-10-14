@@ -1,0 +1,32 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{Move 1 captures the marked A1: keep (the triangle stays) / remove (it goes with the stone) / fade and remove}
+\begin{goban}[5, captures]
+	\stones[w]{A1}\stones{B1}\marks[triangle]{A1, C3}\moves*{A2}
+\end{goban}
+\begin{goban}[5, captures, captured marks = remove]
+	\stones[w]{A1}\stones{B1}\marks[triangle]{A1, C3}\moves*{A2}
+\end{goban}
+\begin{goban}[5, captures = fade, captured marks = remove]
+	\stones[w]{A1}\stones{B1}\marks[triangle]{A1, C3}\moves*{A2}
+\end{goban}
+
+\case{Sequence over A1 (captured), D4 (stone), E5 (empty) and C3 (stone): 2, 3 and 4 keep their numbers}
+\begin{goban}[5, captures, captured marks = remove]
+	\stones[w]{A1,D4,C3}\stones{B1}\marks[sequence]{A1, D4, E5, C3}\moves*{A2}
+\end{goban}
+
+\case{The square on A1 goes with the stone; the circle on B1 stays (not captured)}
+\begin{goban}[5, captures, captured marks = remove]
+	\stones[w]{A1}\stones{B1}\marks[w, square]{A1}\marks[b, circle]{B1}\moves*{A2}
+\end{goban}
+
+\end{document}

@@ -743,6 +743,10 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Como |/pgfgo/sgf/restart|.
 \end{key}
 
+\begin{key}{/pgfgo/sgf animation/layers = \meta{boolean} (default true, initially true)}
+	Arma la animación por capas: el tablero se dibuja una sola vez, y cada piedra también, en una lámina que |animate| muestra mientras la piedra sigue en el tablero (con la opción |timeline| de |animate|). Lo único que se dibuja en cada cuadro es lo que cambia: la marca de la última jugada, las marcas del archivo y el comentario. Así, el PDF crece con la cantidad de jugadas y no con su cuadrado: una partida de 200 jugadas ocupa menos de 1~MB, en lugar de más de 10~MB, y además compila más rápido. Con |layers = false|, cada cuadro es un |goban| entero. El |timeline| se guarda en un archivo auxiliar, |<jobname>-pgfgo-<n>.tln|.
+\end{key}
+
 \begin{command}{\sgfdiagrams\opt{\oarg{options}}\marg{file}}
 	Dibuja la partida como en los libros: un diagrama cada |step| jugadas (1--50, 51--100, etc.). Cada diagrama parte de la posición real, con las jugadas anteriores sin número y sus capturas; las piedras capturadas dentro del diagrama no se quitan (se quitan en el siguiente). Debajo de cada uno van su epígrafe y sus notas «N en M» (pág.~\pageref{subsec:notas}). Se usa fuera de |goban|. Las opciones pueden fijarse para todo el documento con |\pgfgoset{sgf diagrams = {...}}|.
 

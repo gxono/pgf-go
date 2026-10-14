@@ -695,6 +695,37 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Turns captures off. It is the initial value.
 	\end{stylekey}
 
+	\begin{key}{/pgfgo/goban/captured marks=\meta{keep or remove} (initially keep)}
+
+		Decides what happens to the marks on a stone when it is captured. It only works with |captures|. Marks on empty points do not change.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A1 to C3}, captures}}
+
+			\begin{goban}
+				\stones[w]{A1}\stones{B1}
+				\marks[triangle]{A1}
+				\moves*{A2}
+			\end{goban}
+
+			\begin{goban}[captured marks = remove]
+				\stones[w]{A1}\stones{B1}
+				\marks[triangle]{A1}
+				\moves*{A2} % the triangle goes with the white stone.
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/captured marks/keep}
+
+		The marks stay on the empty point. It is the initial value.
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/captured marks/remove}
+
+		The marks go with the stone, also with |captures = fade|. Sequences keep their numbers.
+	\end{stylekey}
+
 	\begin{command}{\pgfgoprisoners\marg{player}}
 		Writes how many prisoners the player (|black| or |b|, |white| or |w|) has in the last |goban| with |captures|: the opponent’s stones that their moves captured.
 

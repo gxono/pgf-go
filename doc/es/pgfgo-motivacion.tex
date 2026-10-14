@@ -25,6 +25,8 @@ En cuanto al nombre, aunque las macros están implementadas en \pgfname\ y L3, e
 			\item Con el kernel en Lua se han añadido las capturas (|captures|, pág.~\pageref{subsec:capturas}) y la lectura de partidas en SGF (|\sgf|, pág.~\pageref{subsec:sgf}). Con el paquete |animate|, |\sgfanimation| permite recorrer una partida con botones.
 			\item Se han añadido las notas «N en M» para las jugadas numeradas en puntos ya jugados (|notes| y |\pgfgomovenotes|, pág.~\pageref{subsec:notas}).
 			\item SGF: variantes (|variation|), marcas del archivo (|marks|), los datos de la partida (|\sgfinfo|), la numeración de |MN| y |restart|, y el tamaño del tablero tomado del archivo (|sgf size|).
+			\item |\sgfanimation| arma la animación por capas (|layers|): cada piedra se dibuja una sola vez, y el PDF de una partida larga ocupa mucho menos.
+			\item Con |captured marks = remove|, las marcas sobre una piedra capturada se van con ella.
 			\item Se han añadido |\pgfgoprisoners|, que cuenta los prisioneros de cada jugador, y |\sgfdiagrams|, que dibuja una partida como serie de diagramas, como en los libros.
 		\end{itemize}
 	\item 0.2025.10.13: Corrección de errores. Cada |goban| empieza en la jugada 1 con negras, |\mark| y |\marks| solo existen dentro de |goban|, y lo que cae fuera de un tablero parcial ya no se dibuja. La lista completa está en el archivo |CHANGELOG.md|.

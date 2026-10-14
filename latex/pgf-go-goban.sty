@@ -98,6 +98,12 @@
 																			},
 		captures					.default:n	= {remove},
 
+		%CON captures: LAS MARCAS SOBRE UNA PIEDRA CAPTURADA QUEDAN (keep) O SE VAN CON ELLA (remove).
+		captured~marks		.choice:,
+		captured~marks/keep		.code:n	= {\bool_set_false:N \l_pgfgo_goban_captured_marks_bool},
+		captured~marks/remove	.code:n	= {\bool_set_true:N \l_pgfgo_goban_captured_marks_bool},
+		captured~marks		.initial:n	= {keep},
+
 		%"N at M": UNA JUGADA NUMERADA EN UN PUNTO DONDE YA HUBO OTRA NO SE DIBUJA (VER pgf-go-stones.sty).
 		notes							.bool_set:N	= \l_pgfgo_goban_notes_bool,
 		notes							.default:n	= {true},
@@ -646,8 +652,40 @@
 
 
 
+	%PARA LAS ANIMACIONES POR CAPAS (VER pgf-go-sgf.sty): \l_pgfgo_goban_layers_clist ELIGE LAS CAPAS QUE
+	%SE DIBUJAN (VACIA: TODAS), Y \l_pgfgo_goban_bbox_tl FIJA EL TAMANO ({minx}{miny}{maxx}{maxy}). AL
+	%TERMINAR, EL TAMANO DEL ULTIMO goban QUEDA EN \g_pgfgo_goban_bbox_tl.
+	\clist_new:N \l_pgfgo_goban_layers_clist
+	\clist_const:Nn \c__pgfgo_goban_layers_clist {
+		pgfgo_layer_goban_border, pgfgo_layer_goban_grid, pgfgo_layer_goban_labels, pgfgo_layer_territory,
+		pgfgo_layer_mark_shadow, pgfgo_layer_stone, pgfgo_layer_stone_mark, pgfgo_layer_mark
+	}
+	\tl_new:N \l_pgfgo_goban_bbox_tl
+	\tl_new:N \g_pgfgo_goban_bbox_tl
+
+	\cs_new_protected:Npn \__pgfgo_goban_set_bbox:nnnn #1#2#3#4 {
+		\dim_gset:cn {pgf@picminx} {#1}
+		\dim_gset:cn {pgf@picminy} {#2}
+		\dim_gset:cn {pgf@picmaxx} {#3}
+		\dim_gset:cn {pgf@picmaxy} {#4}
+	}
+
 	\cs_new:Npn\__end_pgfgo_goban: {
 		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_end:}
+		\tl_if_empty:NF \l_pgfgo_goban_bbox_tl
+			{\exp_after:wN \__pgfgo_goban_set_bbox:nnnn \l_pgfgo_goban_bbox_tl}
+		\tl_gset:Ne \g_pgfgo_goban_bbox_tl {
+			{\dim_use:c {pgf@picminx}} {\dim_use:c {pgf@picminy}}
+			{\dim_use:c {pgf@picmaxx}} {\dim_use:c {pgf@picmaxy}}
+		}
+		%PGF NO VACIA LAS CAPAS QUE NO DIBUJA: LO QUE TIENEN PASARIA AL PROXIMO DIBUJO.
+		\clist_if_empty:NF \l_pgfgo_goban_layers_clist {
+			\tl_set:ce {pgf@layerlist} {\clist_use:Nn \l_pgfgo_goban_layers_clist {,}}
+			\clist_map_inline:Nn \c__pgfgo_goban_layers_clist {
+				\clist_if_in:NnF \l_pgfgo_goban_layers_clist {##1}
+					{\box_gclear:c {pgf@layerbox@##1}}
+			}
+		}
 		\endtikzpicture
 		\group_end:
 	}

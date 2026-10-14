@@ -289,14 +289,19 @@
 %----------------------------------------MARCA--------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO.
+%SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO. CON goban/captured marks = remove, UNA MARCA
+%SOBRE UNA PIEDRA SE GUARDA CON LA PIEDRA (VER pgf-go-stones.sty), PARA QUE DESAPAREZCA SI LA CAPTURAN.
 \cs_set_protected:Npn\pgfgo_mark:nnn #1#2#3 {
-	\pgfgo_kernel_if_visible:nnT {#2} {#3} {\__pgfgo_mark_draw:nnn {#1} {#2} {#3}}
+	\pgfgo_kernel_if_visible:nnT {#2} {#3} {
+		\bool_lazy_and:nnTF {\l_pgfgo_goban_captures_bool} {\l_pgfgo_goban_captured_marks_bool}
+			{\pgfgo_kernel_board_if_occupied:nnTF {#2} {#3}
+				{\pgfgo_captures_mark:nnn {#1} {#2} {#3}}
+				{\__pgfgo_mark_draw:nnn {#1} {#2} {#3}}}
+			{\__pgfgo_mark_draw:nnn {#1} {#2} {#3}}
+	}
 }
 
-\cs_set_protected:Npn\__pgfgo_mark_draw:nnn #1#2#3 {
-	\group_begin:
-
+\cs_new_protected:Npn\__pgfgo_mark_setup:n #1 {
 	\keys_set_groups:nnn{ pgfgo / mark }{ player-id }{#1}
 	\bool_if:NTF \l_pgfgo_players_black_bool 
 	{\keys_set_exclude_groups:nnn{ pgfgo / players / black / mark } { external }{#1}}
@@ -305,6 +310,31 @@
 		{\keys_set_exclude_groups:nnn{ pgfgo / players / neutral / mark } { external } {#1}}}
 	\pgfgo_get_variables_from_current_player:
 	\keys_set_groups:nnn {pgfgo / mark} { shape } {#1}
+}
+
+%UNA MARCA QUE SE DIBUJA DESPUES AVANZA LA SECUENCIA AHORA, COMO SI SE HUBIERA DIBUJADO.
+\cs_new_protected:Npn\pgfgo_mark_step:n #1 {
+	\group_begin:
+		\__pgfgo_mark_setup:n {#1}
+		\bool_if:NT \l_pgfgo_players_mark_sequence_bool {\pgfgo_kernel_sequence_step:}
+	\group_end:
+}
+
+\bool_new:N \l__pgfgo_mark_no_shadow_bool
+\prg_new_protected_conditional:Npnn \__pgfgo_mark_if_on_stone:nn #1#2 {TF} {
+	\bool_if:NTF \l_pgfgo_captures_overlay_bool {
+		\__pgfgo_captures_key:nn {#1} {#2}
+		\bool_if:nTF {
+			\prop_if_in_p:NV \g__pgfgo_captures_pending_prop \l__pgfgo_captures_key_tl &&
+			! \prop_if_in_p:NV \g__pgfgo_captures_faded_prop \l__pgfgo_captures_key_tl
+		} {\prg_return_true:} {\prg_return_false:}
+	} {\prg_return_false:}
+}
+
+\cs_set_protected:Npn\__pgfgo_mark_draw:nnn #1#2#3 {
+	\group_begin:
+
+	\__pgfgo_mark_setup:n {#1}
 	
 	
 
@@ -312,7 +342,12 @@
 	%---------------------SHADOW-----------------------%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	\bool_if:NF\l_pgfgo_mark_t_bool{
+	%EN LAS CAPAS DE UNA ANIMACION, LA SOMBRA QUEDARIA SOBRE LA PIEDRA: SOBRE UNA PIEDRA NO SE DIBUJA
+	%(DEBAJO DE UNA PIEDRA NO SE VE).
+	\__pgfgo_mark_if_on_stone:nnTF {#2} {#3}
+		{\bool_set_true:N \l__pgfgo_mark_no_shadow_bool}
+		{\bool_set_eq:NN \l__pgfgo_mark_no_shadow_bool \l_pgfgo_mark_t_bool}
+	\bool_if:NF \l__pgfgo_mark_no_shadow_bool {
 		\pgfonlayer{pgfgo_layer_mark_shadow}
 		\pgfsetfillcolor{\l_pgfgo_goban_border_fill_color_tl}
 

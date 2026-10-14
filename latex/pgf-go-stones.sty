@@ -236,11 +236,16 @@
 \bool_new:N \l_pgfgo_goban_captures_fade_bool
 \bool_new:N \l__pgfgo_captures_fade_bool
 \bool_new:N \l__pgfgo_stone_prisoner_bool
+%goban/captured marks = remove.
+\bool_new:N \l_pgfgo_goban_captured_marks_bool
 
 %"x,y" -> CODIGO QUE DIBUJA LO QUE HAY EN LA INTERSECCION.
 \prop_new:N \g__pgfgo_captures_pending_prop
 %"x,y" DE LAS PIEDRAS CAPTURADAS QUE SE DIBUJAN ATENUADAS.
 \prop_new:N \g__pgfgo_captures_faded_prop
+%"x,y" -> CODIGO DE LAS MARCAS SOBRE LA PIEDRA (CON goban/captured marks = remove).
+\prop_new:N \g__pgfgo_captures_marks_prop
+\tl_new:N \l__pgfgo_captures_marks_tl
 \tl_new:N \l__pgfgo_captures_key_tl
 \cs_generate_variant:Nn \prop_gput:Nnn {NVn}
 \cs_generate_variant:Nn \prop_gremove:Nn {NV}
@@ -254,6 +259,20 @@
 	\pgfgo_kernel_board_clear:
 	\prop_gclear:N \g__pgfgo_captures_pending_prop
 	\prop_gclear:N \g__pgfgo_captures_faded_prop
+	\prop_gclear:N \g__pgfgo_captures_marks_prop
+}
+
+%GUARDA LA MARCA #1 DE (#2,#3) CON LA PIEDRA. LA SECUENCIA QUEDA FIJA EN EL NUMERO DE AHORA.
+\cs_new_protected:Npn \pgfgo_captures_mark:nnn #1#2#3 {
+	\__pgfgo_captures_key:nn {#2} {#3}
+	\prop_get:NVNF \g__pgfgo_captures_marks_prop \l__pgfgo_captures_key_tl \l__pgfgo_captures_marks_tl
+		{\tl_clear:N \l__pgfgo_captures_marks_tl}
+	\prop_gput:NVe \g__pgfgo_captures_marks_prop \l__pgfgo_captures_key_tl {
+		\exp_not:V \l__pgfgo_captures_marks_tl
+		\exp_not:N \pgfgo_kernel_sequence_reset:n {\pgfgo_kernel_sequence_number:}
+		\exp_not:N \__pgfgo_mark_draw:nnn {\exp_not:n {#1}} {\exp_not:n {#2}} {\exp_not:n {#3}}
+	}
+	\pgfgo_mark_step:n {#1}
 }
 
 %GUARDA EL CODIGO #3 PARA LA INTERSECCION (#1,#2). REEMPLAZA LO QUE HABIA.
@@ -268,7 +287,7 @@
 %(\sgfdiagrams) EL KERNEL LAS SACA DEL TABLERO, PERO SE SIGUEN DIBUJANDO.
 \bool_new:N \l__pgfgo_captures_keep_bool
 \cs_new_protected:Npn \__pgfgo_captures_apply: {
-	\bool_if:NF \l__pgfgo_captures_keep_bool {\__pgfgo_captures_remove_drawn:}
+	\bool_if:nF {\l__pgfgo_captures_keep_bool || \l_pgfgo_captures_collect_bool} {\__pgfgo_captures_remove_drawn:}
 }
 \cs_new_protected:Npn \__pgfgo_captures_remove_drawn: {
 	\seq_map_inline:Nn \l_pgfgo_kernel_captured_seq {
@@ -279,6 +298,7 @@
 					{\prop_gput:NVn \g__pgfgo_captures_faded_prop \l__pgfgo_captures_key_tl {}}
 			}
 			{\prop_gremove:NV \g__pgfgo_captures_pending_prop \l__pgfgo_captures_key_tl}
+		\prop_gremove:NV \g__pgfgo_captures_marks_prop \l__pgfgo_captures_key_tl
 	}
 }
 
@@ -303,6 +323,7 @@
 	\__pgfgo_captures_key:nn {#1} {#2}
 	\prop_gremove:NV \g__pgfgo_captures_pending_prop \l__pgfgo_captures_key_tl
 	\prop_gremove:NV \g__pgfgo_captures_faded_prop \l__pgfgo_captures_key_tl
+	\prop_gremove:NV \g__pgfgo_captures_marks_prop \l__pgfgo_captures_key_tl
 }
 
 %CON CAPTURAS, UNA JUGADA EN UN PUNTO OCUPADO ES UN ERROR DE LA PARTIDA (SIN CAPTURAS PUEDE SER BUSCADO).
@@ -311,9 +332,11 @@
 \cs_generate_variant:Nn \msg_warning:nnnn {nnee}
 
 \cs_new_protected:Npn \__pgfgo_captures_move:nnnn #1#2#3#4 {
-	\pgfgo_kernel_board_if_occupied:nnT {#3} {#4} {
-		\msg_warning:nnee {pgfgo} {occupied-point}
-			{\pgfgo_kernel_move_number:} {\pgfgo_kernel_column_name:n {#3} \int_eval:n {#4}}
+	\bool_if:NF \l_pgfgo_captures_collect_bool {
+		\pgfgo_kernel_board_if_occupied:nnT {#3} {#4} {
+			\msg_warning:nnee {pgfgo} {occupied-point}
+				{\pgfgo_kernel_move_number:} {\pgfgo_kernel_column_name:n {#3} \int_eval:n {#4}}
+		}
 	}
 	\bool_if:NF \l__pgfgo_notes_noted_bool {
 		\pgfgo_kernel_if_visible:nnT {#3} {#4} {
@@ -350,6 +373,7 @@
 \tl_new:N \l_pgfgo_notes_separator_tl
 \cs_generate_variant:Nn \prop_get:NnNTF {NV}
 \cs_generate_variant:Nn \prop_get:NnNT {NV}
+\cs_generate_variant:Nn \prop_get:NnNF {NV}
 \cs_generate_variant:Nn \prop_gput:Nnn {NVe, NVV}
 
 \cs_new_protected:Npn \pgfgo_notes_begin: {
@@ -427,14 +451,25 @@
 		{\pgfgo_kernel_require:n {captures}}
 }
 
-%DIBUJA LO QUE QUEDO, AL CERRAR EL goban.
+%DIBUJA LO QUE QUEDO, AL CERRAR EL goban. CON \l_pgfgo_captures_overlay_bool (ANIMACIONES POR CAPAS) NO
+%DIBUJA NADA: LAS PIEDRAS VAN EN SUS PROPIAS CAPAS.
+\bool_new:N \l_pgfgo_captures_overlay_bool
+%CON \l_pgfgo_captures_collect_bool LAS PIEDRAS SE GUARDAN, PERO NINGUNA SE QUITA (goban SIN captures).
+\bool_new:N \l_pgfgo_captures_collect_bool
 \cs_new_protected:Npn \pgfgo_captures_end: {
+	\bool_if:NF \l_pgfgo_captures_overlay_bool {\__pgfgo_captures_draw:}
+}
+\cs_new_protected:Npn \__pgfgo_captures_draw: {
 	\prop_map_inline:Nn \g__pgfgo_captures_pending_prop {
 		\group_begin:
 			\prop_if_in:NnT \g__pgfgo_captures_faded_prop {##1}
 				{\bool_set_true:N \l__pgfgo_captures_fade_bool}
 			##2
 		\group_end:
+	}
+	%LAS MARCAS VAN DESPUES: LA SECUENCIA DE CADA UNA SE FIJA AL DIBUJARLA.
+	\prop_map_inline:Nn \g__pgfgo_captures_marks_prop {
+		\group_begin: ##2 \group_end:
 	}
 }
 

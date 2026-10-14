@@ -1,0 +1,105 @@
+% engines: lualatex
+% expect-warnings: 5
+% expect-errors: 0
+% passes: 2
+%
+% animate needs two runs.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{animate}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+
+% With layers, every stone is drawn once, in a layer that animate shows while
+% the stone does not change. \layers{<options>}{<file>}{<frames>} draws each
+% frame twice: whole (as with layers = false) and made of its layers, one on
+% top of the other. Both must look the same.
+\ExplSyntaxOn
+\NewDocumentCommand \layers {mmm} {
+	\group_begin:
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\pgfgo_sgfanimation_layers:
+		\clist_map_inline:nn {#3} {
+			\pgfgo_sgfanimation_frame:n {##1}\enspace
+			\pgfgo_sgfanimation_layers_frame:n {##1}\quad
+		}
+	\group_end:
+}
+
+% Every layer must have the size of the board: \samesize{<options>}{<file>}.
+\msg_new:nnn {sgf-animation-layers-test} {size}
+	{Layer~#1~is~#2,~but~layer~0~is~#3.}
+\tl_new:N \l__test_size_tl
+\tl_new:N \l__test_first_size_tl
+\NewDocumentCommand \samesize {mm} {
+	\group_begin:
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\pgfgo_sgfanimation_layers:
+		\int_step_inline:nnn {0} {\g__pgfgo_sgfanim_layer_int - 1} {
+			\tl_set:Ne \l__test_size_tl {
+				\dim_use:N \box_wd:c {g__pgfgo_sgfanim_##1_box} ~ x ~
+				\dim_eval:n {\box_ht:c {g__pgfgo_sgfanim_##1_box} + \box_dp:c {g__pgfgo_sgfanim_##1_box}}
+			}
+			\int_compare:nNnTF {##1} = {0}
+				{\tl_set_eq:NN \l__test_first_size_tl \l__test_size_tl}
+				{
+					\tl_if_eq:NNF \l__test_size_tl \l__test_first_size_tl
+						{\msg_error:nneee {sgf-animation-layers-test} {size} {##1} {\l__test_size_tl} {\l__test_first_size_tl}}
+				}
+		}
+	\group_end:
+}
+
+% The layers of each stone: \stonelayers{<options>}{<file>} writes
+% <layer>:<first frame>x<frames>.
+\NewDocumentCommand \stonelayers {mm} {
+	\group_begin:
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\pgfgo_sgfanimation_layers:
+		\seq_map_inline:Nn \l__pgfgo_sgfanim_stones_seq {\__test_stone:nnn ##1}
+	\group_end:
+}
+\cs_new:Npn \__test_stone:nnn #1#2#3 {#1:#2x#3~}
+\ExplSyntaxOff
+
+\begin{document}
+
+% game.sgf: 9x9, black C7, C6, C5, white G3; then B E5, W G7, B pass,
+% W C3 (comment "Main line."), B G5.
+
+\case{The animation by layers (pdftoppm only draws its controls)}
+\sgfanimation[comments, goban = {captures}]{game.sgf}
+
+\case{game.sgf, whole and by layers: frames 0, 3 (a pass) and 5; numbers: frame 5}
+\layers{}{game.sgf}{0, 3, 5}
+
+\layers{numbers}{game.sgf}{5}
+
+\case{Captures (frames 6 and 7 of the manual's game: 7 captures 2), with comments}
+\layers{comments, goban = {captures}}{../../doc/en/game.sgf}{6, 7}
+
+\case{setup.sgf: AB, AW and AE after move 3; with captures and without (AE needs captures: frame 4 keeps the stone)}
+\layers{goban = {captures}}{setup.sgf}{3, 4}
+
+\layers{}{setup.sgf}{4}
+
+\case{variations.sgf: marks of the file on stones and on empty points (frame 2); variation = 2 (frame 3)}
+\layers{}{variations.sgf}{2}
+
+\layers{variation = 2}{variations.sgf}{3}
+
+\case{ko.sgf with captures = fade and captured marks = remove: frames 2 and 3}
+\layers{goban = {captures = fade, captured marks = remove}}{ko.sgf}{2, 3}
+
+\case{Layers of the stones of game.sgf: the setup stones (1 to 4) last 6 frames}
+\stonelayers{}{game.sgf}
+
+\case{Layers of ko.sgf with captures: C3 is played, captured and played again}
+\stonelayers{goban = {captures}}{ko.sgf}
+
+\samesize{comments, goban = {captures}}{../../doc/en/game.sgf}
+\samesize{comments}{setup.sgf}
+\samesize{}{variations.sgf}
+
+\end{document}

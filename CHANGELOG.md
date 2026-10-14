@@ -59,6 +59,15 @@ The output is unchanged.
   - New key `goban/sgf size = <file>`: the size of the board is taken from the
     file. `\sgfanimation` already used it for its boards.
   - New test file `variations.sgf`.
+- New key `sgf animation/layers` (initially true): `\sgfanimation` draws the
+  board and every stone only once, on transparencies that `animate` shows
+  through a timeline (`<jobname>-pgfgo-<n>.tln`). The PDF grows with the number
+  of moves instead of its square (a 200-move game: 0.8 MB instead of 11 MB),
+  and it compiles about three times faster. `layers = false` draws every frame
+  as a whole `goban`, as before.
+- New key `goban/captured marks = keep | remove` (with `captures`): the marks
+  on a captured stone stay on the empty point (`keep`, initial) or go with the
+  stone (`remove`). Sequences keep their numbers.
 - New command `\pgfgoprisoners{<player>}` (with `captures`): the prisoners of
   the player in the last `goban`, that is, the opponent’s stones that their
   moves captured.
