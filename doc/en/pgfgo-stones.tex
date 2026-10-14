@@ -734,6 +734,10 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 	Like |/pgfgo/sgf/restart|.
 \end{key}
 
+\begin{key}{/pgfgo/sgf animation/layers = \meta{boolean} (default true, initially true)}
+	Builds the animation by layers: the board is drawn only once, and so is every stone, on a transparency that |animate| shows while the stone stays on the board (with the |timeline| option of |animate|). The only things drawn in every frame are the things that change: the mark of the last move, the marks of the file and the comment. So the PDF grows with the number of moves and not with its square: a 200-move game takes less than 1~MB instead of more than 10~MB, and it also compiles faster. With |layers = false|, every frame is a whole |goban|. The |timeline| is saved in an auxiliary file, |<jobname>-pgfgo-<n>.tln|.
+\end{key}
+
 \begin{command}{\sgfdiagrams\opt{\oarg{options}}\marg{file}}
 	Draws the game as books do: one diagram every |step| moves (1--50, 51--100, etc.). Each diagram starts from the real position, with the earlier moves without numbers and their captures; stones captured within the diagram are not removed (they are removed in the next one). Below each one go its caption and its "N at M" notes (p.~\pageref{subsec:notes}). It is used outside |goban|. The options can be set for the whole document with |\pgfgoset{sgf diagrams = {...}}|.
 

@@ -697,6 +697,37 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Desactiva las capturas. Es el valor inicial.
 	\end{stylekey}
 
+	\begin{key}{/pgfgo/goban/captured marks=\meta{keep o remove} (initially keep)}
+
+		Decide qué pasa con las marcas que están sobre una piedra cuando la capturan. Solo tiene efecto con |captures|. Las marcas sobre puntos vacíos no cambian.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A1 to C3}, captures}}
+
+			\begin{goban}
+				\stones[w]{A1}\stones{B1}
+				\marks[triangle]{A1}
+				\moves*{A2}
+			\end{goban}
+
+			\begin{goban}[captured marks = remove]
+				\stones[w]{A1}\stones{B1}
+				\marks[triangle]{A1}
+				\moves*{A2} % el triángulo se va con la piedra blanca.
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/captured marks/keep}
+
+		Las marcas quedan sobre el punto vacío. Es el valor inicial.
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/captured marks/remove}
+
+		Las marcas se van con la piedra, también con |captures = fade|. Las secuencias conservan su numeración.
+	\end{stylekey}
+
 	\begin{command}{\pgfgoprisoners\marg{player}}
 		Escribe cuántos prisioneros tiene el jugador (|black| o |b|, |white| o |w|) en el último |goban| con |captures|: las piedras del rival que capturaron sus jugadas.
 

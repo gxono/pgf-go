@@ -73,7 +73,7 @@
 \cs_generate_variant:Nn \msg_warning:nnn {nnV}
 
 \cs_new_protected:Npn \__pgfgo_sgf_remove:nn #1#2 {
-	\bool_if:NTF \l_pgfgo_goban_captures_bool {
+	\bool_if:nTF {\l_pgfgo_goban_captures_bool && ! \l_pgfgo_captures_collect_bool} {
 		\bool_if:NT \l_pgfgo_goban_remember_stone_bool
 			{\pgfgo_kernel_remember_push:n {\exp_not:N \pgfgo_captures_remove:nn {#1} {#2}}}
 		\pgfgo_captures_remove:nn {#1} {#2}
@@ -239,6 +239,7 @@
 %SE USA FUERA DE goban. NECESITA kernel = lua Y \usepackage{animate}.
 
 \int_new:N \l__pgfgo_sgfanim_from_int
+\bool_new:N \l__pgfgo_sgfanim_layers_bool
 \int_new:N \l__pgfgo_sgfanim_to_int
 \tl_new:N \l__pgfgo_sgfanim_fps_tl
 \tl_new:N \l__pgfgo_sgfanim_goban_tl
@@ -286,6 +287,10 @@
 	marks						.initial:n	= {true},
 	restart					.int_set:N	= \l__pgfgo_sgfanim_restart_int,
 	restart					.initial:n	= {0},
+	%POR CAPAS: CADA PIEDRA SE DIBUJA UNA SOLA VEZ (VER MAS ABAJO).
+	layers					.bool_set:N	= \l__pgfgo_sgfanim_layers_bool,
+	layers					.default:n	= {true},
+	layers					.initial:n	= {true},
 }
 
 \keys_define:nn {pgfgo} {
@@ -336,9 +341,8 @@
 	}
 }
 
-%DIBUJA EL CUADRO #1: LA POSICION DESPUES DE LA JUGADA #1.
-\cs_new_protected:Npn \pgfgo_sgfanimation_frame:n #1 {
-	\group_begin:
+%ARMA UN CUADRO (O UNA LAMINA): EL goban CON #1 ADENTRO Y, CON comments, EL COMENTARIO #2 DEBAJO.
+\cs_new_protected:Npn \__pgfgo_sgfanim_wrap:nn #1#2 {
 	\hbox_set:Nn \l__pgfgo_sgfanim_box {
 		\use:e {
 			\exp_not:N \begin{goban}
@@ -346,32 +350,9 @@
 		}
 			%CADA CUADRO ES UN TABLERO NUEVO: NO SE RECUERDA NADA.
 			\pgfgo_goban_remember_nothing:
-			\bool_set:Nn \l__pgfgo_sgf_check_size_bool
-				{\int_compare_p:nNn {#1} = {\l__pgfgo_sgfanim_from_int}}
-			\use:e {
-				\exp_not:N \pgfgo_sgf:nn
-					{
-						to = \int_eval:n {#1},
-						from = \bool_if:NTF \l__pgfgo_sgfanim_numbers_bool {1} {\int_eval:n {#1 + 1}},
-						variation = {\exp_not:V \l__pgfgo_sgfanim_variation_tl},
-						marks = \bool_if:NTF \l__pgfgo_sgfanim_marks_bool {true} {false},
-						restart = \int_use:N \l__pgfgo_sgfanim_restart_int
-					}
-					{\exp_not:V \l__pgfgo_sgfanim_file_tl}
-			}
-			\bool_if:nT {
-				! \l__pgfgo_sgfanim_numbers_bool &&
-				! \tl_if_empty_p:N \l__pgfgo_sgfanim_last_tl &&
-				\int_compare_p:nNn {#1} > {0}
-			}{
-				\use:e {
-					\exp_not:N \__pgfgo_sgfanim_mark:nnn
-						\seq_item:Nn \l__pgfgo_sgfanim_moves_seq {#1}
-				}
-			}
+			#1
 		\end{goban}
 	}
-	\mode_leave_vertical:
 	\bool_if:NTF \l__pgfgo_sgfanim_comments_bool {
 		\vbox:n {
 			\box_use:N \l__pgfgo_sgfanim_box
@@ -380,29 +361,262 @@
 				%EL \strut DA LA MISMA ALTURA A LA PRIMERA LINEA, HAYA COMENTARIO O NO: TODOS LOS CUADROS
 				%MIDEN LO MISMO (SI NO, animate LOS ESTIRA PARA QUE ENTREN EN LA ANIMACION).
 				\parbox[t][\l__pgfgo_sgfanim_comment_height_dim][t]{\box_wd:N \l__pgfgo_sgfanim_box}
-					{\raggedright \l__pgfgo_sgfanim_comment_font_tl \strut \pgfgo_kernel_sgf_comment:n {#1}}
+					{\raggedright \l__pgfgo_sgfanim_comment_font_tl \strut #2}
 			}
 		}
 	}{
 		\box_use:N \l__pgfgo_sgfanim_box
 	}
+}
+
+%LA PARTIDA HASTA LA JUGADA #1, CON LA MARCA DE LA ULTIMA JUGADA.
+\cs_new_protected:Npn \__pgfgo_sgfanim_game:n #1 {
+	\bool_set:Nn \l__pgfgo_sgf_check_size_bool
+		{\int_compare_p:nNn {#1} = {\l__pgfgo_sgfanim_from_int}}
+	\use:e {
+		\exp_not:N \pgfgo_sgf:nn
+			{
+				to = \int_eval:n {#1},
+				from = \bool_if:NTF \l__pgfgo_sgfanim_numbers_bool {1} {\int_eval:n {#1 + 1}},
+				variation = {\exp_not:V \l__pgfgo_sgfanim_variation_tl},
+				marks = \bool_if:NTF \l__pgfgo_sgfanim_marks_bool {true} {false},
+				restart = \int_use:N \l__pgfgo_sgfanim_restart_int
+			}
+			{\exp_not:V \l__pgfgo_sgfanim_file_tl}
+	}
+	\bool_if:nT {
+		! \l__pgfgo_sgfanim_numbers_bool &&
+		! \tl_if_empty_p:N \l__pgfgo_sgfanim_last_tl &&
+		\int_compare_p:nNn {#1} > {0}
+	}{
+		\use:e {
+			\exp_not:N \__pgfgo_sgfanim_mark:nnn
+				\seq_item:Nn \l__pgfgo_sgfanim_moves_seq {#1}
+		}
+	}
+}
+
+%DIBUJA EL CUADRO #1: LA POSICION DESPUES DE LA JUGADA #1.
+\cs_new_protected:Npn \pgfgo_sgfanimation_frame:n #1 {
+	\group_begin:
+	\mode_leave_vertical:
+	\__pgfgo_sgfanim_wrap:nn {\__pgfgo_sgfanim_game:n {#1}} {\pgfgo_kernel_sgf_comment:n {#1}}
 	\group_end:
+}
+
+
+%POR CAPAS (layers): CADA PIEDRA SE DIBUJA UNA SOLA VEZ, EN UNA LAMINA QUE animate MUESTRA (CON UN
+%timeline) DESDE EL CUADRO EN QUE APARECE HASTA EL ULTIMO EN QUE SIGUE IGUAL. EL PDF CRECE CON LA CANTIDAD
+%DE JUGADAS, Y NO CON SU CUADRADO. LAS LAMINAS SE NUMERAN EN EL ORDEN EN QUE SE ARMAN: LA 0 ES EL
+%TABLERO; DESPUES, POR CADA CUADRO, LO QUE SOLO ESTA EN ESE CUADRO (MARCAS Y COMENTARIO) Y LAS PIEDRAS
+%QUE APARECEN EN EL. TODAS TIENEN EL TAMANO DEL TABLERO.
+\int_new:N \g__pgfgo_sgfanim_layer_int
+\int_new:N \g__pgfgo_sgfanim_file_int
+\tl_new:N \l__pgfgo_sgfanim_bbox_tl
+\tl_new:N \l__pgfgo_sgfanim_sig_tl
+\tl_new:N \l__pgfgo_sgfanim_old_tl
+%"x,y" -> FIRMA DE LO QUE SE DIBUJA EN ESE PUNTO ({codigo}{atenuada}{marcas}), EN EL CUADRO ANTERIOR Y EN EL ACTUAL.
+\prop_new:N \l__pgfgo_sgfanim_prev_prop
+\prop_new:N \l__pgfgo_sgfanim_cur_prop
+%"x,y" -> LAMINA DE LA PIEDRA QUE SE VE AHORA, Y LAMINA -> CUADRO EN QUE APARECIO.
+\prop_new:N \l__pgfgo_sgfanim_active_prop
+\prop_new:N \l__pgfgo_sgfanim_start_prop
+%{LAMINA}{CUADRO EN QUE APARECE}{CANTIDAD DE CUADROS} DE CADA PIEDRA, Y CUADRO -> LAMINA DEL CUADRO.
+\seq_new:N \l__pgfgo_sgfanim_stones_seq
+\prop_new:N \l__pgfgo_sgfanim_own_prop
+\iow_new:N \g__pgfgo_sgfanim_iow
+\tl_new:N \l__pgfgo_sgfanim_timeline_tl
+
+%LAS CAPAS DE PGF DE LAS LAMINAS: EL TABLERO, Y TODO LO DEMAS.
+\clist_const:Nn \c__pgfgo_sgfanim_board_layers_clist
+	{pgfgo_layer_goban_border, pgfgo_layer_goban_grid, pgfgo_layer_goban_labels}
+\clist_const:Nn \c__pgfgo_sgfanim_top_layers_clist
+	{pgfgo_layer_territory, pgfgo_layer_mark_shadow, pgfgo_layer_stone, pgfgo_layer_stone_mark, pgfgo_layer_mark, main}
+
+%GUARDA LA LAMINA SIGUIENTE (#1: goban, #2: COMENTARIO).
+\cs_new_protected:Npn \__pgfgo_sgfanim_layer:nn #1#2 {
+	\box_if_exist:cF {g__pgfgo_sgfanim_ \int_use:N \g__pgfgo_sgfanim_layer_int _box}
+		{\box_new:c {g__pgfgo_sgfanim_ \int_use:N \g__pgfgo_sgfanim_layer_int _box}}
+	\hbox_gset:cn {g__pgfgo_sgfanim_ \int_use:N \g__pgfgo_sgfanim_layer_int _box}
+		{\__pgfgo_sgfanim_wrap:nn {#1} {#2}}
+	\int_gincr:N \g__pgfgo_sgfanim_layer_int
+}
+
+%SIN goban/captures, LAS PIEDRAS SE GUARDAN IGUAL (PARA DIBUJARLAS EN SUS LAMINAS), PERO NO SE QUITA NINGUNA.
+\cs_new_protected:Npn \__pgfgo_sgfanim_collect: {
+	\bool_if:NF \l_pgfgo_goban_captures_bool {
+		\bool_set_true:N \l_pgfgo_goban_captures_bool
+		\bool_set_true:N \l_pgfgo_captures_collect_bool
+		\pgfgo_captures_begin:
+	}
+}
+
+%LA LAMINA DE UNA PIEDRA: #1 PUNTO, #2 FIRMA.
+\cs_new_protected:Npn \__pgfgo_sgfanim_stone_layer:nn #1#2 {
+	\__pgfgo_sgfanim_layer:nn {
+		\__pgfgo_sgfanim_collect:
+		\__pgfgo_sgfanim_put:nnnn {#1} #2
+	} {}
+}
+\cs_new_protected:Npn \__pgfgo_sgfanim_put:nnnn #1#2#3#4 {
+	\prop_gput:Nnn \g__pgfgo_captures_pending_prop {#1} {#2}
+	\int_compare:nNnT {#3} = {1} {\prop_gput:Nnn \g__pgfgo_captures_faded_prop {#1} {}}
+	\tl_if_empty:nF {#4} {\prop_gput:Nnn \g__pgfgo_captures_marks_prop {#1} {#4}}
+}
+
+%TERMINA LA LAMINA DE LA PIEDRA QUE SE VEIA EN #1; #2 ES EL ULTIMO CUADRO EN QUE SE VE.
+\cs_new_protected:Npn \__pgfgo_sgfanim_end_stone:nn #1#2 {
+	\prop_pop:NnNT \l__pgfgo_sgfanim_active_prop {#1} \l__pgfgo_sgfanim_old_tl {
+		\seq_put_right:Ne \l__pgfgo_sgfanim_stones_seq {
+			{\l__pgfgo_sgfanim_old_tl}
+			{\prop_item:NV \l__pgfgo_sgfanim_start_prop \l__pgfgo_sgfanim_old_tl}
+			{\int_eval:n {#2 - \prop_item:NV \l__pgfgo_sgfanim_start_prop \l__pgfgo_sgfanim_old_tl + 1}}
+		}
+	}
+}
+\cs_generate_variant:Nn \prop_item:Nn {NV}
+
+%EL CUADRO #1: SU LAMINA, Y LAS LAMINAS DE LAS PIEDRAS QUE CAMBIARON.
+\cs_new_protected:Npn \__pgfgo_sgfanim_layers_frame:n #1 {
+	\prop_put:Nne \l__pgfgo_sgfanim_own_prop {#1} {\int_use:N \g__pgfgo_sgfanim_layer_int}
+	\group_begin:
+		\bool_set_true:N \l_pgfgo_captures_overlay_bool
+		\clist_set_eq:NN \l_pgfgo_goban_layers_clist \c__pgfgo_sgfanim_top_layers_clist
+		\__pgfgo_sgfanim_layer:nn
+			{\__pgfgo_sgfanim_collect: \__pgfgo_sgfanim_game:n {#1}}
+			{\pgfgo_kernel_sgf_comment:n {#1}}
+	\group_end:
+	%LO QUE QUEDO EN CADA PUNTO (LAS PROPIEDADES DE LAS CAPTURAS SON GLOBALES).
+	\prop_clear:N \l__pgfgo_sgfanim_cur_prop
+	\prop_map_inline:Nn \g__pgfgo_captures_pending_prop {
+		\prop_put:Nne \l__pgfgo_sgfanim_cur_prop {##1} {
+			{\exp_not:n {##2}}
+			{\prop_if_in:NnTF \g__pgfgo_captures_faded_prop {##1} {1} {0}}
+			{\prop_item:Nn \g__pgfgo_captures_marks_prop {##1}}
+		}
+	}
+	%LAS PIEDRAS QUE YA NO SE VEN IGUAL TERMINAN EN EL CUADRO ANTERIOR.
+	\prop_map_inline:Nn \l__pgfgo_sgfanim_prev_prop {
+		\prop_get:NnNTF \l__pgfgo_sgfanim_cur_prop {##1} \l__pgfgo_sgfanim_sig_tl
+			{\tl_if_eq:nVF {##2} \l__pgfgo_sgfanim_sig_tl {\__pgfgo_sgfanim_end_stone:nn {##1} {#1 - 1}}}
+			{\__pgfgo_sgfanim_end_stone:nn {##1} {#1 - 1}}
+	}
+	%LAS QUE APARECEN O CAMBIAN, EMPIEZAN.
+	\group_begin:
+		\clist_set_eq:NN \l_pgfgo_goban_layers_clist \c__pgfgo_sgfanim_top_layers_clist
+		\prop_map_inline:Nn \l__pgfgo_sgfanim_cur_prop {
+			\prop_get:NnNTF \l__pgfgo_sgfanim_prev_prop {##1} \l__pgfgo_sgfanim_old_tl
+				{\tl_if_eq:nVF {##2} \l__pgfgo_sgfanim_old_tl {\__pgfgo_sgfanim_new_stone:nn {##1} {##2}}}
+				{\__pgfgo_sgfanim_new_stone:nn {##1} {##2}}
+		}
+	\group_end:
+	\prop_map_inline:Nn \g__pgfgo_sgfanim_new_prop {
+		\prop_put:Nnn \l__pgfgo_sgfanim_active_prop {##1} {##2}
+		\prop_put:Nnn \l__pgfgo_sgfanim_start_prop {##2} {#1}
+	}
+	\prop_gclear:N \g__pgfgo_sgfanim_new_prop
+	\prop_set_eq:NN \l__pgfgo_sgfanim_prev_prop \l__pgfgo_sgfanim_cur_prop
+}
+\prop_new:N \g__pgfgo_sgfanim_new_prop
+\cs_new_protected:Npn \__pgfgo_sgfanim_new_stone:nn #1#2 {
+	\prop_gput:Nne \g__pgfgo_sgfanim_new_prop {#1} {\int_use:N \g__pgfgo_sgfanim_layer_int}
+	\__pgfgo_sgfanim_stone_layer:nn {#1} {#2}
+}
+\cs_generate_variant:Nn \tl_if_eq:nnF {nV}
+\cs_generate_variant:Nn \prop_put:Nnn {Nne}
+\cs_generate_variant:Nn \prop_gput:Nnn {Nne}
+
+%ARMA TODAS LAS LAMINAS (DESPUES DE \pgfgo_sgfanimation_setup:nn).
+\cs_new_protected:Npn \pgfgo_sgfanimation_layers: {
+	\int_gzero:N \g__pgfgo_sgfanim_layer_int
+	\prop_clear:N \l__pgfgo_sgfanim_prev_prop
+	\prop_clear:N \l__pgfgo_sgfanim_active_prop
+	\prop_clear:N \l__pgfgo_sgfanim_start_prop
+	\prop_clear:N \l__pgfgo_sgfanim_own_prop
+	\seq_clear:N \l__pgfgo_sgfanim_stones_seq
+	%LA LAMINA 0, EL TABLERO, DA EL TAMANO DE TODAS.
+	\group_begin:
+		\clist_set_eq:NN \l_pgfgo_goban_layers_clist \c__pgfgo_sgfanim_board_layers_clist
+		\__pgfgo_sgfanim_layer:nn {} {}
+	\group_end:
+	\tl_set_eq:NN \l_pgfgo_goban_bbox_tl \g_pgfgo_goban_bbox_tl
+	\int_step_inline:nnn {\l__pgfgo_sgfanim_from_int} {\l__pgfgo_sgfanim_to_int}
+		{\__pgfgo_sgfanim_layers_frame:n {##1}}
+	\prop_map_inline:Nn \l__pgfgo_sgfanim_active_prop
+		{\__pgfgo_sgfanim_end_stone:nn {##1} {\l__pgfgo_sgfanim_to_int}}
+}
+
+%EL timeline DE animate: UNA LINEA POR CUADRO, CON TRES PILAS (TABLERO; PIEDRAS; LAMINA DEL CUADRO).
+\cs_new_protected:Npn \__pgfgo_sgfanim_timeline:n #1 {
+	\prop_clear:N \l_tmpa_prop
+	\seq_map_inline:Nn \l__pgfgo_sgfanim_stones_seq {\__pgfgo_sgfanim_timeline_stone:nnn ##1}
+	\iow_open:Nn \g__pgfgo_sgfanim_iow {#1}
+	\int_step_inline:nnn {\l__pgfgo_sgfanim_from_int} {\l__pgfgo_sgfanim_to_int} {
+		\iow_now:Ne \g__pgfgo_sgfanim_iow {
+			::
+			\int_compare:nNnT {##1} = {\l__pgfgo_sgfanim_from_int} {0x0}
+			;
+			\prop_item:Nn \l_tmpa_prop {##1}
+			;
+			\prop_item:Nn \l__pgfgo_sgfanim_own_prop {##1}
+		}
+	}
+	\iow_close:N \g__pgfgo_sgfanim_iow
+}
+\cs_new_protected:Npn \__pgfgo_sgfanim_timeline_stone:nnn #1#2#3 {
+	\prop_get:NnNTF \l_tmpa_prop {#2} \l_tmpa_tl
+		{\prop_put:Nne \l_tmpa_prop {#2} {\l_tmpa_tl , #1x#3}}
+		{\prop_put:Nnn \l_tmpa_prop {#2} {#1x#3}}
+}
+
+%EL CUADRO #1 ARMADO CON SUS LAMINAS, UNA SOBRE OTRA (PARA COMPROBAR QUE ES IGUAL AL CUADRO ENTERO).
+\cs_new_protected:Npn \pgfgo_sgfanimation_layers_frame:n #1 {
+	\mode_leave_vertical:
+	\hbox:n {
+		\hbox_overlap_right:n {\box_use:c {g__pgfgo_sgfanim_0_box}}
+		\seq_map_inline:Nn \l__pgfgo_sgfanim_stones_seq {\__pgfgo_sgfanim_overlap:nnnn {#1} ##1}
+		\box_use:c {g__pgfgo_sgfanim_ \prop_item:Nn \l__pgfgo_sgfanim_own_prop {#1} _box}
+	}
+}
+\cs_new_protected:Npn \__pgfgo_sgfanim_overlap:nnnn #1#2#3#4 {
+	\int_compare:nT {#3 <= #1 < #3 + #4}
+		{\hbox_overlap_right:n {\box_use:c {g__pgfgo_sgfanim_ #2 _box}}}
 }
 
 \cs_new_protected:Npn \pgfgo_sgfanimation:nn #1#2 {
 	\group_begin:
 	\pgfgo_sgfanimation_setup:nn {#1} {#2}
-	\use:e {
-		\exp_not:N \begin{animateinline}
-			[\exp_not:V \l__pgfgo_sgfanim_animate_tl] {\exp_not:V \l__pgfgo_sgfanim_fps_tl}
-		\exp_not:N \multiframe
-			{\int_eval:n {\l__pgfgo_sgfanim_to_int - \l__pgfgo_sgfanim_from_int + 1}}
-			{iPgfgoFrame = \int_use:N \l__pgfgo_sgfanim_from_int + 1}
-			{\exp_not:N \pgfgo_sgfanimation_frame:n {\exp_not:N \iPgfgoFrame}}
-		\exp_not:N \end{animateinline}
+	\bool_if:NTF \l__pgfgo_sgfanim_layers_bool {
+		\pgfgo_sgfanimation_layers:
+		\int_gincr:N \g__pgfgo_sgfanim_file_int
+		\tl_set:Ne \l__pgfgo_sgfanim_timeline_tl {\c_sys_jobname_str -pgfgo- \int_use:N \g__pgfgo_sgfanim_file_int .tln}
+		\__pgfgo_sgfanim_timeline:V \l__pgfgo_sgfanim_timeline_tl
+		\tl_clear:N \l_tmpb_tl
+		\int_step_inline:nnn {0} {\g__pgfgo_sgfanim_layer_int - 2}
+			{\tl_put_right:Nn \l_tmpb_tl {\box_use:c {g__pgfgo_sgfanim_ ##1 _box} \newframe}}
+		\mode_leave_vertical:
+		\use:e {
+			\exp_not:N \begin{animateinline}
+				[\exp_not:V \l__pgfgo_sgfanim_animate_tl, timeline = \l__pgfgo_sgfanim_timeline_tl]
+				{\exp_not:V \l__pgfgo_sgfanim_fps_tl}
+				\exp_not:V \l_tmpb_tl
+				\exp_not:N \box_use:c {g__pgfgo_sgfanim_ \int_eval:n {\g__pgfgo_sgfanim_layer_int - 1} _box}
+			\exp_not:N \end{animateinline}
+		}
+	}{
+		\use:e {
+			\exp_not:N \begin{animateinline}
+				[\exp_not:V \l__pgfgo_sgfanim_animate_tl] {\exp_not:V \l__pgfgo_sgfanim_fps_tl}
+			\exp_not:N \multiframe
+				{\int_eval:n {\l__pgfgo_sgfanim_to_int - \l__pgfgo_sgfanim_from_int + 1}}
+				{iPgfgoFrame = \int_use:N \l__pgfgo_sgfanim_from_int + 1}
+				{\exp_not:N \pgfgo_sgfanimation_frame:n {\exp_not:N \iPgfgoFrame}}
+			\exp_not:N \end{animateinline}
+		}
 	}
 	\group_end:
 }
+\cs_generate_variant:Nn \__pgfgo_sgfanim_timeline:n {V}
 
 \NewDocumentCommand{\sgfanimation}{O{}m}{
 	\pgfgo_kernel_if_feature:nTF {sgf} {
