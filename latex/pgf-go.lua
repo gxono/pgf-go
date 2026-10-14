@@ -817,20 +817,119 @@ local function find_file(name)
 	return kpse.find_file(name, "other text files") or kpse.find_file(name, "tex")
 end
 
--- LOS ARCHIVOS QUE NO SON UTF-8 VALIDO SE LEEN COMO Latin-1 (LA CODIFICACION POR DEFECTO DE SGF). UNA
--- CODIFICACION (CA) QUE NO ES NINGUNA DE LAS DOS PRODUCE UN AVISO.
-local latin = {["iso-8859-1"] = true, ["iso8859-1"] = true, latin1 = true, ["latin-1"] = true,
-	["windows-1252"] = true, cp1252 = true, ascii = true, ["us-ascii"] = true, ["utf-8"] = true, utf8 = true}
+-- CODIFICACIONES. UN ARCHIVO QUE ES UTF-8 VALIDO SE LEE COMO UTF-8. SI NO, SE USA LA CODIFICACION QUE PIDE
+-- \l_pgfgo_kernel_sgf_charset_tl O, CON auto, LA DE CA; SIN NINGUNA, Latin-1 (LA DE SGF POR DEFECTO).
+-- GBK, Big5, Shift_JIS, EUC-JP Y EUC-KR SE CONVIERTEN CON LAS TABLAS DE pgf-go-charsets.lua. UNA
+-- CODIFICACION DESCONOCIDA PRODUCE UN AVISO (Y SE LEE COMO Latin-1). LOS NOMBRES SE COMPARAN SIN
+-- MAYUSCULAS NI SIGNOS (Shift_JIS ES shiftjis).
+local charset_kinds = {
+	utf8 = "utf8", iso88591 = "latin", iso885915 = "latin", latin1 = "latin", windows1252 = "latin",
+	cp1252 = "latin", ascii = "latin", usascii = "latin",
+	gbk = "gbk", gb2312 = "gbk", gb18030 = "gbk", cp936 = "gbk", windows936 = "gbk", euccn = "gbk",
+	big5 = "big5", big5hkscs = "big5", cp950 = "big5", windows950 = "big5",
+	shiftjis = "sjis", sjis = "sjis", xsjis = "sjis", cp932 = "sjis", windows31j = "sjis", mskanji = "sjis",
+	eucjp = "eucjp",
+	euckr = "euckr", cp949 = "euckr", windows949 = "euckr", uhc = "euckr", ksc5601 = "euckr",
+	ksc56011987 = "euckr",
+}
+
+local function charset_kind(text)
+	return charset_kinds[text:lower():gsub("[^%w]", "")]
+end
+
+-- EL ARCHIVO DE LAS TABLAS LO BUSCA pgf-go-kernel-lua.sty (pgfgo.charsets_file).
+local charset_tables
+
+local function charset_table(kind)
+	if not charset_tables then
+		local file = pgfgo.charsets_file
+		if not file or file == "" then
+			file = kpse.find_file("pgf-go-charsets.lua", "lua") or kpse.find_file("pgf-go-charsets.lua", "tex")
+		end
+		charset_tables = file and dofile(file) or {}
+	end
+	return charset_tables[kind] or {}
+end
+
+-- EUC-JP Y Shift_JIS CODIFICAN LOS MISMOS CARACTERES (JIS X 0208): EL PAR DE EUC-JP SE PASA A Shift_JIS.
+local function euc_to_sjis(c1, c2)
+	local j1, j2 = c1 - 0x80, c2 - 0x80
+	local s1 = (j1 + 1) // 2 + (j1 <= 0x5E and 0x70 or 0xB0)
+	local s2 = j1 % 2 == 1 and j2 + (j2 >= 0x60 and 0x20 or 0x1F) or j2 + 0x7E
+	return s1, s2
+end
+
+local replacement = utf8.char(0xFFFD)
+
+local function decode(kind, s)
+	local table_ = charset_table(kind == "eucjp" and "sjis" or kind)
+	local rows = {}
+	-- EL CARACTER DEL PAR (lead, trail), O nil.
+	local function pair(lead, trail)
+		if not trail or trail < 0x40 or trail > 0xFE then return nil end
+		local row = rows[lead]
+		if not row then
+			row = {}
+			for _, c in utf8.codes(table_[lead] or "") do insert(row, utf8.char(c)) end
+			rows[lead] = row
+		end
+		local c = row[trail - 0x3F]
+		return c ~= replacement and c or nil
+	end
+	local out, i, n = {}, 1, #s
+	while i <= n do
+		-- LO QUE ES ASCII PASA TAL CUAL.
+		local j = s:find("[\128-\255]", i) or n + 1
+		if j > i then
+			insert(out, s:sub(i, j - 1))
+			i = j
+		end
+		if i > n then break end
+		local b, b2 = s:byte(i), s:byte(i + 1)
+		local c, size = nil, 1
+		if kind == "sjis" and b >= 0xA1 and b <= 0xDF then
+			-- KATAKANA DE MEDIO ANCHO.
+			c = utf8.char(0xFF61 + b - 0xA1)
+		elseif kind == "eucjp" and b == 0x8E then
+			size = 2
+			c = b2 and b2 >= 0xA1 and b2 <= 0xDF and utf8.char(0xFF61 + b2 - 0xA1) or nil
+		elseif kind == "eucjp" and b == 0x8F then
+			-- JIS X 0212 (TRES BYTES): NO SE CONVIERTE.
+			size = 3
+		elseif kind == "gbk" and b2 and b2 >= 0x30 and b2 <= 0x39 then
+			-- LA PARTE DE CUATRO BYTES DE GB18030: NO SE CONVIERTE.
+			size = 4
+		elseif kind == "eucjp" then
+			if b2 and b >= 0xA1 and b <= 0xFE and b2 >= 0xA1 and b2 <= 0xFE then
+				c = pair(euc_to_sjis(b, b2))
+				size = 2
+			end
+		else
+			c = pair(b, b2)
+			-- UN PAR QUE NO EXISTE SE SALTEA ENTERO, SALVO QUE EL SEGUNDO BYTE SEA ASCII (COMO ] O \).
+			size = (c or (b2 and b2 >= 0x80)) and 2 or 1
+		end
+		insert(out, c or replacement)
+		i = i + size
+	end
+	return concat(out)
+end
 
 local function to_utf8(name, s)
 	local ca = s:match("CA%s*%[([^%]]*)%]")
-	if ca and not latin[ca:lower():gsub("%s", "")] then
-		message("warning", "sgf-charset", name, ca)
+	local forced = token.get_macro("l_pgfgo_kernel_sgf_charset_tl") or "auto"
+	local wanted = (forced ~= "auto" and forced ~= "") and forced or ca
+	local kind = wanted and charset_kind(wanted)
+	if wanted and not kind then
+		message("warning", "sgf-charset", name, wanted)
 	end
-	if not utf8.len(s) then
-		s = s:gsub("[\128-\255]", function(c) return utf8.char(c:byte()) end)
+	if utf8.len(s) then
+		return s
 	end
-	return s
+	if kind and kind ~= "latin" and kind ~= "utf8" then
+		return decode(kind, s)
+	end
+	return (s:gsub("[\128-\255]", function(c) return utf8.char(c:byte()) end))
 end
 
 -- LA PARTIDA \l_pgfgo_kernel_sgf_game_int DEL ARCHIVO. AVISA SI NO EXISTE Y USA LA PRIMERA.

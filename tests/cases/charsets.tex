@@ -1,0 +1,47 @@
+% engines: lualatex
+% render: no
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+% Each cs-*.sgf has a comment in another charset and then two moves. In Shift_JIS, the second byte of
+% ソ and 表 is \ and that of ‐ is ]: if the file were parsed before converting it, the comment would end
+% too early. Each wrong comment or move count is an error.
+
+\ExplSyntaxOn
+\msg_new:nnn {pgfgo-test} {charset} {'#1':~wrong~comment~'#2'.}
+\msg_new:nnn {pgfgo-test} {moves} {'#1':~#2~moves~instead~of~2.}
+\cs_new_protected:Npn \__test_check:nn #1#2 {
+	\pgfgo_kernel_sgf_read:n {#1}
+	\str_if_eq:eeF {\pgfgo_kernel_sgf_comment:n {0}} {#2}
+		{\msg_error:nnne {pgfgo-test} {charset} {#1} {\pgfgo_kernel_sgf_comment:n {0}}}
+	\int_compare:nNnF {\seq_count:N \l_pgfgo_kernel_sgf_moves_seq} = {2}
+		{\msg_error:nnne {pgfgo-test} {moves} {#1} {\seq_count:N \l_pgfgo_kernel_sgf_moves_seq}}
+}
+\cs_generate_variant:Nn \msg_error:nnnn {nnne}
+\NewDocumentCommand \checksgf {mm} {\__test_check:nn {#1} {#2}}
+\ExplSyntaxOff
+
+\begin{document}
+
+\checksgf{cs-gbk.sgf}{黑先活。}
+\checksgf{cs-big5.sgf}{黑先活。}
+\checksgf{cs-sjis.sgf}{ソ表示‐黒先}
+\checksgf{cs-eucjp.sgf}{黒先、生き。ｿ}
+\checksgf{cs-euckr.sgf}{흑선 활.}
+
+% Without CA, the file is read as GBK when the document says so.
+\begingroup
+\pgfgoset{sgf charset = GBK}
+\checksgf{cs-forced.sgf}{黑先活。}
+\endgroup
+
+% A UTF-8 file is read as UTF-8, whatever its CA (here Shift_JIS) or sgf charset say.
+\begingroup
+\pgfgoset{sgf charset = Shift_JIS}
+\checksgf{cs-utf8.sgf}{黒先、生き。}
+\endgroup
+
+x
+\end{document}

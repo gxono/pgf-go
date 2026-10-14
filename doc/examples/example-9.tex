@@ -1,4 +1,5 @@
-\documentclass[border=0.5cm, varwidth=13cm]{standalone}
+\documentclass[border=0.5cm, varwidth=13cm, multi=page]{standalone}
+\usepackage{fvextra}
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
 
@@ -6,10 +7,20 @@
 
 
 \begin{document}
+\begin{page}%
 	\section*{\sgfinfo{commented.sgf}{GN}}
 	\sgfinfo{commented.sgf}{PB} against \sgfinfo{commented.sgf}{PW},
 	komi \sgfinfo{commented.sgf}{KM}. \sgfcomment{commented.sgf}{0}
 
 	\medskip
-	\sgfdiagrams[step = 9, comments]{commented.sgf}
+	\sgfdiagrams[step = 9, comments]{commented.sgf}%
+\end{page}
+
+% The last page shows this code.
+\standaloneconfig{varwidth = false}
+\begin{page}
+	\begin{minipage}{16cm}
+		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-9.tex}
+	\end{minipage}
+\end{page}
 \end{document}

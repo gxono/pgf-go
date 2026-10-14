@@ -1,4 +1,5 @@
-\documentclass[border=0.5cm, varwidth=13cm]{standalone}
+\documentclass[border=0.5cm, varwidth=13cm, multi=page]{standalone}
+\usepackage{fvextra}
 \usepackage[spanish]{babel}
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
@@ -12,10 +13,20 @@
 
 
 \begin{document}
+\begin{page}%
 	\section*{\sgfinfo{comentada.sgf}{GN}}
 	\sgfinfo{comentada.sgf}{PB} contra \sgfinfo{comentada.sgf}{PW},
 	komi \sgfinfo{comentada.sgf}{KM}. \sgfcomment{comentada.sgf}{0}
 
 	\medskip
-	\sgfdiagrams[step = 9, comments]{comentada.sgf}
+	\sgfdiagrams[step = 9, comments]{comentada.sgf}%
+\end{page}
+
+% The last page shows this code.
+\standaloneconfig{varwidth = false}
+\begin{page}
+	\begin{minipage}{16cm}
+		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-13.tex}
+	\end{minipage}
+\end{page}
 \end{document}

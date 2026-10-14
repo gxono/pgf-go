@@ -683,7 +683,15 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 	\end{codeexample}
 \end{key}
 
-|\sgf| also reads |PL| (who plays next: |\moves| goes on with that color) and |CA| (the charset of the file: Latin-1 files are converted; other charsets produce a warning).
+|\sgf| also reads |PL| (who plays next: |\moves| goes on with that color) and |CA| (the charset of the file; see |sgf charset|).
+
+\begin{key}{/pgfgo/sgf charset = \meta{charset} (initially auto)}
+	Charset of the SGF files that are not in UTF-8, for every command that reads files. With |auto|, it is the one the file gives with |CA| or, if it gives none, Latin-1 (the default of SGF). |Latin-1|, |GBK| (and |GB2312|), |Big5|, |Shift_JIS|, |EUC-JP| and |EUC-KR| are read; the names ignore case and signs (|shift-jis| and |EUC_KR| work too). A file that is valid UTF-8 is always read as UTF-8, even if |CA| says otherwise.
+
+	Many files from Asian servers do not give their charset; to read them, for example, |\pgfgoset{sgf charset = GBK}|. Another charset produces a warning, and the file is read as Latin-1: it must be converted to UTF-8 first, for example with |iconv -f KOI8-R -t UTF-8 game.sgf > game-utf8.sgf|.
+
+	To write the comments in Chinese, Japanese or Korean, the package for that language is needed too: |ctex|, |luatexja| or |luatexko|. Examples 14, 18 and 19 in |doc/examples| show a commented game in each one.
+\end{key}
 
 \begin{key}{/pgfgo/sgf = \meta{sgf options}}
 	Options of every |\sgf| in the document, for example |\pgfgoset{sgf = {variations}}|.

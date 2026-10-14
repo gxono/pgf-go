@@ -1,4 +1,5 @@
-\documentclass[border=0.5cm, varwidth=8cm]{standalone}
+\documentclass[border=0.5cm, varwidth=8cm, multi=page]{standalone}
+\usepackage{fvextra}
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
 
@@ -6,6 +7,7 @@
 
 
 \begin{document}
+\begin{page}%
 	\begin{goban}[7, captures, notes]
 		\stones{B3, C2, C4}
 		\stones[w]{C3, D2, D4, E3}
@@ -14,5 +16,14 @@
 	\end{goban}
 
 	\smallskip
-	\pgfgomovenotes. Prisoners: Black \pgfgoprisoners{b}, White \pgfgoprisoners{w}.
+	\pgfgomovenotes. Prisoners: Black \pgfgoprisoners{b}, White \pgfgoprisoners{w}.%
+\end{page}
+
+% The last page shows this code.
+\standaloneconfig{varwidth = false}
+\begin{page}
+	\begin{minipage}{16cm}
+		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-15.tex}
+	\end{minipage}
+\end{page}
 \end{document}

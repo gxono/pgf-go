@@ -1,0 +1,6 @@
+(;GM[1]FF[4]CA[EUC-KR]SZ[7]KM[6.5]PB[흑]PW[백]RE[B+0.5]
+GN[짧은 대국]C[7줄 바둑판에서 둔 대국과 해설.]
+;B[dd]C[흑이 가운데 줄을 차지한다.]
+(;W[ed];B[de];W[ec];B[dc];W[ee];B[df];W[eb];B[db]C[흑은 세 줄, 백은 두 줄뿐이다.];W[ef];B[da];W[ea];B[dg]TE[1]C[벽의 마지막 점.];W[be]BM[1]C[백이 침입하지만 두 눈을 만들 공간이 없다.];B[ce]TR[be]C[흑이 급소를 차지한다. 백돌은 죽었다.];W[eg];B[];W[]
+;TB[ag][af][ae][ad][ac][ab][aa][bg][bf][be][bd][bc][bb][ba][cg][cf][cd][cc][cb][ca]TW[fg][ff][fe][fd][fc][fb][fa][gg][gf][ge][gd][gc][gb][ga]C[흑: 20집과 사석 하나. 백: 14집과 덤 6.5집.])
+(;W[cd]C[너무 가깝다.];B[ce];W[bd]LB[be:A]))

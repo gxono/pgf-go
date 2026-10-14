@@ -13,6 +13,15 @@
 	{\tl_set:Ne \l__pgfgo_kernel_lua_file_tl {\file_full_name:n {pgf-go.lua}}}
 \lua_now:e {pgfgo~=~dofile("\lua_escape:e {\l__pgfgo_kernel_lua_file_tl}")}
 
+%LAS TABLAS DE LAS CODIFICACIONES ASIATICAS (pgf-go-charsets.lua) SE BUSCAN IGUAL; Lua LAS CARGA SOLO SI
+%HACEN FALTA.
+\tl_new:N \l__pgfgo_kernel_lua_charsets_tl
+\tl_if_empty:NF \c__pgfgo_path_tl
+	{\tl_set:Ne \l__pgfgo_kernel_lua_charsets_tl {\file_full_name:n {\c__pgfgo_path_tl / pgf-go-charsets.lua}}}
+\tl_if_empty:NT \l__pgfgo_kernel_lua_charsets_tl
+	{\tl_set:Ne \l__pgfgo_kernel_lua_charsets_tl {\file_full_name:n {pgf-go-charsets.lua}}}
+\lua_now:e {pgfgo.charsets_file~=~"\lua_escape:e {\l__pgfgo_kernel_lua_charsets_tl}"}
+
 %use i COMO ARGUMENTO DE Lua.
 \cs_new:Npn \__pgfgo_kernel_lua_use_i: {\bool_if:NTF \l_pgfgo_use_i_bool {true} {false}}
 

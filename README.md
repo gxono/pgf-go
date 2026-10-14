@@ -20,13 +20,13 @@ The package compiles with UTF-8, LaTeX and LuaLaTeX. The following dependencies 
   (including `\usetikzlibrary{patterns}`)
 - [xparse](https://ctan.org/pkg/xparse)
 
-With LuaLaTeX, the package also captures stones, reads SGF games and finds the territory. `\sgfanimation` needs the [animate](https://ctan.org/pkg/animate) package.
+With LuaLaTeX, the package also captures stones, reads SGF games (in UTF-8, Latin-1, GBK, Big5, Shift_JIS, EUC-JP or EUC-KR) and finds the territory. `\sgfanimation` needs the [animate](https://ctan.org/pkg/animate) package.
 
 
 ## Installation
 
 You can use the `pgf-go` package by placing all of the
-distribution files (`pgf-go.sty`, the `pgf-go-*.sty` modules and `pgf-go.lua`) in the directory containing your current tex file.
+distribution files (`pgf-go.sty`, the `pgf-go-*.sty` modules, `pgf-go.lua` and `pgf-go-charsets.lua`) in the directory containing your current tex file.
 
 ## How to use it
 
@@ -58,8 +58,10 @@ You can find examples in the `doc/examples` directory:
 - `example-15`: captures, a ko, "7 at 1" notes and prisoners.
 - `example-16`: territory found by `	erritory{auto}`, a dead stone and the score.
 - `example-17`: arrows, lines, a dimmed stone and labels.
+- `example-18`: the commented game in Chinese (`ctex`), read from a GB2312 file.
+- `example-19`: the commented game in Korean (`luatexko`), read from an EUC-KR file.
 
-The SGF examples need LuaLaTeX.
+The last page of each example shows its code. The SGF examples need LuaLaTeX.
 
 ## History
    - version 0.2026.10.13 : Lua compute kernel, captures, SGF games (`\sgf`, `\sgfanimation`, `\sgfdiagrams`), star points, arrows and lines, "3 at 1" notes, territory and score. Both manuals are complete.

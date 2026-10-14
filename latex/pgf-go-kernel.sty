@@ -85,8 +85,9 @@
 %		FILA POR FILA DESDE ABAJO.
 %
 %sgf: LECTURA DE PARTIDAS. SE LEE LA PARTIDA \l_pgfgo_kernel_sgf_game_int DEL ARCHIVO (1 ES LA PRIMERA; SI NO
-%EXISTE, AVISO sgf-game Y SE LEE LA PRIMERA). LOS ARCHIVOS QUE NO SON UTF-8 SE LEEN COMO Latin-1; OTRA
-%CODIFICACION (CA) DA EL AVISO sgf-charset.
+%EXISTE, AVISO sgf-game Y SE LEE LA PRIMERA). UN ARCHIVO QUE NO ES UTF-8 SE LEE EN LA CODIFICACION
+%\l_pgfgo_kernel_sgf_charset_tl O, SI ES auto, EN LA DE CA (Latin-1 SI NO HAY): Latin-1, GBK (Y GB2312),
+%Big5, Shift_JIS, EUC-JP O EUC-KR. OTRA CODIFICACION DA EL AVISO sgf-charset Y SE LEE COMO Latin-1.
 %	\pgfgo_kernel_sgf_read:nn {<archivo>}{<variante>}
 %		LEE UNA LINEA DE LA PARTIDA. <variante> ES UNA LISTA DE NUMEROS (2.1): EN CADA
 %		BIFURCACION SE TOMA ESA VARIANTE (1 ES LA PRINCIPAL); CUANDO SE TERMINA, SE SIGUE POR LA PRIMERA.
@@ -243,6 +244,8 @@
 %sgf: LA PARTIDA DEL ARCHIVO QUE SE LEE (ENTRADA) Y LO QUE SE LEE (SALIDAS).
 \int_new:N \l_pgfgo_kernel_sgf_game_int
 \int_set:Nn \l_pgfgo_kernel_sgf_game_int {1}
+\tl_new:N \l_pgfgo_kernel_sgf_charset_tl
+\tl_set:Nn \l_pgfgo_kernel_sgf_charset_tl {auto}
 \tl_new:N \l_pgfgo_kernel_sgf_view_tl
 \seq_new:N \l_pgfgo_kernel_sgf_figures_seq
 \seq_new:N \l_pgfgo_kernel_sgf_variations_seq
@@ -278,7 +281,8 @@
 \msg_new:nnn {pgfgo} {sgf-game}
 	{'#1'~has~no~game~#2.~The~first~game~is~used.}
 \msg_new:nnn {pgfgo} {sgf-charset}
-	{'#1'~uses~the~charset~'#2'.~Only~UTF-8~and~Latin-1~are~supported.}
+	{'#1'~uses~the~charset~'#2',~which~is~not~supported~(UTF-8,~Latin-1,~GBK,~Big5,~Shift_JIS,
+		~EUC-JP~and~EUC-KR~are).~It~is~read~as~Latin-1.~Convert~the~file~to~UTF-8.}
 \msg_new:nnn {pgfgo} {sgf-variation}
 	{'#1'~has~no~variation~'#2'.~The~first~variation~is~used~from~there.}
 
