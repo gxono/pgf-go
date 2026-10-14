@@ -743,6 +743,49 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Como |/pgfgo/sgf/restart|.
 \end{key}
 
+\begin{command}{\sgfdiagrams\opt{\oarg{options}}\marg{file}}
+	Dibuja la partida como en los libros: un diagrama cada |step| jugadas (1--50, 51--100, etc.). Cada diagrama parte de la posición real, con las jugadas anteriores sin número y sus capturas; las piedras capturadas dentro del diagrama no se quitan (se quitan en el siguiente). Debajo de cada uno van su epígrafe y sus notas «N en M» (pág.~\pageref{subsec:notas}). Se usa fuera de |goban|. Las opciones pueden fijarse para todo el documento con |\pgfgoset{sgf diagrams = {...}}|.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 5, title = Diagrama]{partida.sgf}
+	\end{codeexample}
+\end{command}
+
+\sgfdiagrams[step = 5, title = Diagrama]{partida.sgf}
+
+\begin{key}{/pgfgo/sgf diagrams/step = \meta{number} (initially 50)}
+	Cantidad de jugadas de cada diagrama.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/to = \meta{number} (initially la última jugada)}
+	Última jugada.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/restart = \meta{boolean} (default true, initially false)}
+	Cada diagrama numera desde 1, como algunos libros.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/notes = \meta{boolean} (default true, initially true)}
+	Escribe debajo de cada diagrama sus notas «N en M».
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/title = \meta{text} (initially Diagram)}
+	Palabra del epígrafe: «Diagram 2 (51--100)».
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/caption font = \meta{font commands} (initially \texttt{\string\small})}
+	Fuente del epígrafe y de las notas.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/goban = \meta{goban options}}
+	Opciones de cada tablero. Por defecto, los tableros tienen el tamaño de la partida y usan |captures| y |notes|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/variation = \meta{números} (initially la línea principal)}
+	Como |/pgfgo/sgf/variation|.
+\end{key}
+
+
 
 
 

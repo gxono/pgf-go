@@ -59,6 +59,18 @@ The output is unchanged.
   - New key `goban/sgf size = <file>`: the size of the board is taken from the
     file. `\sgfanimation` already used it for its boards.
   - New test file `variations.sgf`.
+- New command `\pgfgoprisoners{<player>}` (with `captures`): the prisoners of
+  the player in the last `goban`, that is, the opponent’s stones that their
+  moves captured.
+- New command `\sgfdiagrams[<options>]{<file>}`, used outside `goban`: the game
+  as a series of diagrams, as in books, one every `step` moves (50 by
+  default). Each diagram starts from the real position (earlier moves without
+  numbers, with their captures); stones captured within a diagram are not
+  removed until the next one. Below each one go its caption ("Diagram 2
+  (51-100)") and its "N at M" notes. Keys: `step`, `to`, `restart`, `notes`,
+  `title`, `caption font`, `goban`, `variation`; they can be set with
+  `\pgfgoset{sgf diagrams = {...}}`. New test `sgf-diagrams.tex` (with
+  `ko.sgf`).
 - New key `goban/notes` and command `\pgfgomovenotes`. With `notes`, a
   numbered move played on a point where there already was a numbered move of
   the same `goban` is not drawn: the point keeps showing the first stone (also

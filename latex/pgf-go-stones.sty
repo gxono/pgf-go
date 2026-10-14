@@ -264,8 +264,13 @@
 }
 \cs_generate_variant:Nn \__pgfgo_captures_defer:nnn {nne}
 
-%APLICA LAS CAPTURAS DE LA ULTIMA JUGADA (\l_pgfgo_kernel_captured_seq).
+%APLICA LAS CAPTURAS DE LA ULTIMA JUGADA (\l_pgfgo_kernel_captured_seq). CON \l__pgfgo_captures_keep_bool
+%(\sgfdiagrams) EL KERNEL LAS SACA DEL TABLERO, PERO SE SIGUEN DIBUJANDO.
+\bool_new:N \l__pgfgo_captures_keep_bool
 \cs_new_protected:Npn \__pgfgo_captures_apply: {
+	\bool_if:NF \l__pgfgo_captures_keep_bool {\__pgfgo_captures_remove_drawn:}
+}
+\cs_new_protected:Npn \__pgfgo_captures_remove_drawn: {
 	\seq_map_inline:Nn \l_pgfgo_kernel_captured_seq {
 		\__pgfgo_captures_key:nn ##1
 		\bool_if:NTF \l_pgfgo_goban_captures_fade_bool
@@ -413,6 +418,13 @@
 		}
 		\seq_use:Nn \l_tmpa_seq {\l_pgfgo_notes_separator_tl}
 	\group_end:
+}
+
+%\pgfgoprisoners{black | white} ESCRIBE LOS PRISIONEROS DEL JUGADOR EN EL ULTIMO goban CON CAPTURAS.
+\NewDocumentCommand \pgfgoprisoners {m} {
+	\pgfgo_kernel_if_feature:nTF {captures}
+		{\exp_args:Ne \pgfgo_kernel_prisoners:n {\str_case:nnF {#1} {{b} {black} {w} {white}} {#1}}}
+		{\pgfgo_kernel_require:n {captures}}
 }
 
 %DIBUJA LO QUE QUEDO, AL CERRAR EL goban.

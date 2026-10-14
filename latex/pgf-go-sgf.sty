@@ -104,6 +104,10 @@
 			\pgfgo_kernel_move_set_number:n {\l__pgfgo_sgf_shown_int + 1}
 			\pgfgo_kernel_move_set_player:n {\str_if_eq:nnTF {#1} {black} {white} {black}}
 		}{
+			\bool_set:Nn \l__pgfgo_captures_keep_bool {
+				\l__pgfgo_sgf_keep_numbered_bool &&
+				! \int_compare_p:nNn {\l__pgfgo_sgf_count_int} < {\l__pgfgo_sgf_from_int}
+			}
 			%SIN NUMERO ANTES DE from, Y TAMPOCO SI UNA MARCA DEL ARCHIVO CAE EN ESE PUNTO (LA MARCA LO REEMPLAZA).
 			\__pgfgo_captures_key:nn {#2} {#3}
 			\bool_set:Nn \l__pgfgo_sgf_numbered_bool {
@@ -145,6 +149,8 @@
 }
 \tl_new:N \l__pgfgo_sgf_mark_tl
 \bool_new:N \l__pgfgo_sgf_numbered_bool
+%LO USA \sgfdiagrams: DESDE from, LAS PIEDRAS CAPTURADAS NO SE QUITAN DEL DIBUJO.
+\bool_new:N \l__pgfgo_sgf_keep_numbered_bool
 %"x,y" DE LOS PUNTOS QUE MARCA EL ULTIMO NODO QUE SE MUESTRA.
 \prop_new:N \g__pgfgo_sgf_marked_prop
 \int_new:N \l__pgfgo_sgf_last_int
@@ -406,6 +412,130 @@
 	}{
 		\pgfgo_kernel_require:n {sgf}
 	}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%--------------------------------SERIE DE DIAGRAMAS---------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\sgfdiagrams[<opciones>]{<archivo>} DIBUJA LA PARTIDA COMO EN LOS LIBROS: UN DIAGRAMA CADA step JUGADAS
+%(1-50, 51-100, ...). CADA UNO PARTE DE LA POSICION REAL (LAS JUGADAS ANTERIORES SIN NUMERO, CON LAS
+%CAPTURAS), Y DEBAJO LLEVA SU EPIGRAFE ("Diagram 2 (51-100)") Y SUS NOTAS "N at M". SE USA FUERA DE goban.
+
+\int_new:N \l__pgfgo_sgfdiag_step_int
+\int_new:N \l__pgfgo_sgfdiag_to_int
+\int_new:N \l__pgfgo_sgfdiag_last_int
+\tl_new:N \l__pgfgo_sgfdiag_goban_tl
+\tl_new:N \l__pgfgo_sgfdiag_variation_tl
+\tl_new:N \l__pgfgo_sgfdiag_title_tl
+\tl_new:N \l__pgfgo_sgfdiag_font_tl
+\tl_new:N \l__pgfgo_sgfdiag_file_tl
+\tl_new:N \l__pgfgo_sgfdiag_size_tl
+\bool_new:N \l__pgfgo_sgfdiag_notes_bool
+\bool_new:N \l__pgfgo_sgfdiag_restart_bool
+\box_new:N \l__pgfgo_sgfdiag_box
+\box_new:N \l__pgfgo_sgfdiag_caption_box
+\dim_new:N \l__pgfgo_sgfdiag_width_dim
+
+\keys_define:nn {pgfgo / sgf~diagrams} {
+	step						.int_set:N	= \l__pgfgo_sgfdiag_step_int,
+	step						.initial:n	= {50},
+	%-1: LA ULTIMA JUGADA.
+	to							.int_set:N	= \l__pgfgo_sgfdiag_to_int,
+	to							.initial:n	= {-1},
+	goban						.tl_set:N		= \l__pgfgo_sgfdiag_goban_tl,
+	variation				.tl_set:N		= \l__pgfgo_sgfdiag_variation_tl,
+	%CADA DIAGRAMA NUMERA DESDE 1.
+	restart					.bool_set:N	= \l__pgfgo_sgfdiag_restart_bool,
+	restart					.default:n	= {true},
+	notes						.bool_set:N	= \l__pgfgo_sgfdiag_notes_bool,
+	notes						.default:n	= {true},
+	notes						.initial:n	= {true},
+	title						.tl_set:N		= \l__pgfgo_sgfdiag_title_tl,
+	title						.initial:n	= {Diagram},
+	caption~font		.tl_set:N		= \l__pgfgo_sgfdiag_font_tl,
+	caption~font		.initial:n	= {\small},
+}
+
+\keys_define:nn {pgfgo} {
+	sgf~diagrams		.code:n			= {\keys_set:nn {pgfgo / sgf~diagrams} {#1}}
+}
+
+%EL DIAGRAMA #1, CON LAS JUGADAS #2 A #3.
+\cs_new_protected:Npn \__pgfgo_sgfdiag_diagram:nnn #1#2#3 {
+	\hbox_set:Nn \l__pgfgo_sgfdiag_box {
+		\use:e {
+			\exp_not:N \begin{goban}
+				[size = \l__pgfgo_sgfdiag_size_tl, captures, notes, \exp_not:V \l__pgfgo_sgfdiag_goban_tl]
+		}
+			\pgfgo_goban_remember_nothing:
+			%COMO EN LOS LIBROS, LAS CAPTURAS DEL TRAMO NUMERADO NO SE QUITAN (SE VEN EN EL DIAGRAMA SIGUIENTE).
+			\bool_set_true:N \l__pgfgo_sgf_keep_numbered_bool
+			\use:e {
+				\exp_not:N \pgfgo_sgf:nn
+					{
+						from = \int_eval:n {#2},
+						to = \int_eval:n {#3},
+						variation = {\exp_not:V \l__pgfgo_sgfdiag_variation_tl},
+						restart = \bool_if:NTF \l__pgfgo_sgfdiag_restart_bool
+							{\int_use:N \l__pgfgo_sgfdiag_step_int} {0}
+					}
+					{\exp_not:V \l__pgfgo_sgfdiag_file_tl}
+			}
+		\end{goban}
+	}
+	%EL EPIGRAFE NO SE CORTA: EL DIAGRAMA TIENE EL ANCHO DEL TABLERO O DEL EPIGRAFE, EL MAYOR.
+	\hbox_set:Nn \l__pgfgo_sgfdiag_caption_box {
+		\l__pgfgo_sgfdiag_font_tl
+		\l__pgfgo_sgfdiag_title_tl \nobreakspace \int_eval:n {#1}
+		\nobreakspace (\int_eval:n {#2}--\int_eval:n {#3})
+	}
+	\dim_set:Nn \l__pgfgo_sgfdiag_width_dim
+		{\dim_max:nn {\box_wd:N \l__pgfgo_sgfdiag_box} {\box_wd:N \l__pgfgo_sgfdiag_caption_box}}
+	\mode_leave_vertical:
+	\vbox_top:n {
+		\hbox_to_wd:nn {\l__pgfgo_sgfdiag_width_dim} {\hfil \box_use:N \l__pgfgo_sgfdiag_box \hfil}
+		\skip_vertical:n {0.3em}
+		\hbox_to_wd:nn {\l__pgfgo_sgfdiag_width_dim} {\hfil \box_use:N \l__pgfgo_sgfdiag_caption_box \hfil}
+		\bool_if:nT {\l__pgfgo_sgfdiag_notes_bool && ! \seq_if_empty_p:N \g_pgfgo_move_notes_seq} {
+			\hbox:n {
+				\parbox[t]{\l__pgfgo_sgfdiag_width_dim}
+					{\centering \l__pgfgo_sgfdiag_font_tl \pgfgomovenotes}
+			}
+		}
+	}
+}
+
+\cs_new_protected:Npn \pgfgo_sgfdiagrams:nn #1#2 {
+	\group_begin:
+		\keys_set:nn {pgfgo / sgf~diagrams} {#1}
+		\tl_set:Nn \l__pgfgo_sgfdiag_file_tl {#2}
+		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfdiag_variation_tl
+		\tl_set:Ne \l__pgfgo_sgfdiag_size_tl
+			{\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
+		\int_zero:N \l_tmpa_int
+		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgf_count_move:nnn ##1}
+		\int_set:Nn \l__pgfgo_sgfdiag_last_int {
+			\int_compare:nNnTF {\l__pgfgo_sgfdiag_to_int} < {0}
+				{\l_tmpa_int} {\int_min:nn {\l__pgfgo_sgfdiag_to_int} {\l_tmpa_int}}
+		}
+		\int_compare:nNnT {\l__pgfgo_sgfdiag_step_int} < {1}
+			{\int_set:Nn \l__pgfgo_sgfdiag_step_int {1}}
+		\int_step_inline:nnnn {1} {\l__pgfgo_sgfdiag_step_int} {\l__pgfgo_sgfdiag_last_int} {
+			\__pgfgo_sgfdiag_diagram:nnn
+				{(##1 - 1) / \l__pgfgo_sgfdiag_step_int + 1}
+				{##1}
+				{\int_min:nn {##1 + \l__pgfgo_sgfdiag_step_int - 1} {\l__pgfgo_sgfdiag_last_int}}
+			\skip_horizontal:n {1em plus 1fil}
+		}
+	\group_end:
+}
+
+\NewDocumentCommand{\sgfdiagrams}{O{}m}{
+	\pgfgo_kernel_if_feature:nTF {sgf}
+		{\pgfgo_sgfdiagrams:nn {#1} {#2}}
+		{\pgfgo_kernel_require:n {sgf}}
 }
 
 \ExplSyntaxOff

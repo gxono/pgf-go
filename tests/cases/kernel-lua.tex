@@ -55,6 +55,10 @@
 	% A move outside the board captures nothing.
 	\__test_play:nnn {9} {9} {}
 
+	% Prisoners since the last board_clear: the white suicide gives black 1.
+	\__test:nnn {prisoners~black} {\pgfgo_kernel_prisoners:n {black}} {1}
+	\__test:nnn {prisoners~white} {\pgfgo_kernel_prisoners:n {white}} {0}
+
 	% Occupied points; empty removes a stone.
 	\pgfgo_kernel_board_clear:
 	\pgfgo_kernel_board_put:nnn {black} {1} {1}

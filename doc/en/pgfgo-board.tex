@@ -695,6 +695,20 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Turns captures off. It is the initial value.
 	\end{stylekey}
 
+	\begin{command}{\pgfgoprisoners\marg{player}}
+		Writes how many prisoners the player (|black| or |b|, |white| or |w|) has in the last |goban| with |captures|: the opponent’s stones that their moves captured.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+
+			\begin{goban}[captures]
+				\moves*{B1,A1,A2}
+			\end{goban}
+
+			Black: \pgfgoprisoners{black}. White: \pgfgoprisoners{white}.
+		\end{codeexample}
+	\end{command}
+
 	\subsection{Moves on Points Already Played}
 	\label{subsec:notes}
 

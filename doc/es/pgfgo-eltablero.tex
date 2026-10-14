@@ -697,6 +697,20 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Desactiva las capturas. Es el valor inicial.
 	\end{stylekey}
 
+	\begin{command}{\pgfgoprisoners\marg{player}}
+		Escribe cuántos prisioneros tiene el jugador (|black| o |b|, |white| o |w|) en el último |goban| con |captures|: las piedras del rival que capturaron sus jugadas.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+
+			\begin{goban}[captures]
+				\moves*{B1,A1,A2}
+			\end{goban}
+
+			Negras: \pgfgoprisoners{black}. Blancas: \pgfgoprisoners{white}.
+		\end{codeexample}
+	\end{command}
+
 	\subsection{Jugadas en puntos ya jugados}
 	\label{subsec:notas}
 

@@ -734,6 +734,49 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 	Like |/pgfgo/sgf/restart|.
 \end{key}
 
+\begin{command}{\sgfdiagrams\opt{\oarg{options}}\marg{file}}
+	Draws the game as books do: one diagram every |step| moves (1--50, 51--100, etc.). Each diagram starts from the real position, with the earlier moves without numbers and their captures; stones captured within the diagram are not removed (they are removed in the next one). Below each one go its caption and its "N at M" notes (p.~\pageref{subsec:notes}). It is used outside |goban|. The options can be set for the whole document with |\pgfgoset{sgf diagrams = {...}}|.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 5]{game.sgf}
+	\end{codeexample}
+\end{command}
+
+\sgfdiagrams[step = 5]{game.sgf}
+
+\begin{key}{/pgfgo/sgf diagrams/step = \meta{number} (initially 50)}
+	Number of moves of each diagram.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/to = \meta{number} (initially the last move)}
+	Last move.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/restart = \meta{boolean} (default true, initially false)}
+	Each diagram is numbered from 1, as some books do.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/notes = \meta{boolean} (default true, initially true)}
+	Writes the "N at M" notes below each diagram.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/title = \meta{text} (initially Diagram)}
+	Word of the caption: "Diagram 2 (51--100)".
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/caption font = \meta{font commands} (initially \texttt{\string\small})}
+	Font of the caption and the notes.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/goban = \meta{goban options}}
+	Options of every board. By default, the boards have the size of the game and use |captures| and |notes|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/variation = \meta{numbers} (initially the main line)}
+	Like |/pgfgo/sgf/variation|.
+\end{key}
+
+
 \subsection{Prisoners}
 
 \pgfgoname\ provides specific commands to represent prisoners, typically with reduced opacity to distinguish them from active stones.
