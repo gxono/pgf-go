@@ -25,6 +25,10 @@ En cuanto al nombre, aunque las macros están implementadas en \pgfname\ y L3, e
 			\item Con el kernel en Lua se han añadido las capturas (|captures|, pág.~\pageref{subsec:capturas}) y la lectura de partidas en SGF (|\sgf|, pág.~\pageref{subsec:sgf}). Con el paquete |animate|, |\sgfanimation| permite recorrer una partida con botones.
 			\item Se han añadido las notas «N en M» para las jugadas numeradas en puntos ya jugados (|notes| y |\pgfgomovenotes|, pág.~\pageref{subsec:notas}).
 			\item SGF: variantes (|variation|), marcas del archivo (|marks|), los datos de la partida (|\sgfinfo|), la numeración de |MN| y |restart|, y el tamaño del tablero tomado del archivo (|sgf size|).
+			\item SGF: colecciones de partidas (|game|), la vista (|VW|, |sgf view|), las figuras (|FG|) en |\sgfdiagrams|, las variantes como letras (|variations|), |PL| y los archivos en Latin-1.
+			\item SGF: el nombre de los nodos y las anotaciones (|TE|, |BM|, |GB|, etc.) se escriben con los comentarios. |\sgfcomment| escribe el comentario de una jugada, y |\sgfdiagrams| puede escribir los comentarios debajo de cada diagrama (|comments|).
+			\item Se han añadido flechas y líneas (|\arrow| y |\line|, pág.~\pageref{subsec:flechas}) y la marca |dim|. |\sgf| dibuja además |AR|, |LN|, |SL| y |DD|.
+			\item El tablero dibuja los puntos de estrella (|hoshi|, pág.~\pageref{subsec:hoshi}).
 			\item Se han añadido |\territory|, que marca el territorio (con un polígono, o solo con |auto| y el kernel en Lua), y |\pgfgoscore|, que cuenta los puntos.
 			\item |\sgfanimation| arma la animación por capas (|layers|): cada piedra se dibuja una sola vez, y el PDF de una partida larga ocupa mucho menos.
 			\item Con |captured marks = remove|, las marcas sobre una piedra capturada se van con ella.

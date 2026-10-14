@@ -47,6 +47,11 @@
 	\lua_now:e {pgfgo.column_name(\int_eval:n {#1}, \__pgfgo_kernel_lua_use_i:)}
 }
 
+\cs_new_protected:Npn \pgfgo_kernel_hoshi: {
+	\lua_now:n {pgfgo.hoshi()}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_points_seq \l__pgfgo_kernel_points_clist
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %--------------------------------------COORDENADAS----------------------------------------------%
@@ -146,6 +151,15 @@
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_black_seq \l__pgfgo_kernel_sgf_black_clist
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_white_seq \l__pgfgo_kernel_sgf_white_clist
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_moves_seq \l__pgfgo_kernel_sgf_moves_clist
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_figures_seq \l__pgfgo_kernel_sgf_figures_clist
+}
+
+\clist_new:N \l__pgfgo_kernel_sgf_figures_clist
+\clist_new:N \l__pgfgo_kernel_sgf_variations_clist
+
+\cs_new_protected:Npn \pgfgo_kernel_sgf_variations:nn #1#2 {
+	\lua_now:e {pgfgo.sgf_variations(\int_eval:n {#1}, "\lua_escape:e {#2}")}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_variations_seq \l__pgfgo_kernel_sgf_variations_clist
 }
 
 \cs_new:Npn \pgfgo_kernel_sgf_comment:n #1 {
@@ -157,6 +171,24 @@
 \cs_new_protected:Npn \pgfgo_kernel_sgf_marks:n #1 {
 	\lua_now:e {pgfgo.sgf_marks(\int_eval:n {#1})}
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_marks_seq \l__pgfgo_kernel_sgf_marks_clist
+}
+
+\clist_new:N \l__pgfgo_kernel_sgf_lines_clist
+
+\cs_new_protected:Npn \pgfgo_kernel_sgf_lines:n #1 {
+	\lua_now:e {pgfgo.sgf_lines(\int_eval:n {#1})}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_lines_seq \l__pgfgo_kernel_sgf_lines_clist
+}
+
+\clist_new:N \l__pgfgo_kernel_sgf_annotations_clist
+
+\cs_new_protected:Npn \pgfgo_kernel_sgf_annotations:n #1 {
+	\lua_now:e {pgfgo.sgf_annotations(\int_eval:n {#1})}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_annotations_seq \l__pgfgo_kernel_sgf_annotations_clist
+}
+
+\cs_new:Npn \pgfgo_kernel_sgf_name:n #1 {
+	\lua_now:e {pgfgo.sgf_name(\int_eval:n {#1})}
 }
 
 \cs_new:Npn \pgfgo_kernel_sgf_label:n #1 {

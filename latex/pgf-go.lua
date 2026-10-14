@@ -122,6 +122,35 @@ function pgfgo.board_init(partial)
 	tex.setcount("l_pgfgo_goban_to_y_int", ty)
 end
 
+-- PUNTOS DE ESTRELLA (VER pgf-go-kernel.sty).
+function pgfgo.hoshi()
+	local sx, sy = count("l_pgfgo_goban_size_x_int"), count("l_pgfgo_goban_size_y_int")
+	local function axis(s)
+		if s < 7 then return nil end
+		local near = s >= 13 and 4 or 3
+		return {near, s - near + 1}, (s % 2 == 1) and (s + 1) // 2 or nil
+	end
+	local xs, mx = axis(sx)
+	local ys, my = axis(sy)
+	local list = {}
+	if xs and ys then
+		local all = {}
+		for _, x in ipairs(xs) do
+			for _, y in ipairs(ys) do insert(all, {x, y}) end
+		end
+		if mx and my then
+			insert(all, {mx, my})
+			if sx >= 15 and sy >= 15 then
+				for _, y in ipairs(ys) do insert(all, {mx, y}) end
+				for _, x in ipairs(xs) do insert(all, {x, my}) end
+			end
+		end
+		table.sort(all, function(a, b) return a[2] < b[2] or (a[2] == b[2] and a[1] < b[1]) end)
+		for _, p in ipairs(all) do insert(list, "{" .. p[1] .. "}{" .. p[2] .. "}") end
+	end
+	token.set_macro("l__pgfgo_kernel_points_clist", concat(list, ","))
+end
+
 local function window()
 	return count("l_pgfgo_goban_from_x_int"), count("l_pgfgo_goban_to_x_int"),
 		count("l_pgfgo_goban_from_y_int"), count("l_pgfgo_goban_to_y_int")
@@ -708,21 +737,38 @@ local function parse_sgf(s)
 			end
 		end
 	end
-	local start = s:find("(", 1, true)
-	if not start then
-		return {nodes = {}, children = {}}
+	-- UN ARCHIVO PUEDE TENER VARIAS PARTIDAS (UNA COLECCION).
+	local games = {}
+	while true do
+		local start = s:find("(", i, true)
+		if not start then break end
+		i = start
+		insert(games, tree())
 	end
-	i = start
-	return tree()
+	return games
 end
 
 -- NODOS DE UNA LINEA DE LA PARTIDA. path ES UNA LISTA DE NUMEROS: EN CADA BIFURCACION SE TOMA LA
 -- VARIANTE path[i] (1 ES LA PRINCIPAL). CUANDO path SE TERMINA, SE SIGUE POR LA PRIMERA.
 -- DEVUELVE TAMBIEN SI path PIDE UNA VARIANTE QUE NO EXISTE.
+-- DEVUELVE ADEMAS, POR NODO, SUS HIJOS (LOS NODOS QUE PUEDEN SEGUIR) Y SUS HERMANOS (LAS ALTERNATIVAS
+-- A ESE NODO, EL INCLUIDO).
 local function game_line(t, path)
-	local nodes, i, missing = {}, 1, false
+	local nodes, kids, sibs, i, missing = {}, {}, {}, 1, false
+	local siblings
+	local function firsts(tree)
+		local list = {}
+		for _, c in ipairs(tree.children) do
+			if c.nodes[1] then insert(list, c.nodes[1]) end
+		end
+		return list
+	end
 	while t do
-		for _, n in ipairs(t.nodes) do insert(nodes, n) end
+		for j, n in ipairs(t.nodes) do
+			insert(nodes, n)
+			sibs[#nodes] = (j == 1 and siblings) or {n}
+			kids[#nodes] = j < #t.nodes and {t.nodes[j + 1]} or firsts(t)
+		end
 		local choice = 1
 		if #t.children > 1 then
 			choice = path[i] or 1
@@ -731,9 +777,10 @@ local function game_line(t, path)
 				missing, choice = true, 1
 			end
 		end
+		siblings = firsts(t)
 		t = t.children[choice]
 	end
-	return nodes, missing or i <= #path
+	return nodes, missing or i <= #path, kids, sibs
 end
 
 -- a..z SON 1..26 Y A..Z SON 27..52.
@@ -770,6 +817,23 @@ local function find_file(name)
 	return kpse.find_file(name, "other text files") or kpse.find_file(name, "tex")
 end
 
+-- LOS ARCHIVOS QUE NO SON UTF-8 VALIDO SE LEEN COMO Latin-1 (LA CODIFICACION POR DEFECTO DE SGF). UNA
+-- CODIFICACION (CA) QUE NO ES NINGUNA DE LAS DOS PRODUCE UN AVISO.
+local latin = {["iso-8859-1"] = true, ["iso8859-1"] = true, latin1 = true, ["latin-1"] = true,
+	["windows-1252"] = true, cp1252 = true, ascii = true, ["us-ascii"] = true, ["utf-8"] = true, utf8 = true}
+
+local function to_utf8(name, s)
+	local ca = s:match("CA%s*%[([^%]]*)%]")
+	if ca and not latin[ca:lower():gsub("%s", "")] then
+		message("warning", "sgf-charset", name, ca)
+	end
+	if not utf8.len(s) then
+		s = s:gsub("[\128-\255]", function(c) return utf8.char(c:byte()) end)
+	end
+	return s
+end
+
+-- LA PARTIDA \l_pgfgo_kernel_sgf_game_int DEL ARCHIVO. AVISA SI NO EXISTE Y USA LA PRIMERA.
 local function read_tree(name)
 	local path = find_file(name)
 	if not path then
@@ -777,40 +841,90 @@ local function read_tree(name)
 		return nil
 	end
 	local f = io.open(path, "rb")
-	local t = parse_sgf(f:read("a"))
+	local games = parse_sgf(to_utf8(name, f:read("a")))
 	f:close()
-	return t
+	local n = count("l_pgfgo_kernel_sgf_game_int")
+	if not games[n] then
+		if n ~= 1 then message("warning", "sgf-game", name, n) end
+		n = 1
+	end
+	return games[n] or {nodes = {}, children = {}}
 end
 
 -- DATOS DE LA ULTIMA PARTIDA LEIDA, POR JUGADA k (0: LOS NODOS ANTERIORES A LA PRIMERA JUGADA). UN NODO
 -- SIN JUGADA SE SUMA A LA JUGADA ANTERIOR.
--- sgf_comments[k]: COMENTARIO (C). sgf_marks[k]: MARCAS (TR, SQ, CR, MA, LB), "{forma}{x}{y}{color}{i}"
--- (color: EL DE LA PIEDRA QUE HAY AHI, O neutral; i: EL TEXTO DE LB EN sgf_labels[i]).
-local sgf_comments, sgf_marks, sgf_labels = {}, {}, {}
+-- sgf_comments[k]: COMENTARIO (C). sgf_marks[k]: MARCAS (TR, SQ, CR, MA, LB) Y TERRITORIO (TB, TW),
+-- "{forma}{x}{y}{color}{i}" (color: EL DE LA PIEDRA QUE HAY AHI, O neutral; i: EL TEXTO DE LB EN
+-- sgf_labels[i]). LA FORMA DEL TERRITORIO ES black-territory O white-territory; LA DE SL, selected.
+-- sgf_dim[k]: LOS PUNTOS ATENUADOS (DD), QUE SE HEREDAN HASTA EL PROXIMO DD. sgf_lines[k]: FLECHAS (AR) Y
+-- LINEAS (LN), "{arrow | line}{x1}{y1}{x2}{y2}".
+-- sgf_notes[k]: ANOTACIONES (N; DE LA JUGADA: TE, BM, DO, IT; DE LA POSICION: GB, GW, DM, UC), "{propiedad}{valor}"; EL VALOR DE N ES
+-- EL NUMERO DE SU TEXTO EN sgf_names.
+local sgf_comments, sgf_marks, sgf_labels, sgf_dim, sgf_lines = {}, {}, {}, {}, {}
+local sgf_notes, sgf_names = {}, {}
+-- sgf_vars[k]: LAS VARIANTES DE LA JUGADA k, {children = {...}, siblings = {...}}, CADA UNA "{x}{y}{color}".
+-- sgf_style: ST DE LA RAIZ. sgf_figures: "{jugada}{nombre}" DONDE EMPIEZA CADA FIGURA (FG).
+local sgf_vars, sgf_style, sgf_figures = {}, 0, {}
 
 function pgfgo.sgf_comment(k)
 	tex.sprint(-2, sgf_comments[k] or "")
 end
 
+-- PRIMERO LOS PUNTOS ATENUADOS, PARA QUE LAS DEMAS MARCAS QUEDEN ENCIMA.
 function pgfgo.sgf_marks(k)
-	token.set_macro("l__pgfgo_kernel_sgf_marks_clist", concat(sgf_marks[k] or {}, ","))
+	local list = {}
+	for _, p in ipairs(sgf_dim[k] or {}) do insert(list, "{dim}" .. p .. "{neutral}{}") end
+	for _, m in ipairs(sgf_marks[k] or {}) do insert(list, m) end
+	token.set_macro("l__pgfgo_kernel_sgf_marks_clist", concat(list, ","))
+end
+
+function pgfgo.sgf_annotations(k)
+	token.set_macro("l__pgfgo_kernel_sgf_annotations_clist", concat(sgf_notes[k] or {}, ","))
+end
+
+function pgfgo.sgf_name(i)
+	tex.sprint(-2, sgf_names[i] or "")
+end
+
+-- LAS VARIANTES DE LA JUGADA k COMO LETRAS: mode ES children (LAS JUGADAS QUE PUEDEN SEGUIR), siblings (LAS
+-- ALTERNATIVAS A LA JUGADA k) O auto (LO QUE DICE ST). SOLO SI HAY MAS DE UNA.
+function pgfgo.sgf_variations(k, mode)
+	if mode == "auto" then
+		mode = (sgf_style % 4 >= 2) and "none" or ((sgf_style % 2 == 1) and "siblings" or "children")
+	end
+	local list = {}
+	local found = sgf_vars[k] and sgf_vars[k][mode] or {}
+	if #found > 1 then
+		for i, v in ipairs(found) do
+			if v ~= "" then insert(list, v .. "{" .. string.char(64 + i) .. "}") end
+		end
+	end
+	token.set_macro("l__pgfgo_kernel_sgf_variations_clist", concat(list, ","))
+end
+
+function pgfgo.sgf_lines(k)
+	token.set_macro("l__pgfgo_kernel_sgf_lines_clist", concat(sgf_lines[k] or {}, ","))
 end
 
 function pgfgo.sgf_label(i)
 	tex.sprint(-2, sgf_labels[i] or "")
 end
 
-local markup = {{"TR", "triangle"}, {"SQ", "square"}, {"CR", "circle"}, {"MA", "cross"}}
+local markup = {{"TR", "triangle"}, {"SQ", "square"}, {"CR", "circle"}, {"MA", "cross"},
+	{"SL", "selected"}, {"TB", "black-territory"}, {"TW", "white-territory"}}
 
 function pgfgo.sgf_read(name, path_text)
 	local black, white, moves = {}, {}, {}
-	sgf_comments, sgf_marks, sgf_labels = {}, {}, {}
+	sgf_comments, sgf_marks, sgf_labels, sgf_dim, sgf_lines = {}, {}, {}, {}, {}
+	sgf_notes, sgf_names = {}, {}
+	sgf_vars, sgf_style, sgf_figures = {}, 0, {}
+	local view
 	local size_x, size_y = 19, 19
 	local path = {}
 	for d in (path_text or ""):gmatch("%d+") do insert(path, tonumber(d)) end
 	local t = read_tree(name)
 	if t then
-		local nodes, missing = game_line(t, path)
+		local nodes, missing, kids, sibs = game_line(t, path)
 		if missing then
 			message("warning", "sgf-variation", name, path_text)
 		end
@@ -820,9 +934,11 @@ function pgfgo.sgf_read(name, path_text)
 			size_x = tonumber(x or root.SZ[1]) or 19
 			size_y = tonumber(y or root.SZ[1]) or 19
 		end
+		sgf_style = root.ST and tonumber(root.ST[1]) or 0
 		-- LA PARTIDA SIMULADA, PARA SABER DE QUE COLOR ES CADA PUNTO MARCADO.
 		local sim = {stones = {}, sx = size_x, sy = size_y}
 		local started, count = false, 0
+		local dim = {}
 		local function each_point(node, property, f)
 			for _, v in ipairs(node[property] or {}) do
 				for _, c in ipairs(sgf_coords(v, size_y)) do f(point(c[1], c[2]), c) end
@@ -838,7 +954,37 @@ function pgfgo.sgf_read(name, path_text)
 		local function put(c, color)
 			if inside(sim, c[1], c[2]) then sim.stones[key(c[1], c[2])] = color end
 		end
-		for _, n in ipairs(nodes) do
+		-- LA JUGADA DE UN NODO: {x}{y}, O "" SI ES UN PASE O NO TIENE JUGADA.
+		local function move_point(n)
+			local v = (n.B or n.W or {})[1]
+			local c = v and sgf_coords(v, size_y)[1]
+			if not c or (v == "tt" and size_x <= 19 and size_y <= 19) then return "" end
+			return point(c[1], c[2]) .. "{" .. (sim.stones[key(c[1], c[2])] or "neutral") .. "}"
+		end
+		local function moves_of(list)
+			local out = {}
+			for _, m in ipairs(list or {}) do
+				if m.B or m.W then insert(out, move_point(m)) end
+			end
+			return out
+		end
+		for idx, n in ipairs(nodes) do
+			-- VW: LA VISTA DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA (VW[] ES TODO EL TABLERO).
+			if not started and n.VW then
+				view = nil
+				each_point(n, "VW", function(p, c)
+					view = view or {c[1], c[2], c[1], c[2]}
+					view = {math.min(view[1], c[1]), math.min(view[2], c[2]),
+						math.max(view[3], c[1]), math.max(view[4], c[2])}
+				end)
+			end
+			-- PL: EL JUGADOR QUE JUEGA DESPUES.
+			if n.PL then
+				local p = (n.PL[1] or ""):upper()
+				if p == "B" or p == "W" then
+					insert(moves, "{player}{" .. (p == "B" and "black" or "white") .. "}{}")
+				end
+			end
 			if not started then
 				-- LAS PIEDRAS INICIALES SON LAS DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA.
 				each_point(n, "AE", function(p, c) black, white = without(black, p), without(white, p); put(c, nil) end)
@@ -869,6 +1015,41 @@ function pgfgo.sgf_read(name, path_text)
 						if inside(sim, c[1], c[2]) then play(sim, player[2], c[1], c[2]) end
 					end
 					count = count + 1
+					-- LAS ALTERNATIVAS A ESTA JUGADA, CON LA POSICION DESPUES DE JUGARLA.
+					sgf_vars[count] = sgf_vars[count] or {}
+					sgf_vars[count].siblings = moves_of(sibs[idx])
+				end
+			end
+			-- LAS JUGADAS QUE PUEDEN SEGUIR (LAS DEL ULTIMO NODO DE LA JUGADA).
+			sgf_vars[count] = sgf_vars[count] or {}
+			sgf_vars[count].children = moves_of(kids[idx])
+			-- FG: UNA FIGURA NUEVA EMPIEZA EN ESTA JUGADA (O EN LA SIGUIENTE, SI EL NODO NO TIENE JUGADA).
+			if n.FG then
+				local v = n.FG[1] or ""
+				local title = v:match("^%d*:(.*)$") or (v:match("^%d*$") and "") or v
+				local start = (n.B or n.W) and count or count + 1
+				local index = 0
+				if title ~= "" then
+					insert(sgf_names, title)
+					index = #sgf_names
+				end
+				if sgf_figures[#sgf_figures] and sgf_figures[#sgf_figures][1] == start then
+					sgf_figures[#sgf_figures] = {start, index}
+				else
+					insert(sgf_figures, {start, index})
+				end
+			end
+			for _, prop in ipairs({"N", "TE", "BM", "DO", "IT", "GB", "GW", "DM", "UC"}) do
+				local v = n[prop]
+				if v then
+					local list = sgf_notes[count] or {}
+					sgf_notes[count] = list
+					if prop == "N" then
+						insert(sgf_names, (concat(v, " "):gsub("%s+", " "):match("^%s*(.-)%s*$")))
+						insert(list, "{N}{" .. #sgf_names .. "}")
+					else
+						insert(list, "{" .. prop .. "}{" .. (tonumber(v[1]) == 2 and 2 or 1) .. "}")
+					end
 				end
 			end
 			if n.C then
@@ -894,8 +1075,30 @@ function pgfgo.sgf_read(name, path_text)
 					for _, c in ipairs(sgf_coords(where, size_y)) do mark("label", c, #sgf_labels) end
 				end
 			end
+			-- DD REEMPLAZA LOS PUNTOS ATENUADOS (DD[] LOS QUITA); SIN DD, SIGUEN LOS DEL NODO ANTERIOR.
+			if n.DD then
+				dim = {}
+				each_point(n, "DD", function(p) insert(dim, p) end)
+			end
+			sgf_dim[count] = dim
+			for _, kind in ipairs({{"AR", "arrow"}, {"LN", "line"}}) do
+				for _, v in ipairs(n[kind[1]] or {}) do
+					local a, b = v:match("^(%a%a):(%a%a)$")
+					local p, q = a and sgf_coords(a, size_y)[1], b and sgf_coords(b, size_y)[1]
+					if p and q then
+						local list = sgf_lines[count] or {}
+						sgf_lines[count] = list
+						insert(list, "{" .. kind[2] .. "}" .. point(p[1], p[2]) .. point(q[1], q[2]))
+					end
+				end
+			end
 		end
 	end
+	local figures = {}
+	for _, f in ipairs(sgf_figures) do insert(figures, "{" .. f[1] .. "}{" .. f[2] .. "}") end
+	token.set_macro("l__pgfgo_kernel_sgf_figures_clist", concat(figures, ","))
+	token.set_macro("l_pgfgo_kernel_sgf_view_tl", view and
+		(point(view[1], view[2]) .. point(view[3], view[4])) or "")
 	tex.setcount("l_pgfgo_kernel_sgf_size_x_int", size_x)
 	tex.setcount("l_pgfgo_kernel_sgf_size_y_int", size_y)
 	token.set_macro("l__pgfgo_kernel_sgf_black_clist", concat(black, ","))
@@ -903,8 +1106,8 @@ function pgfgo.sgf_read(name, path_text)
 	token.set_macro("l__pgfgo_kernel_sgf_moves_clist", concat(moves, ","))
 end
 
--- PROPIEDAD DE LA RAIZ DE LA PRIMERA PARTIDA (PB, PW, RE, KM, DT, ...), COMO TEXTO. VARIOS VALORES SE
--- SEPARAN CON COMAS.
+-- PROPIEDAD DE LA RAIZ DE LA PARTIDA (PB, PW, RE, KM, DT, ...), COMO TEXTO. VARIOS VALORES SE SEPARAN
+-- CON COMAS.
 function pgfgo.sgf_info(name, property)
 	local t = read_tree(name)
 	local root = t and t.nodes[1] or {}

@@ -2,7 +2,7 @@
 \ProvidesPackage{pgf-go}[2026/10/13 v0.2026.10.13 Go diagrams with PGF]
 
 \RequirePackage{tikz}
-\usetikzlibrary{patterns}
+\usetikzlibrary{patterns, arrows.meta}
 \RequirePackage{xparse}
 
 \definecolor{pgfgo}{RGB}{220,179,92}
@@ -75,6 +75,7 @@
 \__pgfgo_load_module:n {pgf-go-stones}
 \__pgfgo_load_module:n {pgf-go-goban}
 \__pgfgo_load_module:n {pgf-go-marks}
+\__pgfgo_load_module:n {pgf-go-lines}
 \__pgfgo_load_module:n {pgf-go-territory}
 \__pgfgo_load_module:n {pgf-go-sgf}
 

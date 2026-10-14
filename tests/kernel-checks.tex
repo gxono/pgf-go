@@ -119,6 +119,21 @@
 	\__test_polygon:nn {} {}
 \group_end:
 
+% Star points: corners, center and sides, row by row from the bottom.
+\cs_new_protected:Npn \__test_hoshi:nn #1#2 {
+	\pgfgo_kernel_board_size:n {#1}
+	\pgfgo_kernel_hoshi:
+	\__test:nnn {hoshi~#1} {\seq_use:Nn \l_pgfgo_kernel_points_seq {,}} {#2}
+}
+\group_begin:
+	\__test_hoshi:nn {19} {{4}{4},{10}{4},{16}{4},{4}{10},{10}{10},{16}{10},{4}{16},{10}{16},{16}{16}}
+	\__test_hoshi:nn {13} {{4}{4},{10}{4},{7}{7},{4}{10},{10}{10}}
+	\__test_hoshi:nn {9} {{3}{3},{7}{3},{5}{5},{3}{7},{7}{7}}
+	\__test_hoshi:nn {8} {{3}{3},{6}{3},{3}{6},{6}{6}}
+	\__test_hoshi:nn {9x13} {{3}{4},{7}{4},{5}{7},{3}{10},{7}{10}}
+	\__test_hoshi:nn {6} {}
+\group_end:
+
 % Moves.
 \pgfgo_kernel_move_reset:
 \__test:nnn {first~move} {\pgfgo_kernel_move_number: \pgfgo_kernel_move_if_black:TF {b} {w}} {1b}

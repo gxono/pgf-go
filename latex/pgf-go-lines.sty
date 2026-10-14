@@ -1,0 +1,155 @@
+\ProvidesFile{pgf-go-lines.sty}[2026/10/13 v0.2026.10.13 pgf-go: arrows and lines]
+\ExplSyntaxOn
+
+%FLECHAS Y LINEAS ENTRE DOS INTERSECCIONES: \arrow[<opciones>]{<desde>}{<hasta>} Y \line[...]{...}{...}.
+%SOLO EXISTEN DENTRO DE goban (COMO \mark; \line ES UN COMANDO DE LaTeX). SE DIBUJAN EN LA CAPA DE LAS
+%MARCAS, ENCIMA DE LAS PIEDRAS, RECORTADAS A LA PARTE VISIBLE. EL HALO (DEL COLOR DEL FONDO DEL TABLERO)
+%LAS SEPARA DE LAS PIEDRAS. TAMBIEN LAS USA \sgf (AR Y LN).
+
+%LAS DOS TIENEN EL MISMO ESTILO, CADA UNA EN SU ARBOL: /pgfgo/arrow Y /pgfgo/line.
+\tl_new:N \l__pgfgo_arrow_color_tl
+\dim_new:N \l__pgfgo_arrow_width_dim
+\tl_new:N \l__pgfgo_arrow_opacity_tl
+\bool_new:N \l__pgfgo_arrow_halo_bool
+\tl_new:N \l__pgfgo_arrow_halo_color_tl
+\dim_new:N \l__pgfgo_arrow_halo_width_dim
+\keys_define:nn {pgfgo / arrow} {
+	color				.tl_set:N		= \l__pgfgo_arrow_color_tl,
+	color				.initial:n	= {black},
+	width				.dim_set:N	= \l__pgfgo_arrow_width_dim,
+	width				.initial:n	= {1.2pt},
+	opacity			.tl_set:N		= \l__pgfgo_arrow_opacity_tl,
+	opacity			.initial:n	= {1},
+	halo				.code:n			= {\keys_set:nn {pgfgo / arrow / halo} {#1}},
+	halo				.default:n	= {true},
+	remember		.code:n			= {\bool_set_true:N \l_pgfgo_goban_remember_mark_bool},
+	remember		.groups:n		= {preset},
+	forget			.code:n			= {\bool_set_false:N \l_pgfgo_goban_remember_mark_bool},
+	forget			.groups:n		= {preset},
+}
+\keys_define:nn {pgfgo / arrow / halo} {
+	true				.code:n			= {\bool_set_true:N \l__pgfgo_arrow_halo_bool},
+	false				.code:n			= {\bool_set_false:N \l__pgfgo_arrow_halo_bool},
+	%SIN color, EL DEL FONDO DEL TABLERO.
+	color				.tl_set:N		= \l__pgfgo_arrow_halo_color_tl,
+	width				.dim_set:N	= \l__pgfgo_arrow_halo_width_dim,
+	width				.initial:n	= {0.8pt},
+}
+\bool_set_true:N \l__pgfgo_arrow_halo_bool
+
+\tl_new:N \l__pgfgo_line_color_tl
+\dim_new:N \l__pgfgo_line_width_dim
+\tl_new:N \l__pgfgo_line_opacity_tl
+\bool_new:N \l__pgfgo_line_halo_bool
+\tl_new:N \l__pgfgo_line_halo_color_tl
+\dim_new:N \l__pgfgo_line_halo_width_dim
+\keys_define:nn {pgfgo / line} {
+	color				.tl_set:N		= \l__pgfgo_line_color_tl,
+	color				.initial:n	= {black},
+	width				.dim_set:N	= \l__pgfgo_line_width_dim,
+	width				.initial:n	= {1.2pt},
+	opacity			.tl_set:N		= \l__pgfgo_line_opacity_tl,
+	opacity			.initial:n	= {1},
+	halo				.code:n			= {\keys_set:nn {pgfgo / line / halo} {#1}},
+	halo				.default:n	= {true},
+	remember		.code:n			= {\bool_set_true:N \l_pgfgo_goban_remember_mark_bool},
+	remember		.groups:n		= {preset},
+	forget			.code:n			= {\bool_set_false:N \l_pgfgo_goban_remember_mark_bool},
+	forget			.groups:n		= {preset},
+}
+\keys_define:nn {pgfgo / line / halo} {
+	true				.code:n			= {\bool_set_true:N \l__pgfgo_line_halo_bool},
+	false				.code:n			= {\bool_set_false:N \l__pgfgo_line_halo_bool},
+	%SIN color, EL DEL FONDO DEL TABLERO.
+	color				.tl_set:N		= \l__pgfgo_line_halo_color_tl,
+	width				.dim_set:N	= \l__pgfgo_line_halo_width_dim,
+	width				.initial:n	= {0.8pt},
+}
+\bool_set_true:N \l__pgfgo_line_halo_bool
+
+%LA PUNTA DE LAS FLECHAS (UNA PUNTA DE arrows.meta).
+\tl_new:N \l__pgfgo_arrow_tip_tl
+\keys_define:nn {pgfgo / arrow} {
+	tip					.tl_set:N		= \l__pgfgo_arrow_tip_tl,
+	tip					.initial:n	= {Stealth},
+}
+
+\keys_define:nn {pgfgo} {
+	arrow				.code:n			= {\keys_set:nn {pgfgo / arrow} {#1}},
+	line				.code:n			= {\keys_set:nn {pgfgo / line} {#1}},
+}
+
+%LA RECTA DE (#1,#2) A (#3,#4).
+\cs_new_protected:Npn \__pgfgo_lines_path:nnnn #1#2#3#4 {
+	\pgfpathmoveto {\pgfpointxy{#1}{#2}}
+	\pgfpathlineto {\pgfpointxy{#3}{#4}}
+}
+
+%DIBUJA UNA FLECHA O UNA LINEA (#1: arrow O line) CON LAS OPCIONES #2, DE (#3,#4) A (#5,#6).
+\cs_new_protected:Npn \pgfgo_line_parsed:nnnnnn #1#2#3#4#5#6 {
+	\bool_lazy_and:nnF {\int_compare_p:nNn {#3} = {#5}} {\int_compare_p:nNn {#4} = {#6}} {
+		\group_begin:
+			\keys_set_exclude_groups:nnn {pgfgo / #1} {preset} {#2}
+			\pgfonlayer{pgfgo_layer_mark}
+			\pgfscope
+				\pgfpathrectanglecorners
+					{\pgfpointxy{\int_use:N \l_pgfgo_goban_from_x_int - 0.5}{\int_use:N \l_pgfgo_goban_from_y_int - 0.5}}
+					{\pgfpointxy{\int_use:N \l_pgfgo_goban_to_x_int + 0.5}{\int_use:N \l_pgfgo_goban_to_y_int + 0.5}}
+				\pgfusepath{clip}
+				\pgfsetroundcap
+				\pgfsetroundjoin
+				\str_if_eq:nnT {#1} {arrow} {\pgfsetarrowsend{\tl_use:N \l__pgfgo_arrow_tip_tl}}
+				\bool_if:cT {l__pgfgo_ #1 _halo_bool} {
+					\tl_if_empty:cTF {l__pgfgo_ #1 _halo_color_tl}
+						{\tl_set_eq:NN \l__pgfgo_lines_halo_tl \l_pgfgo_goban_border_fill_color_tl}
+						{\tl_set_eq:Nc \l__pgfgo_lines_halo_tl {l__pgfgo_ #1 _halo_color_tl}}
+					\pgfscope
+						\pgfsetlinewidth {\dim_eval:n {\dim_use:c {l__pgfgo_ #1 _width_dim} + \dim_use:c {l__pgfgo_ #1 _halo_width_dim} * 2}}
+						\pgfsetstrokecolor {\l__pgfgo_lines_halo_tl}
+						\pgfsetfillcolor {\l__pgfgo_lines_halo_tl}
+						\__pgfgo_lines_path:nnnn {#3} {#4} {#5} {#6}
+						\pgfusepath{stroke}
+					\endpgfscope
+				}
+				\pgfsetlinewidth {\dim_use:c {l__pgfgo_ #1 _width_dim}}
+				\pgfsetstrokecolor {\tl_use:c {l__pgfgo_ #1 _color_tl}}
+				\pgfsetfillcolor {\tl_use:c {l__pgfgo_ #1 _color_tl}}
+				\pgfsetstrokeopacity {\tl_use:c {l__pgfgo_ #1 _opacity_tl}}
+				\pgfsetfillopacity {\tl_use:c {l__pgfgo_ #1 _opacity_tl}}
+				\__pgfgo_lines_path:nnnn {#3} {#4} {#5} {#6}
+				\pgfusepath{stroke}
+			\endpgfscope
+			\endpgfonlayer
+		\group_end:
+	}
+}
+
+%#1: arrow O line, #2: OPCIONES, #3 Y #4: LAS DOS INTERSECCIONES.
+\tl_new:N \l__pgfgo_lines_from_tl
+\tl_new:N \l__pgfgo_lines_halo_tl
+\cs_new_protected:Npn \pgfgo_line:nnnn #1#2#3#4 {
+	\group_begin:
+		\keys_set_groups:nnn {pgfgo / #1} {preset} {#2}
+		\pgfgo_kernel_point:nTF {#3} {
+			\tl_set_eq:NN \l__pgfgo_lines_from_tl \l_pgfgo_kernel_point_tl
+			\pgfgo_kernel_point:nTF {#4} {
+				\bool_if:NT \l_pgfgo_goban_remember_mark_bool {
+					\pgfgo_kernel_remember_push:n {
+						\exp_not:N \pgfgo_line_parsed:nnnnnn {#1} {\exp_not:n {#2}}
+							\exp_not:V \l__pgfgo_lines_from_tl \exp_not:V \l_pgfgo_kernel_point_tl
+					}
+				}
+				\use:e {
+					\exp_not:N \pgfgo_line_parsed:nnnnnn {#1} {\exp_not:n {#2}}
+						\exp_not:V \l__pgfgo_lines_from_tl \exp_not:V \l_pgfgo_kernel_point_tl
+				}
+			} {\msg_warning:nnn {pgfgo} {unknown-coordinate} {#4}}
+		} {\msg_warning:nnn {pgfgo} {unknown-coordinate} {#3}}
+	\group_end:
+}
+
+%\arrow Y \line SE ACTIVAN SOLO DENTRO DE goban (VER pgf-go-goban.sty).
+\NewDocumentCommand{\__pgfgo_arrow_command}{O{}mm}{\pgfgo_line:nnnn {arrow} {#1} {#2} {#3}}
+\NewDocumentCommand{\__pgfgo_line_command}{O{}mm}{\pgfgo_line:nnnn {line} {#1} {#2} {#3}}
+
+\ExplSyntaxOff

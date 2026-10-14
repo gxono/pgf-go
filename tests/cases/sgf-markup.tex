@@ -1,0 +1,41 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% markup.sgf: 9x9, black C7, D6, white E5. 1 B G7 with an arrow C7-G7, a line
+% D6-E5 and SL on F4, F3. 2 W C3 with DD on the whole board. 3 B G3 (DD is
+% inherited). 4 W G9 with DD[] (no dimmed points).
+
+\case{\textbackslash arrow and \textbackslash line: over stones (with halo), halo = false, style options, a partial board}
+\begin{goban}[9]
+	\stones{C3, D3, E3}\stones[w]{E5}
+	\arrow{B3}{F3}
+	\line{C5}{G5}
+	\arrow[halo = false, color = red, width = 2pt]{C7}{G9}
+	\line[color = blue, opacity = 0.5]{A1}{J9}
+\end{goban}
+\begin{goban}[9, partial = {from = A1 to E5}]
+	\arrow{B2}{H8}
+\end{goban}
+{\pgfgoset{arrow = {tip = Latex, color = green!50!black}}%
+\begin{goban}[5]\arrow{A1}{E5}\arrow{A5}{E1}\end{goban}}
+
+\case{SGF: move 1 (AR, LN, SL) / move 2 (DD on the whole board) / move 3 (DD inherited) / move 4 (DD[]: none)}
+\begin{goban}[9]\sgf[to = 1]{markup.sgf}\end{goban}
+\begin{goban}[9]\sgf[to = 2]{markup.sgf}\end{goban}
+\begin{goban}[9]\sgf[to = 3]{markup.sgf}\end{goban}
+\begin{goban}[9]\sgf{markup.sgf}\end{goban}
+
+\case{marks = false: no markup / the dim mark by hand / new remember and resume}
+\begin{goban}[9]\sgf[to = 1, marks = false]{markup.sgf}\end{goban}
+\begin{goban}[9]\stones{C3}\marks[dim]{A1:3, C3}\end{goban}
+\begin{goban}[5, new remember]\stones{B2}\arrow{A1}{E5}\line[forget]{A5}{E1}\end{goban}
+\begin{goban}[5, resume]\end{goban}
+
+\end{document}

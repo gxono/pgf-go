@@ -114,6 +114,61 @@
 	\int_to_Alph:n {#1 \bool_if:NF \l_pgfgo_use_i_bool {\int_compare:nNnT {#1} > {8} {+ 1}}}
 }
 
+%PUNTOS DE ESTRELLA. EN CADA EJE: LAS DOS LINEAS CERCA DEL BORDE Y, SI ES IMPAR, LA DEL MEDIO (0 SI NO HAY).
+\int_new:N \l__pgfgo_kernel_hoshi_near_x_int
+\int_new:N \l__pgfgo_kernel_hoshi_near_y_int
+\int_new:N \l__pgfgo_kernel_hoshi_mid_x_int
+\int_new:N \l__pgfgo_kernel_hoshi_mid_y_int
+\cs_new_protected:Npn \__pgfgo_kernel_hoshi_axis:nNN #1#2#3 {
+	\int_set:Nn #2 {\int_compare:nNnTF {#1} < {13} {3} {4}}
+	\int_set:Nn #3 {\int_if_odd:nTF {#1} {(#1 + 1) / 2} {0}}
+}
+\cs_new_protected:Npn \pgfgo_kernel_hoshi: {
+	\seq_clear:N \l_pgfgo_kernel_points_seq
+	\bool_if:nT {
+		! \int_compare_p:nNn {\l_pgfgo_goban_size_x_int} < {7} &&
+		! \int_compare_p:nNn {\l_pgfgo_goban_size_y_int} < {7}
+	}{
+		\__pgfgo_kernel_hoshi_axis:nNN {\l_pgfgo_goban_size_x_int}
+			\l__pgfgo_kernel_hoshi_near_x_int \l__pgfgo_kernel_hoshi_mid_x_int
+		\__pgfgo_kernel_hoshi_axis:nNN {\l_pgfgo_goban_size_y_int}
+			\l__pgfgo_kernel_hoshi_near_y_int \l__pgfgo_kernel_hoshi_mid_y_int
+		%FILA POR FILA DESDE ABAJO: LA FILA CERCANA, LA DEL MEDIO Y LA LEJANA.
+		\__pgfgo_kernel_hoshi_row:n {\l__pgfgo_kernel_hoshi_near_y_int}
+		\int_compare:nNnT {\l__pgfgo_kernel_hoshi_mid_y_int} > {0}
+			{\__pgfgo_kernel_hoshi_row:n {\l__pgfgo_kernel_hoshi_mid_y_int}}
+		\__pgfgo_kernel_hoshi_row:n {\l_pgfgo_goban_size_y_int - \l__pgfgo_kernel_hoshi_near_y_int + 1}
+	}
+}
+%UNA FILA DE PUNTOS DE ESTRELLA: EN LA FILA DEL MEDIO, SOLO EL CENTRO (Y LOS LADOS DESDE 15 LINEAS);
+%EN LAS DEMAS, LAS ESQUINAS (Y EL MEDIO DEL LADO DESDE 15 LINEAS).
+\cs_new_protected:Npn \__pgfgo_kernel_hoshi_row:n #1 {
+	\bool_set:Nn \l_tmpa_bool {
+		\int_compare_p:nNn {\l__pgfgo_kernel_hoshi_mid_x_int} > {0} &&
+		\int_compare_p:nNn {\l__pgfgo_kernel_hoshi_mid_y_int} > {0}
+	}
+	\bool_set:Nn \l_tmpb_bool {
+		\l_tmpa_bool &&
+		! \int_compare_p:nNn {\l_pgfgo_goban_size_x_int} < {15} &&
+		! \int_compare_p:nNn {\l_pgfgo_goban_size_y_int} < {15}
+	}
+	\int_compare:nNnTF {#1} = {\l__pgfgo_kernel_hoshi_mid_y_int}
+		{
+			\bool_if:NT \l_tmpb_bool {\__pgfgo_kernel_hoshi_put:nn {\l__pgfgo_kernel_hoshi_near_x_int} {#1}}
+			\bool_if:NT \l_tmpa_bool {\__pgfgo_kernel_hoshi_put:nn {\l__pgfgo_kernel_hoshi_mid_x_int} {#1}}
+			\bool_if:NT \l_tmpb_bool
+				{\__pgfgo_kernel_hoshi_put:nn {\l_pgfgo_goban_size_x_int - \l__pgfgo_kernel_hoshi_near_x_int + 1} {#1}}
+		}
+		{
+			\__pgfgo_kernel_hoshi_put:nn {\l__pgfgo_kernel_hoshi_near_x_int} {#1}
+			\bool_if:NT \l_tmpb_bool {\__pgfgo_kernel_hoshi_put:nn {\l__pgfgo_kernel_hoshi_mid_x_int} {#1}}
+			\__pgfgo_kernel_hoshi_put:nn {\l_pgfgo_goban_size_x_int - \l__pgfgo_kernel_hoshi_near_x_int + 1} {#1}
+		}
+}
+\cs_new_protected:Npn \__pgfgo_kernel_hoshi_put:nn #1#2 {
+	\seq_put_right:Ne \l_pgfgo_kernel_points_seq {{\int_eval:n {#1}}{\int_eval:n {#2}}}
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %--------------------------------------COORDENADAS----------------------------------------------%

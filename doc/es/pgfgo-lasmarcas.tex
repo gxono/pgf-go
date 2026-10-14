@@ -252,6 +252,17 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 
 
+\begin{key}{/pgfgo/mark/dim}
+	Atenúa el punto: lo cubre con el color del fondo del tablero, translúcido, sobre la piedra y la cuadrícula. Es lo que dibuja |\sgf| para la propiedad |DD|.
+
+	\begin{codeexample}[]
+		\begin{goban}[5]
+			\stones{B2, C3}\stone[w]{D4}
+			\marks[dim]{A1:5, B2}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
 \begin{key}{/pgfgo/mark/custom=\meta{token list}}
 	
 	Permite definir una marca personalizada usando texto o símbolos (como «!» o «?») e incluso im\'agenes.
@@ -557,3 +568,118 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 	Esta marca se guarda en la memoria del tablero, aunque el |goban| use |forget|.
 \end{key}
 
+
+\subsection{Flechas y líneas}
+\label{subsec:flechas}
+
+Las flechas y las líneas unen dos intersecciones. Se dibujan encima de las piedras, con un halo del color del fondo del tablero que las separa de las piedras y de la cuadrícula. Como |\mark|, |\arrow| y |\line| solo existen dentro de |goban|: afuera, |\line| sigue siendo el comando de \LaTeX. |\sgf| dibuja las flechas (|AR|) y las líneas (|LN|) del archivo.
+
+\begin{command}{\arrow\opt{\oarg{options}}\marg{from}\marg{to}}
+	Dibuja una flecha de una intersección a otra.
+
+	\begin{codeexample}[]
+		\begin{goban}[9]
+			\stones{C3, D3}\stone[w]{E5}
+			\arrow{B3}{F3}
+			\arrow[color = red, halo = false]{C7}{G9}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\begin{command}{\line\opt{\oarg{options}}\marg{from}\marg{to}}
+	Dibuja una línea de una intersección a otra.
+
+	\begin{codeexample}[]
+		\begin{goban}[9]
+			\stones{C3, D4}\stone[w]{E5}
+			\line{C3}{G7}
+			\line[color = blue, width = 2pt]{A9}{J9}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\begin{key}{/pgfgo/arrow/color=\meta{color} (initially black)}
+	Color de la flecha.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/width=\meta{dimension} (initially 1.2pt)}
+	Grosor de la flecha. La punta crece con él.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/opacity=\meta{number} (initially 1)}
+	Opacidad de la flecha.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/tip=\meta{arrow tip} (initially Stealth)}
+	La punta de la flecha, una de las de la biblioteca |arrows.meta| de \tikzname, como |Latex| o |Triangle|.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/halo=\meta{halo options} (default true)}
+	El halo alrededor de la flecha.
+\end{key}
+
+\begin{stylekey}{/pgfgo/arrow/halo/true}
+	Dibuja el halo. Es el valor inicial.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/arrow/halo/false}
+	No dibuja el halo.
+\end{stylekey}
+
+\begin{key}{/pgfgo/arrow/halo/color=\meta{color}}
+	Color del halo. Sin esta \emph{key}, es el del fondo del tablero.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/halo/width=\meta{dimension} (initially 0.8pt)}
+	Ancho del halo a cada lado de la flecha.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/remember}
+	Esta flecha se guarda en la memoria del tablero, aunque el |goban| use |forget|.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/forget}
+	Esta flecha no se guarda en la memoria del tablero, aunque el |goban| use |remember|.
+\end{key}
+
+Las líneas tienen las mismas opciones, salvo |tip|:
+
+\begin{key}{/pgfgo/line/color=\meta{color} (initially black)}
+	Como |/pgfgo/arrow/color|.
+\end{key}
+
+\begin{key}{/pgfgo/line/width=\meta{dimension} (initially 1.2pt)}
+	Como |/pgfgo/arrow/width|.
+\end{key}
+
+\begin{key}{/pgfgo/line/opacity=\meta{number} (initially 1)}
+	Como |/pgfgo/arrow/opacity|.
+\end{key}
+
+\begin{key}{/pgfgo/line/halo=\meta{halo options} (default true)}
+	Como |/pgfgo/arrow/halo|.
+\end{key}
+
+\begin{stylekey}{/pgfgo/line/halo/true}
+	Como |/pgfgo/arrow/halo/true|.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/line/halo/false}
+	Como |/pgfgo/arrow/halo/false|.
+\end{stylekey}
+
+\begin{key}{/pgfgo/line/halo/color=\meta{color}}
+	Como |/pgfgo/arrow/halo/color|.
+\end{key}
+
+\begin{key}{/pgfgo/line/halo/width=\meta{dimension} (initially 0.8pt)}
+	Como |/pgfgo/arrow/halo/width|.
+\end{key}
+
+\begin{key}{/pgfgo/line/remember}
+	Como |/pgfgo/arrow/remember|.
+\end{key}
+
+\begin{key}{/pgfgo/line/forget}
+	Como |/pgfgo/arrow/forget|.
+\end{key}

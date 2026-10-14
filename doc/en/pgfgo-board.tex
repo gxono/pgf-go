@@ -60,6 +60,10 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/sgf view=\meta{file}}
+		Like |sgf size| and, if the file has a view (|VW|), it only shows that part of the board, like |partial|.
+	\end{key}
+
 	\begin{key}{/pgfgo/goban/sgf size=\meta{file}}
 		Takes the size of the board from an SGF game (its |SZ| property). Only with the Lua kernel (p.~\pageref{subsec:kernel}).
 
@@ -186,6 +190,55 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	
 	\begin{key}{/pgfgo/goban/grid/sep =\meta{dimension} (initially 1.25em)}
 		Simultaneously defines the vertical and horizontal spacing of the lines, ensuring uniform spacing in both directions. This is a convenient option for maintaining balanced proportions.
+	\end{key}
+
+	\subsection{Star Points}
+	\label{subsec:hoshi}
+
+	The star points (\emph{hoshi}) are drawn on the grid, in its color. By default they are the usual ones: on each side, the fourth line from the edge (the third on boards with fewer than 13 lines); the center if the size is odd; and, from 15 lines on, the middle of the sides. A 19 board has nine, and a 13 or 9 board, five. Boards with fewer than 7 lines have none. Stones cover them.
+
+	\begin{key}{/pgfgo/goban/hoshi=\meta{options} (default true)}
+		Options of the star points.
+
+		\begin{codeexample}[]
+			\begin{goban}[9]
+				\stones{C3, E5}
+			\end{goban}
+
+			\begin{goban}[9, hoshi = false]
+				\stones{C3, E5}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/hoshi/true}
+		Draws the star points. It is the initial value.
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/hoshi/false}
+		Does not draw the star points.
+	\end{stylekey}
+
+	\begin{key}{/pgfgo/goban/hoshi/radius=\meta{dimension} (initially 1.5pt)}
+		Radius of the points.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/hoshi/color=\meta{color}}
+		Color of the points. Without this \emph{key}, they take the color of the grid.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, hoshi = {radius = 2.5pt, color = red}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/hoshi/at=\meta{coordinates}}
+		Chooses the points, with the same syntax as |\stones|. Empty, the usual ones are used.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, hoshi = {at = {C3, G7}}]
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 	
 	\subsection{Border}
