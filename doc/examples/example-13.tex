@@ -1,0 +1,21 @@
+\documentclass[border=0.5cm, varwidth=13cm]{standalone}
+\usepackage[spanish]{babel}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+
+\pgfgoset{
+	goban = {background = {fill = {color = pgfgo}}, label = {at = {south, west}}},
+	notes = {at = en},
+	sgf annotations = {tesuji = Tesuji, bad move = Mala jugada},
+	sgf diagrams = {title = Diagrama, result title = Resultado, black name = Negras, white name = Blancas},
+}
+
+
+\begin{document}
+	\section*{\sgfinfo{comentada.sgf}{GN}}
+	\sgfinfo{comentada.sgf}{PB} contra \sgfinfo{comentada.sgf}{PW},
+	komi \sgfinfo{comentada.sgf}{KM}. \sgfcomment{comentada.sgf}{0}
+
+	\medskip
+	\sgfdiagrams[step = 9, comments]{comentada.sgf}
+\end{document}

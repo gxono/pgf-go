@@ -61,7 +61,17 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/sgf view=\meta{file}}
-		Like |sgf size| and, if the file has a view (|VW|), it only shows that part of the board, like |partial|.
+		Like |sgf size| and, if the file has a view (|VW|), it only shows that part of the board, like |partial|. The view can change during the game; the one of move |sgf view move| is used.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/sgf view move=\meta{number} (initially 0)}
+		The move whose view |sgf view| uses. A |VW| holds from the move of its node (or from the next one, if the node has no move) until the next |VW|, and |VW[]| shows the whole board again. With 0, it is the view at the start. It can go before or after |sgf view|. |\sgfdiagrams|, |\sgfanimation| and |\sgfproblem| choose the view by themselves.
+
+		\begin{codeexample}[code only]
+			\begin{goban}[sgf view = game.sgf, sgf view move = 120]
+				\sgf[from = 101, to = 120]{game.sgf}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/sgf size=\meta{file}}
@@ -697,6 +707,53 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\begin{key}{/pgfgo/goban/label/text color = \meta{color} (initially black)}
 		
 		Defines the text color of the labels.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/columns = \meta{letters, numbers or kanji} (initially letters)}
+		How the coordinates of the columns (above and below) are written: with letters (as in the commands, without the I if |use i = false|), with numbers, or with numbers in kanji ({\pgfgokanji 一, 二, …, 十, 十一}, …).
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/rows = \meta{letters, numbers or kanji} (initially numbers)}
+		The same for the rows (at the sides). The kanji of the rows are aligned on the side of the board, so that the two-character ones do not overlap it.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/columns from = \meta{left or right} (initially left)}
+		The side from which the columns are counted.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/rows from = \meta{bottom or top} (initially bottom)}
+		The side from which the rows are counted. These four options only change what is written on the border: the coordinates of the commands (|C3|) stay the same. On a partial board, they are counted from the edge of the whole board.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, label = {at = {north, west}, columns = numbers, rows from = top}]
+				\stones{C4}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/style = \meta{western, japanese or chinese} (initially western)}
+		Sets the four options above as usual in each place.
+
+		\begin{stylekey}{/pgfgo/goban/label/style/western}
+			Columns with letters from the left and rows with numbers from the bottom.
+		\end{stylekey}
+
+		\begin{stylekey}{/pgfgo/goban/label/style/japanese}
+			Columns with numbers from the right and rows with kanji from the top, as in Japanese books: the top right corner is 1-{\pgfgokanji 一}.
+		\end{stylekey}
+
+		\begin{stylekey}{/pgfgo/goban/label/style/chinese}
+			Columns with numbers from the left and rows with kanji from the top.
+		\end{stylekey}
+
+		The kanji need a font that has them. With Lua\LaTeX, for example, IPAex (included in \TeX\ Live and MiK\TeX):
+
+		\begin{codeexample}[]
+			\font\kanji = {file:ipaexm.ttf} at 8pt
+			\begin{goban}[9, label = {at = {north, east}, style = japanese, font = \kanji}]
+				\stones{G7}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 	
 	\subsection{Captures}

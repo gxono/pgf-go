@@ -45,7 +45,21 @@ your LaTeX document:
 
 ## Examples
 
-You can find examples on doc directory.
+You can find examples in the `doc/examples` directory:
+
+- `example-0` to `example-7`: stones, marks, sequences, moves, territory marks, profiles and `remember`/`resume`.
+- `example-8`: an SGF game with `\sgf`: marks of the file, variations as letters and a variation.
+- `example-9`: a commented game with `\sgfdiagrams`: comments, annotations, result and score.
+- `example-10`: an animated game in the PDF with `\sgfanimation` (needs `animate`).
+- `example-11`: a game in a `beamer` presentation, one move per slide, and with `animate`.
+- `example-12`: a problem (tsumego) with `\sgfproblem`.
+- `example-13`: the commented game in Spanish (`babel` and translated texts).
+- `example-14`: the commented game in Japanese (`luatexja`, kanji coordinates).
+- `example-15`: captures, a ko, "7 at 1" notes and prisoners.
+- `example-16`: territory found by `	erritory{auto}`, a dead stone and the score.
+- `example-17`: arrows, lines, a dimmed stone and labels.
+
+The SGF examples need LuaLaTeX.
 
 ## History
    - version 0.2026.10.13 : Lua compute kernel, captures, SGF games (`\sgf`, `\sgfanimation`, `\sgfdiagrams`), star points, arrows and lines, "3 at 1" notes, territory and score. Both manuals are complete.

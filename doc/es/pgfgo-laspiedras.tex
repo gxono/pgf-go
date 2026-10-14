@@ -654,8 +654,8 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/sgf/restart = \meta{number} (initially 0)}
-	Reinicia la numeración cada \meta{number} jugadas, como en los libros: con |restart = 100|, la jugada 101 se muestra como 1. Con 0, no se reinicia.
+\begin{key}{/pgfgo/sgf/restart = \meta{number o auto} (initially auto)}
+	Reinicia la numeración cada \meta{number} jugadas, como en los libros: con |restart = 100|, la jugada 101 se muestra como 1. Con 0, no se reinicia. Con |auto|, hace lo que pide el archivo con |PM|: con |PM[2]|, se reinicia cada 100 jugadas; si no, no se reinicia.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variantes.sgf]
@@ -664,6 +664,16 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 
 		\begin{goban}[sgf size = variantes.sgf]
 			\sgf[restart = 3]{variantes.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/numbers = \meta{true, false o auto} (default true, initially auto)}
+	Con |false|, las jugadas se dibujan sin número. Con |auto|, hace lo que pide el archivo con |PM|: con |PM[0]|, no se numeran. |\sgfdiagrams| y |\sgfproblem| numeran siempre.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variantes.sgf]
+			\sgf[numbers = false]{variantes.sgf}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -833,7 +843,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Como |/pgfgo/sgf/marks|: cada cuadro muestra las marcas de su jugada.
 \end{key}
 
-\begin{key}{/pgfgo/sgf animation/restart = \meta{number} (initially 0)}
+\begin{key}{/pgfgo/sgf animation/restart = \meta{number o auto} (initially auto)}
 	Como |/pgfgo/sgf/restart|.
 \end{key}
 
@@ -846,7 +856,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/view = \meta{boolean} (default true, initially true)}
-	Si el archivo tiene vista (|VW|), los tableros muestran solo esa parte, como |sgf view|.
+	Si el archivo tiene vista (|VW|), los tableros muestran solo esa parte, como |sgf view|. Todos los cuadros tienen el mismo tablero: si la vista cambia durante la partida, el tablero abarca las vistas de todos los cuadros (y si en alguno se ve todo el tablero, se ve todo).
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/layers = \meta{boolean} (default true, initially true)}
@@ -872,7 +882,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/restart = \meta{boolean} (default true, initially false)}
-	Cada diagrama numera desde 1, como algunos libros.
+	Cada diagrama numera desde 1, como algunos libros. Sin |restart|, la numeración sigue lo que pide el archivo con |PM|, como |/pgfgo/sgf/restart = auto|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/notes = \meta{boolean} (default true, initially true)}
@@ -908,11 +918,99 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/view = \meta{boolean} (default true, initially true)}
-	Como |/pgfgo/sgf animation/view|.
+	Si el archivo tiene vista (|VW|), cada diagrama muestra solo esa parte, como |sgf view|. Si la vista cambia durante la partida, cada diagrama abarca las vistas de sus jugadas.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/game = \meta{number} (initially 1)}
 	Como |/pgfgo/sgf/game|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/result = \meta{boolean} (default true, initially true)}
+	Escribe debajo del último diagrama, si llega al final de la partida, el resultado (|RE|) y, si el archivo marca el territorio (|TB|, |TW|), el puntaje de cada jugador: «Result: B+0.5 (Black 6, White 5.5)». El puntaje se cuenta como con |\pgfgoscore| (pág.~\pageref{subsec:territorio}), con el komi del archivo (|KM|).
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/result title = \meta{text} (initially Result)}
+	Palabra que precede al resultado.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/black name = \meta{text} (initially Black)}
+	Nombre de las negras en el puntaje.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/white name = \meta{text} (initially White)}
+	Nombre de las blancas en el puntaje.
+\end{key}
+
+\begin{command}{\sgfproblem\opt{\oarg{options}}\marg{file}}
+	Dibuja un problema (tsumego). Primero, el enunciado: la posición inicial con sus marcas, quién juega (|PL|, o el color de la primera jugada) y el comentario del principio. Después, un diagrama por cada línea del árbol del archivo (cada variante de la solución, correcta o no), numerada desde 1, con sus notas «N en M» y los comentarios y anotaciones de sus jugadas, que suelen decir si la variante es correcta. Los diagramas se dibujan como los de |\sgfdiagrams|. Si el archivo no tiene vista (|VW|), se muestra solo la parte del tablero que usa el problema. Se usa fuera de |goban|. Las opciones pueden fijarse para todo el documento con |\pgfgoset{sgf problem = {...}}|.
+
+	\begin{codeexample}[code only]
+		\sgfproblem[title = Problema 1, variation title = Variante,
+			black to play = Juegan negras]{problema.sgf}
+	\end{codeexample}
+\end{command}
+
+\sgfproblem[title = Problema 1, variation title = Variante,
+	black to play = Juegan negras]{problema.sgf}
+
+\begin{key}{/pgfgo/sgf problem/statement = \meta{boolean} (default true, initially true)}
+	Dibuja el enunciado.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/solutions = \meta{boolean} (default true, initially true)}
+	Dibuja las variantes. Con |solutions = false|, queda solo el enunciado, para poner las soluciones en otro lugar (por ejemplo, con |statement = false| al final del capítulo).
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/title = \meta{text} (initially vacío)}
+	Comienzo del epígrafe del enunciado: «Problema 1: Juegan negras».
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/variation title = \meta{text} (initially Variation)}
+	Palabra del epígrafe de cada variante: «Variation 2».
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/black to play = \meta{text} (initially Black to play)}
+	Texto del enunciado cuando juegan las negras.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/white to play = \meta{text} (initially White to play)}
+	Texto del enunciado cuando juegan las blancas.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments = \meta{boolean} (default true, initially true)}
+	Escribe el comentario del principio debajo del enunciado y los de cada variante debajo de su diagrama, como |/pgfgo/sgf diagrams/comments|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/annotations = \meta{boolean} (default true, initially true)}
+	Con |comments|, escribe también el nombre y las anotaciones de cada jugada (|TE|, |BM|, etc.).
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/notes = \meta{boolean} (default true, initially true)}
+	Escribe las notas «N en M» de cada variante.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/caption font = \meta{font commands} (initially \texttt{\string\small})}
+	Fuente de los epígrafes, las notas y los comentarios.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/goban = \meta{goban options}}
+	Opciones de cada tablero, como |/pgfgo/sgf diagrams/goban|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/view = \meta{boolean} (default true, initially true)}
+	Si el archivo tiene vista (|VW|) al principio, todos los diagramas muestran esa parte.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/crop = \meta{boolean} (default true, initially true)}
+	Si no se usa la vista del archivo, muestra solo la parte del tablero donde hay piedras, jugadas o marcas en alguna línea del problema, con |margin| líneas más. Un lado que queda a dos líneas o menos del borde llega hasta el borde. Es la misma en todos los diagramas. Con |crop = false|, se ve todo el tablero.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/margin = \meta{number} (initially 1)}
+	Líneas que |crop| agrega alrededor del problema.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/game = \meta{number} (initially 1)}
+	Como |/pgfgo/sgf/game|: en una colección, el problema que se dibuja.
 \end{key}
 
 

@@ -1,0 +1,18 @@
+\documentclass[border=0.5cm, varwidth=13cm]{standalone}
+\usepackage{luatexja}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+
+\pgfgoset{
+	goban = {background = {fill = {color = pgfgo}}, label = {at = {north, east}, style = japanese}},
+	sgf annotations = {tesuji = 手筋, bad move = 悪手},
+	sgf diagrams = {title = 図, result title = 結果, black name = 黒, white name = 白},
+}
+
+
+\begin{document}
+	\sgfinfo{kifu.sgf}{GN}：\sgfinfo{kifu.sgf}{PB}対\sgfinfo{kifu.sgf}{PW}、コミ\sgfinfo{kifu.sgf}{KM}。\sgfcomment{kifu.sgf}{0}
+
+	\medskip
+	\sgfdiagrams[step = 9, comments]{kifu.sgf}
+\end{document}

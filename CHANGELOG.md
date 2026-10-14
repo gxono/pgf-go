@@ -2,6 +2,60 @@
 
 All notable changes to `pgf-go` are listed here.
 
+## Unreleased
+
+### New
+
+- `\sgfproblem`: draws a problem (tsumego) from an SGF file: the statement
+  (initial position, marks, who plays, comment) and one diagram for each line
+  of the tree, with its notes, comments and annotations. Without `VW`, the
+  board is cropped to the part the problem uses (`crop`, `margin`). Options for
+  the whole document with `\pgfgoset{sgf problem = {...}}`.
+- SGF print mode (`PM`): `sgf/restart = auto` (the new initial value) restarts
+  the numbering every 100 moves with `PM[2]`, and `sgf/numbers` (`true`,
+  `false` or `auto`, the initial value) draws no numbers with `PM[0]`.
+  `\sgfdiagrams` and `\sgfproblem` always number the moves.
+- The view (`VW`) can change during the game. `goban/sgf view move` chooses
+  the move whose view `sgf view` uses. Each diagram of `\sgfdiagrams` covers
+  the views of its moves, and `\sgfanimation` uses one board that covers the
+  views of all its frames.
+- `\sgfdiagrams` writes the result (`RE`) below the last diagram and, if the
+  file marks the territory (`TB`, `TW`), the score of each player with the
+  komi of the file (`KM`). Keys `result`, `result title`, `black name` and
+  `white name`.
+- Coordinate styles on the border: `goban/label/columns` and `goban/label/rows`
+  (`letters`, `numbers` or `kanji`), `columns from` (`left`, `right`),
+  `rows from` (`bottom`, `top`), and `style` (`western`, `japanese`,
+  `chinese`). Kanji need a font that has them.
+- Compute kernel: `\pgfgo_kernel_sgf_view:nn` and `\pgfgo_kernel_sgf_tree:n`;
+  `\pgfgo_kernel_sgf_read:nn` also leaves the print mode and the komi.
+
+### Fixed
+
+- The halo of `\arrow` (and of `AR` in `\sgf`) now surrounds the tip evenly.
+  Before, the halo was the same arrow with a thicker line, and its tip grew
+  forward along the line.
+
+### Behaviour changes
+
+- `\sgf` and `\sgfanimation` follow `PM` by default: files with `PM[2]`
+  restart at 101, and files with `PM[0]` are drawn without numbers by `\sgf`.
+  Use `restart = 0` or `numbers` to get the old behaviour.
+- `\sgfdiagrams` writes the result below the last diagram when the file has
+  `RE` or territory. Use `result = false` to leave it out.
+
+### Documentation
+
+- New examples in `doc/examples` (8 to 17): `\sgf`, a commented game,
+  animations in the PDF and in `beamer`, a problem, Spanish and Japanese texts,
+  captures and ko, territory and score, and arrows and lines.
+
+### Tests
+
+- New cases for problems, print modes, views during the game, results and
+  coordinate styles.
+- The examples can ask for two runs (`% passes: 2`).
+
 ## 0.2026.10.13 — 2026/10/13
 
 ### New

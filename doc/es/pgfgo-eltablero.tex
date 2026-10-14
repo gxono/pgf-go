@@ -61,7 +61,17 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/sgf view=\meta{file}}
-		Como |sgf size| y, si el archivo tiene vista (|VW|), muestra solo esa parte del tablero, como |partial|.
+		Como |sgf size| y, si el archivo tiene vista (|VW|), muestra solo esa parte del tablero, como |partial|. La vista puede cambiar durante la partida; se usa la de la jugada |sgf view move|.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/sgf view move=\meta{number} (initially 0)}
+		La jugada de la que |sgf view| toma la vista. Un |VW| vale desde la jugada de su nodo (o desde la siguiente, si el nodo no tiene jugada) hasta el próximo |VW|, y |VW[]| vuelve a mostrar todo el tablero. Con 0, es la vista del principio. Puede ir antes o después de |sgf view|. |\sgfdiagrams|, |\sgfanimation| y |\sgfproblem| eligen la vista solos.
+
+		\begin{codeexample}[code only]
+			\begin{goban}[sgf view = partida.sgf, sgf view move = 120]
+				\sgf[from = 101, to = 120]{partida.sgf}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/sgf size=\meta{file}}
@@ -699,6 +709,53 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\begin{key}{/pgfgo/goban/label/text color = \meta{color} (initially black)}
 		
 		Define el color del texto de las etiquetas.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/columns = \meta{letters, numbers o kanji} (initially letters)}
+		Cómo se escriben las coordenadas de las columnas (arriba y abajo): con letras (como en los comandos, sin la I si |use i = false|), con números o con números en kanji ({\pgfgokanji 一, 二, …, 十, 十一}, …).
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/rows = \meta{letters, numbers o kanji} (initially numbers)}
+		Lo mismo para las filas (a los costados). Los kanji de las filas se alinean del lado del tablero, para que los de dos caracteres no lo pisen.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/columns from = \meta{left o right} (initially left)}
+		Desde qué lado se cuentan las columnas.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/rows from = \meta{bottom o top} (initially bottom)}
+		Desde qué lado se cuentan las filas. Estas cuatro opciones cambian solo lo que se escribe en el borde: las coordenadas de los comandos (|C3|) siguen siendo las mismas. En un tablero parcial se cuenta desde el borde del tablero completo.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, label = {at = {north, west}, columns = numbers, rows from = top}]
+				\stones{C4}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/label/style = \meta{western, japanese o chinese} (initially western)}
+		Fija las cuatro opciones anteriores según la costumbre de cada lugar.
+
+		\begin{stylekey}{/pgfgo/goban/label/style/western}
+			Columnas con letras desde la izquierda y filas con números desde abajo.
+		\end{stylekey}
+
+		\begin{stylekey}{/pgfgo/goban/label/style/japanese}
+			Columnas con números desde la derecha y filas con kanji desde arriba, como en los libros japoneses: la esquina de arriba a la derecha es 1-{\pgfgokanji 一}.
+		\end{stylekey}
+
+		\begin{stylekey}{/pgfgo/goban/label/style/chinese}
+			Columnas con números desde la izquierda y filas con kanji desde arriba.
+		\end{stylekey}
+
+		Los kanji necesitan una fuente que los tenga. Con Lua\LaTeX, por ejemplo, IPAex (incluida en \TeX\ Live y en MiK\TeX):
+
+		\begin{codeexample}[]
+			\font\kanji = {file:ipaexm.ttf} at 8pt
+			\begin{goban}[9, label = {at = {north, east}, style = japanese, font = \kanji}]
+				\stones{G7}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 	
 	\subsection{Capturas}

@@ -1,0 +1,7 @@
+(;GM[1]FF[4]SZ[19]PL[B]C[Negras matan.]
+AW[ab][bb][cb][db][da]AB[ac][bc][cc][dc][ec][eb][ea]
+(;B[ba]TE[1]C[Correcto: el punto vital.]
+(;W[aa];B[ca])
+(;W[ca];B[aa]C[Blancas tienen un solo ojo.]))
+(;B[aa]BM[1]C[Incorrecto: Blancas viven.];W[ba])
+(;B[ca]C[Incorrecto.];W[ba]))

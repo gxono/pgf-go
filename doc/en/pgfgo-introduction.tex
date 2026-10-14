@@ -31,6 +31,9 @@ Regarding the name, although the macros are implemented in \pgfname\ and L3, the
 			\item |\sgfanimation| builds the animation by layers (|layers|): every stone is drawn only once, and the PDF of a long game is much smaller.
 			\item With |captured marks = remove|, the marks on a captured stone go with it.
 			\item |\pgfgoprisoners|, which counts the prisoners of each player, and |\sgfdiagrams|, which draws a game as a series of diagrams, as books do, have been added.
+			\item |\sgfproblem|, which draws a problem (tsumego): the statement and one diagram for each variation of the solution, with its comments, has been added.
+			\item SGF: the numbering that |PM| asks for (|numbers| and |restart = auto|), and the view (|VW|) when it changes during the game (|sgf view move|; |\sgfdiagrams| and |\sgfanimation| use it by themselves). |\sgfdiagrams| writes the result and the score below the last diagram (|result|).
+			\item The coordinates on the border can be letters, numbers or kanji on each axis, counted from either side (|columns|, |rows|, |style = japanese|, etc.).
 	\end{itemize}
 	\item 0.2025.10.13: Bug fixes. Each |goban| starts at move 1 with Black, |\mark| and |\marks| only exist inside |goban|, and what falls outside a partial board is no longer drawn. The full list is in the file |CHANGELOG.md|.
 	\item 0.2025.03.10:

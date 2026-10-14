@@ -1,0 +1,6 @@
+(;GM[1]FF[4]CA[UTF-8]SZ[7]KM[6.5]PB[Black]PW[White]RE[B+0.5]
+GN[A short game]C[A game on a 7x7 board, with comments.]
+;B[dd]C[Black takes the middle line.]
+(;W[ed];B[de];W[ec];B[dc];W[ee];B[df];W[eb];B[db]C[Black will have three columns, White only two.];W[ef];B[da];W[ea];B[dg]TE[1]C[The last point of the wall.];W[be]BM[1]C[White invades, but there is no room for two eyes.];B[ce]TR[be]C[Black takes the vital point. The white stone is dead.];W[eg];B[];W[]
+;TB[ag][af][ae][ad][ac][ab][aa][bg][bf][be][bd][bc][bb][ba][cg][cf][cd][cc][cb][ca]TW[fg][ff][fe][fd][fc][fb][fa][gg][gf][ge][gd][gc][gb][ga]C[Black: 20 points and a prisoner. White: 14 points and 6.5 of komi.])
+(;W[cd]C[Too close.];B[ce];W[bd]LB[be:A]))

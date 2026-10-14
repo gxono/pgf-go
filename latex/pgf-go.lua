@@ -864,7 +864,8 @@ local sgf_comments, sgf_marks, sgf_labels, sgf_dim, sgf_lines = {}, {}, {}, {}, 
 local sgf_notes, sgf_names = {}, {}
 -- sgf_vars[k]: LAS VARIANTES DE LA JUGADA k, {children = {...}, siblings = {...}}, CADA UNA "{x}{y}{color}".
 -- sgf_style: ST DE LA RAIZ. sgf_figures: "{jugada}{nombre}" DONDE EMPIEZA CADA FIGURA (FG).
-local sgf_vars, sgf_style, sgf_figures = {}, 0, {}
+-- sgf_views: LAS VISTAS (VW), {start = jugada desde la que vale, rect = {x1, y1, x2, y2} O nil (TODO EL TABLERO)}.
+local sgf_vars, sgf_style, sgf_figures, sgf_views = {}, 0, {}, {}
 
 function pgfgo.sgf_comment(k)
 	tex.sprint(-2, sgf_comments[k] or "")
@@ -910,6 +911,85 @@ function pgfgo.sgf_label(i)
 	tex.sprint(-2, sgf_labels[i] or "")
 end
 
+-- LA VISTA QUE ABARCA LAS DE LAS JUGADAS k1 A k2 (EL RECTANGULO QUE LAS CONTIENE). VACIA SI EN ALGUNA DE
+-- ESAS JUGADAS SE VE TODO EL TABLERO. LA JUGADA 0 TIENE LA VISTA DE LA 1.
+local function view_text(rect)
+	return rect and (point(rect[1], rect[2]) .. point(rect[3], rect[4])) or ""
+end
+
+local function views_between(k1, k2)
+	k1 = math.max(k1, 1)
+	k2 = math.max(k2, k1)
+	local rect
+	-- ANTES DE LA PRIMERA VISTA SE VE TODO EL TABLERO.
+	if not sgf_views[1] or sgf_views[1].start > k1 then return nil end
+	for i, v in ipairs(sgf_views) do
+		local last = sgf_views[i + 1] and sgf_views[i + 1].start - 1 or math.huge
+		if v.start <= k2 and last >= k1 then
+			if not v.rect then return nil end
+			rect = rect and {math.min(rect[1], v.rect[1]), math.min(rect[2], v.rect[2]),
+				math.max(rect[3], v.rect[3]), math.max(rect[4], v.rect[4])} or v.rect
+		end
+	end
+	return rect
+end
+
+function pgfgo.sgf_view(k1, k2)
+	token.set_macro("l_pgfgo_kernel_sgf_view_tl", view_text(views_between(k1, k2)))
+end
+
+-- TAMANO DE UNA PARTIDA (SZ DE LA RAIZ; 19 SI NO ESTA).
+local function sgf_size(root)
+	local size_x, size_y = 19, 19
+	if root and root.SZ then
+		local x, y = root.SZ[1]:match("^%s*(%d+)%s*:%s*(%d+)%s*$")
+		size_x = tonumber(x or root.SZ[1]) or 19
+		size_y = tonumber(y or root.SZ[1]) or 19
+	end
+	return size_x, size_y
+end
+
+-- TODAS LAS LINEAS DE LA PARTIDA, COMO VARIANTES ("2.1"; LA UNICA LINEA DE UNA PARTIDA SIN BIFURCACIONES ES
+-- ""), EN ORDEN. Y EL RECTANGULO QUE CONTIENE TODAS LAS PIEDRAS, JUGADAS Y MARCAS DEL ARBOL.
+function pgfgo.sgf_tree(name)
+	local paths, box = {}, nil
+	local t = read_tree(name)
+	if t then
+		local size_x, size_y = sgf_size(t.nodes[1])
+		local function extend(v)
+			if v == "tt" and size_x <= 19 and size_y <= 19 then return end
+			for _, c in ipairs(sgf_coords(v, size_y)) do
+				if c[1] <= size_x and c[2] >= 1 then
+					box = box and {math.min(box[1], c[1]), math.min(box[2], c[2]),
+						math.max(box[3], c[1]), math.max(box[4], c[2])} or {c[1], c[2], c[1], c[2]}
+				end
+			end
+		end
+		local function walk(tree, prefix)
+			for _, n in ipairs(tree.nodes) do
+				for _, prop in ipairs({"AB", "AW", "B", "W", "TR", "SQ", "CR", "MA", "SL"}) do
+					for _, v in ipairs(n[prop] or {}) do extend(v) end
+				end
+				for _, v in ipairs(n.LB or {}) do extend(v:match("^(%a%a):") or "") end
+			end
+			if #tree.children == 0 then
+				insert(paths, "{" .. concat(prefix, ".") .. "}")
+			elseif #tree.children == 1 then
+				walk(tree.children[1], prefix)
+			else
+				for i, c in ipairs(tree.children) do
+					local p = {table.unpack(prefix)}
+					insert(p, i)
+					walk(c, p)
+				end
+			end
+		end
+		walk(t, {})
+	end
+	token.set_macro("l__pgfgo_kernel_sgf_paths_clist", concat(paths, ","))
+	token.set_macro("l_pgfgo_kernel_sgf_extent_tl", view_text(box))
+end
+
 local markup = {{"TR", "triangle"}, {"SQ", "square"}, {"CR", "circle"}, {"MA", "cross"},
 	{"SL", "selected"}, {"TB", "black-territory"}, {"TW", "white-territory"}}
 
@@ -917,9 +997,9 @@ function pgfgo.sgf_read(name, path_text)
 	local black, white, moves = {}, {}, {}
 	sgf_comments, sgf_marks, sgf_labels, sgf_dim, sgf_lines = {}, {}, {}, {}, {}
 	sgf_notes, sgf_names = {}, {}
-	sgf_vars, sgf_style, sgf_figures = {}, 0, {}
-	local view
+	sgf_vars, sgf_style, sgf_figures, sgf_views = {}, 0, {}, {}
 	local size_x, size_y = 19, 19
+	local print_mode, komi = 1, "0"
 	local path = {}
 	for d in (path_text or ""):gmatch("%d+") do insert(path, tonumber(d)) end
 	local t = read_tree(name)
@@ -929,12 +1009,11 @@ function pgfgo.sgf_read(name, path_text)
 			message("warning", "sgf-variation", name, path_text)
 		end
 		local root = nodes[1] or {}
-		if root.SZ then
-			local x, y = root.SZ[1]:match("^%s*(%d+)%s*:%s*(%d+)%s*$")
-			size_x = tonumber(x or root.SZ[1]) or 19
-			size_y = tonumber(y or root.SZ[1]) or 19
-		end
+		size_x, size_y = sgf_size(root)
 		sgf_style = root.ST and tonumber(root.ST[1]) or 0
+		-- PM: 0 SIN NUMEROS, 1 COMO ESTAN, 2 REINICIADOS CADA 100.
+		print_mode = root.PM and tonumber(root.PM[1]) or 1
+		komi = root.KM and tonumber(root.KM[1]) and root.KM[1]:match("^%s*(.-)%s*$") or "0"
 		-- LA PARTIDA SIMULADA, PARA SABER DE QUE COLOR ES CADA PUNTO MARCADO.
 		local sim = {stones = {}, sx = size_x, sy = size_y}
 		local started, count = false, 0
@@ -969,14 +1048,21 @@ function pgfgo.sgf_read(name, path_text)
 			return out
 		end
 		for idx, n in ipairs(nodes) do
-			-- VW: LA VISTA DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA (VW[] ES TODO EL TABLERO).
-			if not started and n.VW then
-				view = nil
+			-- VW: LA VISTA DESDE LA JUGADA DE ESTE NODO (O LA SIGUIENTE, SI NO TIENE JUGADA). VW[] ES TODO EL
+			-- TABLERO. LA DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA VALE DESDE LA PRIMERA.
+			if n.VW then
+				local view
 				each_point(n, "VW", function(p, c)
 					view = view or {c[1], c[2], c[1], c[2]}
 					view = {math.min(view[1], c[1]), math.min(view[2], c[2]),
 						math.max(view[3], c[1]), math.max(view[4], c[2])}
 				end)
+				local start = count + 1
+				if sgf_views[#sgf_views] and sgf_views[#sgf_views].start == start then
+					sgf_views[#sgf_views].rect = view
+				else
+					insert(sgf_views, {start = start, rect = view})
+				end
 			end
 			-- PL: EL JUGADOR QUE JUEGA DESPUES.
 			if n.PL then
@@ -1097,8 +1183,9 @@ function pgfgo.sgf_read(name, path_text)
 	local figures = {}
 	for _, f in ipairs(sgf_figures) do insert(figures, "{" .. f[1] .. "}{" .. f[2] .. "}") end
 	token.set_macro("l__pgfgo_kernel_sgf_figures_clist", concat(figures, ","))
-	token.set_macro("l_pgfgo_kernel_sgf_view_tl", view and
-		(point(view[1], view[2]) .. point(view[3], view[4])) or "")
+	token.set_macro("l_pgfgo_kernel_sgf_view_tl", view_text(views_between(0, 0)))
+	tex.setcount("l_pgfgo_kernel_sgf_print_int", print_mode)
+	token.set_macro("l_pgfgo_kernel_sgf_komi_tl", komi)
 	tex.setcount("l_pgfgo_kernel_sgf_size_x_int", size_x)
 	tex.setcount("l_pgfgo_kernel_sgf_size_y_int", size_y)
 	token.set_macro("l__pgfgo_kernel_sgf_black_clist", concat(black, ","))

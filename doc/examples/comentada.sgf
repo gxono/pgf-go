@@ -1,0 +1,6 @@
+(;GM[1]FF[4]CA[UTF-8]SZ[7]KM[6.5]PB[Negras]PW[Blancas]RE[B+0.5]
+GN[Una partida corta]C[Una partida en un tablero de 7×7, con comentarios.]
+;B[dd]C[Negras toman la línea del medio.]
+(;W[ed];B[de];W[ec];B[dc];W[ee];B[df];W[eb];B[db]C[Negras tendrán tres columnas; Blancas, solo dos.];W[ef];B[da];W[ea];B[dg]TE[1]C[El último punto de la pared.];W[be]BM[1]C[Blancas invaden, pero no hay lugar para dos ojos.];B[ce]TR[be]C[Negras ocupan el punto vital. La piedra blanca está muerta.];W[eg];B[];W[]
+;TB[ag][af][ae][ad][ac][ab][aa][bg][bf][be][bd][bc][bb][ba][cg][cf][cd][cc][cb][ca]TW[fg][ff][fe][fd][fc][fb][fa][gg][gf][ge][gd][gc][gb][ga]C[Negras: 20 puntos y un prisionero. Blancas: 14 puntos y 6,5 de komi.])
+(;W[cd]C[Demasiado cerca.];B[ce];W[bd]LB[be:A]))
