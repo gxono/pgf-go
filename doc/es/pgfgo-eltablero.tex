@@ -60,6 +60,10 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/sgf view=\meta{file}}
+		Como |sgf size| y, si el archivo tiene vista (|VW|), muestra solo esa parte del tablero, como |partial|.
+	\end{key}
+
 	\begin{key}{/pgfgo/goban/sgf size=\meta{file}}
 		Toma el tamaño del tablero de una partida SGF (su propiedad |SZ|). Solo con el kernel en Lua (pág.~\pageref{subsec:kernel}).
 
@@ -186,6 +190,55 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/grid/sep =\meta{dimension} (initially 1.25em)}
 		Define simultáneamente la separación vertical y horizontal de las líneas, asegurando un espaciado uniforme en ambas direcciones. Es una opción conveniente para mantener proporciones equilibradas.
+	\end{key}
+
+	\subsection{Puntos de estrella}
+	\label{subsec:hoshi}
+
+	Los puntos de estrella (\emph{hoshi}) se dibujan sobre la cuadrícula, con su color. Por defecto son los de siempre: en cada lado, la cuarta línea desde el borde (la tercera en los tableros de menos de 13 líneas); el centro si el tamaño es impar; y, desde 15 líneas, el medio de los lados. En un tablero de 19 hay nueve, y en uno de 13 o de 9, cinco. Los tableros de menos de 7 líneas no tienen. Las piedras los tapan.
+
+	\begin{key}{/pgfgo/goban/hoshi=\meta{options} (default true)}
+		Opciones de los puntos de estrella.
+
+		\begin{codeexample}[]
+			\begin{goban}[9]
+				\stones{C3, E5}
+			\end{goban}
+
+			\begin{goban}[9, hoshi = false]
+				\stones{C3, E5}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/hoshi/true}
+		Dibuja los puntos de estrella. Es el valor inicial.
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/hoshi/false}
+		No dibuja los puntos de estrella.
+	\end{stylekey}
+
+	\begin{key}{/pgfgo/goban/hoshi/radius=\meta{dimension} (initially 1.5pt)}
+		Radio de los puntos.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/hoshi/color=\meta{color}}
+		Color de los puntos. Sin esta \emph{key}, toman el color de la cuadrícula.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, hoshi = {radius = 2.5pt, color = red}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/hoshi/at=\meta{coordinates}}
+		Elige los puntos, con la misma sintaxis que |\stones|. Vacío, se usan los de siempre.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, hoshi = {at = {C3, G7}}]
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 	
 	\subsection{Borde}

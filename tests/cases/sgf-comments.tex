@@ -1,0 +1,54 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+% passes: 2
+%
+% animate needs two runs.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{animate}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\ExplSyntaxOn
+\NewDocumentCommand \frames {mmm} {
+	\group_begin:
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\clist_map_inline:nn {#3} {\pgfgo_sgfanimation_frame:n {##1}\quad}
+	\group_end:
+}
+\ExplSyntaxOff
+\begin{document}
+
+% annotated.sgf: root comment; 1 B E5 named "Opening", TE, "Center."; 2 W C7
+% BM[2]; 3 B G3 GB and DO; 4 W G7 "No annotations here."; 5 B C3 IT, UC,
+% "Both.".
+
+\case{\textbackslash sgfcomment for moves 0 to 5}
+\begin{itemize}
+	\item 0: \sgfcomment{annotated.sgf}{0}
+	\item 1: \sgfcomment{annotated.sgf}{1}
+	\item 2: \sgfcomment{annotated.sgf}{2}
+	\item 3: \sgfcomment{annotated.sgf}{3}
+	\item 4: \sgfcomment{annotated.sgf}{4}
+	\item 5: \sgfcomment{annotated.sgf}{5}
+	\item 5 with annotations = false: \sgfcomment[annotations = false]{annotated.sgf}{5}
+\end{itemize}
+
+\case{Texts in Spanish with sgf annotations}
+{\pgfgoset{sgf annotations = {tesuji = Tesuji, very bad move = Muy mala jugada, good for black = Buena para Negras,
+	doubtful = Jugada dudosa, interesting = Jugada interesante, unclear = Posición poco clara}}%
+\begin{itemize}
+	\item \sgfcomment{annotated.sgf}{1}
+	\item \sgfcomment{annotated.sgf}{2}
+	\item \sgfcomment{annotated.sgf}{3}
+	\item \sgfcomment{annotated.sgf}{5}
+\end{itemize}}
+
+\case{\textbackslash sgfdiagrams with comments (step = 3)}
+\sgfdiagrams[step = 3, comments]{annotated.sgf}
+
+\case{Animation frames 1 and 2 with comments}
+\frames{comments, comment height = 3em}{annotated.sgf}{1, 2}
+
+\end{document}

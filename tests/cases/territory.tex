@@ -51,6 +51,13 @@ Score: black \pgfgoscore{b} (11), white \pgfgoscore{white} (17).
 \end{goban}
 Score: black \pgfgoscore{black} (5: A1, A3, A4, A5 and 1 capture), white \pgfgoscore{white} (10).
 
+\case{SGF territory (score.sgf: TB on column A, TW on column E; A5 is a dead white stone) / with draw = fill / marks = false}
+\begin{goban}[5]\sgf{score.sgf}\end{goban}
+Score: black \pgfgoscore{black} (6: 5 points and 1 dead stone), white \pgfgoscore{white} (5).
+{\pgfgoset{territory = {draw = fill}}\begin{goban}[5]\sgf{score.sgf}\end{goban}}
+\begin{goban}[5]\sgf[marks = false]{score.sgf}\end{goban}
+Score: black \pgfgoscore{black} (0).
+
 \case{new remember also remembers the territory: resume draws it again; with forget, the white territory (E) is not remembered}
 \begin{goban}[5, new remember]
 	\stones{B1:5}\territory[b]{A1,A5}

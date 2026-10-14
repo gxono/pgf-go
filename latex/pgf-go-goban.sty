@@ -110,6 +110,9 @@
 
 		grid							.code:n 		= {\keys_set:nx{pgfgo / goban / grid}		{#1}},
 
+		hoshi							.code:n 		= {\keys_set:nn{pgfgo / goban / hoshi}		{#1}},
+		hoshi							.default:n	= {true},
+
 		border						.code:n 		= {\keys_set:nx{pgfgo / goban / border} {#1}}, %DEPRECATED
 		
 		background						.code:n 		= {\keys_set:nx{pgfgo / goban / background} {#1}},
@@ -130,6 +133,21 @@
 																				\pgfgo_kernel_sgf_read:n {#1}
 																				\int_set_eq:NN \l_pgfgo_goban_size_x_int \l_pgfgo_kernel_sgf_size_x_int
 																				\int_set_eq:NN \l_pgfgo_goban_size_y_int \l_pgfgo_kernel_sgf_size_y_int
+																			}{
+																				\pgfgo_kernel_require:n {sgf}
+																			}
+																		},
+
+		%LA VISTA DE UN ARCHIVO SGF (VW): EL TAMANO DE LA PARTIDA Y, SI HAY VISTA, ESA PARTE DEL TABLERO.
+		sgf~view					.code:n			= {
+																			\pgfgo_kernel_if_feature:nTF {sgf} {
+																				\pgfgo_kernel_sgf_read:n {#1}
+																				\int_set_eq:NN \l_pgfgo_goban_size_x_int \l_pgfgo_kernel_sgf_size_x_int
+																				\int_set_eq:NN \l_pgfgo_goban_size_y_int \l_pgfgo_kernel_sgf_size_y_int
+																				\tl_if_empty:NF \l_pgfgo_kernel_sgf_view_tl {
+																					\bool_set_true:N \l_pgfgo_goban_partial_bool
+																					\exp_after:wN \__pgfgo_goban_sgf_view:nnnn \l_pgfgo_kernel_sgf_view_tl
+																				}
 																			}{
 																				\pgfgo_kernel_require:n {sgf}
 																			}
@@ -160,6 +178,21 @@
 		sep								.initial:n	= {1.25em},
 	}
 	
+	%PUNTOS DE ESTRELLA. SIN color, EL DE LA CUADRICULA. at ELIGE LOS PUNTOS (VACIO: LOS DE SIEMPRE).
+	\bool_new:N \l_pgfgo_goban_hoshi_bool
+	\dim_new:N \l_pgfgo_goban_hoshi_radius_dim
+	\tl_new:N \l_pgfgo_goban_hoshi_color_tl
+	\tl_new:N \l_pgfgo_goban_hoshi_at_tl
+	\keys_define:nn {pgfgo / goban / hoshi}{
+		true							.code:n			= {\bool_set_true:N \l_pgfgo_goban_hoshi_bool},
+		false							.code:n			= {\bool_set_false:N \l_pgfgo_goban_hoshi_bool},
+		radius						.dim_set:N	= \l_pgfgo_goban_hoshi_radius_dim,
+		radius						.initial:n	= {1.5pt},
+		color							.tl_set:N		= \l_pgfgo_goban_hoshi_color_tl,
+		at								.tl_set:N		= \l_pgfgo_goban_hoshi_at_tl,
+	}
+	\bool_set_true:N \l_pgfgo_goban_hoshi_bool
+
 	\keys_define:nn {pgfgo / goban / grid / line} {
 		color				.tl_set:N		= \l_pgfgo_goban_grid_color_tl,
 		color				.initial:n	= {black},
@@ -568,6 +601,20 @@
 
 			\pgfusepath{stroke}
 			\endpgfscope
+
+			%PUNTOS DE ESTRELLA, SOLO LOS DE LA PARTE VISIBLE.
+			\bool_if:NT \l_pgfgo_goban_hoshi_bool {
+				\tl_if_empty:NTF \l_pgfgo_goban_hoshi_at_tl
+					{\pgfgo_kernel_hoshi:}
+					{\pgfgo_kernel_points:V \l_pgfgo_goban_hoshi_at_tl}
+				\pgfscope
+				\pgfsetfillcolor{\tl_if_empty:NTF \l_pgfgo_goban_hoshi_color_tl
+					{\l_pgfgo_goban_grid_color_tl} {\l_pgfgo_goban_hoshi_color_tl}}
+				\pgfsetfillopacity{\l_pgfgo_goban_grid_opacity_tl}
+				\seq_map_inline:Nn \l_pgfgo_kernel_points_seq {\__pgfgo_goban_hoshi:nn ##1}
+				\pgfusepath{fill}
+				\endpgfscope
+			}
 		}
 		\endpgfscope
 		\endpgfonlayer
@@ -650,6 +697,20 @@
 
 	\cs_generate_variant:Nn \__pgfgo_goban:nnn {nVV}
 
+	\cs_new_protected:Npn \__pgfgo_goban_sgf_view:nnnn #1#2#3#4 {
+		\pgfgo_kernel_board_window:e
+			{\pgfgo_kernel_column_name:n {#1} #2 ~ to ~ \pgfgo_kernel_column_name:n {#3} #4}
+	}
+	\cs_generate_variant:Nn \pgfgo_kernel_board_window:n {e}
+	\cs_generate_variant:Nn \pgfgo_kernel_points:n {V}
+
+	\cs_new_protected:Npn \__pgfgo_goban_hoshi:nn #1#2 {
+		\bool_lazy_and:nnT
+			{\int_compare_p:n {\l_pgfgo_goban_from_x_int <= #1 <= \l_pgfgo_goban_to_x_int}}
+			{\int_compare_p:n {\l_pgfgo_goban_from_y_int <= #2 <= \l_pgfgo_goban_to_y_int}}
+			{\pgfpathcircle {\pgfpointxy{#1}{#2}} {\l_pgfgo_goban_hoshi_radius_dim}}
+	}
+
 
 
 	%PARA LAS ANIMACIONES POR CAPAS (VER pgf-go-sgf.sty): \l_pgfgo_goban_layers_clist ELIGE LAS CAPAS QUE
@@ -701,6 +762,8 @@
 		%\mark Y \marks SOLO EXISTEN DENTRO DEL TABLERO (AFUERA SON LAS PRIMITIVAS DE TEX).
 		\cs_set_eq:NN \mark \__pgfgo_marks_command
 		\cs_set_eq:NN \marks \__pgfgo_marks_command
+		\cs_set_eq:NN \arrow \__pgfgo_arrow_command
+		\cs_set_eq:NN \line \__pgfgo_line_command
 		\cs_set_eq:NN \sgf \__pgfgo_sgf_command
 		%CADA TABLERO EMPIEZA EN LA JUGADA 1 CON NEGRAS (resume RESTAURA LAS JUGADAS RECORDADAS).
 		\pgfgo_kernel_move_reset:

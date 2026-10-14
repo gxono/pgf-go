@@ -641,7 +641,7 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 \end{key}
 
 \begin{key}{/pgfgo/sgf/marks = \meta{boolean} (default true, initially true)}
-	Dibuja las marcas del archivo (|TR|, |SQ|, |CR|, |MA| y las etiquetas de |LB|) del último nodo que se muestra. Cada marca toma el color de la piedra que hay en ese punto, para que se vea, y reemplaza al número de la jugada.
+	Dibuja las marcas del archivo (|TR|, |SQ|, |CR|, |MA|, |SL| y las etiquetas de |LB|), las flechas (|AR|) y las líneas (|LN|) del último nodo que se muestra, y atenúa los puntos de |DD| (que siguen atenuados hasta el próximo |DD|; pág.~\pageref{subsec:flechas}). Cada marca toma el color de la piedra que hay en ese punto, para que se vea, y reemplaza al número de la jugada. El territorio del archivo (|TB| y |TW|) se dibuja como el de |\territory| (pág.~\pageref{subsec:territorio}) y cuenta para |\pgfgoscore|.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variantes.sgf]
@@ -668,13 +668,107 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 	\end{codeexample}
 \end{key}
 
-\begin{command}{\sgfinfo\marg{file}\marg{property}}
+\begin{key}{/pgfgo/sgf/game = \meta{number} (initially 1)}
+	Un archivo SGF puede tener varias partidas (una colección). Elige cuál se lee; si no existe, se lee la primera con un aviso. También vale para |\sgfanimation|, |\sgfdiagrams|, |\sgfcomment|, |\sgfinfo| y |sgf size|, que tienen su propia \emph{key} |game|; para todo el documento, |\pgfgoset{sgf = {game = 2}}|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf/variations = \meta{none, children, siblings o auto} (default auto, initially none)}
+	Marca con letras las variantes de la última jugada que se muestra: con |children|, las jugadas que pueden seguir; con |siblings|, las alternativas a esa jugada (la letra reemplaza a su número). |auto| hace lo que pide el archivo con |ST|. Solo se marcan si hay más de una.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variantes.sgf]
+			\sgf[to = 1, marks = false, variations = children]{variantes.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+|\sgf| también lee |PL| (quién juega después: |\moves| sigue con ese color) y |CA| (la codificación del archivo: los archivos en Latin-1 se convierten; otras codificaciones producen un aviso).
+
+\begin{key}{/pgfgo/sgf = \meta{sgf options}}
+	Opciones de todos los |\sgf| del documento, por ejemplo |\pgfgoset{sgf = {variations}}|.
+\end{key}
+
+\begin{command}{\sgfinfo\opt{\oarg{options}}\marg{file}\marg{property}}
 	Escribe una propiedad de la raíz de la partida, por ejemplo |PB| y |PW| (los jugadores), |RE| (el resultado), |KM| (el komi) o |DT| (la fecha). Si no está, no escribe nada. Se puede usar fuera de |goban|.
 
 	\begin{codeexample}[]
 		\sgfinfo{variantes.sgf}{PB} (negras) contra \sgfinfo{variantes.sgf}{PW} (blancas), komi \sgfinfo{variantes.sgf}{KM}. Resultado: \sgfinfo{variantes.sgf}{RE}.
 	\end{codeexample}
 \end{command}
+
+\begin{command}{\sgfcomment\opt{\oarg{options}}\marg{file}\marg{move}}
+	Escribe el comentario de una jugada del archivo (|0|: el de antes de la primera jugada): el nombre del nodo (|N|), en negrita; las anotaciones de la jugada (|TE|, |BM|, |DO|, |IT|) y de la posición (|GB|, |GW|, |DM|, |UC|); y el comentario (|C|). Las anotaciones se escriben con los textos de |/pgfgo/sgf annotations|. Los valores (|V|) y los puntos calientes (|HO|), que sirven para el árbol de la partida, no se escriben. Se puede usar fuera de |goban|. |\sgfanimation| y |\sgfdiagrams| escriben los comentarios de la misma forma.
+
+	\begin{codeexample}[]
+		Jugada 7: \sgfcomment{partida.sgf}{7}
+	\end{codeexample}
+\end{command}
+
+\begin{key}{/pgfgo/sgf info/game = \meta{number} (initially 1)}
+	Como |/pgfgo/sgf/game|, para |\sgfinfo|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf comment/game = \meta{number} (initially 1)}
+	Como |/pgfgo/sgf/game|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf comment/variation = \meta{números} (initially la línea principal)}
+	Como |/pgfgo/sgf/variation|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf comment/annotations = \meta{boolean} (default true, initially true)}
+	Escribe el nombre y las anotaciones. Con |false|, solo el comentario.
+\end{key}
+
+Los textos de las anotaciones están en inglés, y pueden cambiarse para todo el documento con |\pgfgoset{sgf annotations = {...}}|, por ejemplo |bad move = Mala jugada|. Las anotaciones enfatizadas de |DM| y |UC| usan el mismo texto.
+
+\begin{key}{/pgfgo/sgf annotations/tesuji = \meta{text} (initially Tesuji)}
+	Texto de |TE|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/very good tesuji = \meta{text} (initially Very good tesuji)}
+	Texto de |TE[2]|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/bad move = \meta{text} (initially Bad move)}
+	Texto de |BM|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/very bad move = \meta{text} (initially Very bad move)}
+	Texto de |BM[2]|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/doubtful = \meta{text} (initially Doubtful move)}
+	Texto de |DO|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/interesting = \meta{text} (initially Interesting move)}
+	Texto de |IT|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/good for black = \meta{text} (initially Good for Black)}
+	Texto de |GB|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/very good for black = \meta{text} (initially Very good for Black)}
+	Texto de |GB[2]|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/good for white = \meta{text} (initially Good for White)}
+	Texto de |GW|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/very good for white = \meta{text} (initially Very good for White)}
+	Texto de |GW[2]|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/even = \meta{text} (initially Even position)}
+	Texto de |DM|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/unclear = \meta{text} (initially Unclear position)}
+	Texto de |UC|.
+\end{key}
 
 \begin{command}{\sgfanimation\opt{\oarg{options}}\marg{file}}
 
@@ -743,6 +837,18 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Como |/pgfgo/sgf/restart|.
 \end{key}
 
+\begin{key}{/pgfgo/sgf animation/annotations = \meta{boolean} (default true, initially true)}
+	Con |comments|, escribe también el nombre y las anotaciones de cada jugada, como |\sgfcomment|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/game = \meta{number} (initially 1)}
+	Como |/pgfgo/sgf/game|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/view = \meta{boolean} (default true, initially true)}
+	Si el archivo tiene vista (|VW|), los tableros muestran solo esa parte, como |sgf view|.
+\end{key}
+
 \begin{key}{/pgfgo/sgf animation/layers = \meta{boolean} (default true, initially true)}
 	Arma la animación por capas: el tablero se dibuja una sola vez, y cada piedra también, en una lámina que |animate| muestra mientras la piedra sigue en el tablero (con la opción |timeline| de |animate|). Lo único que se dibuja en cada cuadro es lo que cambia: la marca de la última jugada, las marcas del archivo y el comentario. Así, el PDF crece con la cantidad de jugadas y no con su cuadrado: una partida de 200 jugadas ocupa menos de 1~MB, en lugar de más de 10~MB, y además compila más rápido. Con |layers = false|, cada cuadro es un |goban| entero. El |timeline| se guarda en un archivo auxiliar, |<jobname>-pgfgo-<n>.tln|.
 \end{key}
@@ -787,6 +893,26 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 
 \begin{key}{/pgfgo/sgf diagrams/variation = \meta{números} (initially la línea principal)}
 	Como |/pgfgo/sgf/variation|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments = \meta{boolean} (default true, initially false)}
+	Escribe debajo de cada diagrama los comentarios de sus jugadas, como |\sgfcomment|, cada uno con el número de la jugada.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/annotations = \meta{boolean} (default true, initially true)}
+	Con |comments|, escribe también el nombre y las anotaciones de cada jugada.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/figures = \meta{boolean} (default true, initially true)}
+	Si el archivo marca figuras (|FG|), cada figura es un diagrama, con su nombre como epígrafe, en lugar de uno cada |step| jugadas.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/view = \meta{boolean} (default true, initially true)}
+	Como |/pgfgo/sgf animation/view|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/game = \meta{number} (initially 1)}
+	Como |/pgfgo/sgf/game|.
 \end{key}
 
 

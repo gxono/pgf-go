@@ -1,0 +1,39 @@
+% engines: lualatex
+% expect-warnings: 2
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% collection.sgf has two games. Game 1: 5x5, black A5, PL[W], no moves.
+% Game 2 (Latin-1, CA[ISO-8859-1], ST[0], VW[aa:ee] = A5-E9): black C7;
+% 1 W D6 (figure "Primera figura"), then two variations: 2 B C5, 3 W C6
+% (figure "Segunda"), 4 B A8; or 2 B D7.
+
+\case{game = 1 (PL[W]: \textbackslash moves continues with White) / game = 2}
+\begin{goban}[5]\sgf[game = 1]{collection.sgf}\moves*{C3}\end{goban}
+\begin{goban}[9]\sgf[game = 2]{collection.sgf}\end{goban}
+
+\case{Latin-1 comment and \textbackslash sgfinfo of game 2; game 5 does not exist (warning) and a charset that is not supported (warning)}
+\sgfcomment[game = 2]{collection.sgf}{0} / CA: \sgfinfo[game = 2]{collection.sgf}{CA} /
+game 5: \sgfinfo[game = 5]{collection.sgf}{SZ} / \sgfinfo{charset.sgf}{CA}
+
+\case{sgf view: VW is A5-E9 (with \textbackslash pgfgoset\{sgf = \{game = 2\}\})}
+{\pgfgoset{sgf = {game = 2}}%
+\begin{goban}[sgf view = collection.sgf, label = {at = {north, west}}]\sgf{collection.sgf}\end{goban}}
+
+\case{Variations: children of move 1 (A C5, B D7) / siblings of move 2 (A on C5, B D7) / auto (ST[0]: children) / none at move 4}
+\begin{goban}[9]\sgf[game = 2, to = 1, variations = children]{collection.sgf}\end{goban}
+\begin{goban}[9]\sgf[game = 2, to = 2, variations = siblings]{collection.sgf}\end{goban}
+\begin{goban}[9]\sgf[game = 2, to = 1, variations]{collection.sgf}\end{goban}
+\begin{goban}[9]\sgf[game = 2, variations]{collection.sgf}\end{goban}
+
+\case{sgfdiagrams of game 2: by figures ("Primera figura (1-2)", "Segunda (3-4)"), with the view / figures = false, view = false, step = 3}
+\sgfdiagrams[game = 2]{collection.sgf}
+
+\sgfdiagrams[game = 2, figures = false, view = false, step = 3]{collection.sgf}
+
+\end{document}

@@ -249,6 +249,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/mark/dim}
+	Dims the point: it covers it with the color of the background of the board, translucent, over the stone and the grid. It is what |\sgf| draws for the |DD| property.
+
+	\begin{codeexample}[]
+		\begin{goban}[5]
+			\stones{B2, C3}\stone[w]{D4}
+			\marks[dim]{A1:5, B2}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
 \begin{key}{/pgfgo/mark/custom=\meta{token list}}
 	
 	Allows defining a custom mark using text or symbols (e.g., "!" or "?") and even images.
@@ -543,4 +554,120 @@ Marks are graphical elements placed at the intersections of the board to highlig
 
 \begin{key}{/pgfgo/mark/remember}
 	This mark is stored in the board’s memory, even if the |goban| uses |forget|.
+\end{key}
+
+
+\subsection{Arrows and Lines}
+\label{subsec:arrows}
+
+Arrows and lines join two intersections. They are drawn above the stones, with a halo in the color of the background of the board that separates them from the stones and the grid. Like |\mark|, |\arrow| and |\line| only exist inside |goban|: outside, |\line| is still the \LaTeX\ command. |\sgf| draws the arrows (|AR|) and lines (|LN|) of the file.
+
+\begin{command}{\arrow\opt{\oarg{options}}\marg{from}\marg{to}}
+	Draws an arrow from one intersection to another.
+
+	\begin{codeexample}[]
+		\begin{goban}[9]
+			\stones{C3, D3}\stone[w]{E5}
+			\arrow{B3}{F3}
+			\arrow[color = red, halo = false]{C7}{G9}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\begin{command}{\line\opt{\oarg{options}}\marg{from}\marg{to}}
+	Draws a line from one intersection to another.
+
+	\begin{codeexample}[]
+		\begin{goban}[9]
+			\stones{C3, D4}\stone[w]{E5}
+			\line{C3}{G7}
+			\line[color = blue, width = 2pt]{A9}{J9}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\begin{key}{/pgfgo/arrow/color=\meta{color} (initially black)}
+	Color of the arrow.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/width=\meta{dimension} (initially 1.2pt)}
+	Width of the arrow. The tip grows with it.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/opacity=\meta{number} (initially 1)}
+	Opacity of the arrow.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/tip=\meta{arrow tip} (initially Stealth)}
+	The tip of the arrow, one of the tips of the |arrows.meta| library of \tikzname, like |Latex| or |Triangle|.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/halo=\meta{halo options} (default true)}
+	The halo around the arrow.
+\end{key}
+
+\begin{stylekey}{/pgfgo/arrow/halo/true}
+	Draws the halo. It is the initial value.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/arrow/halo/false}
+	Does not draw the halo.
+\end{stylekey}
+
+\begin{key}{/pgfgo/arrow/halo/color=\meta{color}}
+	Color of the halo. Without this \emph{key}, it is the color of the background of the board.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/halo/width=\meta{dimension} (initially 0.8pt)}
+	Width of the halo on each side of the arrow.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/remember}
+	This arrow is saved in the memory of the board, even if the |goban| uses |forget|.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/forget}
+	This arrow is not saved in the memory of the board, even if the |goban| uses |remember|.
+\end{key}
+
+Lines have the same options, except |tip|:
+
+\begin{key}{/pgfgo/line/color=\meta{color} (initially black)}
+	Like |/pgfgo/arrow/color|.
+\end{key}
+
+\begin{key}{/pgfgo/line/width=\meta{dimension} (initially 1.2pt)}
+	Like |/pgfgo/arrow/width|.
+\end{key}
+
+\begin{key}{/pgfgo/line/opacity=\meta{number} (initially 1)}
+	Like |/pgfgo/arrow/opacity|.
+\end{key}
+
+\begin{key}{/pgfgo/line/halo=\meta{halo options} (default true)}
+	Like |/pgfgo/arrow/halo|.
+\end{key}
+
+\begin{stylekey}{/pgfgo/line/halo/true}
+	Like |/pgfgo/arrow/halo/true|.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/line/halo/false}
+	Like |/pgfgo/arrow/halo/false|.
+\end{stylekey}
+
+\begin{key}{/pgfgo/line/halo/color=\meta{color}}
+	Like |/pgfgo/arrow/halo/color|.
+\end{key}
+
+\begin{key}{/pgfgo/line/halo/width=\meta{dimension} (initially 0.8pt)}
+	Like |/pgfgo/arrow/halo/width|.
+\end{key}
+
+\begin{key}{/pgfgo/line/remember}
+	Like |/pgfgo/arrow/remember|.
+\end{key}
+
+\begin{key}{/pgfgo/line/forget}
+	Like |/pgfgo/arrow/forget|.
 \end{key}

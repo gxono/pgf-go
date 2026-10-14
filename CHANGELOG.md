@@ -6,6 +6,15 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- SGF collections (`game`), the view (`VW`, `goban/sgf view`), figures (`FG`) in
+  `\sgfdiagrams`, variations as letters (`sgf/variations`, `ST`), `PL`, and
+  Latin-1 files (`CA`).
+- SGF annotations (`N`, `TE`, `BM`, `DO`, `IT`, `GB`, `GW`, `DM`, `UC`) are written
+  with the comments. New `\sgfcomment` and `sgf diagrams/comments`; the
+  texts are set with `\pgfgoset{sgf annotations = {...}}`.
+- Arrows and lines: `\arrow` and `\line` inside `goban`, and the `dim` mark.
+  `\sgf` also draws `AR`, `LN`, `SL` and `DD`.
+- Star points: `goban/hoshi` (on by default; `radius`, `color`, `at`).
 - Compute kernel: the calculations are now separate from the drawing. New
   package option `kernel = expl3 | lua` (by default `lua` with LuaLaTeX and
   `expl3` with other engines). Both kernels draw the same diagrams.
@@ -18,7 +27,7 @@ All notable changes to `pgf-go` are listed here.
 - `\sgfdiagrams`: an SGF game as a series of diagrams, as in books.
 - `goban/notes` and `\pgfgomovenotes`: notes such as "3 at 1".
 - `\territory` (with a polygon, or `auto` with the Lua kernel) and
-  `\pgfgoscore`.
+  `\pgfgoscore`. `\sgf` draws the territory of the file (`TB`, `TW`).
 
 ### Documentation
 

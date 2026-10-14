@@ -55,6 +55,13 @@
 	
 	t-square			.groups:n		=	{ shape },
 
+	%ATENUA EL PUNTO (DD EN SGF): UN CUADRADO DEL COLOR DEL FONDO, TRANSLUCIDO, SOBRE LA PIEDRA Y LA CUADRICULA.
+	dim						.code:n			= {
+		\bool_set_true:N\l_pgfgo_mark_t_bool
+		\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_dim:
+	},
+	dim						.groups:n		=	{ shape },
+
 	%ALIAS SIN GUION (USADOS EN EL CATALOGO DEL MANUAL)
 	tcircle				.code:n			= {\keys_set:nn { pgfgo / mark }{t-circle}},
 	tcircle				.groups:n		=	{ shape },
@@ -245,6 +252,14 @@
 	\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * 0.35}
 
 	\pgfusepath{stroke, fill}
+}
+
+
+\cs_set:Nn\pgfgo_mark_dim: {
+	\pgfsetfillcolor{\l_pgfgo_goban_border_fill_color_tl}
+	\pgfsetfillopacity{0.6}
+	\pgfpathrectanglecorners {\pgfpointxy{-0.5}{-0.5}} {\pgfpointxy{0.5}{0.5}}
+	\pgfusepath{fill}
 }
 
 

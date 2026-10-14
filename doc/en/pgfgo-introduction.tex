@@ -23,6 +23,10 @@ Regarding the name, although the macros are implemented in \pgfname\ and L3, the
 			\item With the Lua kernel, captures (|captures|, p.~\pageref{subsec:captures}) and SGF games (|\sgf|, p.~\pageref{subsec:sgf}) have been added. With the |animate| package, |\sgfanimation| steps through a game with buttons.
 			\item "N at M" notes have been added for numbered moves on points already played (|notes| and |\pgfgomovenotes|, p.~\pageref{subsec:notes}).
 			\item SGF: variations (|variation|), the marks of the file (|marks|), the game information (|\sgfinfo|), numbering with |MN| and |restart|, and the board size taken from the file (|sgf size|).
+			\item SGF: collections of games (|game|), the view (|VW|, |sgf view|), figures (|FG|) in |\sgfdiagrams|, variations as letters (|variations|), |PL| and Latin-1 files.
+			\item SGF: node names and annotations (|TE|, |BM|, |GB|, etc.) are written with the comments. |\sgfcomment| writes the comment of a move, and |\sgfdiagrams| can write the comments below each diagram (|comments|).
+			\item Arrows and lines (|\arrow| and |\line|, p.~\pageref{subsec:arrows}) and the |dim| mark have been added. |\sgf| also draws |AR|, |LN|, |SL| and |DD|.
+			\item The board draws the star points (|hoshi|, p.~\pageref{subsec:hoshi}).
 			\item |\territory|, which marks the territory (with a polygon, or by itself with |auto| and the Lua kernel), and |\pgfgoscore|, which counts the points, have been added.
 			\item |\sgfanimation| builds the animation by layers (|layers|): every stone is drawn only once, and the PDF of a long game is much smaller.
 			\item With |captured marks = remove|, the marks on a captured stone go with it.
