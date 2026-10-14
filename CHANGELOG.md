@@ -47,9 +47,10 @@ The output is unchanged.
     each branch, the given one in order (1 is the main one), and then the
     first. A variation that does not exist produces a warning.
   - The marks of the file (`TR`, `SQ`, `CR`, `MA` and the labels of `LB`) of
-    the last node shown are drawn, in the colour of the stone on the point
-    (`marks = false` turns them off). In `\sgfanimation`, each frame shows the
-    marks of its move.
+    the last node shown are drawn, in the colour of the stone on the point,
+    instead of the number of the move (`marks = false` turns them off). In
+    `\sgfanimation`, each frame shows the marks of its move, and the last move
+    is not marked again when the file already marks it.
   - `MN` changes the number of a move, and `restart = <n>` restarts the
     numbering every n moves (move 101 is shown as 1 with `restart = 100`).
     `from` and `to` still count the moves of the file.

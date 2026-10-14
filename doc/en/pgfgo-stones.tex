@@ -632,7 +632,7 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 \end{key}
 
 \begin{key}{/pgfgo/sgf/marks = \meta{boolean} (default true, initially true)}
-	Draws the marks of the file (|TR|, |SQ|, |CR|, |MA| and the labels of |LB|) of the last node that is shown. Each mark takes the color of the stone on that point, so that it can be seen.
+	Draws the marks of the file (|TR|, |SQ|, |CR|, |MA| and the labels of |LB|) of the last node that is shown. Each mark takes the color of the stone on that point, so that it can be seen, and replaces the number of the move.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variations.sgf]
@@ -707,7 +707,7 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/last mark = \meta{mark options or false} (initially circle)}
-	Mark of the last move, in the colour of the player who made it. With |false|, the last move is not marked. It is not used with |numbers|.
+	Mark of the last move, in the colour of the player who made it. With |false|, the last move is not marked. It is not used with |numbers|, nor when the file already marks that point.
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/comments = \meta{boolean} (default true, initially false)}
