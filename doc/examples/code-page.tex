@@ -1,0 +1,44 @@
+% code-page.tex: the examples load it before \documentclass. The illustration goes on the first page, and
+% the last pages show the code of the example: the lines that follow \input{code-page}.
+\PassOptionsToClass{multi=page}{standalone}
+\AddToHook{class/standalone/after}{\RequirePackage{fvextra}}
+\AddToHook{class/beamer/after}{\RequirePackage{fvextra}}
+\ExplSyntaxOn
+\int_new:N \g__codepage_first_int
+\ior_new:N \g__codepage_ior
+\cs_new_protected:Npn \__codepage_find: {
+	\int_zero:N \l_tmpa_int
+	\ior_open:Nn \g__codepage_ior {\c_sys_jobname_str .tex}
+	\ior_str_map_inline:Nn \g__codepage_ior {
+		\int_incr:N \l_tmpa_int
+		\str_if_in:nnT {##1} {{code-page}}
+			{\int_gset:Nn \g__codepage_first_int {\l_tmpa_int + 1} \ior_map_break:}
+	}
+	\ior_close:N \g__codepage_ior
+}
+\cs_new_protected:Npn \__codepage_code:n #1 {
+	\VerbatimInput[fontsize = #1, breaklines, tabsize = 4, firstline = \int_use:N \g__codepage_first_int]
+		{\c_sys_jobname_str .tex}
+}
+\AddToHook{begindocument/before}{\__codepage_find:}
+\AddToHook{begindocument/end}{
+	\cs_if_exist:cTF {ver@beamer.cls} {} {\begin{page}\ignorespaces}
+}
+\AddToHook{enddocument}{
+	\cs_if_exist:cTF {ver@beamer.cls}
+		{
+			\setbeamertemplate{frametitle~continuation}{}
+			\begin{frame}[allowframebreaks]{The~code~of~this~presentation}
+				\__codepage_code:n {\tiny}
+			\end{frame}
+		}
+		{
+			\unskip
+			\end{page}
+			\standaloneconfig{varwidth = false}
+			\begin{page}
+				\begin{minipage}{16cm}\__codepage_code:n {\small}\end{minipage}
+			\end{page}
+		}
+}
+\ExplSyntaxOff

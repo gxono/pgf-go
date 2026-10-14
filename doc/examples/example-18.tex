@@ -1,5 +1,5 @@
-\documentclass[border=0.5cm, varwidth=13cm, multi=page]{standalone}
-\usepackage{fvextra}
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=13cm]{standalone}
 \usepackage[fontset = fandol]{ctex}
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
@@ -13,18 +13,8 @@
 
 
 \begin{document}
-\begin{page}%
 	\sgfinfo{qipu.sgf}{GN}：\sgfinfo{qipu.sgf}{PB}对\sgfinfo{qipu.sgf}{PW}，贴目\sgfinfo{qipu.sgf}{KM}。\sgfcomment{qipu.sgf}{0}
 
 	\medskip
-	\sgfdiagrams[step = 9, comments]{qipu.sgf}%
-\end{page}
-
-% The last page shows this code.
-\standaloneconfig{varwidth = false}
-\begin{page}
-	\begin{minipage}{16cm}
-		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-18.tex}
-	\end{minipage}
-\end{page}
+	\sgfdiagrams[step = 9, comments]{qipu.sgf}
 \end{document}

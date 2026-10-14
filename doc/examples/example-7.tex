@@ -1,5 +1,5 @@
-\documentclass[border=0.5cm, multi=page]{standalone}
-\usepackage{fvextra}
+\input{code-page}
+\documentclass[border=0.5cm]{standalone}
 \usepackage{../../latex/pgf-go}
 
 
@@ -8,7 +8,6 @@
 
 
 \begin{document}
-\begin{page}%
 	\setlength{\tabcolsep}{2pt}
 	
 	\begin{tabular}{cc}
@@ -34,14 +33,5 @@
 			\stones[w]{F3,G2, H3}
 			\marks[sequence]{G4}
 		\end{goban}\\
-	\end{tabular}%
-\end{page}
-
-% The last page shows this code.
-\standaloneconfig{varwidth = false}
-\begin{page}
-	\begin{minipage}{16cm}
-		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-7.tex}
-	\end{minipage}
-\end{page}
+	\end{tabular}
 \end{document}

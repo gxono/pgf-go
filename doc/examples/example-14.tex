@@ -1,5 +1,5 @@
-\documentclass[border=0.5cm, varwidth=13cm, multi=page]{standalone}
-\usepackage{fvextra}
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=13cm]{standalone}
 \usepackage{luatexja}
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
@@ -12,18 +12,8 @@
 
 
 \begin{document}
-\begin{page}%
 	\sgfinfo{kifu.sgf}{GN}：\sgfinfo{kifu.sgf}{PB}対\sgfinfo{kifu.sgf}{PW}、コミ\sgfinfo{kifu.sgf}{KM}。\sgfcomment{kifu.sgf}{0}
 
 	\medskip
-	\sgfdiagrams[step = 9, comments]{kifu.sgf}%
-\end{page}
-
-% The last page shows this code.
-\standaloneconfig{varwidth = false}
-\begin{page}
-	\begin{minipage}{16cm}
-		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-14.tex}
-	\end{minipage}
-\end{page}
+	\sgfdiagrams[step = 9, comments]{kifu.sgf}
 \end{document}

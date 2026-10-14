@@ -1,5 +1,5 @@
-\documentclass[border=0.5cm, multi=page]{standalone}
-\usepackage{fvextra}
+\input{code-page}
+\documentclass[border=0.5cm]{standalone}
 \usepackage{../../latex/pgf-go}
 
 
@@ -9,7 +9,6 @@
 }
 
 \begin{document}
-\begin{page}%
 	\begin{goban}[13, label = {at = {all}}]
 		\stones{A1, J1, K1, G7, N9, D12, D13}
 		\stones[w]{A2, H1, J2, K2, G6, F7, G8, M9, N10, C12, C13, E12, E13}
@@ -18,14 +17,5 @@
 	\begin{goban}[13, label = {at = {north, east, south}}]
 		\stones[w]{A2, H1, J2, K2, G6, F7, G8, M9, N10, C12, C13, E12, E13}
 		\stones[w,mark = triangle]{B1, L1, N8, H7, D11}
-	\end{goban}%
-\end{page}
-
-% The last page shows this code.
-\standaloneconfig{varwidth = false}
-\begin{page}
-	\begin{minipage}{16cm}
-		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-2.tex}
-	\end{minipage}
-\end{page}
+	\end{goban}
 \end{document}

@@ -1,5 +1,5 @@
-\documentclass[border=0.5cm, multi=page]{standalone}
-\usepackage{fvextra}
+\input{code-page}
+\documentclass[border=0.5cm]{standalone}
 \usepackage{../../latex/pgf-go}
 
 
@@ -7,7 +7,6 @@
 
 
 \begin{document}
-\begin{page}%
 	\begin{goban}[9, partial = {from = A1 to G7}]
 		\stones{C3, D3, E4, C5}
 		\stones[w]{D4, D5, E5, F3}
@@ -17,14 +16,5 @@
 		\line{B6}{F6}
 		\marks[triangle]{D5}
 		\marks[custom = A]{E3}
-	\end{goban}%
-\end{page}
-
-% The last page shows this code.
-\standaloneconfig{varwidth = false}
-\begin{page}
-	\begin{minipage}{16cm}
-		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-17.tex}
-	\end{minipage}
-\end{page}
+	\end{goban}
 \end{document}

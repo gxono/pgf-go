@@ -1,5 +1,5 @@
-\documentclass[border=0.5cm, multi=page]{standalone}
-\usepackage{fvextra}
+\input{code-page}
+\documentclass[border=0.5cm]{standalone}
 \usepackage{../../latex/pgf-go}
 
 
@@ -7,7 +7,6 @@
 
 
 \begin{document}
-\begin{page}%
 	\tabcolsep=0.75pt
 	\begin{tabular}{cc}
 		\begin{goban}[remember]
@@ -28,14 +27,5 @@
 		\pgfgouseprofile{wain}
 		\begin{goban}[resume]
 		\end{goban}
-	\end{tabular}%
-\end{page}
-
-% The last page shows this code.
-\standaloneconfig{varwidth = false}
-\begin{page}
-	\begin{minipage}{16cm}
-		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-6.tex}
-	\end{minipage}
-\end{page}
+	\end{tabular}
 \end{document}
