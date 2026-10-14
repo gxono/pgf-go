@@ -641,7 +641,7 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 \end{key}
 
 \begin{key}{/pgfgo/sgf/marks = \meta{boolean} (default true, initially true)}
-	Dibuja las marcas del archivo (|TR|, |SQ|, |CR|, |MA| y las etiquetas de |LB|) del último nodo que se muestra. Cada marca toma el color de la piedra que hay en ese punto, para que se vea.
+	Dibuja las marcas del archivo (|TR|, |SQ|, |CR|, |MA| y las etiquetas de |LB|) del último nodo que se muestra. Cada marca toma el color de la piedra que hay en ese punto, para que se vea, y reemplaza al número de la jugada.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variantes.sgf]
@@ -716,7 +716,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/last mark = \meta{mark options o false} (initially circle)}
-	Marca de la última jugada, con el color de quien jugó. Con |false|, la última jugada no se marca. No se usa con |numbers|.
+	Marca de la última jugada, con el color de quien jugó. Con |false|, la última jugada no se marca. No se usa con |numbers|, ni cuando el archivo ya marca ese punto.
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/comments = \meta{boolean} (default true, initially false)}
