@@ -5,7 +5,9 @@
 %NO TIENEN UNA PIEDRA VIVA: LOS PRISIONEROS CUENTAN COMO TERRITORIO. \territory[<opciones>]{auto} (SOLO
 %kernel = lua) BUSCA LAS REGIONES RODEADAS POR UN SOLO COLOR. LO QUE HAY EN CADA PUNTO LO LLEVA
 %\g_pgfgo_points_prop (VER pgf-go-stones.sty). \pgfgoscore{<jugador>} SUMA EL TERRITORIO, LAS PIEDRAS
-%MUERTAS DEL RIVAL QUE HAY EN EL, LAS CAPTURAS Y, PARA LAS BLANCAS, EL komi.
+%MUERTAS DEL RIVAL QUE HAY EN EL, LAS CAPTURAS Y, PARA LAS BLANCAS, EL komi. CON draw = region, EL
+%TERRITORIO DE CADA COLOR SE JUNTA EN UNA REGION QUE SE DIBUJA AL CERRAR EL goban; \pgfgoregion{<jugador>}
+%{<propiedad>} DA LAS PROPIEDADES DE SU CONTORNO.
 
 %"x,y" -> black | white | neutral: DE QUIEN ES CADA PUNTO DE TERRITORIO DEL ULTIMO goban.
 \prop_new:N \g_pgfgo_territory_prop
@@ -17,34 +19,76 @@
 \clist_new:N \l__pgfgo_territory_black_clist
 \clist_new:N \l__pgfgo_territory_white_clist
 \clist_new:N \l__pgfgo_territory_neutral_clist
+\cs_generate_variant:Nn \clist_map_inline:nn {en}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------------------------ESTILO-------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%/pgfgo/players/<jugador>/territory: LA MARCA DE CADA PUNTO (draw = marks) Y EL RELLENO (draw = fill).
+%/pgfgo/players/<jugador>/territory: LA MARCA DE CADA PUNTO (draw = marks), EL RELLENO (draw = fill Y
+%draw = region) Y, CON draw = region, EL CONTORNO (line) Y SUS VERTICES (vertices).
 \cs_new_protected:Npn \__pgfgo_territory_new_player:n #1 {
 	\tl_set:Nn \l__pgfgo_item_tl {#1}
 	\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_mark_tl}
 	\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_fill_color_tl}
 	\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_fill_opacity_tl}
+	\bool_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_bool}
+	\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_color_tl}
+	\dim_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_width_dim}
+	\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_opacity_tl}
+	\bool_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_above_bool}
+	\bool_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_vertices_bool}
+	\dim_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_vertices_radius_dim}
+	\tl_new:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_vertices_color_tl}
 	\keys_define:ee {pgfgo / players / \l__pgfgo_item_tl / territory} {
 		mark		.tl_set:c	= {l_pgfgo_players_ \l__pgfgo_item_tl _territory_mark_tl},
 		fill		.code:n		= {\exp_not:N \keys_set:nn {pgfgo / players / \l__pgfgo_item_tl / territory / fill} {##1}},
+		%COMO EMPIEZAN APAGADOS, DARLOS (CON O SIN OPCIONES) LOS PRENDE; false LOS APAGA.
+		line		.code:n		= {
+			\exp_not:N \bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_bool}
+			\exp_not:N \keys_set:nn {pgfgo / players / \l__pgfgo_item_tl / territory / line} {##1}
+		},
+		line		.default:n	= {},
+		vertices	.code:n		= {
+			\exp_not:N \bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_vertices_bool}
+			\exp_not:N \keys_set:nn {pgfgo / players / \l__pgfgo_item_tl / territory / vertices} {##1}
+		},
+		vertices	.default:n	= {},
 	}
 	\keys_define:ee {pgfgo / players / \l__pgfgo_item_tl / territory / fill} {
 		color		.tl_set:c	= {l_pgfgo_players_ \l__pgfgo_item_tl _territory_fill_color_tl},
 		opacity	.tl_set:c	= {l_pgfgo_players_ \l__pgfgo_item_tl _territory_fill_opacity_tl},
 	}
+	\keys_define:ee {pgfgo / players / \l__pgfgo_item_tl / territory / line} {
+		true		.code:n		= {\exp_not:N \bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_bool}},
+		false		.code:n		= {\exp_not:N \bool_set_false:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_bool}},
+		color		.tl_set:c	= {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_color_tl},
+		width		.dim_set:c	= {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_width_dim},
+		width		.initial:n	= {1.2pt},
+		opacity	.tl_set:c	= {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_opacity_tl},
+		opacity	.initial:n	= {1},
+		%ENCIMA DE LAS PIEDRAS (EN LA CAPA DE LAS MARCAS) O DEBAJO (CON EL RELLENO).
+		above		.bool_set:c	= {l_pgfgo_players_ \l__pgfgo_item_tl _territory_line_above_bool},
+		above		.default:n	= {true},
+		above		.initial:n	= {true},
+	}
+	%COMO goban/hoshi. SIN color, EL DEL CONTORNO.
+	\keys_define:ee {pgfgo / players / \l__pgfgo_item_tl / territory / vertices} {
+		true		.code:n		= {\exp_not:N \bool_set_true:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_vertices_bool}},
+		false		.code:n		= {\exp_not:N \bool_set_false:c {l_pgfgo_players_ \l__pgfgo_item_tl _territory_vertices_bool}},
+		radius	.dim_set:c	= {l_pgfgo_players_ \l__pgfgo_item_tl _territory_vertices_radius_dim},
+		radius	.initial:n	= {2pt},
+		color		.tl_set:c	= {l_pgfgo_players_ \l__pgfgo_item_tl _territory_vertices_color_tl},
+	}
 }
 \clist_map_inline:nn {neutral, black, white} {\__pgfgo_territory_new_player:n {#1}}
 \keys_set:nn {pgfgo / players / black / territory}
-	{mark = t-circle, fill = {color = black, opacity = 0.35}}
+	{mark = t-circle, fill = {color = black, opacity = 0.35}, line = {color = black, false}}
 \keys_set:nn {pgfgo / players / white / territory}
-	{mark = t-square, fill = {color = white!80!black, opacity = 0.7}}
+	{mark = t-square, fill = {color = white!80!black, opacity = 0.7}, line = {color = white!40!black, false}}
 \keys_set:nn {pgfgo / players / neutral / territory}
-	{mark = t-square, fill = {color = gray, opacity = 0.35}}
+	{mark = t-square, fill = {color = gray, opacity = 0.35}, line = {color = gray, false}}
 
 \keys_define:nn {pgfgo / territory} {
 	black		.code:n		= {\tl_set:Nn \l__pgfgo_territory_player_tl {black}},
@@ -59,8 +103,9 @@
 	neutral	.groups:n	= {player-id},
 	n				.code:n		= {\tl_set:Nn \l__pgfgo_territory_player_tl {neutral}},
 	n				.groups:n	= {player-id},
-	%marks: UNA MARCA POR PUNTO. fill: UN RELLENO, DEBAJO DE LAS PIEDRAS.
-	draw		.choices:nn	= {marks, fill} {\tl_set_eq:NN \l__pgfgo_territory_draw_tl \l_keys_choice_tl},
+	%marks: UNA MARCA POR PUNTO. fill: UN RELLENO, DEBAJO DE LAS PIEDRAS. region: UN POLIGONO POR COLOR
+	%(EL NEUTRAL SE RELLENA COMO CON fill).
+	draw		.choices:nn	= {marks, fill, region} {\tl_set_eq:NN \l__pgfgo_territory_draw_tl \l_keys_choice_tl},
 	draw		.initial:n	= {marks},
 	%COMO EN LAS MARCAS: GUARDAR O NO ESTE TERRITORIO EN LA MEMORIA.
 	remember	.code:n		= {\bool_set_true:N \l_pgfgo_goban_remember_territory_bool},
@@ -69,13 +114,18 @@
 	dame		.bool_set:N	= \l__pgfgo_territory_dame_bool,
 	dame		.default:n	= {true},
 	dame		.initial:n	= {false},
-	%EL RESTO (mark, fill) ES EL ESTILO DEL JUGADOR DE ESTE \territory.
+	%EL RESTO (mark, fill, line, vertices) ES EL ESTILO DEL JUGADOR DE ESTE \territory. SIN VALOR, VA LA
+	%CLAVE SOLA (line ES line = true).
+	%SIN JUGADOR, EL DE LOS TRES (CON auto SE DIBUJAN LOS TRES; UN POLIGONO SIN JUGADOR ES NEUTRAL).
 	unknown	.code:n		= {
-		\use:e {
-			\exp_not:N \keys_set:nn
-				{pgfgo / players / \tl_if_empty:NTF \l__pgfgo_territory_player_tl {neutral} {\l__pgfgo_territory_player_tl} / territory}
-				{\l_keys_key_str = {\exp_not:n {#1}}}
-		}
+		\clist_map_inline:en
+			{\tl_if_empty:NTF \l__pgfgo_territory_player_tl {black, white, neutral} {\l__pgfgo_territory_player_tl}}
+			{
+				\use:e {
+					\exp_not:N \keys_set:nn {pgfgo / players / ##1 / territory}
+						{\l_keys_key_str \tl_if_empty:nF {#1} {= {\exp_not:n {#1}}}}
+				}
+			}
 	},
 }
 
@@ -84,17 +134,22 @@
 %----------------------------------------DIBUJO-------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%LOS PUNTOS #3 ({x}{y},...) SON TERRITORIO DE #1 (black, white O neutral). #2: marks O fill.
+%LOS PUNTOS #3 ({x}{y},...) SON TERRITORIO DE #1 (black, white O neutral). #2: marks, fill O region.
 \cs_new_protected:Npn \pgfgo_territory_parsed:nnn #1#2#3 {
 	\clist_map_inline:nn {#3} {\__pgfgo_territory_own:nnn {#1} ##1}
-	\str_if_eq:nnTF {#2} {fill}
-		{\__pgfgo_territory_fill:nn {#1} {#3}}
-		{
-			\use:e {
-				\exp_not:N \pgfgo_marks_parsed:nn
-					{#1, \exp_not:v {l_pgfgo_players_ #1 _territory_mark_tl}} {\exp_not:n {#3}}
-			}
+	\str_case:nnF {#2} {
+		{fill}		{\__pgfgo_territory_fill:nn {#1} {#3}}
+		{region}	{
+			\str_if_eq:nnTF {#1} {neutral}
+				{\__pgfgo_territory_fill:nn {#1} {#3}}
+				{\__pgfgo_territory_region:nn {#1} {#3}}
 		}
+	}{
+		\use:e {
+			\exp_not:N \pgfgo_marks_parsed:nn
+				{#1, \exp_not:v {l_pgfgo_players_ #1 _territory_mark_tl}} {\exp_not:n {#3}}
+		}
+	}
 }
 
 \cs_new_protected:Npn \__pgfgo_territory_own:nnn #1#2#3 {
@@ -119,6 +174,205 @@
 }
 \cs_new_protected:Npn \__pgfgo_territory_cell:nn #1#2 {
 	\pgfpathrectanglecorners {\pgfpointxy{#1 - 0.5}{#2 - 0.5}} {\pgfpointxy{#1 + 0.5}{#2 + 0.5}}
+}
+
+%REGION (draw = region). POR COLOR: LOS PUNTOS DEL goban ACTUAL (points_seq), SUS CONTORNOS (seq, LOS DE
+%\pgfgo_kernel_region:n), SUS PROPIEDADES (prop, LAS DE \pgfgoregion) Y EL ESTILO DEL ULTIMO \territory
+%(style_prop). CADA \territory SUMA SUS PUNTOS Y VUELVE A CALCULAR EL CONTORNO; EL DIBUJO SE HACE UNA SOLA
+%VEZ, AL CERRAR EL goban (\pgfgo_territory_end:), PARA QUE CADA COLOR SEA UN SOLO CAMINO.
+\clist_map_inline:nn {black, white, neutral} {
+	\seq_new:c {g__pgfgo_territory_region_ #1 _points_seq}
+	\seq_new:c {g__pgfgo_territory_region_ #1 _seq}
+	\prop_new:c {g__pgfgo_territory_region_ #1 _prop}
+	\prop_new:c {g__pgfgo_territory_region_ #1 _style_prop}
+}
+\seq_new:N \l__pgfgo_territory_region_seq
+\clist_new:N \l__pgfgo_territory_region_clist
+\prop_new:N \l__pgfgo_territory_region_style_prop
+\tl_new:N \l__pgfgo_territory_region_last_tl
+\int_new:N \l__pgfgo_territory_region_outlines_int
+\int_new:N \l__pgfgo_territory_region_holes_int
+\int_new:N \l__pgfgo_territory_region_vertices_int
+\int_new:N \l__pgfgo_territory_region_area_int
+\int_new:N \l__pgfgo_territory_region_perimeter_int
+\bool_new:N \l__pgfgo_territory_region_first_bool
+
+%AL EMPEZAR CADA goban, SIN REGIONES (resume LAS VUELVE A ARMAR).
+\cs_new_protected:Npn \pgfgo_territory_begin: {
+	\clist_map_inline:nn {black, white, neutral} {
+		\seq_gclear:c {g__pgfgo_territory_region_ ##1 _points_seq}
+		\seq_gclear:c {g__pgfgo_territory_region_ ##1 _seq}
+		\prop_gclear:c {g__pgfgo_territory_region_ ##1 _style_prop}
+		\__pgfgo_territory_region_properties:n {##1}
+	}
+}
+
+\cs_new_protected:Npn \__pgfgo_territory_region:nn #1#2 {
+	\clist_map_inline:nn {#2} {
+		\seq_if_in:cnF {g__pgfgo_territory_region_ #1 _points_seq} {##1}
+			{\seq_gput_right:cn {g__pgfgo_territory_region_ #1 _points_seq} {##1}}
+	}
+	\pgfgo_kernel_region:e {\seq_use:cn {g__pgfgo_territory_region_ #1 _points_seq} {,}}
+	\seq_gset_eq:cN {g__pgfgo_territory_region_ #1 _seq} \l_pgfgo_kernel_region_seq
+	\__pgfgo_territory_region_properties:n {#1}
+	\prop_gset_from_keyval:ce {g__pgfgo_territory_region_ #1 _style_prop} {
+		fill~color		= {\exp_not:v {l_pgfgo_players_ #1 _territory_fill_color_tl}},
+		fill~opacity	= {\exp_not:v {l_pgfgo_players_ #1 _territory_fill_opacity_tl}},
+		line					= {\bool_if:cTF {l_pgfgo_players_ #1 _territory_line_bool} {true} {false}},
+		line~color		= {\exp_not:v {l_pgfgo_players_ #1 _territory_line_color_tl}},
+		line~width		= {\dim_use:c {l_pgfgo_players_ #1 _territory_line_width_dim}},
+		line~opacity	= {\exp_not:v {l_pgfgo_players_ #1 _territory_line_opacity_tl}},
+		above					= {\bool_if:cTF {l_pgfgo_players_ #1 _territory_line_above_bool} {true} {false}},
+		vertices			= {\bool_if:cTF {l_pgfgo_players_ #1 _territory_vertices_bool} {true} {false}},
+		radius				= {\dim_use:c {l_pgfgo_players_ #1 _territory_vertices_radius_dim}},
+		vertices~color	= {
+			\tl_if_empty:cTF {l_pgfgo_players_ #1 _territory_vertices_color_tl}
+				{\exp_not:v {l_pgfgo_players_ #1 _territory_line_color_tl}}
+				{\exp_not:v {l_pgfgo_players_ #1 _territory_vertices_color_tl}}
+		},
+	}
+}
+\cs_generate_variant:Nn \prop_gset_from_keyval:Nn {ce}
+\cs_generate_variant:Nn \pgfgo_kernel_region:n {e}
+\cs_generate_variant:Nn \seq_if_in:NnF {cnF}
+
+%LAS PROPIEDADES DE LOS CONTORNOS DE #1: polygons, outlines (LOS QUE VAN HACIA EL ESTE DESDE SU PRIMER
+%VERTICE), holes, vertices, area (CON LA FORMULA DEL AREA DE GAUSS: LOS HUECOS RESTAN), perimeter Y
+%polygon~i (SUS VERTICES COMO COORDENADAS DEL TABLERO).
+\cs_new_protected:Npn \__pgfgo_territory_region_properties:n #1 {
+	\int_zero:N \l__pgfgo_territory_region_outlines_int
+	\int_zero:N \l__pgfgo_territory_region_holes_int
+	\int_zero:N \l__pgfgo_territory_region_vertices_int
+	\int_zero:N \l__pgfgo_territory_region_area_int
+	\int_zero:N \l__pgfgo_territory_region_perimeter_int
+	\prop_gclear:c {g__pgfgo_territory_region_ #1 _prop}
+	\seq_map_indexed_inline:cn {g__pgfgo_territory_region_ #1 _seq} {
+		\seq_set_from_clist:Nn \l__pgfgo_territory_region_seq {##2}
+		\int_add:Nn \l__pgfgo_territory_region_vertices_int {\seq_count:N \l__pgfgo_territory_region_seq}
+		\use:e {
+			\exp_not:N \__pgfgo_territory_region_kind:nnnn
+				\seq_item:Nn \l__pgfgo_territory_region_seq {1}
+				\seq_item:Nn \l__pgfgo_territory_region_seq {2}
+		}
+		\seq_get_right:NN \l__pgfgo_territory_region_seq \l__pgfgo_territory_region_last_tl
+		\clist_clear:N \l__pgfgo_territory_region_clist
+		\seq_map_inline:Nn \l__pgfgo_territory_region_seq {\__pgfgo_territory_region_vertex:nn ####1}
+		\prop_gput:cnV {g__pgfgo_territory_region_ #1 _prop} {polygon~##1} \l__pgfgo_territory_region_clist
+	}
+	\prop_gput:cne {g__pgfgo_territory_region_ #1 _prop} {polygons}
+		{\seq_count:c {g__pgfgo_territory_region_ #1 _seq}}
+	\prop_gput:cnV {g__pgfgo_territory_region_ #1 _prop} {outlines} \l__pgfgo_territory_region_outlines_int
+	\prop_gput:cnV {g__pgfgo_territory_region_ #1 _prop} {holes} \l__pgfgo_territory_region_holes_int
+	\prop_gput:cnV {g__pgfgo_territory_region_ #1 _prop} {vertices} \l__pgfgo_territory_region_vertices_int
+	\prop_gput:cne {g__pgfgo_territory_region_ #1 _prop} {area}
+		{\int_div_truncate:nn {\l__pgfgo_territory_region_area_int} {2}}
+	\prop_gput:cnV {g__pgfgo_territory_region_ #1 _prop} {perimeter} \l__pgfgo_territory_region_perimeter_int
+}
+\cs_generate_variant:Nn \prop_gput:Nnn {cnV, cne}
+\cs_generate_variant:Nn \seq_map_indexed_inline:Nn {cn}
+
+\cs_new_protected:Npn \__pgfgo_territory_region_kind:nnnn #1#2#3#4 {
+	\int_compare:nNnTF {#2} = {#4}
+		{\int_incr:N \l__pgfgo_territory_region_outlines_int}
+		{\int_incr:N \l__pgfgo_territory_region_holes_int}
+}
+
+\cs_new_protected:Npn \__pgfgo_territory_region_vertex:nn #1#2 {
+	\exp_after:wN \__pgfgo_territory_region_edge:nnnn \l__pgfgo_territory_region_last_tl {#1} {#2}
+	\tl_set:Nn \l__pgfgo_territory_region_last_tl {{#1}{#2}}
+	\clist_put_right:Ne \l__pgfgo_territory_region_clist {\pgfgo_kernel_column_name:n {#1} #2}
+}
+\cs_generate_variant:Nn \clist_put_right:Nn {Ne}
+
+%EL LADO DE (#1,#2) A (#3,#4).
+\cs_new_protected:Npn \__pgfgo_territory_region_edge:nnnn #1#2#3#4 {
+	\int_add:Nn \l__pgfgo_territory_region_area_int {#1 * #4 - #3 * #2}
+	\int_add:Nn \l__pgfgo_territory_region_perimeter_int {\int_abs:n {#3 - #1} + \int_abs:n {#4 - #2}}
+}
+
+%AL CERRAR EL goban: EL RELLENO DE CADA REGION, RECORTADO A LA CUADRICULA VISIBLE, EN LA CAPA DEL
+%TERRITORIO; EL CONTORNO Y LOS VERTICES, RECORTADOS COMO LA CUADRICULA CON partial, EN LA CAPA DE LAS
+%MARCAS (above) O EN LA DEL TERRITORIO.
+\cs_new_protected:Npn \pgfgo_territory_end: {
+	\clist_map_inline:nn {black, white} {
+		\seq_if_empty:cF {g__pgfgo_territory_region_ ##1 _seq} {\__pgfgo_territory_region_draw:n {##1}}
+	}
+}
+
+\cs_new_protected:Npn \__pgfgo_territory_region_draw:n #1 {
+	\prop_set_eq:Nc \l__pgfgo_territory_region_style_prop {g__pgfgo_territory_region_ #1 _style_prop}
+	\pgfonlayer{pgfgo_layer_territory}
+	\pgfscope
+		\__pgfgo_territory_clip:n {0}
+		\__pgfgo_territory_region_path:n {#1}
+		\pgfsetfillcolor{\__pgfgo_territory_style:n {fill~color}}
+		\pgfsetfillopacity{\__pgfgo_territory_style:n {fill~opacity}}
+		\pgfusepath{fill}
+	\endpgfscope
+	\endpgfonlayer
+	\bool_lazy_or:nnT
+		{\str_if_eq_p:ee {\__pgfgo_territory_style:n {line}} {true}}
+		{\str_if_eq_p:ee {\__pgfgo_territory_style:n {vertices}} {true}}
+		{
+			\tl_set:Ne \l_tmpa_tl {
+				\str_if_eq:eeTF {\__pgfgo_territory_style:n {above}} {true}
+					{pgfgo_layer_mark} {pgfgo_layer_territory}
+			}
+			\exp_args:NV \pgfonlayer \l_tmpa_tl
+			\pgfscope
+				\__pgfgo_territory_clip:n {0.5}
+				\str_if_eq:eeT {\__pgfgo_territory_style:n {line}} {true} {
+					\pgfscope
+						\__pgfgo_territory_region_path:n {#1}
+						\pgfsetstrokecolor{\__pgfgo_territory_style:n {line~color}}
+						\pgfsetstrokeopacity{\__pgfgo_territory_style:n {line~opacity}}
+						\pgfsetlinewidth{\__pgfgo_territory_style:n {line~width}}
+						\pgfusepath{stroke}
+					\endpgfscope
+				}
+				\str_if_eq:eeT {\__pgfgo_territory_style:n {vertices}} {true} {
+					\seq_map_inline:cn {g__pgfgo_territory_region_ #1 _seq} {
+						\clist_map_inline:nn {##1} {\__pgfgo_territory_region_dot:nn ####1}
+					}
+					\pgfsetfillcolor{\__pgfgo_territory_style:n {vertices~color}}
+					\pgfsetfillopacity{\__pgfgo_territory_style:n {line~opacity}}
+					\pgfusepath{fill}
+				}
+			\endpgfscope
+			\endpgfonlayer
+		}
+}
+\cs_generate_variant:Nn \seq_map_inline:Nn {cn}
+\cs_generate_variant:Nn \str_if_eq:nnT {eeT}
+
+\cs_new:Npn \__pgfgo_territory_style:n #1 {\prop_item:Nn \l__pgfgo_territory_region_style_prop {#1}}
+
+%RECORTA A LA PARTE VISIBLE DE LA CUADRICULA, AGRANDADA #1 CASILLAS.
+\cs_new_protected:Npn \__pgfgo_territory_clip:n #1 {
+	\pgfpathrectanglecorners
+		{\pgfpointxy{\int_use:N \l_pgfgo_goban_from_x_int - #1}{\int_use:N \l_pgfgo_goban_from_y_int - #1}}
+		{\pgfpointxy{\int_use:N \l_pgfgo_goban_to_x_int + #1}{\int_use:N \l_pgfgo_goban_to_y_int + #1}}
+	\pgfusepath{clip}
+}
+
+\cs_new_protected:Npn \__pgfgo_territory_region_path:n #1 {
+	\seq_map_inline:cn {g__pgfgo_territory_region_ #1 _seq} {
+		\bool_set_true:N \l__pgfgo_territory_region_first_bool
+		\clist_map_inline:nn {##1} {\__pgfgo_territory_region_point:nn ####1}
+		\pgfpathclose
+	}
+}
+\cs_new_protected:Npn \__pgfgo_territory_region_point:nn #1#2 {
+	\bool_if:NTF \l__pgfgo_territory_region_first_bool
+		{
+			\pgfpathmoveto{\pgfpointxy{#1}{#2}}
+			\bool_set_false:N \l__pgfgo_territory_region_first_bool
+		}
+		{\pgfpathlineto{\pgfpointxy{#1}{#2}}}
+}
+\cs_new_protected:Npn \__pgfgo_territory_region_dot:nn #1#2 {
+	\pgfpathcircle{\pgfpointxy{#1}{#2}}
+		{\prop_item:Nn \l__pgfgo_territory_region_style_prop {radius}}
 }
 
 %DIBUJA EL TERRITORIO #2 DE #1 CON EL ESTILO ACTUAL, Y LO GUARDA CON remember territory.
@@ -254,6 +508,25 @@
 			+ \str_if_eq:VnTF \l__pgfgo_score_player_tl {white} {(\l_pgfgo_score_komi_tl)} {0}
 		}
 	\group_end:
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%----------------------------------------CONTORNO-----------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%UNA PROPIEDAD DE LA REGION (draw = region) DEL JUGADOR EN EL goban ACTUAL O EN EL ULTIMO. EXPANDIBLE.
+\cs_new:Npn \__pgfgo_region:nn #1#2 {
+	\prop_if_exist:cT {g__pgfgo_territory_region_ #1 _prop}
+		{\prop_item:cn {g__pgfgo_territory_region_ #1 _prop} {#2}}
+}
+\cs_generate_variant:Nn \prop_item:Nn {cn}
+\cs_generate_variant:Nn \str_case:nnF {e}
+
+\NewExpandableDocumentCommand \pgfgoregion {mm} {
+	\exp_args:Nee \__pgfgo_region:nn
+		{\str_case:enF {\tl_trim_spaces:n {#1}} {{b} {black} {w} {white} {n} {neutral}} {\tl_trim_spaces:n {#1}}}
+		{\tl_trim_spaces:n {#2}}
 }
 
 \ExplSyntaxOff

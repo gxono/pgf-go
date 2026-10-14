@@ -1349,6 +1349,70 @@ function pgfgo.territory(text)
 	token.set_macro("l__pgfgo_kernel_territory_clist", concat(list, ","))
 end
 
+-- DIRECCIONES DE LOS LADOS: 0 ESTE, 1 NORTE, 2 OESTE, 3 SUR.
+local steps = {[0] = {1, 0}, {0, 1}, {-1, 0}, {0, -1}}
+
+-- text: LOS PUNTOS DE TERRITORIO DE UN COLOR, {x}{y}. SE PINTA CADA CASILLA [x,x+1]x[y,y+1] DEL TABLERO
+-- CON ALGUNA ESQUINA EN ESOS PUNTOS. CADA CASILLA TIENE SUS LADOS EN SENTIDO ANTIHORARIO; QUEDAN LOS QUE NO
+-- TIENEN OTRA CASILLA PINTADA DEL OTRO LADO. SE RECORREN PREFIRIENDO GIRAR A LA IZQUIERDA (ASI UN CONTACTO
+-- POR UNA ESQUINA SEPARA LAS ZONAS) Y SOLO QUEDAN LOS VERTICES DONDE EL BORDE GIRA.
+function pgfgo.region(text)
+	local sx, sy = count("l_pgfgo_goban_size_x_int"), count("l_pgfgo_goban_size_y_int")
+	local own, painted, out = {}, {}, {}
+	for x, y in text:gmatch("{(%-?%d+)}{(%-?%d+)}") do
+		own[key(tonumber(x), tonumber(y))] = true
+	end
+	for cy = 1, sy - 1 do
+		for cx = 1, sx - 1 do
+			if own[key(cx, cy)] or own[key(cx + 1, cy)] or own[key(cx, cy + 1)] or own[key(cx + 1, cy + 1)] then
+				painted[key(cx, cy)] = true
+			end
+		end
+	end
+	local function side(x, y, d)
+		local k = key(x, y)
+		out[k] = out[k] or {}
+		out[k][d] = true
+	end
+	for cy = 1, sy - 1 do
+		for cx = 1, sx - 1 do
+			if painted[key(cx, cy)] then
+				if not painted[key(cx, cy - 1)] then side(cx, cy, 0) end
+				if not painted[key(cx + 1, cy)] then side(cx + 1, cy, 1) end
+				if not painted[key(cx, cy + 1)] then side(cx + 1, cy + 1, 2) end
+				if not painted[key(cx - 1, cy)] then side(cx, cy + 1, 3) end
+			end
+		end
+	end
+	-- CADA CONTORNO EMPIEZA EN SU VERTICE MAS BAJO (Y DE MAS A LA IZQUIERDA), QUE SE ENCUENTRA PRIMERO
+	-- AL RECORRER LOS VERTICES FILA POR FILA DESDE ABAJO.
+	local contours = {}
+	for y = 1, sy do
+		for x = 1, sx do
+			local first = out[key(x, y)]
+			while first and next(first) do
+				local d
+				for i = 3, 0, -1 do if first[i] then d = i end end
+				first[d] = nil
+				local v = {point(x, y)}
+				local px, py = x + steps[d][1], y + steps[d][2]
+				while px ~= x or py ~= y do
+					local here, nd = out[key(px, py)], nil
+					for _, t in ipairs({(d + 1) % 4, d, (d + 3) % 4}) do
+						if here[t] then nd = t; break end
+					end
+					here[nd] = nil
+					if nd ~= d then insert(v, point(px, py)) end
+					d = nd
+					px, py = px + steps[d][1], py + steps[d][2]
+				end
+				insert(contours, "{" .. concat(v, ",") .. "}")
+			end
+		end
+	end
+	token.set_macro("l__pgfgo_kernel_region_clist", concat(contours, ","))
+end
+
 ---------------------------------------------------------------------------------------------------
 -- MEMORIA
 ---------------------------------------------------------------------------------------------------

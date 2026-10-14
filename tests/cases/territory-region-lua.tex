@@ -1,0 +1,45 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\newcommand\position{%
+	\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}%
+	\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}%
+	\prisoners[b]{H1-|I2}%
+	\prisoner[w] {A1}}
+\begin{document}
+
+% draw = region with what only the Lua kernel computes: auto, SGF and captures.
+
+\case{auto / auto with dame (E1 is filled point by point) / line and vertices of both colors}
+\begin{goban}[label = {at = {above, left}}]\position\territory[draw = region]{auto}\end{goban}
+\begin{goban}[label = {at = {above, left}}]\position\territory[draw = region, dame]{auto}\end{goban}
+\begin{goban}[label = {at = {above, left}}]
+	\position
+	\territory[b, draw = region, line, vertices]{auto}
+	\territory[w, draw = region, line = {color = red}, vertices]{auto}
+\end{goban}
+
+Black: \pgfgoregion{b}{polygons} polygons (2), area \pgfgoregion{b}{area} (12),
+\pgfgoregion{b}{polygon 1} (A1,B1,B5,A5); \pgfgoregion{b}{polygon 2} (G6,I6,I9,F9,F7,G7).
+
+White: \pgfgoregion{w}{polygons} polygons (2), \pgfgoregion{w}{polygon 1} (F1,I1,I5,G5,G4,F4);
+\pgfgoregion{w}{polygon 2} (A6,C6,C8,D8,D9,A9).
+Score: black \pgfgoscore{black} (11), white \pgfgoscore[komi = 6.5]{w} (23.5).
+
+\case{SGF territory (score.sgf), one point at a time, is one region per color; after captures}
+{\pgfgoset{territory = {draw = region}}%
+\begin{goban}[5]\sgf{score.sgf}\end{goban}}
+Black: \pgfgoregion{b}{polygon 1}, white: \pgfgoregion{w}{polygon 1}.
+\begin{goban}[5, captures]
+	\stones[w]{A1, C1:5}\stones{A2, B2:5}
+	\moves*{B1}
+	\territory[draw = region, line]{auto}
+\end{goban}
+Black: \pgfgoregion{b}{polygon 1}.
+
+\end{document}

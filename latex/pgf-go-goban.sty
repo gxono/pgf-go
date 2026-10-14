@@ -841,6 +841,7 @@
 
 	\cs_new:Npn\__end_pgfgo_goban: {
 		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_end:}
+		\pgfgo_territory_end:
 		\tl_if_empty:NF \l_pgfgo_goban_bbox_tl
 			{\exp_after:wN \__pgfgo_goban_set_bbox:nnnn \l_pgfgo_goban_bbox_tl}
 		\tl_gset:Ne \g_pgfgo_goban_bbox_tl {
@@ -877,6 +878,7 @@
 		\pgfgo_kernel_move_reset:
 		\pgfgo_notes_begin:
 		\pgfgo_points_begin:
+		\pgfgo_territory_begin:
 		%CADA goban EMPIEZA CON EL TABLERO DEL KERNEL VACIO (Y SIN PRISIONEROS).
 		\pgfgo_kernel_if_feature:nT {captures} {\pgfgo_kernel_board_clear:}
 		\keys_set:nn {pgfgo / goban} {#1}

@@ -83,6 +83,14 @@
 	\seq_set_from_clist:NN \l_pgfgo_kernel_points_seq \l__pgfgo_kernel_points_clist
 }
 
+%Lua DEJA CADA CONTORNO ENTRE LLAVES, SEPARADOS POR COMAS.
+\clist_new:N \l__pgfgo_kernel_region_clist
+
+\cs_new_protected:Npn \pgfgo_kernel_region:n #1 {
+	\lua_now:e {pgfgo.region("\lua_escape:e {#1}")}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_region_seq \l__pgfgo_kernel_region_clist
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------------------------JUGADAS------------------------------------------------%
