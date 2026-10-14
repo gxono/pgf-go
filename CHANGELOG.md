@@ -59,6 +59,17 @@ The output is unchanged.
   - New key `goban/sgf size = <file>`: the size of the board is taken from the
     file. `\sgfanimation` already used it for its boards.
   - New test file `variations.sgf`.
+- New command `\territory[<options>]{<polygon> | auto}`: marks the territory.
+  With a polygon (both kernels), the points of that region without a living
+  stone (prisoners count as territory); with `auto` (Lua kernel), each region
+  surrounded by a single color. Keys: `black`/`b`, `white`/`w`,
+  `neutral`/`n`, `draw = marks | fill`, `dame`, `remember`, `forget`, and the
+  style of each player in `players/<player>/territory` (`mark`, `fill/color`,
+  `fill/opacity`). New kernel functions `\pgfgo_kernel_polygon:n` (both
+  kernels) and `\pgfgo_kernel_territory:n` (feature `territory`, Lua).
+- New command `\pgfgoscore[komi = <number>]{<player>}`: the score of the last
+  `goban` with Japanese rules (territory, dead stones, captures and komi).
+  `\pgfgoset{score = {komi = 6.5}}` sets the komi for the whole document.
 - New key `sgf animation/layers` (initially true): `\sgfanimation` draws the
   board and every stone only once, on transparencies that `animate` shows
   through a timeline (`<jobname>-pgfgo-<n>.tln`). The PDF grows with the number

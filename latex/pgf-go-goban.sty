@@ -705,6 +705,7 @@
 		%CADA TABLERO EMPIEZA EN LA JUGADA 1 CON NEGRAS (resume RESTAURA LAS JUGADAS RECORDADAS).
 		\pgfgo_kernel_move_reset:
 		\pgfgo_notes_begin:
+		\pgfgo_points_begin:
 		%CADA goban EMPIEZA CON EL TABLERO DEL KERNEL VACIO (Y SIN PRISIONEROS).
 		\pgfgo_kernel_if_feature:nT {captures} {\pgfgo_kernel_board_clear:}
 		\keys_set:nn {pgfgo / goban} {#1}

@@ -22,8 +22,6 @@ BS = "\\"
 # Not documented on purpose.
 UNDOCUMENTED = {
     "/pgfgo/goban/border",                  # old name of goban/background
-    "/pgfgo/territory",                     # reserved, not implemented yet
-    "/pgfgo/players/<player>/territory",    # reserved, not implemented yet
     "/pgfgo/mark/tcircle",                  # documented in /pgfgo/mark/t-circle
     "/pgfgo/mark/tsquare",                  # documented in /pgfgo/mark/t-square
     "pgfgonewplayers",                      # internal: creates the three players

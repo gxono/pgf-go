@@ -1,0 +1,61 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\newcommand\position{%
+	\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}%
+	\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}%
+	\prisoners[b]{H1-|I2}%
+	\prisoner[w] {A1}}
+\begin{document}
+
+% The end of the game of the manual. Black: A1:4 (A1 is a dead white
+% stone), G8|-I9, I8, H7 (10 points). White: 14 points, 3 of them dead
+% black stones (H1, I1, I2). E1 is dame.
+
+\case{Polygons (the stones and E1 are not marked) / auto / auto with dame}
+\begin{goban}[label = {at = {above, left}}]
+	\position
+	\territory[b]{A1,A5,B5,B1}
+	\territory[b]{F9,F7,G7,G6,I6,I9}
+	\territory[w]{F1,F4,G4,G5,I5,I1}
+	\territory[w]{A9,A6,C6,C8,D8,D9}
+\end{goban}
+\begin{goban}[label = {at = {above, left}}]\position\territory{auto}\end{goban}
+\begin{goban}[label = {at = {above, left}}]\position\territory[dame]{auto}\end{goban}
+
+Score: black \pgfgoscore{black} (11), white \pgfgoscore[komi = 6.5]{w} (23.5).
+
+\case{draw = fill / only black / mark = {cross} for white / players style}
+\begin{goban}\position\territory[draw = fill]{auto}\end{goban}
+\begin{goban}\position\territory[b]{auto}\end{goban}
+\begin{goban}\position\territory[b]{auto}\territory[w, mark = {cross}]{auto}\end{goban}
+{\pgfgoset{players = {white = {territory = {mark = {circle}}}}, territory = {draw = marks}}%
+\begin{goban}\position\territory[dame]{auto}\end{goban}}
+
+\case{Partial board (F1-I5) with fill, and the score of a partial board}
+\begin{goban}[partial = {from = F1 to I5}, label = {at = {above, left}}]
+	\position\territory[draw = fill]{auto}
+\end{goban}
+Score: black \pgfgoscore{b} (11), white \pgfgoscore{white} (17).
+
+\case{Territory after captures: the captured stone (A1) leaves an empty point; score with captures}
+\begin{goban}[5, captures]
+	\stones[w]{A1, C1:5}\stones{A2, B2:5}
+	\moves*{B1}
+	\territory{auto}
+\end{goban}
+Score: black \pgfgoscore{black} (5: A1, A3, A4, A5 and 1 capture), white \pgfgoscore{white} (10).
+
+\case{new remember also remembers the territory: resume draws it again; with forget, the white territory (E) is not remembered}
+\begin{goban}[5, new remember]
+	\stones{B1:5}\territory[b]{A1,A5}
+	\stones[w]{D1:5}\territory[w, forget]{E1,E5}
+\end{goban}
+\begin{goban}[5, resume]\end{goban}
+
+\end{document}

@@ -740,6 +740,131 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{command}
 
+	\subsection{Territory}
+	\label{subsec:territory}
+
+	At the end of the game, the territory can be marked by hand with |\marks| (p.~\pageref{sec:marks}) or with |\territory|, which also counts it.
+
+	\begin{command}{\territory\opt{\oarg{options}}\marg{polygon}}
+		Marks as territory the points of the polygon with those vertices (in order), including its border. It does not mark the points that have a living stone: prisoners count as territory. Vertices are written as in |\stones|; a single one marks a point, and two, a segment. It works with both kernels.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[b]{A1,A5,B5,B1}
+				\territory[b]{F9,F7,G7,G6,I6,I9}
+				\territory[w]{F1,F4,G4,G5,I5,I1}
+				\territory[w]{A9,A6,C6,C8,D8,D9}
+			\end{goban}
+		\end{codeexample}
+	\end{command}
+
+	\begin{command}{\territory\opt{\oarg{options}}\marg{auto}}
+		With |auto| instead of a polygon, it finds the territory by itself: each region of points without living stones belongs to the color around it. If both colors touch it (dame, seki), or none, it is neutral. Prisoners count as dead stones. Without a player, it marks the territory of both; with |b| or |w|, only that player's. Only with the Lua kernel (p.~\pageref{subsec:kernel}).
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[dame]{auto}
+			\end{goban}
+		\end{codeexample}
+	\end{command}
+
+	\begin{key}{/pgfgo/territory/black}
+		The territory belongs to Black. It can also be written |b|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/white}
+		The territory belongs to White. It can also be written |w|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/neutral}
+		Neutral points. It is what a polygon without a player marks. It can also be written |n|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/b}
+		Short for |black|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/w}
+		Short for |white|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/n}
+		Short for |neutral|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/draw=\meta{marks or fill} (initially marks)}
+		With |marks|, every point gets the territory mark of the player. With |fill|, the region is filled below the stones.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[draw = fill]{auto}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/dame=\meta{boolean} (default true, initially false)}
+		With |auto|, it also marks the neutral points.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/remember}
+		This territory is saved in the memory of the board, even if the |goban| uses |forget|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/forget}
+		This territory is not saved in the memory of the board, even if the |goban| uses |remember|.
+	\end{key}
+
+	The other options of |\territory| change the style of the player only for that command, like |mark| and |fill| in |\territory[w, mark = {cross}]{auto}|. The style of each player is set with |/pgfgo/players|:
+
+	\begin{key}{/pgfgo/players/black/territory=\meta{territory options}}
+		Style of the territory of each player (|black|, |white| or |neutral|).
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/mark=\meta{mark options} (initially t-circle)}
+		Mark of every point, with |draw = marks|. It is |t-circle| for Black and |t-square| for White and the neutral points.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill=\meta{fill options}}
+		Fill, with |draw = fill|.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/color=\meta{color} (initially black)}
+		Color of the fill: |black| for Black, |white!80!black| for White and |gray| for the neutral points.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/opacity=\meta{number} (initially 0.35)}
+		Opacity of the fill: |0.35| for Black and the neutral points, |0.7| for White.
+	\end{key}
+
+	\begin{command}{\pgfgoscore\opt{\oarg{options}}\marg{player}}
+		Writes the score of the player (|black| or |b|, |white| or |w|) in the last |goban|, with Japanese rules: the points of their territory, plus the opponent's dead stones in it, plus the stones they captured (with |captures|), plus the |komi| for White. A point marked twice counts once.
+
+		\begin{codeexample}[code only]
+			Black: \pgfgoscore{black}. White: \pgfgoscore[komi = 6.5]{white}.
+		\end{codeexample}
+
+		With the board above, it writes "Black: 11. White: 23.5".
+	\end{command}
+
+	\begin{key}{/pgfgo/score/komi=\meta{number} (initially 0)}
+		Komi added to the score of White. It can be set for the whole document with |\pgfgoset{score = {komi = 6.5}}|.
+	\end{key}
+
 	\subsection{Moves on Points Already Played}
 	\label{subsec:notes}
 

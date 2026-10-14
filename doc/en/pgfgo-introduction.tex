@@ -23,6 +23,7 @@ Regarding the name, although the macros are implemented in \pgfname\ and L3, the
 			\item With the Lua kernel, captures (|captures|, p.~\pageref{subsec:captures}) and SGF games (|\sgf|, p.~\pageref{subsec:sgf}) have been added. With the |animate| package, |\sgfanimation| steps through a game with buttons.
 			\item "N at M" notes have been added for numbered moves on points already played (|notes| and |\pgfgomovenotes|, p.~\pageref{subsec:notes}).
 			\item SGF: variations (|variation|), the marks of the file (|marks|), the game information (|\sgfinfo|), numbering with |MN| and |restart|, and the board size taken from the file (|sgf size|).
+			\item |\territory|, which marks the territory (with a polygon, or by itself with |auto| and the Lua kernel), and |\pgfgoscore|, which counts the points, have been added.
 			\item |\sgfanimation| builds the animation by layers (|layers|): every stone is drawn only once, and the PDF of a long game is much smaller.
 			\item With |captured marks = remove|, the marks on a captured stone go with it.
 			\item |\pgfgoprisoners|, which counts the prisoners of each player, and |\sgfdiagrams|, which draws a game as a series of diagrams, as books do, have been added.

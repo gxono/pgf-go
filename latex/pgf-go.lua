@@ -405,6 +405,55 @@ function pgfgo.points(spec, use_i)
 	token.set_macro("l__pgfgo_kernel_points_clist", concat(unique, ","))
 end
 
+-- PUNTOS DE UN POLIGONO: LAS INTERSECCIONES DEL TABLERO DENTRO DEL POLIGONO CERRADO O SOBRE SU BORDE,
+-- FILA POR FILA DESDE ABAJO. LA CUENTA ES CON ENTEROS (SIN REDONDEOS).
+local function on_segment(px, py, a, b)
+	local cross = (b[1] - a[1]) * (py - a[2]) - (b[2] - a[2]) * (px - a[1])
+	return cross == 0
+		and px >= math.min(a[1], b[1]) and px <= math.max(a[1], b[1])
+		and py >= math.min(a[2], b[2]) and py <= math.max(a[2], b[2])
+end
+
+local function in_polygon(px, py, v)
+	local n, inside_ = #v, false
+	for i = 1, n do
+		local a, b = v[i], v[i % n + 1]
+		if on_segment(px, py, a, b) then return true end
+		if (a[2] > py) ~= (b[2] > py) then
+			-- px < x DEL CRUCE, MULTIPLICANDO POR dy (CON SU SIGNO).
+			local dy = b[2] - a[2]
+			local lhs = (px - a[1]) * dy
+			local rhs = (py - a[2]) * (b[1] - a[1])
+			if (dy > 0 and lhs < rhs) or (dy < 0 and lhs > rhs) then
+				inside_ = not inside_
+			end
+		end
+	end
+	return inside_
+end
+
+function pgfgo.polygon(text)
+	local v = {}
+	for x, y in text:gmatch("{(%-?%d+)}{(%-?%d+)}") do
+		insert(v, {tonumber(x), tonumber(y)})
+	end
+	local list = {}
+	if #v > 0 then
+		local sx, sy = count("l_pgfgo_goban_size_x_int"), count("l_pgfgo_goban_size_y_int")
+		local fx, tx, fy, ty = sx, 1, sy, 1
+		for _, p in ipairs(v) do
+			fx, tx = math.min(fx, p[1]), math.max(tx, p[1])
+			fy, ty = math.min(fy, p[2]), math.max(ty, p[2])
+		end
+		for y = math.max(1, fy), math.min(sy, ty) do
+			for x = math.max(1, fx), math.min(sx, tx) do
+				if in_polygon(x, y, v) then insert(list, point(x, y)) end
+			end
+		end
+	end
+	token.set_macro("l__pgfgo_kernel_points_clist", concat(list, ","))
+end
+
 function pgfgo.point(spec, use_i)
 	local l, n = spec:match("^([A-Z])(%d%d?)$")
 	if l then
@@ -862,6 +911,54 @@ function pgfgo.sgf_info(name, property)
 	tex.sprint(-2, concat(root[property] or {}, ", "))
 end
 
+
+---------------------------------------------------------------------------------------------------
+-- TERRITORIO
+---------------------------------------------------------------------------------------------------
+
+-- text: LAS PIEDRAS VIVAS, {x}{y}{black | white}. CADA REGION DE PUNTOS SIN PIEDRAS VIVAS (VACIOS O CON
+-- PIEDRAS MUERTAS) ES DEL COLOR QUE LA RODEA; SI LA TOCAN LOS DOS COLORES, O NINGUNO, ES neutral.
+function pgfgo.territory(text)
+	local b = {stones = {}, sx = count("l_pgfgo_goban_size_x_int"), sy = count("l_pgfgo_goban_size_y_int")}
+	for x, y, c in text:gmatch("{(%d+)}{(%d+)}{(%a+)}") do
+		b.stones[key(tonumber(x), tonumber(y))] = c
+	end
+	local owner, list = {}, {}
+	for y = 1, b.sy do
+		for x = 1, b.sx do
+			local k = key(x, y)
+			if not b.stones[k] and not owner[k] then
+				local region, touches, pending = {}, {}, {{x, y}}
+				owner[k] = true
+				while #pending > 0 do
+					local p = table.remove(pending)
+					insert(region, p)
+					for _, n in ipairs(neighbours(b, p[1], p[2])) do
+						local nk = key(n[1], n[2])
+						local c = b.stones[nk]
+						if c then
+							touches[c] = true
+						elseif not owner[nk] then
+							owner[nk] = true
+							insert(pending, n)
+						end
+					end
+				end
+				local o = "neutral"
+				if touches.black and not touches.white then o = "black" end
+				if touches.white and not touches.black then o = "white" end
+				for _, p in ipairs(region) do owner[key(p[1], p[2])] = o end
+			end
+		end
+	end
+	for y = 1, b.sy do
+		for x = 1, b.sx do
+			local o = owner[key(x, y)]
+			if type(o) == "string" then insert(list, point(x, y) .. "{" .. o .. "}") end
+		end
+	end
+	token.set_macro("l__pgfgo_kernel_territory_clist", concat(list, ","))
+end
 
 ---------------------------------------------------------------------------------------------------
 -- MEMORIA

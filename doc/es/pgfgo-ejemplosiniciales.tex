@@ -278,23 +278,20 @@ Ahora definamos los territorios. Esto se puede hacer de muchas maneras. En parti
 	\end{goban}
 \end{codeexample}
 
-%Otro comando para delimitar territorios es |\territory|. El argumento obligatorio es la lista de vértices del polígono de la región que se desea delimitar.
-%
-%\begin{codeexample}[width=4.75cm]
-%	\pgfgouseprofile{wain}
-%	
-%	\begin{goban}[label = {at = {above, left}}]
-%		\stones[b]{A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
-%		\stones[w]{E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
-%		
-%		\stones[b, prisoner]{H1-|I2}
-%		\prisoner[w] {A1}
-%		
-%		\territory[b]{A1,A5,B5,B1}
-%		\territory[b]{F9,F7,G7,G6,I6,I9}
-%		\territory[w]{F1,F4,G4,G5,I5,I1}
-%		\territory[w]{A9,A6,C6,C8,D8,D9}
-%	\end{goban}
-%\end{codeexample}
-%
-%En cualquier caso, esta macro no aparece documentada por el momento, y no recomiendo usarla hasta que esté implementada definitivamente.
+Otra forma es |\territory| (pág.~\pageref{subsec:territorio}). Con un polígono, marca los puntos de esa región que no tienen una piedra viva; con |auto| y el kernel en Lua, busca solo el territorio de cada jugador. |\pgfgoscore| escribe el puntaje.
+
+\begin{codeexample}[width=4.75cm]
+	\pgfgouseprofile{wain}
+
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+
+		\stones[b, prisoner]{H1-|I2}
+		\prisoner[w] {A1}
+
+		\territory[dame]{auto}
+	\end{goban}
+
+	Negras: \pgfgoscore{black}. Blancas: \pgfgoscore[komi = 6.5]{white}.
+\end{codeexample}
