@@ -1,0 +1,6 @@
+(;GM[1]FF[4]CA[GB2312]SZ[7]KM[6.5]PB[黑方]PW[白方]RE[B+0.5]
+GN[一盘短棋]C[七路棋盘上的对局，附有评注。]
+;B[dd]C[黑棋占据中线。]
+(;W[ed];B[de];W[ec];B[dc];W[ee];B[df];W[eb];B[db]C[黑棋将有三列，白棋只有两列。];W[ef];B[da];W[ea];B[dg]TE[1]C[墙的最后一点。];W[be]BM[1]C[白棋打入，但没有做两只眼的空间。];B[ce]TR[be]C[黑棋占据要点，白子已死。];W[eg];B[];W[]
+;TB[ag][af][ae][ad][ac][ab][aa][bg][bf][be][bd][bc][bb][ba][cg][cf][cd][cc][cb][ca]TW[fg][ff][fe][fd][fc][fb][fa][gg][gf][ge][gd][gc][gb][ga]C[黑棋：二十目加一个死子。白棋：十四目加六目半贴目。])
+(;W[cd]C[太近了。];B[ce];W[bd]LB[be:A]))

@@ -1,4 +1,5 @@
-\documentclass[border=0.5cm]{standalone}
+\documentclass[border=0.5cm, multi=page]{standalone}
+\usepackage{fvextra}
 \usepackage{../../latex/pgf-go}
 
 
@@ -6,10 +7,20 @@
 
 
 \begin{document}
+\begin{page}%
 	\pgfgouseprofile{wain}
 	\begin{goban}[9, label = {at = {south, west}}]
 		\stones[b]{C7}
 		\stones[w]{B6,B7,C8,D7}
 		\moves*[b]{C6,C5,D6,E6,D5,D4,E5,F5,E4,E3}
-	\end{goban}
+	\end{goban}%
+\end{page}
+
+% The last page shows this code.
+\standaloneconfig{varwidth = false}
+\begin{page}
+	\begin{minipage}{16cm}
+		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-4.tex}
+	\end{minipage}
+\end{page}
 \end{document}

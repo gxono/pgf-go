@@ -1,0 +1,32 @@
+\documentclass[border=0.5cm, varwidth=13cm, multi=page]{standalone}
+\usepackage{fvextra}
+\usepackage{fontspec}
+\usepackage{luatexko}
+\setmainhangulfont{UnBatang}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+
+% gibo.sgf is in EUC-KR (CA[EUC-KR]): pgf-go converts it.
+\pgfgoset{
+	goban = {background = {fill = {color = pgfgo}}, label = {at = {south, west}}},
+	sgf annotations = {tesuji = 맥점, bad move = 악수},
+	sgf diagrams = {title = 그림, result title = 결과, black name = 흑, white name = 백},
+}
+
+
+\begin{document}
+\begin{page}%
+	\sgfinfo{gibo.sgf}{GN}: \sgfinfo{gibo.sgf}{PB} 대 \sgfinfo{gibo.sgf}{PW}, 덤 \sgfinfo{gibo.sgf}{KM}. \sgfcomment{gibo.sgf}{0}
+
+	\medskip
+	\sgfdiagrams[step = 9, comments]{gibo.sgf}%
+\end{page}
+
+% The last page shows this code.
+\standaloneconfig{varwidth = false}
+\begin{page}
+	\begin{minipage}{16cm}
+		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-19.tex}
+	\end{minipage}
+\end{page}
+\end{document}

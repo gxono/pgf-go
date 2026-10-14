@@ -692,7 +692,15 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 	\end{codeexample}
 \end{key}
 
-|\sgf| también lee |PL| (quién juega después: |\moves| sigue con ese color) y |CA| (la codificación del archivo: los archivos en Latin-1 se convierten; otras codificaciones producen un aviso).
+|\sgf| también lee |PL| (quién juega después: |\moves| sigue con ese color) y |CA| (la codificación del archivo; ver |sgf charset|).
+
+\begin{key}{/pgfgo/sgf charset = \meta{charset} (initially auto)}
+	Codificación de los archivos SGF que no están en UTF-8, para todos los comandos que leen archivos. Con |auto|, es la que dice el archivo con |CA| o, si no dice ninguna, Latin-1 (la de SGF por defecto). Se leen |Latin-1|, |GBK| (y |GB2312|), |Big5|, |Shift_JIS|, |EUC-JP| y |EUC-KR|; los nombres no distinguen mayúsculas ni signos (|shift-jis| y |EUC_KR| también valen). Un archivo que es UTF-8 válido se lee siempre como UTF-8, aunque |CA| diga otra cosa.
+
+	Muchos archivos de servidores asiáticos no dicen su codificación; para leerlos, por ejemplo, |\pgfgoset{sgf charset = GBK}|. Con otra codificación se produce un aviso y el archivo se lee como Latin-1: hay que convertirlo antes a UTF-8, por ejemplo con |iconv -f KOI8-R -t UTF-8 partida.sgf > partida-utf8.sgf|.
+
+	Para escribir los comentarios en chino, japonés o coreano hace falta además el paquete de ese idioma: |ctex|, |luatexja| o |luatexko|. Los ejemplos 14, 18 y 19 de |doc/examples| muestran una partida comentada en cada uno.
+\end{key}
 
 \begin{key}{/pgfgo/sgf = \meta{sgf options}}
 	Opciones de todos los |\sgf| del documento, por ejemplo |\pgfgoset{sgf = {variations}}|.

@@ -1,4 +1,5 @@
-\documentclass[border=0.5cm, varwidth=17cm]{standalone}
+\documentclass[border=0.5cm, varwidth=17cm, multi=page]{standalone}
+\usepackage{fvextra}
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
 
@@ -6,5 +7,15 @@
 
 
 \begin{document}
-	\sgfproblem[title = Problem 1]{problem.sgf}
+\begin{page}%
+	\sgfproblem[title = Problem 1]{problem.sgf}%
+\end{page}
+
+% The last page shows this code.
+\standaloneconfig{varwidth = false}
+\begin{page}
+	\begin{minipage}{16cm}
+		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-12.tex}
+	\end{minipage}
+\end{page}
 \end{document}

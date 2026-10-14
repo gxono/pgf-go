@@ -52,8 +52,10 @@
 }
 
 %\pgfgoset{sgf = {...}} FIJA LAS OPCIONES DE TODOS LOS \sgf (Y LA PARTIDA DE LOS DEMAS COMANDOS).
+%sgf charset: LA CODIFICACION DE LOS ARCHIVOS QUE NO SON UTF-8 (auto: LA DE CA).
 \keys_define:nn {pgfgo} {
 	sgf					.code:n			= {\keys_set:nn {pgfgo / sgf} {#1}},
+	sgf~charset	.tl_set:N		= \l_pgfgo_kernel_sgf_charset_tl,
 }
 
 \msg_new:nnn {pgfgo} {sgf-size}

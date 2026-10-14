@@ -1,5 +1,6 @@
 % passes: 2
 \documentclass{beamer}
+\usepackage{fvextra}
 \usepackage{animate}
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
@@ -28,5 +29,10 @@
 	\begin{frame}{The same game with \texttt{animate}}
 		\centering
 		\sgfanimation[comments, comment height = 4em, goban = {captures, scale = 1.2}]{commented.sgf}
+	\end{frame}
+
+	% The last frames show this code.
+	\begin{frame}[fragile, allowframebreaks]{The code of this presentation}
+		\VerbatimInput[fontsize = \tiny, breaklines, tabsize = 4]{example-11.tex}
 	\end{frame}
 \end{document}

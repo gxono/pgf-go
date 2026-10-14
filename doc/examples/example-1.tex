@@ -1,10 +1,12 @@
-\documentclass[border=0.5cm]{standalone}
+\documentclass[border=0.5cm, multi=page]{standalone}
+\usepackage{fvextra}
 \usepackage{../../latex/pgf-go}
 
 
 \pgfgouseprofile{pgfgosmooth}
 
 \begin{document}
+\begin{page}%
 	\vbox{
 	\hbox{
 	\begin{goban}[partial = {from = A9 to E5}]
@@ -27,5 +29,14 @@
 		\stones[w]{F3,G2, H3}
 		\marks[sequence]{G4}
 	\end{goban}
-}}
+}}%
+\end{page}
+
+% The last page shows this code.
+\standaloneconfig{varwidth = false}
+\begin{page}
+	\begin{minipage}{16cm}
+		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-1.tex}
+	\end{minipage}
+\end{page}
 \end{document}
