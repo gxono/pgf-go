@@ -30,6 +30,9 @@
 %		unknown-coordinate Y diagonal-line.
 %	\pgfgo_kernel_point:nTF {<coordenada>}
 %		VERDADERO SI ES UNA SOLA INTERSECCION COMO C3; ENTONCES \l_pgfgo_kernel_point_tl ES {x}{y}.
+%	\pgfgo_kernel_polygon:n {{x}{y},{x}{y},...}
+%		DEJA EN \l_pgfgo_kernel_points_seq LAS INTERSECCIONES DEL TABLERO DENTRO DEL POLIGONO CERRADO DE ESOS
+%		VERTICES O SOBRE SU BORDE, {x}{y}, FILA POR FILA DESDE ABAJO (Y CADA FILA DE IZQUIERDA A DERECHA).
 %
 %JUGADAS
 %	\pgfgo_kernel_move_reset:							JUGADA 1, JUEGAN LAS NEGRAS.
@@ -70,6 +73,12 @@
 %		EL PROPIO, SI ES UN SUICIDIO). DEJA EN \l_pgfgo_kernel_captured_seq LAS PIEDRAS QUE SACO, {x}{y}.
 %		SIN LA CAPACIDAD captures, \l_pgfgo_kernel_captured_seq QUEDA VACIA.
 %
+%territory: TERRITORIO.
+%	\pgfgo_kernel_territory:n {{x}{y}{black | white | neutral}...}
+%		RECIBE LAS PIEDRAS VIVAS Y DEJA EN \l_pgfgo_kernel_territory_seq CADA PUNTO SIN PIEDRA VIVA DEL TABLERO,
+%		{x}{y}{black | white | neutral}: EL COLOR QUE RODEA SU REGION (neutral SI LA TOCAN LOS DOS O NINGUNO).
+%		FILA POR FILA DESDE ABAJO.
+%
 %sgf: LECTURA DE PARTIDAS.
 %	\pgfgo_kernel_sgf_read:nn {<archivo>}{<variante>}
 %		LEE UNA LINEA DE LA PRIMERA PARTIDA DEL ARCHIVO. <variante> ES UNA LISTA DE NUMEROS (2.1): EN CADA
@@ -105,6 +114,7 @@
 	pgfgo_kernel_column_name:n,
 	pgfgo_kernel_points:n,
 	pgfgo_kernel_point:nTF,
+	pgfgo_kernel_polygon:n,
 	pgfgo_kernel_move_reset:,
 	pgfgo_kernel_move_set_number:n,
 	pgfgo_kernel_move_set_player:n,
@@ -130,6 +140,9 @@
 	pgfgo_kernel_board_if_occupied:nnF,
 	pgfgo_kernel_board_if_occupied:nnTF,
 	pgfgo_kernel_prisoners:n
+}
+\clist_const:Nn \c__pgfgo_kernel_territory_clist {
+	pgfgo_kernel_territory:n
 }
 \clist_const:Nn \c__pgfgo_kernel_sgf_clist {
 	pgfgo_kernel_sgf_read:n,
@@ -168,6 +181,7 @@
 \tl_new:N \l_pgfgo_kernel_point_tl
 
 \seq_new:N \l_pgfgo_kernel_captured_seq
+\seq_new:N \l_pgfgo_kernel_territory_seq
 
 \int_new:N \l_pgfgo_kernel_sgf_size_x_int
 \int_new:N \l_pgfgo_kernel_sgf_size_y_int

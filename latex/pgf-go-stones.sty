@@ -176,9 +176,46 @@
 
 
 
+%LO QUE HAY EN CADA PUNTO DEL goban ACTUAL (LO USA EL TERRITORIO): "x,y" -> black | white | neutral
+%(PIEDRAS VIVAS) O dead-black | dead-white (PRISIONEROS). LAS CAPTURAS Y AE QUITAN LAS PIEDRAS.
+\prop_new:N \g_pgfgo_points_prop
+
+\cs_new_protected:Npn \pgfgo_points_begin: {
+	\prop_gclear:N \g_pgfgo_points_prop
+	\prop_gclear:N \g_pgfgo_territory_prop
+}
+
+\cs_new_protected:Npn \__pgfgo_points_put:nnn #1#2#3 {
+	\bool_lazy_and:nnT
+		{\int_compare_p:n {1 <= #1 <= \l_pgfgo_goban_size_x_int}}
+		{\int_compare_p:n {1 <= #2 <= \l_pgfgo_goban_size_y_int}}
+		{
+			\__pgfgo_captures_key:nn {#1} {#2}
+			\prop_gput:NVe \g_pgfgo_points_prop \l__pgfgo_captures_key_tl {#3}
+		}
+}
+
+\cs_new_protected:Npn \__pgfgo_points_remove:nn #1#2 {
+	\__pgfgo_captures_key:nn {#1} {#2}
+	\prop_gremove:NV \g_pgfgo_points_prop \l__pgfgo_captures_key_tl
+}
+
+\cs_new_protected:Npn \__pgfgo_points_stone:nnn #1#2#3 {
+	\group_begin:
+		\keys_set:nn { pgfgo / stone } {black}
+		\keys_set_groups:nnn { pgfgo / stone } {player-id, captures-id} {#1}
+		\__pgfgo_points_put:nnn {#2} {#3} {
+			\bool_if:NT \l__pgfgo_stone_prisoner_bool {dead-}
+			\bool_if:NTF \l_pgfgo_players_black_bool {black}
+				{\bool_if:NTF \l_pgfgo_players_white_bool {white} {neutral}}
+		}
+	\group_end:
+}
+
 %DIBUJA UNA PIEDRA. SI #1 NO INDICA EL JUGADOR, LA PIEDRA ES NEGRA.
 %SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO.
 \cs_set_protected:Npn\pgfgo_stone:nnn #1#2#3 {
+	\__pgfgo_points_stone:nnn {#1} {#2} {#3}
 	\bool_if:NTF \l_pgfgo_goban_captures_bool
 		{\__pgfgo_captures_stone:nnn {#1} {#2} {#3}}
 		{\pgfgo_kernel_if_visible:nnT {#2} {#3} {\__pgfgo_stone_draw:nnn {#1} {#2} {#3}}}
@@ -287,6 +324,8 @@
 %(\sgfdiagrams) EL KERNEL LAS SACA DEL TABLERO, PERO SE SIGUEN DIBUJANDO.
 \bool_new:N \l__pgfgo_captures_keep_bool
 \cs_new_protected:Npn \__pgfgo_captures_apply: {
+	\bool_if:NF \l_pgfgo_captures_collect_bool
+		{\seq_map_inline:Nn \l_pgfgo_kernel_captured_seq {\__pgfgo_points_remove:nn ##1}}
 	\bool_if:nF {\l__pgfgo_captures_keep_bool || \l_pgfgo_captures_collect_bool} {\__pgfgo_captures_remove_drawn:}
 }
 \cs_new_protected:Npn \__pgfgo_captures_remove_drawn: {
@@ -320,6 +359,7 @@
 %QUITA LA PIEDRA DE (#1,#2): DEL TABLERO DEL KERNEL Y DE LO QUE SE VA A DIBUJAR.
 \cs_new_protected:Npn \pgfgo_captures_remove:nn #1#2 {
 	\pgfgo_kernel_board_put:nnn {empty} {#1} {#2}
+	\__pgfgo_points_remove:nn {#1} {#2}
 	\__pgfgo_captures_key:nn {#1} {#2}
 	\prop_gremove:NV \g__pgfgo_captures_pending_prop \l__pgfgo_captures_key_tl
 	\prop_gremove:NV \g__pgfgo_captures_faded_prop \l__pgfgo_captures_key_tl
@@ -571,6 +611,7 @@
 %FUERA DE LA PARTE VISIBLE NO SE DIBUJA, PERO LA JUGADA CUENTA (NUMERO Y TURNO).
 \cs_set_protected:Npn\pgfgo_move:nnnn #1#2#3#4 {
 	\__pgfgo_notes_check:nnnn {#1} {#2} {#3} {#4}
+	\__pgfgo_points_put:nnn {#3} {#4} {\pgfgo_kernel_move_if_black:TF {black} {white}}
 	\bool_if:NTF \l_pgfgo_goban_captures_bool {
 		\__pgfgo_captures_move:nnnn {#1} {#2} {#3} {#4}
 	}{

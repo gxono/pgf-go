@@ -1,0 +1,20 @@
+% engines: pdflatex
+% expect-warnings: 0
+% expect-errors: 1
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = expl3]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{With kernel = expl3: polygons and the score work; auto is an error}
+\begin{goban}[5]
+	\stones{B1:5}\stones[w]{C1:5}\prisoner[w]{A3}
+	\territory[b]{A1,A5}
+	\territory[w, draw = fill]{D1,E1,E5,D5}
+	\territory{auto}
+\end{goban}
+Score: black \pgfgoscore{black} (6), white \pgfgoscore{white} (10).
+
+\end{document}

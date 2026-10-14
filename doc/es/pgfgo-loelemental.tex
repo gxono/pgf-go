@@ -39,6 +39,14 @@ La macro |\pgfgoset{...}| permite definir configuraciones generales para el paqu
 	Opciones de todas las |\sgfdiagrams| del documento (pág.~\pageref{subsec:sgf}).
 \end{key}
 
+\begin{key}{/pgfgo/territory = \meta{territory options}}
+	Opciones de todos los |\territory| del documento, como |draw = fill| (pág.~\pageref{subsec:territorio}).
+\end{key}
+
+\begin{key}{/pgfgo/score = \meta{score options}}
+	Opciones de todos los |\pgfgoscore| del documento, como |komi = 6.5| (pág.~\pageref{subsec:territorio}).
+\end{key}
+
 \begin{key}{/pgfgo/players = \meta{players options}}
 	Permite definir opciones para cada jugador (incluidas las neutrales). Esta \emph{key} actúa como un contenedor que engloba configuraciones específicas para los jugadores negro, blanco y neutral, facilitando la personalización según las reglas o preferencias del usuario. Todas las opciones disponibles y cómo personalizar estilos de piedras se detallarán en otra sección.
 \end{key}
@@ -84,10 +92,10 @@ Los entornos |goban| posteriores heredan estas configuraciones, aunque pueden so
 	\item |expl3|: escrito en L3. Funciona con cualquier motor, y es el que se usa por defecto con los demás.
 \end{itemize}
 
-Ambos producen exactamente los mismos diagramas. El kernel en Lua, además, sabe hacer dos cosas que el otro no: las capturas (pág.~\pageref{subsec:capturas}) y la lectura de partidas en SGF (pág.~\pageref{subsec:sgf}). Este manual está compilado con el kernel en Lua.
+Ambos producen exactamente los mismos diagramas. El kernel en Lua, además, sabe hacer tres cosas que el otro no: las capturas (pág.~\pageref{subsec:capturas}), el cálculo del territorio con |\territory{auto}| (pág.~\pageref{subsec:territorio}) y la lectura de partidas en SGF (pág.~\pageref{subsec:sgf}). Este manual está compilado con el kernel en Lua.
 
 \begin{key}{/pgfgo/package/kernel = \meta{expl3 o lua} (initially lua con Lua\LaTeX, expl3 con los demás motores)}
-	Opción del paquete que elige el kernel. Solo hace falta para usar |expl3| con Lua\LaTeX. Solo puede darse al cargar \pgfgoname; no se puede cambiar con |\pgfgoset|. Si se pide |kernel = lua| con pdf\LaTeX, el paquete avisa y usa |expl3|. Con |expl3|, |captures| y |\sgf| producen un error.
+	Opción del paquete que elige el kernel. Solo hace falta para usar |expl3| con Lua\LaTeX. Solo puede darse al cargar \pgfgoname; no se puede cambiar con |\pgfgoset|. Si se pide |kernel = lua| con pdf\LaTeX, el paquete avisa y usa |expl3|. Con |expl3|, |captures|, |\territory{auto}| y |\sgf| producen un error.
 
 	\begin{codeexample}[code only]
 		\usepackage[kernel = expl3]{pgf-go}

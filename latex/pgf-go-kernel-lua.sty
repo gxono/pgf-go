@@ -4,7 +4,7 @@
 %KERNEL DE CALCULO EN Lua (kernel = lua). LA INTERFAZ ESTA DESCRIPTA EN pgf-go-kernel.sty.
 %EL CALCULO ESTA EN pgf-go.lua; ACA SOLO SE LE PASAN LAS ENTRADAS. pgf-go.lua SE BUSCA JUNTO A
 %pgf-go.sty Y, SI NO ESTA AHI, EN EL PATH DE TeX.
-\clist_gset:Nn \g_pgfgo_kernel_features_clist {captures, sgf}
+\clist_gset:Nn \g_pgfgo_kernel_features_clist {captures, territory, sgf}
 
 \tl_new:N \l__pgfgo_kernel_lua_file_tl
 \tl_if_empty:NF \c__pgfgo_path_tl
@@ -64,6 +64,11 @@
 	\lua_now:e {pgfgo.point("\lua_escape:e {#1}", \__pgfgo_kernel_lua_use_i:)}
 }
 
+\cs_new_protected:Npn \pgfgo_kernel_polygon:n #1 {
+	\lua_now:e {pgfgo.polygon("\lua_escape:e {#1}")}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_points_seq \l__pgfgo_kernel_points_clist
+}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------------------------JUGADAS------------------------------------------------%
@@ -111,6 +116,18 @@
 
 \prg_new_protected_conditional:Npnn \pgfgo_kernel_board_if_occupied:nn #1#2 {T, F, TF} {
 	\lua_now:e {pgfgo.board_if_occupied("\lua_escape:e {#1}", "\lua_escape:e {#2}")}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%---------------------------------------TERRITORIO----------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clist_new:N \l__pgfgo_kernel_territory_clist
+
+\cs_new_protected:Npn \pgfgo_kernel_territory:n #1 {
+	\lua_now:e {pgfgo.territory("\lua_escape:e {#1}")}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_territory_seq \l__pgfgo_kernel_territory_clist
 }
 
 

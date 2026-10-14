@@ -277,3 +277,21 @@ Now let’s define the territories. This can be done in many ways. In particular
 		\marks[t-square, fill = {color = red}] {E1} % Not filled in red: it takes the neutral color.
 	\end{goban}
 \end{codeexample}
+
+Another way is |\territory| (p.~\pageref{subsec:territory}). With a polygon, it marks the points of that region that have no living stone; with |auto| and the Lua kernel, it finds the territory of each player by itself. |\pgfgoscore| writes the score.
+
+\begin{codeexample}[width=4.75cm]
+	\pgfgouseprofile{wain}
+
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+
+		\stones[b, prisoner]{H1-|I2}
+		\prisoner[w] {A1}
+
+		\territory[dame]{auto}
+	\end{goban}
+
+	Black: \pgfgoscore{black}. White: \pgfgoscore[komi = 6.5]{white}.
+\end{codeexample}

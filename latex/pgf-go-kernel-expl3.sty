@@ -136,6 +136,81 @@
 }
 
 
+%PUNTOS DE UN POLIGONO. LAS ARISTAS QUEDAN EN \l__pgfgo_kernel_edges_seq COMO {ax}{ay}{bx}{by}; UN PUNTO
+%ESTA ADENTRO SI ESTA SOBRE UNA ARISTA O SI UN RAYO HACIA LA DERECHA CRUZA UNA CANTIDAD IMPAR DE ARISTAS.
+%TODO CON ENTEROS.
+\seq_new:N \l__pgfgo_kernel_vertices_seq
+\seq_new:N \l__pgfgo_kernel_edges_seq
+\bool_new:N \l__pgfgo_kernel_inside_bool
+\bool_new:N \l__pgfgo_kernel_border_bool
+\int_new:N \l__pgfgo_kernel_min_x_int
+\int_new:N \l__pgfgo_kernel_max_x_int
+\int_new:N \l__pgfgo_kernel_min_y_int
+\int_new:N \l__pgfgo_kernel_max_y_int
+
+\cs_new_protected:Npn \pgfgo_kernel_polygon:n #1 {
+	\seq_clear:N \l_pgfgo_kernel_points_seq
+	\seq_set_from_clist:Nn \l__pgfgo_kernel_vertices_seq {#1}
+	\seq_if_empty:NF \l__pgfgo_kernel_vertices_seq {
+		\seq_clear:N \l__pgfgo_kernel_edges_seq
+		\int_set:Nn \l__pgfgo_kernel_min_x_int {\c_max_int}
+		\int_set:Nn \l__pgfgo_kernel_max_x_int {-\c_max_int}
+		\int_set:Nn \l__pgfgo_kernel_min_y_int {\c_max_int}
+		\int_set:Nn \l__pgfgo_kernel_max_y_int {-\c_max_int}
+		\seq_get_right:NN \l__pgfgo_kernel_vertices_seq \l_tmpa_tl
+		\seq_map_inline:Nn \l__pgfgo_kernel_vertices_seq {
+			\__pgfgo_kernel_polygon_edge:nnN ##1 \l_tmpa_tl
+			\tl_set:Nn \l_tmpa_tl {##1}
+		}
+		\int_step_inline:nnn
+			{\int_max:nn {1} {\l__pgfgo_kernel_min_y_int}}
+			{\int_min:nn {\l_pgfgo_goban_size_y_int} {\l__pgfgo_kernel_max_y_int}}
+			{
+				\int_step_inline:nnn
+					{\int_max:nn {1} {\l__pgfgo_kernel_min_x_int}}
+					{\int_min:nn {\l_pgfgo_goban_size_x_int} {\l__pgfgo_kernel_max_x_int}}
+					{\__pgfgo_kernel_polygon_point:nn {####1} {##1}}
+			}
+	}
+}
+
+%LA ARISTA QUE VA DEL VERTICE ANTERIOR (#3, {x}{y}) A (#1,#2).
+\cs_new_protected:Npn \__pgfgo_kernel_polygon_edge:nnN #1#2#3 {
+	\int_set:Nn \l__pgfgo_kernel_min_x_int {\int_min:nn {\l__pgfgo_kernel_min_x_int} {#1}}
+	\int_set:Nn \l__pgfgo_kernel_max_x_int {\int_max:nn {\l__pgfgo_kernel_max_x_int} {#1}}
+	\int_set:Nn \l__pgfgo_kernel_min_y_int {\int_min:nn {\l__pgfgo_kernel_min_y_int} {#2}}
+	\int_set:Nn \l__pgfgo_kernel_max_y_int {\int_max:nn {\l__pgfgo_kernel_max_y_int} {#2}}
+	\seq_put_right:Ne \l__pgfgo_kernel_edges_seq {\exp_not:V #3 {#1}{#2}}
+}
+\cs_new_protected:Npn \__pgfgo_kernel_polygon_point:nn #1#2 {
+	\bool_set_false:N \l__pgfgo_kernel_inside_bool
+	\bool_set_false:N \l__pgfgo_kernel_border_bool
+	\seq_map_inline:Nn \l__pgfgo_kernel_edges_seq {\__pgfgo_kernel_polygon_test:nnnnnn {#1} {#2} ##1}
+	\bool_if:nT {\l__pgfgo_kernel_inside_bool || \l__pgfgo_kernel_border_bool}
+		{\seq_put_right:Nn \l_pgfgo_kernel_points_seq {{#1}{#2}}}
+}
+
+%(#1,#2) CONTRA LA ARISTA (#3,#4)-(#5,#6).
+\cs_new_protected:Npn \__pgfgo_kernel_polygon_test:nnnnnn #1#2#3#4#5#6 {
+	\bool_if:nT {
+		\int_compare_p:nNn {(#5 - #3) * (#2 - #4) - (#6 - #4) * (#1 - #3)} = {0} &&
+		\int_compare_p:n {\int_min:nn {#3} {#5} <= #1 <= \int_max:nn {#3} {#5}} &&
+		\int_compare_p:n {\int_min:nn {#4} {#6} <= #2 <= \int_max:nn {#4} {#6}}
+	} {\bool_set_true:N \l__pgfgo_kernel_border_bool}
+	\bool_if:nT {
+		(\int_compare_p:nNn {#4} > {#2} && ! \int_compare_p:nNn {#6} > {#2}) ||
+		(\int_compare_p:nNn {#6} > {#2} && ! \int_compare_p:nNn {#4} > {#2})
+	}{
+		\bool_if:nT {
+			(\int_compare_p:nNn {#6 - #4} > {0} &&
+				\int_compare_p:nNn {(#1 - #3) * (#6 - #4)} < {(#2 - #4) * (#5 - #3)}) ||
+			(\int_compare_p:nNn {#6 - #4} < {0} &&
+				\int_compare_p:nNn {(#1 - #3) * (#6 - #4)} > {(#2 - #4) * (#5 - #3)})
+		} {\bool_set:Nn \l__pgfgo_kernel_inside_bool {! \l__pgfgo_kernel_inside_bool}}
+	}
+}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------------------------JUGADAS------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
