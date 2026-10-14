@@ -23,6 +23,7 @@ Regarding the name, although the macros are implemented in \pgfname\ and L3, the
 			\item With the Lua kernel, captures (|captures|, p.~\pageref{subsec:captures}) and SGF games (|\sgf|, p.~\pageref{subsec:sgf}) have been added. With the |animate| package, |\sgfanimation| steps through a game with buttons.
 			\item "N at M" notes have been added for numbered moves on points already played (|notes| and |\pgfgomovenotes|, p.~\pageref{subsec:notes}).
 			\item SGF: variations (|variation|), the marks of the file (|marks|), the game information (|\sgfinfo|), numbering with |MN| and |restart|, and the board size taken from the file (|sgf size|).
+			\item |\pgfgoprisoners|, which counts the prisoners of each player, and |\sgfdiagrams|, which draws a game as a series of diagrams, as books do, have been added.
 	\end{itemize}
 	\item 0.2025.10.13: Bug fixes. Each |goban| starts at move 1 with Black, |\mark| and |\marks| only exist inside |goban|, and what falls outside a partial board is no longer drawn. The full list is in the file |CHANGELOG.md|.
 	\item 0.2025.03.10:

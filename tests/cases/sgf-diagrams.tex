@@ -1,0 +1,34 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% game.sgf: 9x9; B E5, W G7, B pass, W C3, B G5.
+% ko.sgf: 5x5 ko; W C3, B D3 (captures 1), W C3 (retakes, captures 2), B A1, W E5.
+
+\case{game.sgf, step = 2: diagrams 1--2, 3--4 (3 is a pass) and 5; the earlier moves have no numbers}
+\sgfdiagrams[step = 2]{game.sgf}
+
+\case{step = 2 and restart: each diagram starts at 1 (4 is shown as 2, 5 as 1) / to = 3: two diagrams}
+\sgfdiagrams[step = 2, restart]{game.sgf}
+
+\sgfdiagrams[step = 2, to = 3]{game.sgf}
+
+\case{ko.sgf in one diagram: 2 is not removed, 3 is noted ("3 en 1"); title = Diagrama}
+\begingroup
+\pgfgoset{notes = {at = en}}
+\sgfdiagrams[step = 5, title = Diagrama]{ko.sgf}
+\endgroup
+
+\case{ko.sgf, step = 2: diagram 2 starts without 1 (captured), and 2 is kept when 3 retakes; notes = false}
+\sgfdiagrams[step = 2, notes = false]{ko.sgf}
+
+\case{goban options for every diagram, and caption font}
+\sgfdiagrams[step = 5, goban = {label = {at = {north, west}}}, caption font = \itshape]{ko.sgf}
+
+\end{document}

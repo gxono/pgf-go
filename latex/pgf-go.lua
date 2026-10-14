@@ -473,35 +473,46 @@ local function group(b, x, y)
 	return members, free
 end
 
-local function remove_group(b, members, captured)
+-- removed CUENTA LAS PIEDRAS QUITADAS DE CADA COLOR.
+local function remove_group(b, members, captured, removed)
 	for _, p in ipairs(members) do
+		local color = b.stones[key(p[1], p[2])]
+		removed[color] = (removed[color] or 0) + 1
 		b.stones[key(p[1], p[2])] = nil
 		insert(captured, point(p[1], p[2]))
 	end
 end
 
--- PONE UNA PIEDRA Y DEVUELVE LAS QUE SALEN DEL TABLERO.
+-- PONE UNA PIEDRA Y DEVUELVE LAS QUE SALEN DEL TABLERO, Y CUANTAS DE CADA COLOR.
 local function play(b, color, x, y)
-	local captured = {}
+	local captured, removed = {}, {}
 	b.stones[key(x, y)] = color
 	for _, n in ipairs(neighbours(b, x, y)) do
 		local there = b.stones[key(n[1], n[2])]
 		if there and there ~= color then
 			local members, free = group(b, n[1], n[2])
 			if not free then
-				remove_group(b, members, captured)
+				remove_group(b, members, captured, removed)
 			end
 		end
 	end
 	local members, free = group(b, x, y)
 	if not free then
-		remove_group(b, members, captured)
+		remove_group(b, members, captured, removed)
 	end
-	return captured
+	return captured, removed
 end
+
+-- PRISIONEROS DE CADA JUGADOR EN EL goban: LAS PIEDRAS DEL OTRO COLOR QUE SALIERON DEL TABLERO.
+local prisoners = {black = 0, white = 0}
 
 function pgfgo.board_clear()
 	stones = {}
+	prisoners = {black = 0, white = 0}
+end
+
+function pgfgo.prisoners(player)
+	tex.sprint(tostring(prisoners[player] or 0))
 end
 
 -- color = "empty" QUITA LA PIEDRA.
@@ -552,7 +563,10 @@ function pgfgo.move_play(x, y)
 	x, y = tonumber(x), tonumber(y)
 	local captured = {}
 	if on_board(x, y) then
-		captured = play(goban_board(), black_turn and "black" or "white", x, y)
+		local removed
+		captured, removed = play(goban_board(), black_turn and "black" or "white", x, y)
+		prisoners.black = prisoners.black + (removed.white or 0)
+		prisoners.white = prisoners.white + (removed.black or 0)
 	end
 	token.set_macro("l__pgfgo_kernel_captured_clist", concat(captured, ","))
 	move_number = move_number + 1
