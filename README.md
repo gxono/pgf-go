@@ -20,11 +20,13 @@ The package compiles with UTF-8, LaTeX and LuaLaTeX. The following dependencies 
   (including `\usetikzlibrary{patterns}`)
 - [xparse](https://ctan.org/pkg/xparse)
 
+With LuaLaTeX, the package also captures stones, reads SGF games and finds the territory. `\sgfanimation` needs the [animate](https://ctan.org/pkg/animate) package.
+
 
 ## Installation
 
 You can use the `pgf-go` package by placing all of the
-distribution files in the directory containing your current tex file.
+distribution files (`pgf-go.sty`, the `pgf-go-*.sty` modules and `pgf-go.lua`) in the directory containing your current tex file.
 
 ## How to use it
 
@@ -46,6 +48,7 @@ your LaTeX document:
 You can find examples on doc directory.
 
 ## History
+   - unreleased : Lua compute kernel, captures, SGF games (`\sgf`, `\sgfanimation`, `\sgfdiagrams`), "3 at 1" notes, territory and score. Both manuals are complete.
    - version 0.2025.10.13 : bug fixes. `remember`/`resume` now restore moves with their original colors and numbers, `forget` clears the memory, and `add to remember` is available. Every `goban` starts at move 1 with black. `\mark`/`\marks` only exist inside `goban`. Fixed the `n` (neutral) alias, `use i = false` with `\stone`, `A:B` ranges on non-square partial boards, and `sequence = false`.
    - version 0.2025.03.10 : added features to system coordinates and rounded corners.
    - version 0.2025.03.07 : partial realease.
