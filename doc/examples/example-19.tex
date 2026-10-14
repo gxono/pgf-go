@@ -1,5 +1,5 @@
-\documentclass[border=0.5cm, varwidth=13cm, multi=page]{standalone}
-\usepackage{fvextra}
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=13cm]{standalone}
 \usepackage{fontspec}
 \usepackage{luatexko}
 \setmainhangulfont{UnBatang}
@@ -15,18 +15,8 @@
 
 
 \begin{document}
-\begin{page}%
 	\sgfinfo{gibo.sgf}{GN}: \sgfinfo{gibo.sgf}{PB} 대 \sgfinfo{gibo.sgf}{PW}, 덤 \sgfinfo{gibo.sgf}{KM}. \sgfcomment{gibo.sgf}{0}
 
 	\medskip
-	\sgfdiagrams[step = 9, comments]{gibo.sgf}%
-\end{page}
-
-% The last page shows this code.
-\standaloneconfig{varwidth = false}
-\begin{page}
-	\begin{minipage}{16cm}
-		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-19.tex}
-	\end{minipage}
-\end{page}
+	\sgfdiagrams[step = 9, comments]{gibo.sgf}
 \end{document}

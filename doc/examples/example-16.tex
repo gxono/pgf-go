@@ -1,5 +1,5 @@
-\documentclass[border=0.5cm, varwidth=12cm, multi=page]{standalone}
-\usepackage{fvextra}
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=12cm]{standalone}
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
 
@@ -7,7 +7,6 @@
 
 
 \begin{document}
-\begin{page}%
 	\begin{goban}[7]
 		\stones{D1:7, B5}
 		\stones[w]{E1:7}
@@ -22,14 +21,5 @@
 	\end{goban}
 
 	\smallskip
-	Black \pgfgoscore{b}, White \pgfgoscore[komi = 6.5]{w}.%
-\end{page}
-
-% The last page shows this code.
-\standaloneconfig{varwidth = false}
-\begin{page}
-	\begin{minipage}{16cm}
-		\VerbatimInput[fontsize = \small, breaklines, tabsize = 4]{example-16.tex}
-	\end{minipage}
-\end{page}
+	Black \pgfgoscore{b}, White \pgfgoscore[komi = 6.5]{w}.
 \end{document}
