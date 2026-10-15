@@ -19,3 +19,6 @@ tests/reference/manuals/
 # Python
 __pycache__/
 *.pyc
+
+# Notas personales
+pendiente*.md
