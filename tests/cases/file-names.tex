@@ -1,0 +1,48 @@
+% engines: lualatex
+% passes: 2
+% jobname: file names, a=b
+%
+% Unusual file names. The SGF files in names/ are copies of game.sgf and problem.sgf; the job name has
+% a space, a comma and an equals sign, which reach the timeline of \sgfanimation.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{animate}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\pgfgoset{goban = {scale = 0.3}}
+
+% \name{<file>}: the name as it is written, the size and the comment of the root and the game.
+\newcommand\name[1]{%
+	\begin{minipage}[t]{0.3\linewidth}
+		\texttt{\detokenize{#1}}: \sgfinfo{names/#1}{SZ}, \sgfcomment{names/#1}{0}\par
+		\begin{goban}\sgf{names/#1}\end{goban}
+	\end{minipage}\hfill
+}
+
+\begin{document}
+
+\case{TeX special characters (escaped), spaces, accents, quotes, parentheses, other scripts}
+\name{a\&b.sgf}\name{a\#b.sgf}\name{a\%b.sgf}
+
+\name{a\$b.sgf}\name{a\{b\}.sgf}\name{con espacios.sgf}
+
+\name{ñandú.sgf}\name{a'b.sgf}\name{paren (1).sgf}
+
+\name{日本語.sgf}\name{tilde~x.sgf}\name{a=b.sgf}
+
+\name{punto.doble.sgf}\hfill\null
+
+\case{sgf view, \textbackslash sgfdiagrams and \textbackslash sgfproblem}
+\begin{goban}[sgf view = {names/a\&b.sgf}]\sgf{names/a\&b.sgf}\end{goban}
+\sgfdiagrams[step = 3]{names/a\%b.sgf}
+\sgfproblem[solutions = false]{names/problema \& 1.sgf}
+
+\case{\textbackslash sgfanimation (the job name has a space, a comma and =)}
+\sgfanimation{names/a\#b.sgf}\par
+\sgfanimation[layers = false]{names/con espacios.sgf}
+
+\case{An image with a comma in its name, in double braces}
+\begin{goban}[5, scale = 0.6]\stones[b, image = {file = {{names/a,b.png}}}]{A1, C3}\end{goban}
+
+\end{document}

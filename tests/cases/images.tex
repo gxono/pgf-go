@@ -29,6 +29,17 @@
 	\stones[w, image = {file = stone-white.png, width = 8pt}]{C3}
 \end{goban}
 
+\case{Rotated images: random (one angle per point, the shadow keeps its direction), a fixed angle, and random as a player key}
+\begin{goban}[5]
+	\stones[b, image = {file = stone-oval.png, width = 18pt, rotate = random}, drop shadow = {true, angle = -45, offset = 2pt}]{A1, B1, C1, D1, E1, A2, B2, C2, D2, E2}
+	\stones[w, image = {file = stone-oval.png, width = 18pt, rotate = 45}, drop shadow = {true, angle = -45, offset = 2pt}]{A4, B4}
+	\stones[w, image = {file = stone-oval.png, width = 18pt, rotate = 0}]{D4}
+\end{goban}
+{\pgfgoset{players = {black = {stone = {image = {file = stone-oval.png, width = 18pt, rotate = random}}}}}
+\begin{goban}[5]
+	\moves{A1, B2, C3, D4}
+\end{goban}}
+
 \case{Player keys: moves use the image; image = false goes back to circles}
 \pgfgoset{players = {black = {stone = {image = {file = stone-black.png}}}, white = {stone = {image = {file = stone-white.png}}}}}
 \begin{goban}[5]\moves{A1, B1, C1, D1}\stones[b, image = false]{A3}\end{goban}

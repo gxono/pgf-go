@@ -1,0 +1,6 @@
+(;GM[1]FF[4]SZ[9]PB[Black]PW[White]
+AB[cc][cd:ce]AW[gg]
+C[A comment with a \] bracket.]
+;B[ee];W[gc]
+(;B[];W[cg]C[Main line.];B[ge])
+(;B[aa]C[A variation that is not drawn.]))

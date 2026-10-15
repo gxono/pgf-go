@@ -161,10 +161,14 @@
 \clist_new:N \l__pgfgo_kernel_sgf_white_clist
 \clist_new:N \l__pgfgo_kernel_sgf_moves_clist
 
+%EL NOMBRE DE UN ARCHIVO SGF PARA Lua. \text_expand:n DEJA \& \# \% \$ \{ \} SIN EXPANDIR (\$ COMO
+%\protect \$); pgf-go.lua LES SACA LA BARRA.
+\cs_new:Npn \__pgfgo_kernel_lua_file:n #1 {\lua_escape:e {\text_expand:n {#1}}}
+
 \cs_new_protected:Npn \pgfgo_kernel_sgf_read:n #1 {\pgfgo_kernel_sgf_read:nn {#1} {}}
 
 \cs_new_protected:Npn \pgfgo_kernel_sgf_read:nn #1#2 {
-	\lua_now:e {pgfgo.sgf_read("\lua_escape:e {#1}", "\lua_escape:e {#2}")}
+	\lua_now:e {pgfgo.sgf_read("\__pgfgo_kernel_lua_file:n {#1}", "\lua_escape:e {#2}")}
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_black_seq \l__pgfgo_kernel_sgf_black_clist
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_white_seq \l__pgfgo_kernel_sgf_white_clist
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_moves_seq \l__pgfgo_kernel_sgf_moves_clist
@@ -213,7 +217,7 @@
 }
 
 \cs_new:Npn \pgfgo_kernel_sgf_info:nn #1#2 {
-	\lua_now:e {pgfgo.sgf_info("\lua_escape:e {#1}", "\lua_escape:e {#2}")}
+	\lua_now:e {pgfgo.sgf_info("\__pgfgo_kernel_lua_file:n {#1}", "\lua_escape:e {#2}")}
 }
 
 \cs_new_protected:Npn \pgfgo_kernel_sgf_view:nn #1#2 {
@@ -223,7 +227,7 @@
 \clist_new:N \l__pgfgo_kernel_sgf_paths_clist
 
 \cs_new_protected:Npn \pgfgo_kernel_sgf_tree:n #1 {
-	\lua_now:e {pgfgo.sgf_tree("\lua_escape:e {#1}")}
+	\lua_now:e {pgfgo.sgf_tree("\__pgfgo_kernel_lua_file:n {#1}")}
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_paths_seq \l__pgfgo_kernel_sgf_paths_clist
 }
 

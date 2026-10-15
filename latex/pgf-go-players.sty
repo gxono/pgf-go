@@ -52,6 +52,7 @@
 	\tl_set_eq:cc 	{l_pgfgo_players_ #1 _stone_drop_shine_color_tl}	{l_pgfgo_players_ #2 _stone_drop_shine_color_tl}
 	\seq_set_eq:cc	{l_pgfgo_players_ #1 _stone_image_seq}	{l_pgfgo_players_ #2 _stone_image_seq}
 	\tl_set_eq:cc 	{l_pgfgo_players_ #1 _stone_image_width_tl}	{l_pgfgo_players_ #2 _stone_image_width_tl}
+	\tl_set_eq:cc 	{l_pgfgo_players_ #1 _stone_image_rotate_tl}	{l_pgfgo_players_ #2 _stone_image_rotate_tl}
 	
 	\tl_set_eq:cc 	{l_pgfgo_players_ #1 _move_label_font_size_tl} {l_pgfgo_players_ #2 _move_label_font_size_tl}
 	\tl_set_eq:cc 	{l_pgfgo_players_ #1 _move_label_color_tl} {l_pgfgo_players_ #2 _move_label_color_tl}
@@ -115,6 +116,7 @@
 
 \seq_new:N	\l_pgfgo_players_stone_image_seq
 \tl_new:N		\l_pgfgo_players_stone_image_width_tl
+\tl_new:N		\l_pgfgo_players_stone_image_rotate_tl
 
 \tl_new:N 	\l_pgfgo_players_move_label_font_size_tl
 \tl_new:N 	\l_pgfgo_players_move_label_color_tl
@@ -163,6 +165,7 @@
 	\tl_set_eq:Nc		\l_pgfgo_players_stone_drop_shine_color_tl 		{l_pgfgo_players_ #1 _stone_drop_shine_color_tl}
 	\seq_set_eq:Nc	\l_pgfgo_players_stone_image_seq 							{l_pgfgo_players_ #1 _stone_image_seq}
 	\tl_set_eq:Nc		\l_pgfgo_players_stone_image_width_tl 				{l_pgfgo_players_ #1 _stone_image_width_tl}
+	\tl_set_eq:Nc		\l_pgfgo_players_stone_image_rotate_tl 				{l_pgfgo_players_ #1 _stone_image_rotate_tl}
 	
 	\tl_set_eq:Nc 	\l_pgfgo_players_move_label_font_size_tl 			{l_pgfgo_players_ #1 _move_label_font_size_tl}
 	\tl_set_eq:Nc 	\l_pgfgo_players_move_label_color_tl 					{l_pgfgo_players_ #1 _move_label_color_tl}
@@ -327,13 +330,15 @@
 
 
 			%IMAGEN EN LUGAR DEL CIRCULO. CON VARIOS ARCHIVOS, CADA PUNTO USA SIEMPRE EL MISMO (VER pgf-go-stones.sty).
-			%SIN width, EL DIAMETRO DE LA PIEDRA.
+			%SIN width, EL DIAMETRO DE LA PIEDRA. rotate: UN ANGULO, O random (UN ANGULO POR PUNTO, SIEMPRE EL MISMO).
 			\seq_new:c	{l_pgfgo_players_ \l__pgfgo_item_tl _stone_image_seq}
 			\tl_new:c		{l_pgfgo_players_ \l__pgfgo_item_tl _stone_image_width_tl}
+			\tl_new:c		{l_pgfgo_players_ \l__pgfgo_item_tl _stone_image_rotate_tl}
 
 			\keys_define:ee { pgfgo / players / \l__pgfgo_item_tl / stone / image } {
 				file				.code:n			= {\exp_not:N\seq_set_from_clist:cn {l_pgfgo_players_ \l__pgfgo_item_tl _stone_image_seq}{##1}},
 				width				.code:n			= {\exp_not:N\tl_set:cn {l_pgfgo_players_ \l__pgfgo_item_tl _stone_image_width_tl}{##1}},
+				rotate			.code:n			= {\exp_not:N\tl_set:cn {l_pgfgo_players_ \l__pgfgo_item_tl _stone_image_rotate_tl}{##1}},
 				false				.code:n			= {\exp_not:N\seq_clear:c {l_pgfgo_players_ \l__pgfgo_item_tl _stone_image_seq}},
 			}
 
