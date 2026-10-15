@@ -6,6 +6,20 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- Layout of the diagrams: `layout = {columns = <n>}` puts the diagrams of
+  `\sgfdiagrams` and `\sgfproblem` in a grid of columns of the same width
+  (one row per line, so the page can break between rows; the boards of a row
+  are aligned at the top). `fit` scales the boards to fill their column,
+  `width`, `column sep`, `row sep` and `align` set the rest. It can be set for
+  the whole document (`\pgfgoset{layout = {...}}`), for each command
+  (`\pgfgoset{sgf diagrams = {layout = {...}}}`) or in each call. The
+  environment `pgfgolayout` puts in one grid the `goban`s, `\sgfdiagrams` and
+  `\sgfproblem` inside it. Without `columns` (`columns = auto`), the diagrams
+  stay in the paragraph as before.
+- `\sgfdiagrams`: `from` draws the diagrams from a move on, with the same
+  numbers as the whole series.
+- `\sgfproblem`: `statement = alone` puts the statement alone in its row,
+  above the variations.
 - Languages: the texts the package writes (captions of `\sgfdiagrams` and
   `\sgfproblem`, the result, the SGF annotations and the word of the
   "N at M" notes) are translated into English, Spanish, French, German,

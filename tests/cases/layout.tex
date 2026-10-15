@@ -1,0 +1,60 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% game.sgf: 9x9; B E5, W G7, B pass, W C3, B G5.
+
+\case{columns = 3, goban scale = 0.4: a grid of 3 columns (the last row has 2 cells)}
+\sgfdiagrams[step = 1, layout = {columns = 3}, goban = {scale = 0.4}]{game.sgf}
+
+\case{columns = 4, fit: every board fills its cell}
+\sgfdiagrams[step = 2, layout = {columns = 4, fit}]{game.sgf}
+
+\case{columns = 3, width = 10cm, column sep = 2em, row sep = 1cm, align = left, scale 0.3}
+\sgfdiagrams[step = 1, goban = {scale = 0.3},
+	layout = {columns = 3, width = 10cm, column sep = 2em, row sep = 1cm, align = left}]{game.sgf}
+
+\case{from = 2, to = 4, step = 2: diagram 1 (2) and diagram 2 (3--4) / from = 4: diagram 2 (4) and 3 (5)}
+\sgfdiagrams[step = 2, from = 2, to = 4, goban = {scale = 0.4}]{game.sgf}
+
+\sgfdiagrams[step = 2, from = 4, restart, goban = {scale = 0.4}]{game.sgf}
+
+\newpage
+\case{sgf problem, columns = 3, fit, statement = alone}
+\sgfproblem[statement = alone, layout = {columns = 3, fit}]{problem.sgf}
+
+\case{sgf problem, statement = alone without grid: the statement in its own line}
+\sgfproblem[statement = alone, goban = {scale = 0.4}]{problem.sgf}
+
+\case{pgfgolayout, columns = 4, fit: two gobans of different size, a sgfdiagrams (its layout is ignored) and a goban in the second row}
+\begin{pgfgolayout}[columns = 4, fit]
+	\begin{goban}[5]
+		\stones{C3}
+	\end{goban}
+	\begin{goban}[9, partial = {from = A1 to E5}]
+		\stones[w]{C3}
+		\marks[triangle]{C3}
+	\end{goban}
+	\sgfdiagrams[step = 3, layout = {columns = 2}]{game.sgf}
+	\begin{goban}[7]
+		\stones{C3}
+	\end{goban}
+\end{pgfgolayout}
+
+\case{pgfgolayout, columns = auto: the gobans in the paragraph}
+\begin{pgfgolayout}
+	\begin{goban}[5, scale = 0.5]\stones{C3}\end{goban}
+	\begin{goban}[5, scale = 0.5]\stones[w]{C3}\end{goban}
+\end{pgfgolayout}
+
+\case{layout for the whole document: \textbackslash pgfgoset\{sgf diagrams = \{layout = \{columns = 5, fit\}\}\}}
+{\pgfgoset{sgf diagrams = {layout = {columns = 5, fit}}}
+\sgfdiagrams[step = 1]{game.sgf}}
+
+\end{document}

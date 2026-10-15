@@ -856,7 +856,9 @@
 %CAPTURAS), Y DEBAJO LLEVA SU EPIGRAFE ("Diagram 2 (51-100)") Y SUS NOTAS "N at M". SE USA FUERA DE goban.
 
 \int_new:N \l__pgfgo_sgfdiag_step_int
+\int_new:N \l__pgfgo_sgfdiag_from_int
 \int_new:N \l__pgfgo_sgfdiag_to_int
+\tl_new:N \l__pgfgo_sgfdiag_layout_tl
 \int_new:N \l__pgfgo_sgfdiag_last_int
 \tl_new:N \l__pgfgo_sgfdiag_goban_tl
 \tl_new:N \l__pgfgo_sgfdiag_variation_tl
@@ -878,6 +880,10 @@
 \keys_define:nn {pgfgo / sgf~diagrams} {
 	step						.int_set:N	= \l__pgfgo_sgfdiag_step_int,
 	step						.initial:n	= {50},
+	%LOS DIAGRAMAS SON LOS MISMOS (Y CON EL MISMO NUMERO) QUE SIN from: SOLO SE DIBUJAN LOS QUE TIENEN JUGADAS
+	%DESDE from, Y EL PRIMERO EMPIEZA EN from.
+	from						.int_set:N	= \l__pgfgo_sgfdiag_from_int,
+	from						.initial:n	= {1},
 	%-1: LA ULTIMA JUGADA.
 	to							.int_set:N	= \l__pgfgo_sgfdiag_to_int,
 	to							.initial:n	= {-1},
@@ -919,26 +925,74 @@
 	black~name			.initial:n	= {\pgfgo_text:n {black}},
 	white~name			.tl_set:N		= \l__pgfgo_sgfdiag_white_tl,
 	white~name			.initial:n	= {\pgfgo_text:n {white}},
+	%OPCIONES DE /pgfgo/layout SOLO PARA \sgfdiagrams (SE SUMAN A LAS DE TODO EL DOCUMENTO).
+	layout					.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfdiag_layout_tl {, #1}},
 }
 
 \keys_define:nn {pgfgo} {
 	sgf~diagrams		.code:n			= {\keys_set:nn {pgfgo / sgf~diagrams} {#1}}
 }
 
-%DIBUJA UN DIAGRAMA: EL goban CON LAS JUGADAS #1 A #2 (NUMERADAS DESDE #1) DE LA LINEA
-%\l__pgfgo_sgfdiag_variation_tl, Y DEBAJO EL EPIGRAFE #3 Y LO QUE DIGA #4 (SE EJECUTA DESPUES DEL goban).
+%ARMA UN DIAGRAMA EN \l__pgfgo_sgfdiag_cell_box: EL goban CON LAS JUGADAS #1 A #2 (NUMERADAS DESDE #1) DE LA
+%LINEA \l__pgfgo_sgfdiag_variation_tl, Y DEBAJO EL EPIGRAFE #3 Y LO QUE DIGA #4 (SE EJECUTA DESPUES DEL goban).
 %LAS OPCIONES DEL goban QUE ELIGEN LA PARTE VISIBLE ESTAN EN \l__pgfgo_sgfdiag_window_tl, Y restart EN
-%\l__pgfgo_sgfdiag_restart_tl.
+%\l__pgfgo_sgfdiag_restart_tl. EN LA GRILLA (VER pgf-go-layout.sty) EL DIAGRAMA TIENE EL ANCHO DE LA CELDA, Y
+%CON fit TODOS LOS TABLEROS USAN LA ESCALA QUE LLENA LA CELDA CON EL PRIMERO (\l__pgfgo_sgfdiag_scale_tl).
 \tl_new:N \l__pgfgo_sgfdiag_window_tl
 \tl_new:N \l__pgfgo_sgfdiag_restart_tl
+\tl_new:N \l__pgfgo_sgfdiag_scale_tl
+\tl_new:N \l__pgfgo_sgfdiag_align_tl
+\box_new:N \l__pgfgo_sgfdiag_cell_box
 \cs_new_protected:Npn \__pgfgo_sgfdiag_draw:nnnn #1#2#3#4 {
+	\pgfgo_layout_if_fit:T {
+		\tl_if_empty:NT \l__pgfgo_sgfdiag_scale_tl {
+			\pgfgo_layout_fit:nN
+				{
+					\tl_set:Nn \l__pgfgo_sgfdiag_scale_tl {scale = ##1}
+					\__pgfgo_sgfdiag_board:nn {#1} {#2}
+				}
+				\l__pgfgo_sgfdiag_box
+			\tl_set:Ne \l__pgfgo_sgfdiag_scale_tl {scale = \l_pgfgo_layout_scale_tl}
+		}
+	}
+	\__pgfgo_sgfdiag_board:nn {#1} {#2}
+	\pgfgo_layout_if_grid:TF
+		{
+			\tl_set:Nn \l__pgfgo_sgfdiag_align_tl {\pgfgo_layout_par_align:}
+			\dim_set_eq:NN \l__pgfgo_sgfdiag_width_dim \l_pgfgo_layout_cell_dim
+			\vbox_set_top:Nn \l__pgfgo_sgfdiag_cell_box {
+				\pgfgo_layout_place:n {\box_use:N \l__pgfgo_sgfdiag_box}
+				\skip_vertical:n {0.3em}
+				\__pgfgo_sgfdiag_below:nn {\pgfgo_layout_par_align:} {#3}
+				#4
+			}
+		}
+		{
+			\tl_set:Nn \l__pgfgo_sgfdiag_align_tl {\centering}
+			%EL EPIGRAFE NO SE CORTA: EL DIAGRAMA TIENE EL ANCHO DEL TABLERO O DEL EPIGRAFE, EL MAYOR.
+			\hbox_set:Nn \l__pgfgo_sgfdiag_caption_box {\l__pgfgo_sgfdiag_font_tl #3}
+			\dim_set:Nn \l__pgfgo_sgfdiag_width_dim
+				{\dim_max:nn {\box_wd:N \l__pgfgo_sgfdiag_box} {\box_wd:N \l__pgfgo_sgfdiag_caption_box}}
+			\vbox_set_top:Nn \l__pgfgo_sgfdiag_cell_box {
+				\hbox_to_wd:nn {\l__pgfgo_sgfdiag_width_dim} {\hfil \box_use:N \l__pgfgo_sgfdiag_box \hfil}
+				\skip_vertical:n {0.3em}
+				\hbox_to_wd:nn {\l__pgfgo_sgfdiag_width_dim} {\hfil \box_use:N \l__pgfgo_sgfdiag_caption_box \hfil}
+				#4
+			}
+		}
+}
+
+%EL goban DEL DIAGRAMA (JUGADAS #1 A #2) EN \l__pgfgo_sgfdiag_box.
+\cs_new_protected:Npn \__pgfgo_sgfdiag_board:nn #1#2 {
 	\hbox_set:Nn \l__pgfgo_sgfdiag_box {
+		\pgfgo_layout_restore_goban:
 		\use:e {
 			\exp_not:N \begin{goban}
 				[
 					size = \l__pgfgo_sgfdiag_size_tl, captures, notes,
 					\exp_not:V \l__pgfgo_sgfdiag_window_tl,
-					\exp_not:V \l__pgfgo_sgfdiag_goban_tl
+					\exp_not:V \l__pgfgo_sgfdiag_goban_tl,
+					\exp_not:V \l__pgfgo_sgfdiag_scale_tl
 				]
 		}
 			\pgfgo_goban_remember_nothing:
@@ -957,20 +1011,9 @@
 			}
 		\end{goban}
 	}
-	%EL EPIGRAFE NO SE CORTA: EL DIAGRAMA TIENE EL ANCHO DEL TABLERO O DEL EPIGRAFE, EL MAYOR.
-	\hbox_set:Nn \l__pgfgo_sgfdiag_caption_box {\l__pgfgo_sgfdiag_font_tl #3}
-	\dim_set:Nn \l__pgfgo_sgfdiag_width_dim
-		{\dim_max:nn {\box_wd:N \l__pgfgo_sgfdiag_box} {\box_wd:N \l__pgfgo_sgfdiag_caption_box}}
-	\mode_leave_vertical:
-	\vbox_top:n {
-		\hbox_to_wd:nn {\l__pgfgo_sgfdiag_width_dim} {\hfil \box_use:N \l__pgfgo_sgfdiag_box \hfil}
-		\skip_vertical:n {0.3em}
-		\hbox_to_wd:nn {\l__pgfgo_sgfdiag_width_dim} {\hfil \box_use:N \l__pgfgo_sgfdiag_caption_box \hfil}
-		#4
-	}
 }
 
-%DEBAJO DEL EPIGRAFE: UN PARRAFO DEL ANCHO DEL DIAGRAMA (#1: \centering O \raggedright).
+%DEBAJO DEL EPIGRAFE: UN PARRAFO DEL ANCHO DEL DIAGRAMA (#1: \centering, \raggedright, ETC.).
 \cs_new_protected:Npn \__pgfgo_sgfdiag_below:nn #1#2 {
 	\hbox:n {\parbox[t]{\l__pgfgo_sgfdiag_width_dim} {#1 \l__pgfgo_sgfdiag_font_tl #2}}
 }
@@ -978,7 +1021,7 @@
 %LAS NOTAS "N at M" Y LOS COMENTARIOS DE LAS JUGADAS #1 A #2.
 \cs_new_protected:Npn \__pgfgo_sgfdiag_notes:nn #1#2 {
 	\bool_if:nT {\l__pgfgo_sgfdiag_notes_bool && ! \seq_if_empty_p:N \g_pgfgo_move_notes_seq}
-		{\__pgfgo_sgfdiag_below:nn {\centering} {\pgfgomovenotes}}
+		{\__pgfgo_sgfdiag_below:nn {\l__pgfgo_sgfdiag_align_tl} {\pgfgomovenotes}}
 	\bool_if:NT \l__pgfgo_sgfdiag_comments_bool {
 		\__pgfgo_sgfdiag_below:nn {\raggedright} {
 			\int_step_inline:nnn {#1} {#2} {
@@ -1011,6 +1054,7 @@
 				{\int_compare_p:nNn {#3} = {\l__pgfgo_sgfdiag_total_int}}
 				{\__pgfgo_sgfdiag_result:}
 		}
+	\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box
 }
 
 %DEBAJO DEL ULTIMO DIAGRAMA: EL RESULTADO (RE) Y, SI EL ARCHIVO MARCA EL TERRITORIO (TB, TW), EL PUNTAJE DE
@@ -1024,7 +1068,7 @@
 		{! \tl_if_blank_p:V \l__pgfgo_sgfdiag_re_tl}
 		{! \prop_if_empty_p:N \g_pgfgo_territory_prop}
 		{
-			\__pgfgo_sgfdiag_below:nn {\centering} {
+			\__pgfgo_sgfdiag_below:nn {\l__pgfgo_sgfdiag_align_tl} {
 				\l__pgfgo_sgfdiag_result_title_tl :~
 				\tl_if_blank:VF \l__pgfgo_sgfdiag_re_tl {
 					\str_if_eq:VnTF \l__pgfgo_sgfdiag_result_format_tl {raw}
@@ -1103,6 +1147,12 @@
 			{\seq_item:Nn \l__pgfgo_sgfdiag_figures_seq {##1 + 1}}
 	}
 }
+%EL DIAGRAMA #1 (JUGADAS #2 A #3, CON EL NOMBRE #4), SI TIENE JUGADAS DESDE from: EMPIEZA EN from O DESPUES.
+\cs_new_protected:Npn \__pgfgo_sgfdiag_range:nnnn #1#2#3#4 {
+	\int_compare:nNnF {#3} < {\l__pgfgo_sgfdiag_from_int} {
+		\__pgfgo_sgfdiag_diagram:nnnn {#1} {\int_max:nn {#2} {\l__pgfgo_sgfdiag_from_int}} {#3} {#4}
+	}
+}
 %#1: {JUGADA}{NOMBRE} DE LA FIGURA, #2: LA DE LA SIGUIENTE.
 \cs_new_protected:Npn \__pgfgo_sgfdiag_figure:nn #1#2 {
 	\__pgfgo_sgfdiag_figure:nnnn #1 #2
@@ -1111,9 +1161,8 @@
 	\int_compare:nNnT {#1} < {#3} {
 		\int_compare:nNnF {#1} > {\l__pgfgo_sgfdiag_last_int} {
 			\int_incr:N \l__pgfgo_sgfdiag_count_int
-			\__pgfgo_sgfdiag_diagram:nnnn {\l__pgfgo_sgfdiag_count_int} {#1}
+			\__pgfgo_sgfdiag_range:nnnn {\l__pgfgo_sgfdiag_count_int} {#1}
 				{\int_min:nn {#3 - 1} {\l__pgfgo_sgfdiag_last_int}} {#2}
-			\skip_horizontal:n {1em plus 1fil}
 		}
 	}
 }
@@ -1121,6 +1170,8 @@
 \cs_new_protected:Npn \pgfgo_sgfdiagrams:nn #1#2 {
 	\group_begin:
 		\keys_set:nn {pgfgo / sgf~diagrams} {#1}
+		\pgfgo_layout_begin:V \l__pgfgo_sgfdiag_layout_tl
+		\tl_clear:N \l__pgfgo_sgfdiag_scale_tl
 		\tl_set:Nn \l__pgfgo_sgfdiag_file_tl {#2}
 		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfdiag_variation_tl
 		\tl_set:Ne \l__pgfgo_sgfdiag_size_tl
@@ -1142,14 +1193,14 @@
 			{\__pgfgo_sgfdiag_figures:}
 			{
 				\int_step_inline:nnnn {1} {\l__pgfgo_sgfdiag_step_int} {\l__pgfgo_sgfdiag_last_int} {
-					\__pgfgo_sgfdiag_diagram:nnnn
+					\__pgfgo_sgfdiag_range:nnnn
 						{(##1 - 1) / \l__pgfgo_sgfdiag_step_int + 1}
 						{##1}
 						{\int_min:nn {##1 + \l__pgfgo_sgfdiag_step_int - 1} {\l__pgfgo_sgfdiag_last_int}}
 						{0}
-					\skip_horizontal:n {1em plus 1fil}
 				}
 			}
+		\pgfgo_layout_end:
 	\group_end:
 }
 
@@ -1170,6 +1221,8 @@
 %SE DIBUJAN COMO LOS DE \sgfdiagrams.
 
 \bool_new:N \l__pgfgo_sgfprob_statement_bool
+\bool_new:N \l__pgfgo_sgfprob_alone_bool
+\tl_new:N \l__pgfgo_sgfprob_layout_tl
 \bool_new:N \l__pgfgo_sgfprob_solutions_bool
 \bool_new:N \l__pgfgo_sgfprob_view_bool
 \bool_new:N \l__pgfgo_sgfprob_crop_bool
@@ -1187,7 +1240,11 @@
 \seq_new:N \l__pgfgo_sgfprob_paths_seq
 
 \keys_define:nn {pgfgo / sgf~problem} {
-	statement						.bool_set:N	= \l__pgfgo_sgfprob_statement_bool,
+	%alone: EL ENUNCIADO VA SOLO EN SU FILA, Y LAS VARIANTES DEBAJO.
+	statement						.choices:nn	= {true, false, alone} {
+		\bool_set:Nn \l__pgfgo_sgfprob_statement_bool {! \str_if_eq_p:Vn \l_keys_choice_tl {false}}
+		\bool_set:Nn \l__pgfgo_sgfprob_alone_bool {\str_if_eq_p:Vn \l_keys_choice_tl {alone}}
+	},
 	statement						.default:n	= {true},
 	statement						.initial:n	= {true},
 	solutions						.bool_set:N	= \l__pgfgo_sgfprob_solutions_bool,
@@ -1223,6 +1280,7 @@
 	crop								.initial:n	= {true},
 	margin							.int_set:N	= \l__pgfgo_sgfprob_margin_int,
 	margin							.initial:n	= {1},
+	layout							.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfprob_layout_tl {, #1}},
 }
 \keys_define:nn {pgfgo} {
 	sgf~problem					.code:n			= {\keys_set:nn {pgfgo / sgf~problem} {#1}}
@@ -1280,13 +1338,15 @@
 		\__pgfgo_sgfdiag_draw:nnnn {1} {\l__pgfgo_sgfprob_last_int}
 			{\l__pgfgo_sgfprob_variation_title_tl \nobreakspace #1}
 			{\__pgfgo_sgfdiag_notes:nn {1} {\l__pgfgo_sgfprob_last_int}}
-		\skip_horizontal:n {1em plus 1fil}
+		\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box
 	}
 }
 
 \cs_new_protected:Npn \pgfgo_sgfproblem:nn #1#2 {
 	\group_begin:
 		\keys_set:nn {pgfgo / sgf~problem} {#1}
+		\pgfgo_layout_begin:V \l__pgfgo_sgfprob_layout_tl
+		\tl_clear:N \l__pgfgo_sgfdiag_scale_tl
 		\tl_set:Nn \l__pgfgo_sgfdiag_file_tl {#2}
 		\tl_set:Nn \l__pgfgo_sgfdiag_restart_tl {0}
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_goban_tl \l__pgfgo_sgfprob_goban_tl
@@ -1328,12 +1388,15 @@
 							{\__pgfgo_sgfdiag_below:nn {\raggedright} {\pgfgo_sgf_comment:n {0}}}
 					}
 				}
-			\skip_horizontal:n {1em plus 1fil}
+			\bool_if:NTF \l__pgfgo_sgfprob_alone_bool
+				{\pgfgo_layout_add_alone:N \l__pgfgo_sgfdiag_cell_box}
+				{\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box}
 		}
 		\bool_if:NT \l__pgfgo_sgfprob_solutions_bool {
 			\seq_map_indexed_inline:Nn \l__pgfgo_sgfprob_paths_seq
 				{\__pgfgo_sgfprob_solution:nn {##1} {##2}}
 		}
+		\pgfgo_layout_end:
 	\group_end:
 }
 \cs_generate_variant:Nn \str_case:nn {Vn}

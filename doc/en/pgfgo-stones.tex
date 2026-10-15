@@ -942,6 +942,10 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 	Number of moves of each diagram.
 \end{key}
 
+\begin{key}{/pgfgo/sgf diagrams/from = \meta{number} (initially 1)}
+	First move. The diagrams are the same as without |from|, with the same number: only the ones with moves from |from| on are drawn, and the first one starts at |from|. With |step = 50| and |from = 120|, the first one is "Diagram 3 (120--150)".
+\end{key}
+
 \begin{key}{/pgfgo/sgf diagrams/to = \meta{number} (initially the last move)}
 	Last move.
 \end{key}
@@ -964,6 +968,10 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/sgf diagrams/goban = \meta{goban options}}
 	Options of every board. By default, the boards have the size of the game and use |captures| and |notes|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/layout = \meta{layout options}}
+	How the diagrams are laid out: options of |/pgfgo/layout| (p.~\pageref{subsec:layout}) only for |\sgfdiagrams|. For example, |layout = {columns = 3}|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/variation = \meta{numbers} (initially the main line)}
@@ -1028,8 +1036,8 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \sgfproblem[title = Problem 1]{problem.sgf}
 
-\begin{key}{/pgfgo/sgf problem/statement = \meta{boolean} (default true, initially true)}
-	Draws the statement.
+\begin{key}{/pgfgo/sgf problem/statement = \meta{true, false or alone} (default true, initially true)}
+	Draws the statement. With |alone|, the statement goes alone in its row, centered, and the variations below.
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/solutions = \meta{boolean} (default true, initially true)}
@@ -1072,6 +1080,10 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 	Options of every board, like |/pgfgo/sgf diagrams/goban|.
 \end{key}
 
+\begin{key}{/pgfgo/sgf problem/layout = \meta{layout options}}
+	How the statement and the variations are laid out: options of |/pgfgo/layout| (p.~\pageref{subsec:layout}) only for |\sgfproblem|.
+\end{key}
+
 \begin{key}{/pgfgo/sgf problem/view = \meta{boolean} (default true, initially true)}
 	If the file has a view (|VW|) at the start, all the diagrams show that part.
 \end{key}
@@ -1087,6 +1099,65 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 \begin{key}{/pgfgo/sgf problem/game = \meta{number} (initially 1)}
 	Like |/pgfgo/sgf/game|: in a collection, the problem that is drawn.
 \end{key}
+
+
+\subsection{Layout of the Diagrams}
+\label{subsec:layout}
+
+|\sgfdiagrams| and |\sgfproblem| draw several diagrams. By default they go in the paragraph, side by side, and move to the next line when they do not fit. With |columns|, they go in a grid of columns of the same width: each row is a separate line (the page can break between rows), the boards of a row are aligned at the top and an incomplete row leaves its last columns empty. With |fit|, the boards are also scaled to fill the width of their column.
+
+\begin{codeexample}[code only]
+	\sgfdiagrams[step = 2, to = 6, layout = {columns = 3, fit}]{game.sgf}
+\end{codeexample}
+
+\sgfdiagrams[step = 2, to = 6, layout = {columns = 3, fit}]{game.sgf}
+
+\begin{stylekey}{/pgfgo/layout = \meta{layout options}}
+	Layout options for the whole document, for example |\pgfgoset{layout = {columns = 3, fit}}|. For a single command, |/pgfgo/sgf diagrams/layout| and |/pgfgo/sgf problem/layout|; also for the whole document, |\pgfgoset{sgf diagrams = {layout = {...}}}|.
+\end{stylekey}
+
+\begin{key}{/pgfgo/layout/columns = \meta{number or auto} (initially auto)}
+	Number of columns of the grid. With |auto|, the diagrams go in the paragraph, without a grid.
+\end{key}
+
+\begin{key}{/pgfgo/layout/width = \meta{dimension} (initially \texttt{\string\linewidth})}
+	Width of the grid. If it is less than the width of the line, the grid is centered.
+\end{key}
+
+\begin{key}{/pgfgo/layout/column sep = \meta{dimension} (initially 1em)}
+	Space between columns.
+\end{key}
+
+\begin{key}{/pgfgo/layout/row sep = \meta{skip} (initially \texttt{\string\medskipamount})}
+	Space between rows.
+\end{key}
+
+\begin{key}{/pgfgo/layout/fit = \meta{boolean} (default true, initially false)}
+	Scales each board to fill the width of its column; it replaces the |scale| of the board. The lines keep their width. In |\sgfdiagrams| and |\sgfproblem|, all the boards use the scale that fills the column with the first one, so the stones have the same size in all of them. Only with |columns|.
+\end{key}
+
+\begin{key}{/pgfgo/layout/align = \meta{center, left or right} (initially center)}
+	Where each diagram goes within its column, with its caption and its notes. The comments are always aligned to the left.
+\end{key}
+
+\begin{environment}{{pgfgolayout}\opt{\oarg{layout options}}}
+	Lays out in a grid the |goban|s it contains, and the diagrams of the |\sgfdiagrams| and |\sgfproblem| it contains, in the order in which they appear. So boards drawn by hand and diagrams of different files can be put together in a grid. The options are those of |/pgfgo/layout|; the |layout| options of the commands inside are not used. There must be no text inside, only the boards and the commands. With |fit|, each |goban| is drawn several times to measure it: its contents should have no effects outside the board (for example, counters that are stepped).
+
+	\begin{codeexample}[code only]
+		\begin{pgfgolayout}[columns = 4, fit]
+			\begin{goban}[5]\stones{C3}\end{goban}
+			\begin{goban}[5]\stones[w]{C3}\end{goban}
+			\sgfdiagrams[step = 5]{game.sgf}
+		\end{pgfgolayout}
+	\end{codeexample}
+\end{environment}
+
+\begin{pgfgolayout}[columns = 4, fit]
+	\begin{goban}[5]\stones{C3}\end{goban}
+	\begin{goban}[5]\stones[w]{C3}\end{goban}
+	\sgfdiagrams[step = 5]{game.sgf}
+\end{pgfgolayout}
+
 
 
 \subsection{Prisoners}
