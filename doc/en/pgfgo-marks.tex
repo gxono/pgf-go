@@ -286,6 +286,43 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
+\begin{command}{\pgfgodefinemark\marg{name}\marg{pgf code}}
+	Defines a new mark, called \meta{name}, which is used like the others: in |\marks|, in the |mark| option of stones and players, and in |\territory|. It is drawn on the same layers as the other marks; on an empty point, it covers the grid with a circle of the color of the background. A mark with the name of another one replaces it.
+
+	The \meta{pgf code} is drawn with the origin on the point. Coordinates without units (those of |\pgfpointxy| and of Ti\emph{k}Z) are measured in stone radii: |(0,0) circle (1)| has the size of the stone. The line color is |mark/line/color| of the player; the fill color, |mark/fill/color| if |mark/fill| is on (otherwise, gray); and the line width, |mark/line/width|. These two colors are also called |pgfgomarkline| and |pgfgomarkfill|.
+
+	With the form |\pgfgodefinemark|\marg{name}\oarg{options}, the mark is an image: see |image| and |width| below.
+
+	\begin{codeexample}[]
+		\pgfgodefinemark{diamond}{
+			\pgfpathmoveto{\pgfpointxy{0}{0.7}}
+			\pgfpathlineto{\pgfpointxy{0.7}{0}}
+			\pgfpathlineto{\pgfpointxy{0}{-0.7}}
+			\pgfpathlineto{\pgfpointxy{-0.7}{0}}
+			\pgfpathclose
+			\pgfusepath{fill, stroke}}
+		\pgfgodefinemark{slash}{\draw (-0.5,-0.5) -- (0.5,0.5);}
+		\pgfgodefinemark{star}[image = star.pdf]
+
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[diamond]{C2, B4, B2}
+			\marks[slash]{D3, C3}
+			\marks[star]{D4}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\begin{key}{/pgfgo/define mark/image = \meta{file}}
+	The image (PNG, JPG or PDF) of a mark defined with |\pgfgodefinemark|\marg{name}\oarg{options}. It is drawn centered on the point; the colors of the marks do not apply.
+\end{key}
+
+\begin{key}{/pgfgo/define mark/width = \meta{dimension} (initially 1.2 stone radii)}
+	The width of the image; the height keeps the proportions. Without this key, the mark has the size of the circle (|circle|), and changes with the radius of the stones.
+\end{key}
+
+
 \begin{key}{/pgfgo/mark/line = \meta{options}}
 	Controls the outline of the mark.
 \end{key}

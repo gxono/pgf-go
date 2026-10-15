@@ -202,6 +202,46 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Define simultáneamente la separación vertical y horizontal de las líneas, asegurando un espaciado uniforme en ambas direcciones. Es una opción conveniente para mantener proporciones equilibradas.
 	\end{key}
 
+	\begin{key}{/pgfgo/goban/grid/image =\meta{options}}
+		Dibuja una imagen en lugar de las líneas de la cuadrícula, con la opacidad de |grid/line/opacity|. Con |partial| se ve la parte que corresponde. Los puntos de estrella se siguen dibujando (ver |hoshi|).
+
+		\begin{codeexample}[]
+			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false]
+				\stones{C3}\stone[w]{D4}
+			\end{goban}
+
+			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false, partial = {from = C3 to G7}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/image/file =\meta{file}}
+		El archivo de la imagen.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/image/fit =\meta{stretch o tile} (initially stretch)}
+		Con |stretch|, la imagen se estira desde A1 hasta la esquina opuesta del tablero completo, así que las líneas exteriores tienen que estar en los bordes de la imagen. Con |tile|, se dibuja una vez en cada casilla de la cuadrícula (entre cuatro intersecciones), estirada al tamaño de la casilla: con la imagen de un cuadrado se arma todo el tablero.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, grid = {image = {file = cell.png, fit = tile}}, hoshi = false]
+				\stones{C3}\stone[w]{D4}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/image/tiles =\meta{columnas}|x|\meta{filas} (initially una por casilla)}
+		Con |fit = tile|, la malla en la que se repite la imagen, sobre el área que va de A1 a la esquina opuesta del tablero completo; cada imagen se estira al tamaño de su celda. Un solo número vale para las dos direcciones. Sin esta \emph{key}, hay una imagen por casilla.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, grid = {image = {file = cell.png, fit = tile, tiles = 4}}, hoshi = false]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/grid/image/false}
+		Quita la imagen: vuelven las líneas.
+	\end{stylekey}
+
 	\subsection{Puntos de estrella}
 	\label{subsec:hoshi}
 
@@ -251,6 +291,23 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/hoshi/image=\meta{options}}
+		Dibuja una imagen en cada punto de estrella, en lugar del círculo, de ancho $2 \times$ |radius|.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, hoshi = {image = {file = hoshi.png}, radius = 3pt}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/hoshi/image/file=\meta{file}}
+		El archivo de la imagen.
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/hoshi/image/false}
+		Quita la imagen: vuelven los círculos.
+	\end{stylekey}
+
 	\subsection{Borde}
 	
 	El borde del tablero es el contorno que enmarca la cuadrícula y las piedras, proporcionando un límite visual claro. Por defecto, está activo, tiene un fondo blanco y un contorno negro.
@@ -337,6 +394,66 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/background/fill/image =\meta{options}}
+		Una imagen de fondo (por ejemplo, la madera de un tablero), sobre el color de relleno y con su misma opacidad. La imagen se ubica según el tablero completo: con |partial| se ve la parte que le corresponde, recortada por el borde y sus esquinas redondeadas. Las marcas sobre puntos vacíos, que tapan la cuadrícula con el color del fondo, muestran la parte de la imagen que hay debajo, y lo mismo hace la marca |dim|. El halo de las flechas y líneas sigue siendo del color del fondo.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, background = {fill = {image = {file = wood.jpg}}}]
+				\stones{C3}\stone[w]{D4}
+				\marks[circle]{E5, C3}
+			\end{goban}
+
+			\begin{goban}[9, background = {fill = {image = {file = wood.jpg}}, rounded corners = 6pt}, partial = {from = A1 to E5}]
+				\marks[triangle]{C3}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/image/file =\meta{file}}
+		El archivo de la imagen de fondo.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/image/fit =\meta{stretch, cover o tile} (initially cover)}
+		Cómo ocupa la imagen el fondo del tablero completo. |stretch| la estira hasta ocupar todo el fondo, sin mantener la proporción. |cover| la agranda o la achica, manteniendo la proporción, hasta cubrir el fondo, centrada: lo que sobra no se ve. |tile| la repite como baldosas, desde una esquina, un borde o el centro del tablero completo (ver |from|).
+
+		\begin{codeexample}[]
+			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}]
+			\end{goban}
+
+			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}, partial = {from = D4 to H8}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/image/from =\meta{posición} (initially south west)}
+		Con |fit = tile|, desde dónde se ponen las baldosas, en el fondo del tablero completo. Con una esquina (|south west|, |south east|, |north west| o |north east|), en esa esquina queda una baldosa entera. Con un borde (|north|, |south|, |east| o |west|), la primera baldosa queda contra ese borde, centrada a lo largo de él. Con |center|, una baldosa queda en el centro del tablero.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, from = north east}}}]
+			\end{goban}
+
+			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, from = north}}}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/image/width =\meta{dimension} (initially el ancho natural)}
+		Con |fit = tile|, el ancho de cada baldosa; el alto mantiene la proporción.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/image/tiles =\meta{columnas}|x|\meta{filas}}
+		Con |fit = tile|, en lugar de baldosas de ancho |width| desde |from|, divide el fondo del tablero completo en esa malla y pone la imagen en cada celda, estirada a su tamaño. Un solo número vale para las dos direcciones.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, background = {fill = {image = {file = cell.png, fit = tile, tiles = 3x3}}}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/background/fill/image/false}
+		Quita la imagen de fondo.
+	\end{stylekey}
+
 	\begin{key}{/pgfgo/goban/background/line=\meta{options}}
 		Controla las opciones de la línea de contorno del fondo.
 	\end{key}

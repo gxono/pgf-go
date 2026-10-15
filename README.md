@@ -56,7 +56,7 @@ You can find examples in the `doc/examples` directory:
 - `example-13`: the commented game in Spanish (`babel` and translated texts).
 - `example-14`: the commented game in Japanese (`luatexja`, kanji coordinates).
 - `example-15`: captures, a ko, "7 at 1" notes and prisoners.
-- `example-16`: territory found by `	erritory{auto}`, a dead stone and the score.
+- `example-16`: territory found by `\territory{auto}`, a dead stone and the score.
 - `example-17`: arrows, lines, a dimmed stone and labels.
 - `example-18`: the commented game in Chinese (`ctex`), read from a GB2312 file.
 - `example-19`: the commented game in Korean (`luatexko`), read from an EUC-KR file.

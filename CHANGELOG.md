@@ -6,6 +6,21 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- Images (PNG, JPG or PDF): `stone/image` (`file`, `width`, `false`) draws
+  the stones with an image; with several files, each point always uses the
+  same one. `drop shadow` has the shape of the image (pdfLaTeX or LuaLaTeX).
+  `goban/background/fill/image` (`file`, `fit = stretch | cover | tile`,
+  `width`, `from`, `tiles`, `false`) puts an image on the background of the
+  board, placed according to the whole board (tiles start from the corner,
+  side or center given by `from`, or fill a mesh of `tiles`); marks on empty
+  points show the image under them. `goban/grid/image` (`file`,
+  `fit = stretch | tile`, `tiles`, `false`) replaces the lines of the grid,
+  stretched, once on each square or on a mesh of `tiles`
+  (`<columns>x<rows>`), and `goban/hoshi/image` (`file`, `false`) the star
+  points. Each file is stored once in the PDF.
+- `\pgfgodefinemark{<name>}{<pgf code>}` and
+  `\pgfgodefinemark{<name>}[image = <file>, width = <dimension>]` define new
+  marks, used like the others (`\marks`, `mark`, `territory/mark`).
 - `\sgfproblem`: draws a problem (tsumego) from an SGF file: the statement
   (initial position, marks, who plays, comment) and one diagram for each line
   of the tree, with its notes, comments and annotations. Without `VW`, the

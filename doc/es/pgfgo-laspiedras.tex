@@ -229,6 +229,53 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 \end{key}
 
 
+\begin{key}{/pgfgo/stone/image = \meta{options}}
+	Dibuja la piedra con una imagen (PNG, JPG o PDF) en lugar del círculo: no se dibujan el relleno, el borde ni el brillo, y la imagen no tiene por qué ser redonda. La sombra (|drop shadow|) se dibuja con la forma de la imagen; para eso la imagen tiene que tener transparencia (un PNG con canal alfa o un PDF): la sombra de un JPG es un rectángulo. Un prisionero con imagen se ve translúcido, como cualquier prisionero.
+
+	Los archivos se buscan como con |\includegraphics| (por ejemplo, en las carpetas de |\graphicspath|). Cada archivo, con cada tamaño, se guarda una sola vez en el PDF, por más piedras que lo usen. La sombra con la forma de la imagen necesita pdf\LaTeX\ o Lua\LaTeX\ (con salida PDF); con otros motores la piedra se dibuja sin sombra y con un aviso.
+
+	Las imágenes SVG no se pueden usar directamente: hay que convertirlas antes a PDF, por ejemplo con |inkscape --export-type=pdf piedra.svg| o con |rsvg-convert -f pdf -o piedra.pdf piedra.svg|. Lo mismo vale para el fondo, la cuadrícula, los puntos de estrella y las marcas.
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+		\begin{goban}
+			\stones[b, image = {file = stone-black.png}, drop shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
+			\stone[w, image = {file = stone-white.png}, drop shadow = {true, angle = -45, offset = 1.5pt}]{B4}
+		\end{goban}
+	\end{codeexample}
+
+	Para todas las piedras de un jugador, la imagen se da en sus opciones:
+
+	\begin{codeexample}[]
+		\pgfgoset{players = {
+			black = {stone = {image = {file = stone-black.png}}},
+			white = {stone = {image = {file = stone-white.png}}}}}
+
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\moves{C3, D3, C2, B3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/image/file = \meta{file \opt{, file, ...}}}
+	El archivo de la imagen. Con varios archivos, cada piedra usa uno, elegido por su posición: una piedra en un punto muestra siempre la misma imagen, en todos los diagramas. Sirve para variar el aspecto de las piedras, por ejemplo las vetas de las blancas.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\stones[w, image = {file = {stone-white.png, stone-white-2.png}}]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/image/width = \meta{dimension} (initially el diámetro de la piedra)}
+	El ancho de la imagen; el alto mantiene la proporción. Por defecto es el diámetro de la piedra: $2 \times$ |radius| $\times$ |scale|.
+\end{key}
+
+\begin{stylekey}{/pgfgo/stone/image/false}
+	Quita la imagen: la piedra vuelve a ser un círculo.
+\end{stylekey}
+
 \begin{key}{/pgfgo/stone/mark = \meta{mark keys}}
 	
 	Coloca una marca sobre la piedra (ej. triángulo, círculo). Las marcas pueden personalizarse ulteriormente con otras claves, como color o tamaño.
@@ -844,7 +891,11 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/variation = \meta{números} (initially la línea principal)}
-	Como |/pgfgo/sgf/variation|.
+	Como |/pgfgo/sgf/variation|: la animación recorre la línea que lleva a esa variante.
+
+	\begin{codeexample}[width=5cm]
+		\sgfanimation[variation = 2, numbers]{variantes.sgf}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/marks = \meta{boolean} (default true, initially true)}

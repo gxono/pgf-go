@@ -225,6 +225,53 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 \end{key}
 
 
+\begin{key}{/pgfgo/stone/image = \meta{options}}
+	Draws the stone with an image (PNG, JPG or PDF) instead of the circle: the fill, the outline and the shine are not drawn, and the image does not need to be round. The shadow (|drop shadow|) has the shape of the image; for that, the image must have transparency (a PNG with an alpha channel, or a PDF): the shadow of a JPG is a rectangle. A prisoner with an image is translucent, like any prisoner.
+
+	Files are looked up like with |\includegraphics| (for example, in the folders of |\graphicspath|). Each file, at each size, is stored only once in the PDF, however many stones use it. The shadow with the shape of the image needs pdf\LaTeX\ or Lua\LaTeX\ (with PDF output); with other engines the stone is drawn without a shadow, with a warning.
+
+	SVG images cannot be used directly: convert them to PDF first, for example with |inkscape --export-type=pdf stone.svg| or with |rsvg-convert -f pdf -o stone.pdf stone.svg|. The same applies to the background, the grid, the star points and the marks.
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+
+		\begin{goban}
+			\stones[b, image = {file = stone-black.png}, drop shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
+			\stone[w, image = {file = stone-white.png}, drop shadow = {true, angle = -45, offset = 1.5pt}]{B4}
+		\end{goban}
+	\end{codeexample}
+
+	For all the stones of a player, give the image in the options of the player:
+
+	\begin{codeexample}[]
+		\pgfgoset{players = {
+			black = {stone = {image = {file = stone-black.png}}},
+			white = {stone = {image = {file = stone-white.png}}}}}
+
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\moves{C3, D3, C2, B3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/image/file = \meta{file \opt{, file, ...}}}
+	The image file. With several files, each stone uses one of them, chosen by its position: a stone on a given point always shows the same image, in every diagram. This varies the look of the stones, for example the grain of the white ones.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\stones[w, image = {file = {stone-white.png, stone-white-2.png}}]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/image/width = \meta{dimension} (initially the diameter of the stone)}
+	The width of the image; the height keeps the proportions. By default it is the diameter of the stone: $2 \times$ |radius| $\times$ |scale|.
+\end{key}
+
+\begin{stylekey}{/pgfgo/stone/image/false}
+	Removes the image: the stone is a circle again.
+\end{stylekey}
+
 \begin{key}{/pgfgo/stone/mark = \meta{mark keys}}
 	
 	Places a mark on the stone (e.g., triangle, circle). Marks can be further customized with other keys, such as color or size.
@@ -835,7 +882,11 @@ The texts of the annotations are in English, and they can be changed for the who
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/variation = \meta{numbers} (initially the main line)}
-	Like |/pgfgo/sgf/variation|.
+	Like |/pgfgo/sgf/variation|: the animation follows the line that leads to that variation.
+
+	\begin{codeexample}[width=5cm]
+		\sgfanimation[variation = 2, numbers]{variations.sgf}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/marks = \meta{boolean} (default true, initially true)}

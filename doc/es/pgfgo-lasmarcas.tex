@@ -290,6 +290,43 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 \end{key}
 
 
+\begin{command}{\pgfgodefinemark\marg{name}\marg{pgf code}}
+	Define una marca nueva, llamada \meta{name}, que se usa como las demás: en |\marks|, en la opción |mark| de las piedras y de los jugadores, y en |\territory|. Se dibuja en las mismas capas que las otras marcas; sobre un punto vacío, tapa la cuadrícula con un círculo del color del fondo. Una marca con el nombre de otra la reemplaza.
+
+	El \meta{pgf code} se dibuja con el origen en el punto. Las coordenadas sin unidad (las de |\pgfpointxy| y las de Ti\emph{k}Z) se miden en radios de piedra: |(0,0) circle (1)| es del tamaño de la piedra. El color de las líneas es |mark/line/color| del jugador; el de relleno, |mark/fill/color| si |mark/fill| está activo (si no, gris); y el grosor de las líneas, |mark/line/width|. Esos dos colores también se llaman |pgfgomarkline| y |pgfgomarkfill|.
+
+	Con la forma |\pgfgodefinemark|\marg{name}\oarg{options}, la marca es una imagen: ver |image| y |width| abajo.
+
+	\begin{codeexample}[]
+		\pgfgodefinemark{rombo}{
+			\pgfpathmoveto{\pgfpointxy{0}{0.7}}
+			\pgfpathlineto{\pgfpointxy{0.7}{0}}
+			\pgfpathlineto{\pgfpointxy{0}{-0.7}}
+			\pgfpathlineto{\pgfpointxy{-0.7}{0}}
+			\pgfpathclose
+			\pgfusepath{fill, stroke}}
+		\pgfgodefinemark{barra}{\draw (-0.5,-0.5) -- (0.5,0.5);}
+		\pgfgodefinemark{estrella}[image = star.pdf]
+
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[rombo]{C2, B4, B2}
+			\marks[barra]{D3, C3}
+			\marks[estrella]{D4}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\begin{key}{/pgfgo/define mark/image = \meta{file}}
+	La imagen (PNG, JPG o PDF) de una marca definida con |\pgfgodefinemark|\marg{name}\oarg{options}. Se dibuja centrada en el punto; los colores de las marcas no se aplican.
+\end{key}
+
+\begin{key}{/pgfgo/define mark/width = \meta{dimension} (initially 1.2 radios de piedra)}
+	El ancho de la imagen; el alto mantiene la proporción. Sin esta \emph{key}, la marca es del tamaño del círculo (|circle|), y cambia con el radio de las piedras.
+\end{key}
+
+
 \begin{key}{/pgfgo/mark/line = \meta{options}}
 	Controla el contorno de la marca.
 \end{key}
