@@ -776,53 +776,53 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 	Writes the name and the annotations. With |false|, only the comment.
 \end{key}
 
-The texts of the annotations are in English, and they can be changed for the whole document with |\pgfgoset{sgf annotations = {...}}|, for example |bad move = Mala jugada|. The emphasized annotations of |DM| and |UC| use the same text.
+The texts of the annotations are in the language of the document (p.~\pageref{subsec:languages}), and they can be changed for the whole document with |\pgfgoset{sgf annotations = {...}}|, for example |bad move = Mala jugada|. The emphasized annotations of |DM| and |UC| use the same text.
 
-\begin{key}{/pgfgo/sgf annotations/tesuji = \meta{text} (initially Tesuji)}
+\begin{key}{/pgfgo/sgf annotations/tesuji = \meta{text} (initially Tesuji or its translation)}
 	Text of |TE|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/very good tesuji = \meta{text} (initially Very good tesuji)}
+\begin{key}{/pgfgo/sgf annotations/very good tesuji = \meta{text} (initially Very good tesuji or its translation)}
 	Text of |TE[2]|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/bad move = \meta{text} (initially Bad move)}
+\begin{key}{/pgfgo/sgf annotations/bad move = \meta{text} (initially Bad move or its translation)}
 	Text of |BM|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/very bad move = \meta{text} (initially Very bad move)}
+\begin{key}{/pgfgo/sgf annotations/very bad move = \meta{text} (initially Very bad move or its translation)}
 	Text of |BM[2]|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/doubtful = \meta{text} (initially Doubtful move)}
+\begin{key}{/pgfgo/sgf annotations/doubtful = \meta{text} (initially Doubtful move or its translation)}
 	Text of |DO|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/interesting = \meta{text} (initially Interesting move)}
+\begin{key}{/pgfgo/sgf annotations/interesting = \meta{text} (initially Interesting move or its translation)}
 	Text of |IT|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/good for black = \meta{text} (initially Good for Black)}
+\begin{key}{/pgfgo/sgf annotations/good for black = \meta{text} (initially Good for Black or its translation)}
 	Text of |GB|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/very good for black = \meta{text} (initially Very good for Black)}
+\begin{key}{/pgfgo/sgf annotations/very good for black = \meta{text} (initially Very good for Black or its translation)}
 	Text of |GB[2]|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/good for white = \meta{text} (initially Good for White)}
+\begin{key}{/pgfgo/sgf annotations/good for white = \meta{text} (initially Good for White or its translation)}
 	Text of |GW|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/very good for white = \meta{text} (initially Very good for White)}
+\begin{key}{/pgfgo/sgf annotations/very good for white = \meta{text} (initially Very good for White or its translation)}
 	Text of |GW[2]|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/even = \meta{text} (initially Even position)}
+\begin{key}{/pgfgo/sgf annotations/even = \meta{text} (initially Even position or its translation)}
 	Text of |DM|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/unclear = \meta{text} (initially Unclear position)}
+\begin{key}{/pgfgo/sgf annotations/unclear = \meta{text} (initially Unclear position or its translation)}
 	Text of |UC|.
 \end{key}
 
@@ -939,7 +939,7 @@ The texts of the annotations are in English, and they can be changed for the who
 	Writes the "N at M" notes below each diagram.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/title = \meta{text} (initially Diagram)}
+\begin{key}{/pgfgo/sgf diagrams/title = \meta{text} (initially Diagram or its translation)}
 	Word of the caption: "Diagram 2 (51--100)".
 \end{key}
 
@@ -976,20 +976,32 @@ The texts of the annotations are in English, and they can be changed for the who
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/result = \meta{boolean} (default true, initially true)}
-	Writes below the last diagram, if it reaches the end of the game, the result (|RE|) and, if the file marks the territory (|TB|, |TW|), the score of each player: "Result: B+0.5 (Black 6, White 5.5)". The score is counted as with |\pgfgoscore| (p.~\pageref{subsec:territory}), with the komi of the file (|KM|).
+	Writes below the last diagram, if it reaches the end of the game, the result (|RE|) and, if the file marks the territory (|TB|, |TW|), the score of each player: "Result: Black wins by 0.5 points (Black 6, White 5.5)". The score is counted as with |\pgfgoscore| (p.~\pageref{subsec:territory}), with the komi of the file (|KM|).
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/result title = \meta{text} (initially Result)}
+\begin{key}{/pgfgo/sgf diagrams/result title = \meta{text} (initially Result or its translation)}
 	Word before the result.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/black name = \meta{text} (initially Black)}
-	Name of Black in the score.
+\begin{key}{/pgfgo/sgf diagrams/black name = \meta{text} (initially Black or its translation)}
+	Name of Black in the score and in the result.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/white name = \meta{text} (initially White)}
-	Name of White in the score.
+\begin{key}{/pgfgo/sgf diagrams/white name = \meta{text} (initially White or its translation)}
+	Name of White in the score and in the result.
 \end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/result format = \meta{text or raw} (initially text)}
+	How the result is written. |text|: in words, in the language of the document (p.~\pageref{subsec:languages}), "Black wins by resignation"; |raw|: as it is in the file, "B+R". With |text|, |0| or |Draw| (draw), |Void| (no result), |?| (unknown) and |B+| or |W+| followed by nothing, by the difference, by |R| or |Resign|, by |T| or |Time|, or by |F| or |Forfeit| are understood. Any other result is written as it is.
+\end{key}
+
+\begin{command}{\pgfgowinner}
+	In the texts of the result (|\pgfgodefinelanguage|), the name of the winner: |black name| or |white name|.
+\end{command}
+
+\begin{command}{\pgfgopoints}
+	In the texts of the result, the difference in points, as it is in the file.
+\end{command}
 
 \begin{command}{\sgfproblem\opt{\oarg{options}}\marg{file}}
 	Draws a problem (tsumego). First, the statement: the initial position with its marks, who plays (|PL|, or the color of the first move) and the comment at the start. Then, one diagram for each line of the tree of the file (each variation of the solution, right or wrong), numbered from 1, with its "N at M" notes and the comments and annotations of its moves, which usually say whether the variation is right. The diagrams are drawn like those of |\sgfdiagrams|. If the file has no view (|VW|), only the part of the board that the problem uses is shown. It is used outside |goban|. The options can be set for the whole document with |\pgfgoset{sgf problem = {...}}|.
@@ -1013,15 +1025,15 @@ The texts of the annotations are in English, and they can be changed for the who
 	Beginning of the caption of the statement: "Problem 1: Black to play".
 \end{key}
 
-\begin{key}{/pgfgo/sgf problem/variation title = \meta{text} (initially Variation)}
+\begin{key}{/pgfgo/sgf problem/variation title = \meta{text} (initially Variation or its translation)}
 	Word of the caption of each variation: "Variation 2".
 \end{key}
 
-\begin{key}{/pgfgo/sgf problem/black to play = \meta{text} (initially Black to play)}
+\begin{key}{/pgfgo/sgf problem/black to play = \meta{text} (initially Black to play or its translation)}
 	Text of the statement when Black plays.
 \end{key}
 
-\begin{key}{/pgfgo/sgf problem/white to play = \meta{text} (initially White to play)}
+\begin{key}{/pgfgo/sgf problem/white to play = \meta{text} (initially White to play or its translation)}
 	Text of the statement when White plays.
 \end{key}
 

@@ -6,6 +6,20 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- Languages: the texts the package writes (captions of `\sgfdiagrams` and
+  `\sgfproblem`, the result, the SGF annotations and the word of the
+  "N at M" notes) are translated into English, Spanish, French, German,
+  Portuguese, Italian, Japanese, Chinese and Korean. By default they follow
+  the language of babel or polyglossia, also when it changes within the
+  document; `\pgfgoset{lang = <code or babel name>}` and the package option
+  `lang` choose one. Every text can still be set with its own key, in any
+  language. `\pgfgotext{<text>}` writes one of the texts,
+  `\pgfgodefinelanguage{<language>}{<texts>}` adds or changes a language and
+  `\pgfgolanguagealias{<name>}{<language>}` gives it another name.
+- `\sgfdiagrams` writes the result in words ("Black wins by resignation"),
+  in the language of the document; `result format = raw` keeps it as it is in
+  the file ("B+R"). `\pgfgowinner` and `\pgfgopoints` are the winner and the
+  difference in the texts of the result.
 - Images (PNG, JPG or PDF): `stone/image` (`file`, `width`, `false`) draws
   the stones with an image; with several files, each point always uses the
   same one. `drop shadow` has the shape of the image (pdfLaTeX or LuaLaTeX).

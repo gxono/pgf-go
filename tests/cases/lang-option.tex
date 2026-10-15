@@ -1,0 +1,14 @@
+% engines: lualatex
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua, lang = de]{../../latex/pgf-go}
+\usepackage[spanish]{babel}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{Package option lang = de wins over babel (spanish) / lang = auto}
+\pgfgotext{diagram}, \pgfgotext{result}.
+{\pgfgoset{lang = auto}\pgfgotext{diagram}, \pgfgotext{result}.}
+
+\end{document}

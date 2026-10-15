@@ -118,6 +118,80 @@ Ambos producen exactamente los mismos diagramas. El kernel en Lua, además, sabe
 	\end{codeexample}
 \end{key}
 
+\subsection{Idiomas}
+\label{subsec:idiomas}
+
+Algunos textos los escribe el propio paquete: los epígrafes de |\sgfdiagrams| y |\sgfproblem|, el resultado de la partida, las anotaciones de los comentarios (|/pgfgo/sgf annotations|) y la palabra de las notas «N en M». Están traducidos al inglés (|en|), español (|es|), francés (|fr|), alemán (|de|), portugués (|pt|), italiano (|it|), japonés (|ja|), chino (|zh|) y coreano (|ko|). Para el japonés, el chino y el coreano hace falta una fuente con esos caracteres.
+
+Por defecto, los textos están en el idioma que fijan babel o polyglossia, y lo siguen si cambia dentro del documento (|\selectlanguage|, |otherlanguage|). Sin babel ni polyglossia, o en un idioma sin traducción, están en inglés. Cada texto puede cambiarse con su \emph{key} (por ejemplo, |/pgfgo/sgf diagrams/title|); lo que se fija así vale en cualquier idioma.
+
+\begin{key}{/pgfgo/lang = \meta{idioma} (initially auto)}
+	Idioma de los textos: |auto| (el de babel o polyglossia), el código de un idioma (|fr|) o el nombre que le dan babel o polyglossia (|french|). Si el idioma no se conoce, el paquete avisa y usa el inglés.
+
+	\begin{codeexample}[code only]
+		\pgfgoset{lang = fr}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/package/lang = \meta{idioma} (initially auto)}
+	Lo mismo, como opción del paquete: |\usepackage[lang = fr]{pgf-go}|.
+\end{key}
+
+\begin{command}{\pgfgotext\marg{texto}}
+	Escribe uno de los textos en el idioma actual. Los textos, con su valor en inglés y en español, son:
+
+	\begin{center}
+		\small
+		\begin{tabular}{lll}
+			|tesuji| & Tesuji & Tesuji \\
+			|very good tesuji| & Very good tesuji & Muy buen tesuji \\
+			|bad move| & Bad move & Mala jugada \\
+			|very bad move| & Very bad move & Muy mala jugada \\
+			|doubtful| & Doubtful move & Jugada dudosa \\
+			|interesting| & Interesting move & Jugada interesante \\
+			|good for black| & Good for Black & Bueno para Negras \\
+			|very good for black| & Very good for Black & Muy bueno para Negras \\
+			|good for white| & Good for White & Bueno para Blancas \\
+			|very good for white| & Very good for White & Muy bueno para Blancas \\
+			|even| & Even position & Posición pareja \\
+			|unclear| & Unclear position & Posición incierta \\
+			|diagram| & Diagram & Diagrama \\
+			|variation| & Variation & Variante \\
+			|black to play| & Black to play & Juegan Negras \\
+			|white to play| & White to play & Juegan Blancas \\
+			|at| & at & en \\
+			|result| & Result & Resultado \\
+			|black| & Black & Negras \\
+			|white| & White & Blancas \\
+			|win| & \meta{ganador} wins & Ganan \meta{ganador} \\
+			|win by points| & \meta{ganador} wins by \meta{puntos} points & Ganan \meta{ganador} por \meta{puntos} puntos \\
+			|win by resignation| & \meta{ganador} wins by resignation & Ganan \meta{ganador} por abandono \\
+			|win on time| & \meta{ganador} wins on time & Ganan \meta{ganador} por tiempo \\
+			|win by forfeit| & \meta{ganador} wins by forfeit & Ganan \meta{ganador} por incomparecencia \\
+			|draw| & Draw (jigo) & Empate (jigo) \\
+			|void| & No result & Sin resultado \\
+			|unknown result| & Unknown result & Resultado desconocido \\
+		\end{tabular}
+	\end{center}
+\end{command}
+
+\begin{command}{\pgfgodefinelanguage\marg{idioma}\marg{textos}}
+	Agrega un idioma, o cambia textos de uno que ya existe. Los textos que falten se toman del inglés. En los textos del resultado, |\pgfgowinner| es el nombre del ganador y |\pgfgopoints| la diferencia (pág.~\pageref{subsec:sgf}).
+
+	\begin{codeexample}[code only]
+		\pgfgodefinelanguage{es}{black = Negro, white = Blanco,
+			win by points = Gana \pgfgowinner{} por \pgfgopoints{} puntos}
+	\end{codeexample}
+\end{command}
+
+\begin{command}{\pgfgolanguagealias\marg{nombre}\marg{idioma}}
+	Otro nombre para un idioma, por ejemplo el que le dan babel o polyglossia, si \pgfgoname\ no lo conoce.
+
+	\begin{codeexample}[code only]
+		\pgfgolanguagealias{castellano}{es}
+	\end{codeexample}
+\end{command}
+
 \subsection{Sintaxis de coordenadas}
 \label{subsec:sintaxis-de-coordenadas}
 

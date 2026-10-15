@@ -313,29 +313,29 @@
 
 \keys_define:nn {pgfgo / sgf~annotations} {
 	tesuji								.tl_set:N		= \l__pgfgo_sgf_note_TE_i_tl,
-	tesuji								.initial:n	= {Tesuji},
+	tesuji								.initial:n	= {\pgfgo_text:n {tesuji}},
 	very~good~tesuji			.tl_set:N		= \l__pgfgo_sgf_note_TE_ii_tl,
-	very~good~tesuji			.initial:n	= {Very~good~tesuji},
+	very~good~tesuji			.initial:n	= {\pgfgo_text:n {very~good~tesuji}},
 	bad~move							.tl_set:N		= \l__pgfgo_sgf_note_BM_i_tl,
-	bad~move							.initial:n	= {Bad~move},
+	bad~move							.initial:n	= {\pgfgo_text:n {bad~move}},
 	very~bad~move					.tl_set:N		= \l__pgfgo_sgf_note_BM_ii_tl,
-	very~bad~move					.initial:n	= {Very~bad~move},
+	very~bad~move					.initial:n	= {\pgfgo_text:n {very~bad~move}},
 	doubtful							.tl_set:N		= \l__pgfgo_sgf_note_DO_i_tl,
-	doubtful							.initial:n	= {Doubtful~move},
+	doubtful							.initial:n	= {\pgfgo_text:n {doubtful}},
 	interesting						.tl_set:N		= \l__pgfgo_sgf_note_IT_i_tl,
-	interesting						.initial:n	= {Interesting~move},
+	interesting						.initial:n	= {\pgfgo_text:n {interesting}},
 	good~for~black				.tl_set:N		= \l__pgfgo_sgf_note_GB_i_tl,
-	good~for~black				.initial:n	= {Good~for~Black},
+	good~for~black				.initial:n	= {\pgfgo_text:n {good~for~black}},
 	very~good~for~black		.tl_set:N		= \l__pgfgo_sgf_note_GB_ii_tl,
-	very~good~for~black		.initial:n	= {Very~good~for~Black},
+	very~good~for~black		.initial:n	= {\pgfgo_text:n {very~good~for~black}},
 	good~for~white				.tl_set:N		= \l__pgfgo_sgf_note_GW_i_tl,
-	good~for~white				.initial:n	= {Good~for~White},
+	good~for~white				.initial:n	= {\pgfgo_text:n {good~for~white}},
 	very~good~for~white		.tl_set:N		= \l__pgfgo_sgf_note_GW_ii_tl,
-	very~good~for~white		.initial:n	= {Very~good~for~White},
+	very~good~for~white		.initial:n	= {\pgfgo_text:n {very~good~for~white}},
 	even									.tl_set:N		= \l__pgfgo_sgf_note_DM_i_tl,
-	even									.initial:n	= {Even~position},
+	even									.initial:n	= {\pgfgo_text:n {even}},
 	unclear								.tl_set:N		= \l__pgfgo_sgf_note_UC_i_tl,
-	unclear								.initial:n	= {Unclear~position},
+	unclear								.initial:n	= {\pgfgo_text:n {unclear}},
 }
 %DM Y UC ENFATIZADOS USAN EL MISMO TEXTO; DO E IT NO TIENEN VALOR.
 \tl_new:N \l__pgfgo_sgf_note_DM_ii_tl
@@ -869,6 +869,7 @@
 \box_new:N \l__pgfgo_sgfdiag_caption_box
 \bool_new:N \l__pgfgo_sgfdiag_result_bool
 \tl_new:N \l__pgfgo_sgfdiag_result_title_tl
+\tl_new:N \l__pgfgo_sgfdiag_result_format_tl
 \tl_new:N \l__pgfgo_sgfdiag_black_tl
 \tl_new:N \l__pgfgo_sgfdiag_white_tl
 \dim_new:N \l__pgfgo_sgfdiag_width_dim
@@ -888,7 +889,7 @@
 	notes						.default:n	= {true},
 	notes						.initial:n	= {true},
 	title						.tl_set:N		= \l__pgfgo_sgfdiag_title_tl,
-	title						.initial:n	= {Diagram},
+	title						.initial:n	= {\pgfgo_text:n {diagram}},
 	caption~font		.tl_set:N		= \l__pgfgo_sgfdiag_font_tl,
 	caption~font		.initial:n	= {\small},
 	%LOS COMENTARIOS DE LAS JUGADAS DEL DIAGRAMA, DEBAJO DE SUS NOTAS.
@@ -909,11 +910,14 @@
 	result					.default:n	= {true},
 	result					.initial:n	= {true},
 	result~title		.tl_set:N		= \l__pgfgo_sgfdiag_result_title_tl,
-	result~title		.initial:n	= {Result},
+	result~title		.initial:n	= {\pgfgo_text:n {result}},
+	%text: EL RESULTADO EN PALABRAS ("Black wins by resignation"); raw: COMO ESTA EN EL ARCHIVO ("B+R").
+	result~format		.choices:nn	= {text, raw} {\tl_set_eq:NN \l__pgfgo_sgfdiag_result_format_tl \l_keys_choice_tl},
+	result~format		.initial:n	= {text},
 	black~name			.tl_set:N		= \l__pgfgo_sgfdiag_black_tl,
-	black~name			.initial:n	= {Black},
+	black~name			.initial:n	= {\pgfgo_text:n {black}},
 	white~name			.tl_set:N		= \l__pgfgo_sgfdiag_white_tl,
-	white~name			.initial:n	= {White},
+	white~name			.initial:n	= {\pgfgo_text:n {white}},
 }
 
 \keys_define:nn {pgfgo} {
@@ -1013,9 +1017,15 @@
 \tl_new:N \l__pgfgo_sgfdiag_komi_tl
 \int_new:N \l__pgfgo_sgfdiag_total_int
 \box_new:N \l__pgfgo_sgfdiag_result_box
+\tl_new:N \l__pgfgo_sgfdiag_re_tl
 \cs_new_protected:Npn \__pgfgo_sgfdiag_result: {
-	\hbox_set:Nn \l__pgfgo_sgfdiag_result_box
-		{\l__pgfgo_sgfdiag_font_tl \exp_args:NV \pgfgo_kernel_sgf_info:nn \l__pgfgo_sgfdiag_file_tl {RE}}
+	\tl_set:Ne \l__pgfgo_sgfdiag_re_tl {\exp_args:NV \pgfgo_kernel_sgf_info:nn \l__pgfgo_sgfdiag_file_tl {RE}}
+	\hbox_set:Nn \l__pgfgo_sgfdiag_result_box {
+		\l__pgfgo_sgfdiag_font_tl
+		\str_if_eq:VnTF \l__pgfgo_sgfdiag_result_format_tl {raw}
+			{\tl_use:N \l__pgfgo_sgfdiag_re_tl}
+			{\exp_args:NV \__pgfgo_sgfdiag_result_text:n \l__pgfgo_sgfdiag_re_tl}
+	}
 	\bool_lazy_or:nnT
 		{\dim_compare_p:nNn {\box_wd:N \l__pgfgo_sgfdiag_result_box} > {0pt}}
 		{! \prop_if_empty_p:N \g_pgfgo_territory_prop}
@@ -1038,6 +1048,45 @@
 }
 \cs_new_protected:Npn \__pgfgo_sgfdiag_white_score:n #1 {\pgfgoscore[komi = {#1}]{white}}
 \cs_generate_variant:Nn \__pgfgo_sgfdiag_white_score:n {V}
+
+%EL RESULTADO #1 (RE) EN PALABRAS, CON LOS TEXTOS DEL IDIOMA (VER pgf-go-lang.sty): 0 O Draw, Void, ?, Y B+
+%O W+ SEGUIDO DE NADA, DE LA DIFERENCIA, DE R (Resign), T (Time) O F (Forfeit). OTRA COSA SE ESCRIBE COMO ESTA.
+%EN LOS TEXTOS, \pgfgowinner ES EL NOMBRE DEL GANADOR (black name O white name) Y \pgfgopoints LA DIFERENCIA.
+\tl_new:N \l__pgfgo_sgfdiag_winner_tl
+\tl_new:N \l__pgfgo_sgfdiag_points_tl
+\seq_new:N \l__pgfgo_sgfdiag_re_seq
+\NewDocumentCommand \pgfgowinner {} {\l__pgfgo_sgfdiag_winner_tl}
+\NewDocumentCommand \pgfgopoints {} {\l__pgfgo_sgfdiag_points_tl}
+\cs_new_protected:Npn \__pgfgo_sgfdiag_result_text:n #1 {
+	\str_case_e:nnF {\str_lowercase:n {#1}} {
+		{0}				{\pgfgo_text:n {draw}}
+		{draw}		{\pgfgo_text:n {draw}}
+		{void}		{\pgfgo_text:n {void}}
+		{?}				{\pgfgo_text:n {unknown~result}}
+	}{
+		\regex_extract_once:nnNTF {\A([BbWw])\+(.*)\Z} {#1} \l__pgfgo_sgfdiag_re_seq
+			{
+				\str_if_eq:eeTF {\str_uppercase:f {\seq_item:Nn \l__pgfgo_sgfdiag_re_seq {2}}} {B}
+					{\tl_set_eq:NN \l__pgfgo_sgfdiag_winner_tl \l__pgfgo_sgfdiag_black_tl}
+					{\tl_set_eq:NN \l__pgfgo_sgfdiag_winner_tl \l__pgfgo_sgfdiag_white_tl}
+				\tl_set:Ne \l__pgfgo_sgfdiag_points_tl {\seq_item:Nn \l__pgfgo_sgfdiag_re_seq {3}}
+				\str_case_e:nnF {\str_lowercase:f {\l__pgfgo_sgfdiag_points_tl}} {
+					{}				{\pgfgo_text:n {win}}
+					{r}				{\pgfgo_text:n {win~by~resignation}}
+					{resign}	{\pgfgo_text:n {win~by~resignation}}
+					{t}				{\pgfgo_text:n {win~on~time}}
+					{time}		{\pgfgo_text:n {win~on~time}}
+					{f}				{\pgfgo_text:n {win~by~forfeit}}
+					{forfeit}	{\pgfgo_text:n {win~by~forfeit}}
+				}{
+					\regex_match:nVTF {\A\d+(\.\d*)?\Z} \l__pgfgo_sgfdiag_points_tl
+						{\pgfgo_text:n {win~by~points}}
+						{#1}
+				}
+			}
+			{#1}
+	}
+}
 
 %UN DIAGRAMA POR FIGURA (FG): DESDE DONDE EMPIEZA HASTA LA JUGADA ANTERIOR A LA FIGURA SIGUIENTE. SI LA
 %PRIMERA FIGURA NO EMPIEZA EN LA JUGADA 1, LAS JUGADAS ANTERIORES SON UN DIAGRAMA MAS.
@@ -1149,11 +1198,11 @@
 	%EPIGRAFE DEL ENUNCIADO, ANTES DE QUIEN JUEGA ("Problem 3: Black to play").
 	title								.tl_set:N		= \l__pgfgo_sgfprob_title_tl,
 	variation~title			.tl_set:N		= \l__pgfgo_sgfprob_variation_title_tl,
-	variation~title			.initial:n	= {Variation},
+	variation~title			.initial:n	= {\pgfgo_text:n {variation}},
 	black~to~play				.tl_set:N		= \l__pgfgo_sgfprob_black_tl,
-	black~to~play				.initial:n	= {Black~to~play},
+	black~to~play				.initial:n	= {\pgfgo_text:n {black~to~play}},
 	white~to~play				.tl_set:N		= \l__pgfgo_sgfprob_white_tl,
-	white~to~play				.initial:n	= {White~to~play},
+	white~to~play				.initial:n	= {\pgfgo_text:n {white~to~play}},
 	%COMO EN \sgfdiagrams (PERO CON LOS COMENTARIOS: ASI SE VE CUALES LINEAS SON CORRECTAS).
 	goban								.tl_set:N		= \l__pgfgo_sgfprob_goban_tl,
 	caption~font				.tl_set:N		= \l__pgfgo_sgfprob_font_tl,
