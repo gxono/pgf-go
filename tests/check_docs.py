@@ -25,6 +25,7 @@ UNDOCUMENTED = {
     "/pgfgo/mark/tcircle",                  # documented in /pgfgo/mark/t-circle
     "/pgfgo/mark/tsquare",                  # documented in /pgfgo/mark/t-square
     "pgfgonewplayers",                      # internal: creates the three players
+    "/pgfgo/mark/#1",                       # the marks created by \pgfgodefinemark
 }
 
 # Documented paths that are other names for keys of the code. The manuals

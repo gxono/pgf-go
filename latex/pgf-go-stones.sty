@@ -132,8 +132,42 @@
 }
 
 
+%LA PIEDRA ES UNA IMAGEN: SIN CIRCULO, BORDE NI BRILLO. LA SOMBRA TIENE LA FORMA DE LA IMAGEN.
+\cs_new_protected:Npn \__pgfgo_stone_image: {
+	\__pgfgo_stone_image_load:
+	\bool_if:NT\l_pgfgo_players_stone_drop_shadow_bool{
+		\pgfscope
+		\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_drop_shadow_opacity_fp}
+		\pgfsetfillcolor{black}
+		\pgftransformshift{\pgfpointpolar{\fp_use:N\l_pgfgo_players_stone_drop_shadow_angle_fp}{\dim_use:N\l_pgfgo_players_stone_drop_shadow_offset_dim}}
+		\pgfgo_image_shadow:
+		\endpgfscope
+	}
+	\pgfgo_image_draw:
+}
+
+%CON VARIOS ARCHIVOS, LA IMAGEN SE ELIGE POR LA POSICION: CADA PUNTO MUESTRA SIEMPRE LA MISMA.
+\tl_new:N \l__pgfgo_stone_image_file_tl
+\cs_new_protected:Npn \__pgfgo_stone_image_load: {
+	\tl_set:Ne \l__pgfgo_stone_image_file_tl {
+		\seq_item:Nn \l_pgfgo_players_stone_image_seq {
+			\int_mod:nn
+				{\l_pgfgo_parsed_x_coordinate_tl * 73 + \l_pgfgo_parsed_y_coordinate_tl * 151
+					+ (\l_pgfgo_parsed_x_coordinate_tl) * (\l_pgfgo_parsed_y_coordinate_tl) * 37}
+				{\seq_count:N \l_pgfgo_players_stone_image_seq}
+			+ 1
+		}
+	}
+	\pgfgo_image_load:Ve \l__pgfgo_stone_image_file_tl {
+		width = \tl_if_empty:NTF \l_pgfgo_players_stone_image_width_tl
+			{\fp_to_dim:n {2 * \l_pgfgo_players_stone_radius_dim * \l_pgfgo_players_stone_scale_fp}}
+			{\dim_eval:n {\l_pgfgo_players_stone_image_width_tl}}
+	}
+}
+
 \cs_set:Nn\pgfgo_stone_default_shape:{
 	\pgftransparencygroup
+	\seq_if_empty:NTF \l_pgfgo_players_stone_image_seq {
 	%SOMBRA
 	\bool_if:NT\l_pgfgo_players_stone_drop_shadow_bool{
 		\pgfscope
@@ -159,6 +193,7 @@
 			\pgfgo_stones_shine_default:
 		\endpgfscope
 	}
+	}{\__pgfgo_stone_image:}
 	\endpgftransparencygroup
 }
 
@@ -241,13 +276,13 @@
 	\pgfgo_get_variables_from_current_player:
 
 
+	\tl_set:Nn\l_pgfgo_parsed_x_coordinate_tl{#2}
+	\tl_set:Nn\l_pgfgo_parsed_y_coordinate_tl{#3}
 	\pgfgo_stone_set_render_options:
 	\pgfscope
 	\pgftransformshift{\pgfpointxy{#2}{#3}}
 	\pgfgo_stone_render_shape:
 	\endpgfscope
-	\tl_set:Nn\l_pgfgo_parsed_x_coordinate_tl{#2}
-	\tl_set:Nn\l_pgfgo_parsed_y_coordinate_tl{#3}
 
 	%-----MARCAS-------------------------
 

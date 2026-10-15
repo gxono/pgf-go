@@ -202,6 +202,46 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Simultaneously defines the vertical and horizontal spacing of the lines, ensuring uniform spacing in both directions. This is a convenient option for maintaining balanced proportions.
 	\end{key}
 
+	\begin{key}{/pgfgo/goban/grid/image =\meta{options}}
+		Draws an image instead of the lines of the grid, with the opacity of |grid/line/opacity|. With |partial|, the corresponding part is shown. The star points are still drawn (see |hoshi|).
+
+		\begin{codeexample}[]
+			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false]
+				\stones{C3}\stone[w]{D4}
+			\end{goban}
+
+			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false, partial = {from = C3 to G7}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/image/file =\meta{file}}
+		The image file.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/image/fit =\meta{stretch or tile} (initially stretch)}
+		With |stretch|, the image is stretched from A1 to the opposite corner of the whole board, so the outer lines must be on the edges of the image. With |tile|, it is drawn once on each square of the grid (between four intersections), stretched to the size of the square: the image of one square builds the whole board.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, grid = {image = {file = cell.png, fit = tile}}, hoshi = false]
+				\stones{C3}\stone[w]{D4}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/image/tiles =\meta{columns}|x|\meta{rows} (initially one per square)}
+		With |fit = tile|, the mesh in which the image is repeated, over the area from A1 to the opposite corner of the whole board; each image is stretched to the size of its cell. A single number is used for both directions. Without this key, there is one image per square.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, grid = {image = {file = cell.png, fit = tile, tiles = 4}}, hoshi = false]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/grid/image/false}
+		Removes the image: the lines come back.
+	\end{stylekey}
+
 	\subsection{Star Points}
 	\label{subsec:hoshi}
 
@@ -251,6 +291,23 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/hoshi/image=\meta{options}}
+		Draws an image on each star point instead of the circle, with width $2 \times$ |radius|.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, hoshi = {image = {file = hoshi.png}, radius = 3pt}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/hoshi/image/file=\meta{file}}
+		The image file.
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/hoshi/image/false}
+		Removes the image: the circles come back.
+	\end{stylekey}
+
 	\subsection{Border}
 	
 	The board’s border is the outline that frames the grid and stones, providing a clear visual boundary. By default, it is active, has a white background, and a black outline.
@@ -337,6 +394,66 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/background/fill/image =\meta{options}}
+		A background image (for example, the wood of a board), over the fill color and with its opacity. The image is placed according to the whole board: with |partial|, the corresponding part is shown, clipped by the border and its rounded corners. Marks on empty points, which cover the grid with the color of the background, show the part of the image under them, and so does the |dim| mark. The halo of arrows and lines keeps the color of the background.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, background = {fill = {image = {file = wood.jpg}}}]
+				\stones{C3}\stone[w]{D4}
+				\marks[circle]{E5, C3}
+			\end{goban}
+
+			\begin{goban}[9, background = {fill = {image = {file = wood.jpg}}, rounded corners = 6pt}, partial = {from = A1 to E5}]
+				\marks[triangle]{C3}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/image/file =\meta{file}}
+		The file of the background image.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/image/fit =\meta{stretch, cover or tile} (initially cover)}
+		How the image fills the background of the whole board. |stretch| stretches it to fill the whole background, without keeping the proportions. |cover| scales it, keeping the proportions, until it covers the background, centered: what is left over is not shown. |tile| repeats it as tiles, from a corner, a side or the center of the whole board (see |from|).
+
+		\begin{codeexample}[]
+			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}]
+			\end{goban}
+
+			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}, partial = {from = D4 to H8}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/image/from =\meta{position} (initially south west)}
+		With |fit = tile|, where the tiles start, on the background of the whole board. With a corner (|south west|, |south east|, |north west| or |north east|), that corner gets a whole tile. With a side (|north|, |south|, |east| or |west|), the first tile touches that side, centered along it. With |center|, a tile is in the center of the board.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, from = north east}}}]
+			\end{goban}
+
+			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, from = north}}}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/image/width =\meta{dimension} (initially the natural width)}
+		With |fit = tile|, the width of each tile; the height keeps the proportions.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/image/tiles =\meta{columns}|x|\meta{rows}}
+		With |fit = tile|, instead of tiles of width |width| from |from|, splits the background of the whole board into that mesh and puts the image on each cell, stretched to its size. A single number is used for both directions.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, background = {fill = {image = {file = cell.png, fit = tile, tiles = 3x3}}}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/background/fill/image/false}
+		Removes the background image.
+	\end{stylekey}
+
 	\begin{key}{/pgfgo/goban/background/line=\meta{options}}
 		Controls the options for the background’s outline.
 	\end{key}
