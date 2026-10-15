@@ -79,6 +79,9 @@ All notable changes to `pgf-go` are listed here.
 - The halo of `\arrow` (and of `AR` in `\sgf`) now surrounds the tip evenly.
   Before, the halo was the same arrow with a thicker line, and its tip grew
   forward along the line.
+- SGF file names can have the special characters of TeX written with a
+  backslash (`\sgf{a\&b.sgf}`; also `\#`, `\%`, `\$`, `\{` and `\}`).
+- `\sgfanimation` works in documents whose name has spaces, commas or `=`.
 
 ### Behaviour changes
 
@@ -103,6 +106,10 @@ All notable changes to `pgf-go` are listed here.
 - New cases for problems, print modes, views during the game, results,
   coordinate styles and charsets.
 - The examples can ask for two runs (`% passes: 2`).
+- New case for unusual file names (`file-names`); a test can choose its job
+  name (`% jobname:`).
+- `run_tests.py` compiles files whose name has spaces, and a PDF that
+  pdftoppm cannot read fails that document instead of stopping the run.
 
 ## 0.2026.10.13 — 2026/10/13
 

@@ -135,16 +135,42 @@
 %LA PIEDRA ES UNA IMAGEN: SIN CIRCULO, BORDE NI BRILLO. LA SOMBRA TIENE LA FORMA DE LA IMAGEN.
 \cs_new_protected:Npn \__pgfgo_stone_image: {
 	\__pgfgo_stone_image_load:
+	\__pgfgo_stone_image_angle:
 	\bool_if:NT\l_pgfgo_players_stone_drop_shadow_bool{
 		\pgfscope
 		\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_drop_shadow_opacity_fp}
 		\pgfsetfillcolor{black}
 		\pgftransformshift{\pgfpointpolar{\fp_use:N\l_pgfgo_players_stone_drop_shadow_angle_fp}{\dim_use:N\l_pgfgo_players_stone_drop_shadow_offset_dim}}
+		\pgftransformrotate{\fp_use:N\l__pgfgo_stone_image_angle_fp}
 		\pgfgo_image_shadow:
 		\endpgfscope
 	}
+	\pgfscope
+	\pgftransformrotate{\fp_use:N\l__pgfgo_stone_image_angle_fp}
 	\pgfgo_image_draw:
+	\endpgfscope
 }
+
+%EL GIRO DE LA IMAGEN. CON random, UN ANGULO QUE DEPENDE SOLO DE LA POSICION: LA PIEDRA DE UN PUNTO
+%QUEDA SIEMPRE IGUAL (EN TODOS LOS DIAGRAMAS Y EN TODOS LOS CUADROS DE UNA ANIMACION).
+\fp_new:N \l__pgfgo_stone_image_angle_fp
+\cs_new_protected:Npn \__pgfgo_stone_image_angle: {
+	\str_if_eq:VnTF \l_pgfgo_players_stone_image_rotate_tl {random}
+		{
+			\fp_set:Nn \l__pgfgo_stone_image_angle_fp {
+				sin(\l_pgfgo_parsed_x_coordinate_tl * 12.9898 + \l_pgfgo_parsed_y_coordinate_tl * 78.233) * 43758.5453
+			}
+			\fp_set:Nn \l__pgfgo_stone_image_angle_fp {
+				(\l__pgfgo_stone_image_angle_fp - trunc(\l__pgfgo_stone_image_angle_fp)) * 360
+			}
+		}
+		{
+			\tl_if_blank:VTF \l_pgfgo_players_stone_image_rotate_tl
+				{\fp_zero:N \l__pgfgo_stone_image_angle_fp}
+				{\fp_set:Nn \l__pgfgo_stone_image_angle_fp {\l_pgfgo_players_stone_image_rotate_tl}}
+		}
+}
+\cs_generate_variant:Nn \str_if_eq:nnTF {Vn}
 
 %CON VARIOS ARCHIVOS, LA IMAGEN SE ELIGE POR LA POSICION: CADA PUNTO MUESTRA SIEMPRE LA MISMA.
 \tl_new:N \l__pgfgo_stone_image_file_tl

@@ -63,6 +63,10 @@ class Document:
     render: bool = True
     passes: int = 1
     kernel: str = None   # compile with \usepackage[kernel = ...]{pgf-go}
+    jobname: str = None  # None: the name of the .tex file
+
+    def job(self):
+        return self.jobname or self.source.stem
 
 
 @dataclass
@@ -96,6 +100,7 @@ def collect_documents(include_manuals, kernel=None):
             expect_errors=int(header.get("expect-errors", 0)),
             render=header.get("render", "yes") != "no",
             passes=int(header.get("passes", 1)),
+            jobname=header.get("jobname"),
         ))
     for path in sorted((ROOT / "doc" / "examples").glob("example-*.tex")):
         header = read_header(path)
@@ -123,19 +128,20 @@ def collect_documents(include_manuals, kernel=None):
 
 def compile_document(doc, engine, outdir):
     outdir.mkdir(parents=True, exist_ok=True)
-    source = doc.source.name
+    # TeX reads a file name up to the first space unless it is quoted.
+    source = f'"{doc.source.name}"' if " " in doc.source.name else doc.source.name
     if doc.kernel:
         # The documents load the package as ../../latex/pgf-go, but
         # \ProcessKeyOptions looks the options up by its base name.
         source = (f"\\PassOptionsToPackage{{kernel={doc.kernel}}}{{pgf-go}}"
                   f"\\input{{{doc.source.name}}}")
-    command = [engine, "-interaction=nonstopmode", f"-jobname={doc.source.stem}",
+    command = [engine, "-interaction=nonstopmode", f"-jobname={doc.job()}",
                f"-output-directory={outdir}", source]
     for _ in range(doc.passes):
         subprocess.run(command, cwd=doc.source.parent, stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL, timeout=TIMEOUT)
-    log = outdir / (doc.source.stem + ".log")
-    pdf = outdir / (doc.source.stem + ".pdf")
+    log = outdir / (doc.job() + ".log")
+    pdf = outdir / (doc.job() + ".pdf")
     text = log.read_text(encoding="latin-1") if log.exists() else ""
     return text, pdf
 
@@ -218,7 +224,12 @@ def run_document(doc, update):
             messages.append(f"{engine}: no PDF produced")
             continue
 
-        pages = render(pdf, outdir)
+        try:
+            pages = render(pdf, outdir)
+        except subprocess.CalledProcessError:
+            ok = False
+            messages.append(f"{engine}: pdftoppm could not read the PDF")
+            continue
         # Fonts differ slightly between engines, so each engine after the
         # first one has its own references in a subfolder.
         reference_dir = REFERENCE / doc.name

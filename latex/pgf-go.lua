@@ -934,6 +934,8 @@ end
 
 -- LA PARTIDA \l_pgfgo_kernel_sgf_game_int DEL ARCHIVO. AVISA SI NO EXISTE Y USA LA PRIMERA.
 local function read_tree(name)
+	--EL NOMBRE LLEGA COMO LO DEJA \text_expand:n: \& \# \% \{ \} \_ TAL CUAL Y \$ COMO \protect \$.
+	name = name:gsub("\\protect ", ""):gsub("\\([&#%%$_{}])", "%1")
 	local path = find_file(name)
 	if not path then
 		message("error", "sgf-not-found", name)

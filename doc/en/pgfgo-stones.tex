@@ -230,6 +230,8 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 
 	Files are looked up like with |\includegraphics| (for example, in the folders of |\graphicspath|). Each file, at each size, is stored only once in the PDF, however many stones use it. The shadow with the shape of the image needs pdf\LaTeX\ or Lua\LaTeX\ (with PDF output); with other engines the stone is drawn without a shadow, with a warning.
 
+	A file name with a comma goes in double braces, |file = {{a,b.png}}|; with single braces, the comma separates two files. As with |\includegraphics|, the name cannot have |&|, |#|, |%|, |$|, |{| or |}|, nor two spaces in a row.
+
 	SVG images cannot be used directly: convert them to PDF first, for example with |inkscape --export-type=pdf stone.svg| or with |rsvg-convert -f pdf -o stone.pdf stone.svg|. The same applies to the background, the grid, the star points and the marks.
 
 	\begin{codeexample}[]
@@ -266,6 +268,17 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 
 \begin{key}{/pgfgo/stone/image/width = \meta{dimension} (initially the diameter of the stone)}
 	The width of the image; the height keeps the proportions. By default it is the diameter of the stone: $2 \times$ |radius| $\times$ |scale|.
+\end{key}
+
+\begin{key}{/pgfgo/stone/image/rotate = \meta{angle} or |random| (initially 0)}
+	Rotates the image by \meta{angle} degrees, counterclockwise. With |random|, each stone gets a different angle, chosen by its position: a stone on a given point always looks the same, in every diagram and in every frame of an animation. This keeps the grain of a single image from looking repeated. The shadow turns with the image, but still falls to the same side.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\stones[w, image = {file = stone-white.png,
+				rotate = random}]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{stylekey}{/pgfgo/stone/image/false}
@@ -610,6 +623,8 @@ It is possible to change options for all players using |\pgfgoset{move = {...}}|
 \label{subsec:sgf}
 
 SGF is the format that almost every Go program uses to save games. With the Lua kernel (p.~\pageref{subsec:kernel}), \pgfgoname\ can read them.
+
+In every command that reads SGF files, the name can have spaces, accents, parentheses and other scripts. The special characters of \TeX\ are written with a backslash: |\sgf{a\&b.sgf}| reads |a&b.sgf|, and the same goes for |\#|, |\%|, |\$|, |\{| and |\}|. Two spaces in a row are read as one, because \TeX\ joins them before \pgfgoname\ sees the name.
 
 \begin{command}{\sgf\opt{\oarg{options}}\marg{file}}
 

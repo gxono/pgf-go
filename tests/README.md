@@ -94,6 +94,7 @@ configure the test:
 % expect-errors: 0              number of errors in the log (default 0)
 % render: no                    only compile and check the log
 % passes: 2                     number of runs (default 1; animate needs 2)
+% jobname: a b, c=d             compile with this job name (default: the file name)
 ```
 
 Fonts differ slightly between engines, so each engine has its own reference
