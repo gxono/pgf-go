@@ -951,6 +951,10 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Cantidad de jugadas de cada diagrama.
 \end{key}
 
+\begin{key}{/pgfgo/sgf diagrams/from = \meta{number} (initially 1)}
+	Primera jugada. Los diagramas son los mismos que sin |from|, con el mismo número: solo se dibujan los que tienen jugadas desde |from|, y el primero empieza en |from|. Con |step = 50| y |from = 120|, el primero es «Diagrama 3 (120--150)».
+\end{key}
+
 \begin{key}{/pgfgo/sgf diagrams/to = \meta{number} (initially la última jugada)}
 	Última jugada.
 \end{key}
@@ -973,6 +977,10 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 
 \begin{key}{/pgfgo/sgf diagrams/goban = \meta{goban options}}
 	Opciones de cada tablero. Por defecto, los tableros tienen el tamaño de la partida y usan |captures| y |notes|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/layout = \meta{layout options}}
+	Cómo se disponen los diagramas: opciones de |/pgfgo/layout| (pág.~\pageref{subsec:disposicion}) solo para |\sgfdiagrams|. Por ejemplo, |layout = {columns = 3}|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/variation = \meta{números} (initially la línea principal)}
@@ -1039,8 +1047,8 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \sgfproblem[title = Problema 1, variation title = Variante,
 	black to play = Juegan negras]{problema.sgf}
 
-\begin{key}{/pgfgo/sgf problem/statement = \meta{boolean} (default true, initially true)}
-	Dibuja el enunciado.
+\begin{key}{/pgfgo/sgf problem/statement = \meta{true, false o alone} (default true, initially true)}
+	Dibuja el enunciado. Con |alone|, el enunciado va solo en su fila, centrado, y las variantes debajo.
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/solutions = \meta{boolean} (default true, initially true)}
@@ -1083,6 +1091,10 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Opciones de cada tablero, como |/pgfgo/sgf diagrams/goban|.
 \end{key}
 
+\begin{key}{/pgfgo/sgf problem/layout = \meta{layout options}}
+	Cómo se disponen el enunciado y las variantes: opciones de |/pgfgo/layout| (pág.~\pageref{subsec:disposicion}) solo para |\sgfproblem|.
+\end{key}
+
 \begin{key}{/pgfgo/sgf problem/view = \meta{boolean} (default true, initially true)}
 	Si el archivo tiene vista (|VW|) al principio, todos los diagramas muestran esa parte.
 \end{key}
@@ -1103,6 +1115,65 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 
 
 
+
+
+
+\subsection{Disposición de los diagramas}
+\label{subsec:disposicion}
+
+|\sgfdiagrams| y |\sgfproblem| dibujan varios diagramas. Por defecto van en el párrafo, uno al lado del otro, y pasan a la línea siguiente cuando no entran. Con |columns|, van en una grilla de columnas del mismo ancho: cada fila es una línea aparte (la página puede cortarse entre filas), los tableros de una fila quedan alineados arriba y una fila incompleta deja vacías las últimas columnas. Con |fit|, además, los tableros se escalan para llenar el ancho de su columna.
+
+\begin{codeexample}[code only]
+	\sgfdiagrams[step = 2, to = 6, layout = {columns = 3, fit}]{partida.sgf}
+\end{codeexample}
+
+\sgfdiagrams[step = 2, to = 6, layout = {columns = 3, fit}]{partida.sgf}
+
+\begin{stylekey}{/pgfgo/layout = \meta{layout options}}
+	Opciones de la disposición para todo el documento, por ejemplo |\pgfgoset{layout = {columns = 3, fit}}|. Para un solo comando, |/pgfgo/sgf diagrams/layout| y |/pgfgo/sgf problem/layout|; también para todo el documento, |\pgfgoset{sgf diagrams = {layout = {...}}}|.
+\end{stylekey}
+
+\begin{key}{/pgfgo/layout/columns = \meta{number o auto} (initially auto)}
+	Cantidad de columnas de la grilla. Con |auto|, los diagramas van en el párrafo, sin grilla.
+\end{key}
+
+\begin{key}{/pgfgo/layout/width = \meta{dimension} (initially \texttt{\string\linewidth})}
+	Ancho de la grilla. Si es menor que el de la línea, la grilla se centra.
+\end{key}
+
+\begin{key}{/pgfgo/layout/column sep = \meta{dimension} (initially 1em)}
+	Espacio entre columnas.
+\end{key}
+
+\begin{key}{/pgfgo/layout/row sep = \meta{skip} (initially \texttt{\string\medskipamount})}
+	Espacio entre filas.
+\end{key}
+
+\begin{key}{/pgfgo/layout/fit = \meta{boolean} (default true, initially false)}
+	Escala cada tablero para que llene el ancho de su columna; reemplaza el |scale| del tablero. Las líneas no cambian de grosor. En |\sgfdiagrams| y |\sgfproblem|, todos los tableros usan la escala que llena la columna con el primero, así las piedras tienen el mismo tamaño en todos. Solo con |columns|.
+\end{key}
+
+\begin{key}{/pgfgo/layout/align = \meta{center, left o right} (initially center)}
+	Dónde va cada diagrama dentro de su columna, con su epígrafe y sus notas. Los comentarios van siempre alineados a la izquierda.
+\end{key}
+
+\begin{environment}{{pgfgolayout}\opt{\oarg{layout options}}}
+	Dispone en una grilla los |goban| que contiene, y los diagramas de los |\sgfdiagrams| y |\sgfproblem| que contiene, en el orden en que aparecen. Así se pueden juntar en una grilla tableros dibujados a mano y diagramas de distintos archivos. Las opciones son las de |/pgfgo/layout|; las opciones |layout| de los comandos de adentro no se usan. Adentro no debe haber texto, solo los tableros y los comandos. Con |fit|, cada |goban| se dibuja varias veces para medirlo: su contenido no debe tener efectos fuera del tablero (por ejemplo, contadores que aumentan).
+
+	\begin{codeexample}[code only]
+		\begin{pgfgolayout}[columns = 4, fit]
+			\begin{goban}[5]\stones{C3}\end{goban}
+			\begin{goban}[5]\stones[w]{C3}\end{goban}
+			\sgfdiagrams[step = 5]{partida.sgf}
+		\end{pgfgolayout}
+	\end{codeexample}
+\end{environment}
+
+\begin{pgfgolayout}[columns = 4, fit]
+	\begin{goban}[5]\stones{C3}\end{goban}
+	\begin{goban}[5]\stones[w]{C3}\end{goban}
+	\sgfdiagrams[step = 5]{partida.sgf}
+\end{pgfgolayout}
 
 
 
