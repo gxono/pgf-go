@@ -1,2 +1,7 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Binarios: un PDF todo ASCII parece texto y el CRLF le rompe la tabla xref
+*.pdf binary
+*.png binary
+*.jpg binary

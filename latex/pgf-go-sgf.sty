@@ -805,7 +805,8 @@
 		\pgfgo_sgfanimation_layers:
 		\int_gincr:N \g__pgfgo_sgfanim_file_int
 		\tl_set:Ne \l__pgfgo_sgfanim_timeline_tl {\c_sys_jobname_str -pgfgo- \int_use:N \g__pgfgo_sgfanim_file_int .tln}
-		%animate LEE EL timeline SIN COMILLAS: UN ESPACIO EN EL NOMBRE DEL ARCHIVO LO CORTA.
+		%animate LEE EL timeline SIN COMILLAS: UN ESPACIO EN EL NOMBRE DEL ARCHIVO LO CORTA. LAS LLAVES
+		%DE timeline = {...} PROTEGEN LAS COMAS Y LOS = DEL NOMBRE.
 		\tl_replace_all:Nnn \l__pgfgo_sgfanim_timeline_tl {~} {_}
 		\__pgfgo_sgfanim_timeline:V \l__pgfgo_sgfanim_timeline_tl
 		\tl_clear:N \l_tmpb_tl
@@ -814,7 +815,7 @@
 		\mode_leave_vertical:
 		\use:e {
 			\exp_not:N \begin{animateinline}
-				[\exp_not:V \l__pgfgo_sgfanim_animate_tl, timeline = \l__pgfgo_sgfanim_timeline_tl]
+				[\exp_not:V \l__pgfgo_sgfanim_animate_tl, timeline = {\l__pgfgo_sgfanim_timeline_tl}]
 				{\exp_not:V \l__pgfgo_sgfanim_fps_tl}
 				\exp_not:V \l_tmpb_tl
 				\exp_not:N \box_use:c {g__pgfgo_sgfanim_ \int_eval:n {\g__pgfgo_sgfanim_layer_int - 1} _box}
@@ -1016,27 +1017,24 @@
 %CADA JUGADOR COMO EL DE \pgfgoscore (CON EL komi DE KM).
 \tl_new:N \l__pgfgo_sgfdiag_komi_tl
 \int_new:N \l__pgfgo_sgfdiag_total_int
-\box_new:N \l__pgfgo_sgfdiag_result_box
 \tl_new:N \l__pgfgo_sgfdiag_re_tl
 \cs_new_protected:Npn \__pgfgo_sgfdiag_result: {
 	\tl_set:Ne \l__pgfgo_sgfdiag_re_tl {\exp_args:NV \pgfgo_kernel_sgf_info:nn \l__pgfgo_sgfdiag_file_tl {RE}}
-	\hbox_set:Nn \l__pgfgo_sgfdiag_result_box {
-		\l__pgfgo_sgfdiag_font_tl
-		\str_if_eq:VnTF \l__pgfgo_sgfdiag_result_format_tl {raw}
-			{\tl_use:N \l__pgfgo_sgfdiag_re_tl}
-			{\exp_args:NV \__pgfgo_sgfdiag_result_text:n \l__pgfgo_sgfdiag_re_tl}
-	}
 	\bool_lazy_or:nnT
-		{\dim_compare_p:nNn {\box_wd:N \l__pgfgo_sgfdiag_result_box} > {0pt}}
+		{! \tl_if_blank_p:V \l__pgfgo_sgfdiag_re_tl}
 		{! \prop_if_empty_p:N \g_pgfgo_territory_prop}
 		{
 			\__pgfgo_sgfdiag_below:nn {\centering} {
 				\l__pgfgo_sgfdiag_result_title_tl :~
-				\box_use:N \l__pgfgo_sgfdiag_result_box
+				\tl_if_blank:VF \l__pgfgo_sgfdiag_re_tl {
+					\str_if_eq:VnTF \l__pgfgo_sgfdiag_result_format_tl {raw}
+						{\tl_use:N \l__pgfgo_sgfdiag_re_tl}
+						{\exp_args:NV \__pgfgo_sgfdiag_result_text:n \l__pgfgo_sgfdiag_re_tl}
+				}
 				\prop_if_empty:NF \g_pgfgo_territory_prop {
-					\dim_compare:nNnTF {\box_wd:N \l__pgfgo_sgfdiag_result_box} > {0pt}
-						{\__pgfgo_sgfdiag_score:n {~(} )}
+					\tl_if_blank:VTF \l__pgfgo_sgfdiag_re_tl
 						{\__pgfgo_sgfdiag_score:n {}}
+						{\__pgfgo_sgfdiag_score:n {~(} )}
 				}
 			}
 		}

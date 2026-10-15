@@ -80,9 +80,6 @@
 \keys_define:nn {pgfgo} {
 	lang		.code:n			= {\pgfgo_lang_set:n {#1}},
 }
-%LA OPCION DEL PAQUETE (\usepackage[lang = ..]{pgf-go}).
-\tl_if_empty:NF \g__pgfgo_lang_option_tl {\exp_args:NV \pgfgo_lang_set:n \g__pgfgo_lang_option_tl}
-
 %CON lang = auto, AVISA SI EL IDIOMA DEL DOCUMENTO NO SE CONOCE.
 \AddToHook {begindocument / end} {
 	\bool_lazy_and:nnT
@@ -349,7 +346,7 @@
 }
 
 \pgfgo_lang_define:nn {ko} {
-	tesuji								= 맥,
+	tesuji								= 맥점,
 	very~good~tesuji			= 묘수,
 	bad~move							= 악수,
 	very~bad~move					= 대악수,
@@ -389,3 +386,6 @@
 \pgfgo_lang_alias:nn {ja} {japanese}
 \pgfgo_lang_alias:nn {zh} {chinese}
 \pgfgo_lang_alias:nn {ko} {korean}
+
+%LA OPCION DEL PAQUETE (\usepackage[lang = ..]{pgf-go}), YA CON LOS DICCIONARIOS.
+\tl_if_empty:NF \g__pgfgo_lang_option_tl {\exp_args:NV \pgfgo_lang_set:n \g__pgfgo_lang_option_tl}
