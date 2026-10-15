@@ -1,0 +1,60 @@
+% engines: lualatex
+% expect-warnings: 1
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\usepackage[spanish, english]{babel}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\pgfgodefinelanguage{eo}{diagram = Diagramo, black to play = Nigro ludas}
+\pgfgolanguagealias{esperanto}{eo}
+\begin{document}
+
+% results.sgf: one game for each form of RE: B+R, W+3.5, B+Time, W+F, B+, 0, Void, ?, Black won.
+
+\case{lang = auto follows babel: English / selectlanguage spanish / otherlanguage english}
+\pgfgotext{diagram}, \pgfgotext{at}, \pgfgotext{bad move}, \pgfgotext{black to play}.
+\selectlanguage{spanish}
+\pgfgotext{diagram}, \pgfgotext{at}, \pgfgotext{bad move}, \pgfgotext{black to play}.
+\begin{otherlanguage}{english}\pgfgotext{diagram}\end{otherlanguage}.
+
+\case{Every text in en, es, fr, de, pt, it}
+\begingroup\scriptsize
+\newcommand\row[1]{\par\noindent
+	\pgfgoset{lang = en}\pgfgotext{#1} /
+	\pgfgoset{lang = es}\pgfgotext{#1} /
+	\pgfgoset{lang = fr}\pgfgotext{#1} /
+	\pgfgoset{lang = de}\pgfgotext{#1} /
+	\pgfgoset{lang = pt}\pgfgotext{#1} /
+	\pgfgoset{lang = it}\pgfgotext{#1}}
+\row{tesuji}\row{very good tesuji}\row{bad move}\row{very bad move}\row{doubtful}\row{interesting}
+\row{good for black}\row{very good for black}\row{good for white}\row{very good for white}
+\row{even}\row{unclear}\row{diagram}\row{variation}\row{black to play}\row{white to play}\row{at}
+\row{result}\row{black}\row{white}\row{draw}\row{void}\row{unknown result}
+\endgroup
+
+\case{lang = french (babel name) / esperanto (alias; result falls back to English) / xx (warning, English)}
+{\pgfgoset{lang = french}\pgfgotext{result}} /
+{\pgfgoset{lang = esperanto}\pgfgotext{diagram}, \pgfgotext{result}} /
+{\pgfgoset{lang = xx}\pgfgotext{diagram}}
+
+\case{A text set with its key wins over lang, before or after it}
+{\pgfgoset{sgf problem = {black to play = Black moves}, lang = fr}
+\sgfproblem[solutions = false, goban = {scale = 0.4}]{problem.sgf}}
+{\pgfgoset{lang = esperanto}
+\sgfproblem[solutions = false, goban = {scale = 0.4}]{problem.sgf}}
+
+\case{Spanish diagrams, notes and result}
+\sgfdiagrams[step = 2, goban = {scale = 0.4}]{result.sgf}
+
+\case{result format = text, in English and Spanish / raw}
+\selectlanguage{english}
+\newcommand\results{%
+	\foreach \g in {1, ..., 9}
+		{\sgfdiagrams[game = \g, goban = {scale = 0.2}, notes = false]{results.sgf}\quad}}
+\results
+\par\selectlanguage{spanish}
+\results
+\par\sgfdiagrams[game = 1, result format = raw, goban = {scale = 0.2}]{results.sgf}
+
+\end{document}

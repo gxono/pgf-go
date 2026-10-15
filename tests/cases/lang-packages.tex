@@ -1,0 +1,19 @@
+% engines: lualatex
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{polyglossia}
+\setmainlanguage{spanish}
+\setotherlanguage{french}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{polyglossia: Spanish / French environment}
+\pgfgotext{diagram}, \pgfgotext{black to play}.
+\begin{french}\pgfgotext{diagram}, \pgfgotext{black to play}.\end{french}
+
+\case{Problem in Spanish}
+\sgfproblem[goban = {scale = 0.4}]{problem.sgf}
+
+\end{document}

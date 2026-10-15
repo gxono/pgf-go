@@ -212,7 +212,7 @@
 	\lua_now:e {pgfgo.sgf_label(\int_eval:n {#1})}
 }
 
-\cs_new_protected:Npn \pgfgo_kernel_sgf_info:nn #1#2 {
+\cs_new:Npn \pgfgo_kernel_sgf_info:nn #1#2 {
 	\lua_now:e {pgfgo.sgf_info("\lua_escape:e {#1}", "\lua_escape:e {#2}")}
 }
 

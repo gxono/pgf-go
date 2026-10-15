@@ -785,53 +785,53 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 	Escribe el nombre y las anotaciones. Con |false|, solo el comentario.
 \end{key}
 
-Los textos de las anotaciones están en inglés, y pueden cambiarse para todo el documento con |\pgfgoset{sgf annotations = {...}}|, por ejemplo |bad move = Mala jugada|. Las anotaciones enfatizadas de |DM| y |UC| usan el mismo texto.
+Los textos de las anotaciones están en el idioma del documento (pág.~\pageref{subsec:idiomas}), y pueden cambiarse para todo el documento con |\pgfgoset{sgf annotations = {...}}|, por ejemplo |bad move = Mala jugada|. Las anotaciones enfatizadas de |DM| y |UC| usan el mismo texto.
 
-\begin{key}{/pgfgo/sgf annotations/tesuji = \meta{text} (initially Tesuji)}
+\begin{key}{/pgfgo/sgf annotations/tesuji = \meta{text} (initially Tesuji o su traducción)}
 	Texto de |TE|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/very good tesuji = \meta{text} (initially Very good tesuji)}
+\begin{key}{/pgfgo/sgf annotations/very good tesuji = \meta{text} (initially Very good tesuji o su traducción)}
 	Texto de |TE[2]|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/bad move = \meta{text} (initially Bad move)}
+\begin{key}{/pgfgo/sgf annotations/bad move = \meta{text} (initially Bad move o su traducción)}
 	Texto de |BM|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/very bad move = \meta{text} (initially Very bad move)}
+\begin{key}{/pgfgo/sgf annotations/very bad move = \meta{text} (initially Very bad move o su traducción)}
 	Texto de |BM[2]|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/doubtful = \meta{text} (initially Doubtful move)}
+\begin{key}{/pgfgo/sgf annotations/doubtful = \meta{text} (initially Doubtful move o su traducción)}
 	Texto de |DO|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/interesting = \meta{text} (initially Interesting move)}
+\begin{key}{/pgfgo/sgf annotations/interesting = \meta{text} (initially Interesting move o su traducción)}
 	Texto de |IT|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/good for black = \meta{text} (initially Good for Black)}
+\begin{key}{/pgfgo/sgf annotations/good for black = \meta{text} (initially Good for Black o su traducción)}
 	Texto de |GB|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/very good for black = \meta{text} (initially Very good for Black)}
+\begin{key}{/pgfgo/sgf annotations/very good for black = \meta{text} (initially Very good for Black o su traducción)}
 	Texto de |GB[2]|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/good for white = \meta{text} (initially Good for White)}
+\begin{key}{/pgfgo/sgf annotations/good for white = \meta{text} (initially Good for White o su traducción)}
 	Texto de |GW|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/very good for white = \meta{text} (initially Very good for White)}
+\begin{key}{/pgfgo/sgf annotations/very good for white = \meta{text} (initially Very good for White o su traducción)}
 	Texto de |GW[2]|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/even = \meta{text} (initially Even position)}
+\begin{key}{/pgfgo/sgf annotations/even = \meta{text} (initially Even position o su traducción)}
 	Texto de |DM|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf annotations/unclear = \meta{text} (initially Unclear position)}
+\begin{key}{/pgfgo/sgf annotations/unclear = \meta{text} (initially Unclear position o su traducción)}
 	Texto de |UC|.
 \end{key}
 
@@ -948,8 +948,8 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Escribe debajo de cada diagrama sus notas «N en M».
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/title = \meta{text} (initially Diagram)}
-	Palabra del epígrafe: «Diagram 2 (51--100)».
+\begin{key}{/pgfgo/sgf diagrams/title = \meta{text} (initially Diagram o su traducción)}
+	Palabra del epígrafe: «Diagrama 2 (51--100)».
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/caption font = \meta{font commands} (initially \texttt{\string\small})}
@@ -985,20 +985,32 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/result = \meta{boolean} (default true, initially true)}
-	Escribe debajo del último diagrama, si llega al final de la partida, el resultado (|RE|) y, si el archivo marca el territorio (|TB|, |TW|), el puntaje de cada jugador: «Result: B+0.5 (Black 6, White 5.5)». El puntaje se cuenta como con |\pgfgoscore| (pág.~\pageref{subsec:territorio}), con el komi del archivo (|KM|).
+	Escribe debajo del último diagrama, si llega al final de la partida, el resultado (|RE|) y, si el archivo marca el territorio (|TB|, |TW|), el puntaje de cada jugador: «Resultado: Ganan Negras por 0.5 puntos (Negras 6, Blancas 5.5)». El puntaje se cuenta como con |\pgfgoscore| (pág.~\pageref{subsec:territorio}), con el komi del archivo (|KM|).
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/result title = \meta{text} (initially Result)}
+\begin{key}{/pgfgo/sgf diagrams/result title = \meta{text} (initially Result o su traducción)}
 	Palabra que precede al resultado.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/black name = \meta{text} (initially Black)}
-	Nombre de las negras en el puntaje.
+\begin{key}{/pgfgo/sgf diagrams/black name = \meta{text} (initially Black o su traducción)}
+	Nombre de las negras en el puntaje y en el resultado.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/white name = \meta{text} (initially White)}
-	Nombre de las blancas en el puntaje.
+\begin{key}{/pgfgo/sgf diagrams/white name = \meta{text} (initially White o su traducción)}
+	Nombre de las blancas en el puntaje y en el resultado.
 \end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/result format = \meta{text o raw} (initially text)}
+	Cómo se escribe el resultado. |text|: en palabras, en el idioma del documento (pág.~\pageref{subsec:idiomas}), «Ganan Negras por abandono»; |raw|: como está en el archivo, «B+R». Con |text| se entienden |0| o |Draw| (empate), |Void| (sin resultado), |?| (desconocido) y |B+| o |W+| seguido de nada, de la diferencia, de |R| o |Resign|, de |T| o |Time|, o de |F| o |Forfeit|. Otro resultado se escribe como está.
+\end{key}
+
+\begin{command}{\pgfgowinner}
+	En los textos del resultado (|\pgfgodefinelanguage|), el nombre del ganador: |black name| o |white name|.
+\end{command}
+
+\begin{command}{\pgfgopoints}
+	En los textos del resultado, la diferencia de puntos, como está en el archivo.
+\end{command}
 
 \begin{command}{\sgfproblem\opt{\oarg{options}}\marg{file}}
 	Dibuja un problema (tsumego). Primero, el enunciado: la posición inicial con sus marcas, quién juega (|PL|, o el color de la primera jugada) y el comentario del principio. Después, un diagrama por cada línea del árbol del archivo (cada variante de la solución, correcta o no), numerada desde 1, con sus notas «N en M» y los comentarios y anotaciones de sus jugadas, que suelen decir si la variante es correcta. Los diagramas se dibujan como los de |\sgfdiagrams|. Si el archivo no tiene vista (|VW|), se muestra solo la parte del tablero que usa el problema. Se usa fuera de |goban|. Las opciones pueden fijarse para todo el documento con |\pgfgoset{sgf problem = {...}}|.
@@ -1024,15 +1036,15 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Comienzo del epígrafe del enunciado: «Problema 1: Juegan negras».
 \end{key}
 
-\begin{key}{/pgfgo/sgf problem/variation title = \meta{text} (initially Variation)}
-	Palabra del epígrafe de cada variante: «Variation 2».
+\begin{key}{/pgfgo/sgf problem/variation title = \meta{text} (initially Variation o su traducción)}
+	Palabra del epígrafe de cada variante: «Variante 2».
 \end{key}
 
-\begin{key}{/pgfgo/sgf problem/black to play = \meta{text} (initially Black to play)}
+\begin{key}{/pgfgo/sgf problem/black to play = \meta{text} (initially Black to play o su traducción)}
 	Texto del enunciado cuando juegan las negras.
 \end{key}
 
-\begin{key}{/pgfgo/sgf problem/white to play = \meta{text} (initially White to play)}
+\begin{key}{/pgfgo/sgf problem/white to play = \meta{text} (initially White to play o su traducción)}
 	Texto del enunciado cuando juegan las blancas.
 \end{key}
 
