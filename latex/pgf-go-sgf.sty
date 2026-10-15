@@ -805,6 +805,8 @@
 		\pgfgo_sgfanimation_layers:
 		\int_gincr:N \g__pgfgo_sgfanim_file_int
 		\tl_set:Ne \l__pgfgo_sgfanim_timeline_tl {\c_sys_jobname_str -pgfgo- \int_use:N \g__pgfgo_sgfanim_file_int .tln}
+		%animate LEE EL timeline SIN COMILLAS: UN ESPACIO EN EL NOMBRE DEL ARCHIVO LO CORTA.
+		\tl_replace_all:Nnn \l__pgfgo_sgfanim_timeline_tl {~} {_}
 		\__pgfgo_sgfanim_timeline:V \l__pgfgo_sgfanim_timeline_tl
 		\tl_clear:N \l_tmpb_tl
 		\int_step_inline:nnn {0} {\g__pgfgo_sgfanim_layer_int - 2}
