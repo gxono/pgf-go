@@ -1,112 +1,89 @@
 \ProvidesFile{pgf-go-profiles.sty}[2026/10/13 v0.2026.10.13 pgf-go: profiles]
 \ExplSyntaxOn
+%UN PERFIL ES UNA LISTA DE CLAVES CON NOMBRE: LOS DE TABLERO VAN EN \g_pgfgo_profile_goban_prop (CLAVES DE
+%/pgfgo/goban) Y LOS DE JUGADOR EN \g_pgfgo_profile_player_prop (CLAVES DE UN JUGADOR DE /pgfgo/players).
 \prop_new:N \g_pgfgo_profile_profile_prop
-
-\tl_new:N \l_pgfgo_profile_define_goban_name_tl
-\tl_new:N \l_pgfgo_profile_define_player_name_tl
-
 \prop_new:N \g_pgfgo_profile_player_prop
 \prop_new:N \g_pgfgo_profile_goban_prop
 
-
+\tl_new:N \l_pgfgo_profile_define_goban_name_tl
+\tl_new:N \l_pgfgo_profile_define_player_name_tl
+\tl_new:N \l_pgfgo_profile_goban_from_tl
+\tl_new:N \l_pgfgo_profile_player_from_tl
+\tl_new:N \l__pgfgo_profile_options_tl
 
 \msg_new:nnn {pgfgo} {unknown-goban-profile} {Unknown~goban~profile~'#1'.}
 \msg_new:nnn {pgfgo} {unknown-player-profile} {Unknown~player~profile~'#1'.}
 
-%#1: goban O player. #2: NOMBRE DEL PERFIL. AVISA SI NO EXISTE.
-\cs_new_protected:Nn \__pgfgo_profile_check:nn {
-	\prop_if_in:cnF {g_pgfgo_profile_ #1 _prop} {#2}
-		{\msg_error:nnn {pgfgo} {unknown- #1 -profile} {#2}}
+%#1: goban O player. #2: NOMBRE DEL PERFIL. DEJA SUS CLAVES EN \l__pgfgo_profile_options_tl (VACIO Y UN
+%ERROR SI NO EXISTE).
+\cs_new_protected:Npn \__pgfgo_profile_get:nn #1#2 {
+	\prop_get:cnNF {g_pgfgo_profile_ #1 _prop} {#2} \l__pgfgo_profile_options_tl {
+		\tl_clear:N \l__pgfgo_profile_options_tl
+		\msg_error:nnn {pgfgo} {unknown- #1 -profile} {#2}
+	}
+}
+\cs_generate_variant:Nn \__pgfgo_profile_get:nn {nv}
+
+\cs_new_protected:Npn \pgfgo_profile_use_goban:n #1 {
+	\__pgfgo_profile_get:nn {goban} {#1}
+	\pgfgo_set:e {goban = {\exp_not:V \l__pgfgo_profile_options_tl}}
 }
 
-\cs_new:Nn \pgfgo_profile_use_goban:n {
-	\__pgfgo_profile_check:nn {goban} {#1}
-	\pgfgo_set:e{goban = {\prop_item:Nn\g_pgfgo_profile_goban_prop {#1}}}
+%#1: neutral, black O white. #2: NOMBRE DEL PERFIL.
+\cs_new_protected:Npn \__pgfgo_profile_use_player:nn #1#2 {
+	\__pgfgo_profile_get:nn {player} {#2}
+	\pgfgo_set:e {players = {#1 = {\exp_not:V \l__pgfgo_profile_options_tl}}}
+}
+\cs_new_protected:Npn \pgfgo_profile_use_neutral:n	{\__pgfgo_profile_use_player:nn {neutral}}
+\cs_new_protected:Npn \pgfgo_profile_use_black:n		{\__pgfgo_profile_use_player:nn {black}}
+\cs_new_protected:Npn \pgfgo_profile_use_white:n		{\__pgfgo_profile_use_player:nn {white}}
+
+\cs_new_protected:Npn \pgfgo_profile_use_players:nnn #1#2#3 {
+	\__pgfgo_profile_use_player:nn {neutral}	{#1}
+	\__pgfgo_profile_use_player:nn {black}		{#2}
+	\__pgfgo_profile_use_player:nn {white}		{#3}
 }
 
-\cs_new:Nn \pgfgo_profile_use_neutral:n	{\__pgfgo_profile_check:nn {player} {#1}\pgfgo_set:e{players = {neutral 	= {\prop_item:Nn\g_pgfgo_profile_player_prop {#1}}}}}
-\cs_new:Nn \pgfgo_profile_use_black:n 	{\__pgfgo_profile_check:nn {player} {#1}\pgfgo_set:e{players = {black 		= {\prop_item:Nn\g_pgfgo_profile_player_prop {#1}}}}}
-\cs_new:Nn \pgfgo_profile_use_white:n 	{\__pgfgo_profile_check:nn {player} {#1}\pgfgo_set:e{players = {white 		= {\prop_item:Nn\g_pgfgo_profile_player_prop {#1}}}}}
-
-\cs_new:Nn \pgfgo_profile_use_players:nnn {
-	\pgfgo_profile_use_neutral:n	{#1}
-	\pgfgo_profile_use_black:n 		{#2}
-	\pgfgo_profile_use_white:n 		{#3}
+\cs_new_protected:Npn \pgfgo_profile_use_profile:n #1 {
+	\pgfgo_profile_use_goban:n {#1}
+	\pgfgo_profile_use_players:nnn {#1-neutral} {#1-black} {#1-white}
 }
 
-
-
-	
-
-
-
-
-\cs_generate_variant:Nn \__pgfgo_profile_check:nn {nV}
-\tl_new:N \l_pgfgo_profile_goban_from_tl
-\tl_new:N \l_pgfgo_profile_player_from_tl
-
+%OPCIONES DE \pgfgodefinegoban Y \pgfgodefineplayer: from = <PERFIL> EMPIEZA CON LAS CLAVES DE ESE PERFIL;
+%append, CON LAS DEL PERFIL QUE SE ESTA DEFINIENDO.
 \keys_define:nn {pgfgo / profiles / goban} {
 	from 		.tl_set:N = \l_pgfgo_profile_goban_from_tl,
 	append 	.code:n = {\tl_set_eq:NN \l_pgfgo_profile_goban_from_tl \l_pgfgo_profile_define_goban_name_tl}
 }
-
-
-
-\DeclareDocumentCommand{\pgfgodefinegoban}{O{}mm}{
-	\tl_clear:N \l_tmpa_tl %CONSTRUCCION DE LA KEY
-	\tl_set:Nn\l_pgfgo_profile_define_goban_name_tl {#2} %OJO PORQUE SE CONSERVA EL NOMBRE
-	\tl_clear:N \l_pgfgo_profile_goban_from_tl %CADA DEFINICION EMPIEZA SIN from
-	\keys_set:nn {pgfgo / profiles / goban} {#1}
-	\tl_if_empty:NF \l_pgfgo_profile_goban_from_tl{
-		\__pgfgo_profile_check:nV {goban} \l_pgfgo_profile_goban_from_tl
-		\tl_set:Nf \l_tmpa_tl {\prop_item:Ne\g_pgfgo_profile_goban_prop {\l_pgfgo_profile_goban_from_tl},}
-	}
-	\prop_gput:Nno\g_pgfgo_profile_goban_prop {#2} {\l_tmpa_tl, #3}
-}
-
-
-
 \keys_define:nn {pgfgo / profiles / player} {
 	from 		.tl_set:N = \l_pgfgo_profile_player_from_tl,
 	append 	.code:n = {\tl_set_eq:NN \l_pgfgo_profile_player_from_tl \l_pgfgo_profile_define_player_name_tl}
 }
 
-
-\DeclareDocumentCommand{\pgfgodefineplayer}{O{}mm}{
-	\tl_clear:N \l_tmpa_tl %CONSTRUCCION DE LA KEY
-	\tl_set:Nn\l_pgfgo_profile_define_player_name_tl {#2} %OJO PORQUE SE CONSERVA EL NOMBRE
-	\tl_clear:N \l_pgfgo_profile_player_from_tl %CADA DEFINICION EMPIEZA SIN from
-	\keys_set:nn {pgfgo / profiles / player} {#1}
-	\tl_if_empty:NF \l_pgfgo_profile_player_from_tl{
-		\__pgfgo_profile_check:nV {player} \l_pgfgo_profile_player_from_tl
-		\tl_set:Nf \l_tmpa_tl {\prop_item:Ne\g_pgfgo_profile_player_prop {\l_pgfgo_profile_player_from_tl},}
-	}
-	\prop_gput:Nno\g_pgfgo_profile_player_prop {#2} {\l_tmpa_tl, #3}
+%#1: goban O player. #2: OPCIONES. #3: NOMBRE DEL PERFIL. #4: SUS CLAVES.
+\cs_new_protected:Npn \__pgfgo_profile_define:nnnn #1#2#3#4 {
+	\tl_set:cn {l_pgfgo_profile_define_ #1 _name_tl} {#3} %OJO PORQUE SE CONSERVA EL NOMBRE
+	\tl_clear:c {l_pgfgo_profile_ #1 _from_tl} %CADA DEFINICION EMPIEZA SIN from
+	\keys_set:nn {pgfgo / profiles / #1} {#2}
+	\tl_if_empty:cTF {l_pgfgo_profile_ #1 _from_tl}
+		{\tl_clear:N \l__pgfgo_profile_options_tl}
+		{
+			\__pgfgo_profile_get:nv {#1} {l_pgfgo_profile_ #1 _from_tl}
+			\tl_put_right:Nn \l__pgfgo_profile_options_tl {,}
+		}
+	\prop_gput:cno {g_pgfgo_profile_ #1 _prop} {#3} {\l__pgfgo_profile_options_tl, #4}
 }
 
+\DeclareDocumentCommand{\pgfgodefinegoban}{O{}mm}{\__pgfgo_profile_define:nnnn {goban} {#1} {#2} {#3}}
+\DeclareDocumentCommand{\pgfgodefineplayer}{O{}mm}{\__pgfgo_profile_define:nnnn {player} {#1} {#2} {#3}}
 
-
-\cs_new:Nn\pgfgo_profile_use_profile:n{
-	\pgfgo_profile_use_goban:n	{#1}
-	\pgfgo_profile_use_neutral:n{#1-neutral}
-	\pgfgo_profile_use_black:n	{#1-black}
-	\pgfgo_profile_use_white:n	{#1-white}
-}
-
-
-
-
-
-
-	
 \let\pgfgouseprofile	\pgfgo_profile_use_profile:n 		%CARGA TABLERO, PIEDRAS con sufijo -goban, white, black, neutral
 \let\pgfgousegoban		\pgfgo_profile_use_goban:n			%CARGA GOBAN
 \let\pgfgouseplayers	\pgfgo_profile_use_players:nnn 	%CARGA TODOS LOS JUGADORES {neutral}{black}{white}
 \let\pgfgouseneutral	\pgfgo_profile_use_neutral:n 		%CARGA UN PERFIL PARA LOS NEUTROS
 \let\pgfgouseblack		\pgfgo_profile_use_black:n 			%CARGA UN PERFIL PARA LAS NEGRAS
 \let\pgfgousewhite		\pgfgo_profile_use_white:n 			%CARGA UN PERFIL PARA LAS BLANCAS
-
-
 
 \ExplSyntaxOff
 
@@ -148,7 +125,6 @@
 		text color = black,
 		false,
 		sep = 0.35cm},
-	scale = 1,
 	partial = {false},
 	size = 9
 }
@@ -368,7 +344,6 @@
 
 \pgfgodefineplayer{pgfgo-neutral}{
 	stone = {
-		radius = 0.19cm,
 		line = {
 			true,
 			color = black,

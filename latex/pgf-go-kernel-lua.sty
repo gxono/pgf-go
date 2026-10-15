@@ -2,28 +2,28 @@
 \ExplSyntaxOn
 
 %KERNEL DE CALCULO EN Lua (kernel = lua). LA INTERFAZ ESTA DESCRIPTA EN pgf-go-kernel.sty.
-%EL CALCULO ESTA EN pgf-go.lua; ACA SOLO SE LE PASAN LAS ENTRADAS. pgf-go.lua SE BUSCA JUNTO A
-%pgf-go.sty Y, SI NO ESTA AHI, EN EL PATH DE TeX.
+%EL CALCULO ESTA EN pgf-go.lua; ACA SOLO SE LE PASAN LAS ENTRADAS.
 \clist_gset:Nn \g_pgfgo_kernel_features_clist {captures, territory, sgf}
 
+%NOMBRE COMPLETO DEL ARCHIVO #2 DEL PAQUETE, EN #1: SE BUSCA JUNTO A pgf-go.sty Y, SI NO ESTA AHI, EN
+%EL PATH DE TeX.
+\cs_new_protected:Npn \__pgfgo_kernel_lua_find:Nn #1#2 {
+	\tl_clear:N #1
+	\tl_if_empty:NF \c__pgfgo_path_tl {\tl_set:Ne #1 {\file_full_name:n {\c__pgfgo_path_tl / #2}}}
+	\tl_if_empty:NT #1 {\tl_set:Ne #1 {\file_full_name:n {#2}}}
+}
+
 \tl_new:N \l__pgfgo_kernel_lua_file_tl
-\tl_if_empty:NF \c__pgfgo_path_tl
-	{\tl_set:Ne \l__pgfgo_kernel_lua_file_tl {\file_full_name:n {\c__pgfgo_path_tl / pgf-go.lua}}}
-\tl_if_empty:NT \l__pgfgo_kernel_lua_file_tl
-	{\tl_set:Ne \l__pgfgo_kernel_lua_file_tl {\file_full_name:n {pgf-go.lua}}}
+\__pgfgo_kernel_lua_find:Nn \l__pgfgo_kernel_lua_file_tl {pgf-go.lua}
 \lua_now:e {pgfgo~=~dofile("\lua_escape:e {\l__pgfgo_kernel_lua_file_tl}")}
 
-%LAS TABLAS DE LAS CODIFICACIONES ASIATICAS (pgf-go-charsets.lua) SE BUSCAN IGUAL; Lua LAS CARGA SOLO SI
-%HACEN FALTA.
-\tl_new:N \l__pgfgo_kernel_lua_charsets_tl
-\tl_if_empty:NF \c__pgfgo_path_tl
-	{\tl_set:Ne \l__pgfgo_kernel_lua_charsets_tl {\file_full_name:n {\c__pgfgo_path_tl / pgf-go-charsets.lua}}}
-\tl_if_empty:NT \l__pgfgo_kernel_lua_charsets_tl
-	{\tl_set:Ne \l__pgfgo_kernel_lua_charsets_tl {\file_full_name:n {pgf-go-charsets.lua}}}
-\lua_now:e {pgfgo.charsets_file~=~"\lua_escape:e {\l__pgfgo_kernel_lua_charsets_tl}"}
+%LAS TABLAS DE LAS CODIFICACIONES ASIATICAS: Lua LAS CARGA SOLO SI HACEN FALTA.
+\__pgfgo_kernel_lua_find:Nn \l__pgfgo_kernel_lua_file_tl {pgf-go-charsets.lua}
+\lua_now:e {pgfgo.charsets_file~=~"\lua_escape:e {\l__pgfgo_kernel_lua_file_tl}"}
 
-%use i COMO ARGUMENTO DE Lua.
-\cs_new:Npn \__pgfgo_kernel_lua_use_i: {\bool_if:NTF \l_pgfgo_use_i_bool {true} {false}}
+%UN BOOLEANO COMO ARGUMENTO DE Lua.
+\cs_new:Npn \__pgfgo_kernel_lua_bool:N #1 {\bool_if:NTF #1 {true} {false}}
+\cs_new:Npn \__pgfgo_kernel_lua_use_i: {\__pgfgo_kernel_lua_bool:N \l_pgfgo_use_i_bool}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,7 +45,7 @@
 }
 
 \cs_new_protected:Npn \pgfgo_kernel_board_init: {
-	\lua_now:e {pgfgo.board_init(\bool_if:NTF \l_pgfgo_goban_partial_bool {true} {false})}
+	\lua_now:e {pgfgo.board_init(\__pgfgo_kernel_lua_bool:N \l_pgfgo_goban_partial_bool)}
 }
 
 \prg_new_protected_conditional:Npnn \pgfgo_kernel_if_visible:nn #1#2 {T, F, TF} {

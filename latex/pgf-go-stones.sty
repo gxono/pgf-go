@@ -15,30 +15,18 @@
 	remember					.code:n	=	{\bool_set_true:N\l_pgfgo_goban_remember_stone_bool},
 	remember					.groups:n	=	{preset},
 
-	black				.code:n		=	{
-		\bool_set_true:N	\l_pgfgo_players_black_bool
-		\bool_set_false:N	\l_pgfgo_players_white_bool
-		\bool_set_false:N	\l_pgfgo_players_neutral_bool
-	},
+	black				.code:n		=	{\__pgfgo_stone_set_player:NNN \c_true_bool \c_false_bool \c_false_bool},
 	black				.groups:n = { player-id },
 	b						.code:n	= {\keys_set:nn{ pgfgo / stone }{black}},
 	b						.groups:n = { player-id },
 
 
-	white				.code:n		=	{
-		\bool_set_true:N	\l_pgfgo_players_white_bool
-		\bool_set_false:N	\l_pgfgo_players_black_bool
-		\bool_set_false:N	\l_pgfgo_players_neutral_bool
-	},
+	white				.code:n		=	{\__pgfgo_stone_set_player:NNN \c_false_bool \c_true_bool \c_false_bool},
 	white				.groups:n = { player-id },
 	w						.code:n	= {\keys_set:nn{ pgfgo / stone }{white}},
 	w						.groups:n = { player-id },
-	
-	neutral				.code:n		=	{
-		\bool_set_false:N	\l_pgfgo_players_white_bool
-		\bool_set_false:N	\l_pgfgo_players_black_bool
-		\bool_set_true:N	\l_pgfgo_players_neutral_bool
-	},
+
+	neutral				.code:n		=	{\__pgfgo_stone_set_player:NNN \c_false_bool \c_false_bool \c_true_bool},
 	neutral				.groups:n = { player-id },
 	n						.code:n	= {\keys_set:nn{ pgfgo / stone }{neutral}},
 	n						.groups:n = { player-id },
@@ -50,11 +38,16 @@
 	mark								.code:n = {
 			\pgfgo_mark:nee{#1}{\l_pgfgo_parsed_x_coordinate_tl}{\l_pgfgo_parsed_y_coordinate_tl}
 	},
-	
+
 	mark		.groups:n = {mark}
 }
 
-
+%#1, #2, #3: SI LA PIEDRA ES NEGRA, BLANCA, NEUTRAL.
+\cs_new_protected:Npn \__pgfgo_stone_set_player:NNN #1#2#3 {
+	\bool_set_eq:NN	\l_pgfgo_players_black_bool		#1
+	\bool_set_eq:NN	\l_pgfgo_players_white_bool		#2
+	\bool_set_eq:NN	\l_pgfgo_players_neutral_bool	#3
+}
 
 
 
@@ -93,6 +86,10 @@
 %----------------------------------------PIEDRA-------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%RADIO DEL BRILLO (LA EXPRESION QUE RECIBE PGF).
+\tl_const:Nn \c__pgfgo_stone_shine_radius_tl {
+	\fp_use:N\l_tmpa_fp * \l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp
+}
 
 \cs_new:Nn \pgfgo_stones_shine_default: {
 	\pgfscope
@@ -101,16 +98,16 @@
 	\pgftransformrotate{\fp_to_decimal:N\l_pgfgo_players_stone_drop_shine_angle_fp}
 	\pgfsetfillcolor{\l_pgfgo_players_stone_drop_shine_color_tl}
 	\fp_set:Nn\l_tmpa_fp{0.8}
-	\pgfpathmoveto{\pgfpointpolar{135}{\fp_use:N\l_tmpa_fp * \l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}}
-	\pgfpatharc{135}{190}{\fp_use:N\l_tmpa_fp * \l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}
-	\pgfpathquadraticcurveto{\pgfpointpolar{135}{\fp_use:N\l_tmpa_fp * \l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}}{\pgfpointpolar{80}{\fp_use:N\l_tmpa_fp * \l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}}
-	\pgfpatharc{80}{135}{\fp_use:N\l_tmpa_fp * \l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}
+	\pgfpathmoveto{\pgfpointpolar{135}{\c__pgfgo_stone_shine_radius_tl}}
+	\pgfpatharc{135}{190}{\c__pgfgo_stone_shine_radius_tl}
+	\pgfpathquadraticcurveto{\pgfpointpolar{135}{\c__pgfgo_stone_shine_radius_tl}}{\pgfpointpolar{80}{\c__pgfgo_stone_shine_radius_tl}}
+	\pgfpatharc{80}{135}{\c__pgfgo_stone_shine_radius_tl}
 	\pgfpathclose
-	
+
 	\pgfusepath{fill}
-	
+
 	\pgfsetfillcolor{\l_pgfgo_players_stone_drop_shine_color_tl}
-	\pgftransformshift{\pgfpointpolar{-45}{\fp_use:N\l_tmpa_fp * \l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}}
+	\pgftransformshift{\pgfpointpolar{-45}{\c__pgfgo_stone_shine_radius_tl}}
 	\pgftransformrotate{45}
 	\pgfpathellipse{\pgfpointorigin}{\pgfpoint{0.04cm}{0cm}}{\pgfpoint{0cm}{0.01cm}}
 	\pgfusepath{fill}
@@ -132,18 +129,25 @@
 }
 
 
-%LA PIEDRA ES UNA IMAGEN: SIN CIRCULO, BORDE NI BRILLO. LA SOMBRA TIENE LA FORMA DE LA IMAGEN.
-\cs_new_protected:Npn \__pgfgo_stone_image: {
-	\__pgfgo_stone_image_load:
-	\__pgfgo_stone_image_angle:
+%SOMBRA DE LA PIEDRA: #1 DIBUJA SU FORMA (YA DESPLAZADA).
+\cs_new_protected:Npn \__pgfgo_stone_shadow:n #1 {
 	\bool_if:NT\l_pgfgo_players_stone_drop_shadow_bool{
 		\pgfscope
 		\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_drop_shadow_opacity_fp}
 		\pgfsetfillcolor{black}
 		\pgftransformshift{\pgfpointpolar{\fp_use:N\l_pgfgo_players_stone_drop_shadow_angle_fp}{\dim_use:N\l_pgfgo_players_stone_drop_shadow_offset_dim}}
+		#1
+		\endpgfscope
+	}
+}
+
+%LA PIEDRA ES UNA IMAGEN: SIN CIRCULO, BORDE NI BRILLO. LA SOMBRA TIENE LA FORMA DE LA IMAGEN.
+\cs_new_protected:Npn \__pgfgo_stone_image: {
+	\__pgfgo_stone_image_load:
+	\__pgfgo_stone_image_angle:
+	\__pgfgo_stone_shadow:n {
 		\pgftransformrotate{\fp_use:N\l__pgfgo_stone_image_angle_fp}
 		\pgfgo_image_shadow:
-		\endpgfscope
 	}
 	\pgfscope
 	\pgftransformrotate{\fp_use:N\l__pgfgo_stone_image_angle_fp}
@@ -195,21 +199,16 @@
 	\pgftransparencygroup
 	\seq_if_empty:NTF \l_pgfgo_players_stone_image_seq {
 	%SOMBRA
-	\bool_if:NT\l_pgfgo_players_stone_drop_shadow_bool{
-		\pgfscope
-		\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_drop_shadow_opacity_fp}
-		\pgfsetfillcolor{black}
-		\pgftransformshift{\pgfpointpolar{\fp_use:N\l_pgfgo_players_stone_drop_shadow_angle_fp}{\dim_use:N\l_pgfgo_players_stone_drop_shadow_offset_dim}}
+	\__pgfgo_stone_shadow:n {
 		\pgfpathcircle{
 			\pgfpointorigin}{
 			\l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp
 		}
 		\pgfusepath{fill}
 		\pgftransformreset
-		\endpgfscope
 	}
-	
-	%PIEDRA\\
+
+	%PIEDRA
 	\pgfsetlinewidth{\l_pgfgo_players_stone_line_width_dim * \fp_use:N \l_pgfgo_players_stone_scale_fp}
 	\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}
 	\pgfusepath{\bool_if:NT\l_pgfgo_players_stone_line_bool{stroke},\bool_if:NT\l_pgfgo_players_stone_fill_bool{fill}}
@@ -261,25 +260,25 @@
 	\prop_gremove:NV \g_pgfgo_points_prop \l__pgfgo_captures_key_tl
 }
 
-\cs_new_protected:Npn \__pgfgo_points_stone:nnn #1#2#3 {
+%DIBUJA UNA PIEDRA. SI #1 NO INDICA EL JUGADOR, LA PIEDRA ES NEGRA.
+%SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO. CON CAPTURAS, LAS PIEDRAS NEGRAS Y BLANCAS
+%QUE NO SON PRISIONEROS VAN AL TABLERO DEL KERNEL Y SE DIBUJAN AL CERRAR EL goban.
+\cs_set_protected:Npn\pgfgo_stone:nnn #1#2#3 {
 	\group_begin:
 		\keys_set:nn { pgfgo / stone } {black}
 		\keys_set_groups:nnn { pgfgo / stone } {player-id, captures-id} {#1}
-		\__pgfgo_points_put:nnn {#2} {#3} {
-			\bool_if:NT \l__pgfgo_stone_prisoner_bool {dead-}
-			\bool_if:NTF \l_pgfgo_players_black_bool {black}
-				{\bool_if:NTF \l_pgfgo_players_white_bool {white} {neutral}}
-		}
+		\__pgfgo_points_put:nnn {#2} {#3}
+			{\bool_if:NT \l__pgfgo_stone_prisoner_bool {dead-} \__pgfgo_players_current:}
+		\bool_lazy_and:nnTF {\l_pgfgo_goban_captures_bool}
+			{! \l_pgfgo_players_neutral_bool && ! \l__pgfgo_stone_prisoner_bool}
+			{
+				\exp_args:Ne \pgfgo_kernel_board_put:nnn
+					{\bool_if:NTF \l_pgfgo_players_black_bool {black} {white}} {#2} {#3}
+				\pgfgo_kernel_if_visible:nnT {#2} {#3}
+					{\__pgfgo_captures_defer:nnn {#2} {#3} {\__pgfgo_stone_draw:nnn {#1} {#2} {#3}}}
+			}
+			{\pgfgo_kernel_if_visible:nnT {#2} {#3} {\__pgfgo_stone_draw:nnn {#1} {#2} {#3}}}
 	\group_end:
-}
-
-%DIBUJA UNA PIEDRA. SI #1 NO INDICA EL JUGADOR, LA PIEDRA ES NEGRA.
-%SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO.
-\cs_set_protected:Npn\pgfgo_stone:nnn #1#2#3 {
-	\__pgfgo_points_stone:nnn {#1} {#2} {#3}
-	\bool_if:NTF \l_pgfgo_goban_captures_bool
-		{\__pgfgo_captures_stone:nnn {#1} {#2} {#3}}
-		{\pgfgo_kernel_if_visible:nnT {#2} {#3} {\__pgfgo_stone_draw:nnn {#1} {#2} {#3}}}
 }
 
 %UNA PIEDRA CAPTURADA CON captures = fade SE DIBUJA COMO UN PRISIONERO.
@@ -293,14 +292,8 @@
 	\group_begin:
 	\keys_set:nn { pgfgo / stone }{black}
 	\keys_set_groups:nnn{ pgfgo / stone }{ player-id }{#1}
-	\bool_if:NTF \l_pgfgo_players_black_bool
-		{\keys_set_exclude_groups:nnn{ pgfgo / players / black / stone } { external } {#1}}
-		{\bool_if:NTF \l_pgfgo_players_white_bool
-			{\keys_set_exclude_groups:nnn{ pgfgo / players / white / stone } { external } {#1}}
-			{\keys_set_exclude_groups:nnn{ pgfgo / players / neutral / stone } { external } {#1}}}
-	\keys_set_groups:nnn{ pgfgo / stone }{ at-end }{#1}
+	\keys_set_exclude_groups:enn { pgfgo / players / \__pgfgo_players_current: / stone } { external } {#1}
 	\pgfgo_get_variables_from_current_player:
-
 
 	\tl_set:Nn\l_pgfgo_parsed_x_coordinate_tl{#2}
 	\tl_set:Nn\l_pgfgo_parsed_y_coordinate_tl{#3}
@@ -311,15 +304,14 @@
 	\endpgfscope
 
 	%-----MARCAS-------------------------
-
-		\pgfscope
-		\keys_set_groups:nnn {pgfgo / stone} {mark} {#1}
-		\endpgfscope
+	\pgfscope
+	\keys_set_groups:nnn {pgfgo / stone} {mark} {#1}
+	\endpgfscope
 
 	\group_end:
 }
 \cs_generate_variant:Nn \__pgfgo_stone_draw_aux:nnn {enn}
-\cs_generate_variant:Nn \pgfgo_stone:nnn {Vnn}
+\cs_generate_variant:Nn \keys_set_exclude_groups:nnn {enn}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -402,21 +394,6 @@
 	}
 }
 
-\cs_new_protected:Npn \__pgfgo_captures_stone:nnn #1#2#3 {
-	\group_begin:
-		\keys_set:nn { pgfgo / stone } {black}
-		\keys_set_groups:nnn { pgfgo / stone } {player-id, captures-id} {#1}
-		\bool_if:nTF {! \l_pgfgo_players_neutral_bool && ! \l__pgfgo_stone_prisoner_bool}
-			{
-				\exp_args:Ne \pgfgo_kernel_board_put:nnn
-					{\bool_if:NTF \l_pgfgo_players_black_bool {black} {white}} {#2} {#3}
-				\pgfgo_kernel_if_visible:nnT {#2} {#3}
-					{\__pgfgo_captures_defer:nnn {#2} {#3} {\__pgfgo_stone_draw:nnn {#1} {#2} {#3}}}
-			}
-			{\pgfgo_kernel_if_visible:nnT {#2} {#3} {\__pgfgo_stone_draw:nnn {#1} {#2} {#3}}}
-	\group_end:
-}
-
 %QUITA LA PIEDRA DE (#1,#2): DEL TABLERO DEL KERNEL Y DE LO QUE SE VA A DIBUJAR.
 \cs_new_protected:Npn \pgfgo_captures_remove:nn #1#2 {
 	\pgfgo_kernel_board_put:nnn {empty} {#1} {#2}
@@ -440,13 +417,8 @@
 		}
 	}
 	\bool_if:NF \l__pgfgo_notes_noted_bool {
-		\pgfgo_kernel_if_visible:nnT {#3} {#4} {
-			\__pgfgo_captures_defer:nne {#3} {#4} {
-				\exp_not:N \__pgfgo_move_draw:nnnnnn
-					{\exp_not:n {#1}} {\exp_not:n {#2}} {\exp_not:n {#3}} {\exp_not:n {#4}}
-					{\pgfgo_kernel_move_number:} {\pgfgo_kernel_move_if_black:TF {black} {white}}
-			}
-		}
+		\pgfgo_kernel_if_visible:nnT {#3} {#4}
+			{\__pgfgo_captures_defer:nne {#3} {#4} {\__pgfgo_move_code:nnnn {#1} {#2} {#3} {#4}}}
 	}
 	\pgfgo_kernel_move_play:nn {#3} {#4}
 	\__pgfgo_captures_apply:
@@ -505,11 +477,8 @@
 			}{
 				\prop_gput:NVe \g__pgfgo_notes_number_prop \l__pgfgo_captures_key_tl
 					{\pgfgo_kernel_move_number:}
-				\prop_gput:NVe \g__pgfgo_notes_code_prop \l__pgfgo_captures_key_tl {
-					\exp_not:N \__pgfgo_move_draw:nnnnnn
-						{\exp_not:n {#1}} {\exp_not:n {#2}} {\exp_not:n {#3}} {\exp_not:n {#4}}
-						{\pgfgo_kernel_move_number:} {\pgfgo_kernel_move_if_black:TF {black} {white}}
-				}
+				\prop_gput:NVe \g__pgfgo_notes_code_prop \l__pgfgo_captures_key_tl
+					{\__pgfgo_move_code:nnnn {#1} {#2} {#3} {#4}}
 			}
 		}
 	}
@@ -576,7 +545,6 @@
 
 \cs_new:Nn \pgfgo_stone:nn {\pgfgo_stone:nnn{#1}#2}
 \cs_generate_variant:Nn\pgfgo_stone:nn {nV}
-\cs_generate_variant:Nn\pgfgo_stone:nn {nf}
 
 
 
@@ -585,7 +553,7 @@
 	\keys_set_groups:nnn{ pgfgo / stone }{ preset }{#1}
 	\pgfgo_kernel_point:nTF {#2} { %Devuelve \l_pgfgo_kernel_point_tl
 		%\stone SIN JUGADOR DIBUJA UNA PIEDRA NEUTRAL (\stones, EN CAMBIO, UNA NEGRA).
-		%RECORDAR LAS PIEDAS
+		%RECORDAR LAS PIEDRAS
 		\bool_if:NT \l_pgfgo_goban_remember_stone_bool {
 			\pgfgo_kernel_remember_push:n {
 				\exp_not:N\pgfgo_stone:nn{neutral, \exp_not:n{#1}}{\exp_not:V \l_pgfgo_kernel_point_tl}}
@@ -606,44 +574,26 @@
 	\clist_map_inline:nn {#2} {\pgfgo_stone:nn{#1}{##1}}
 }
 
-
-
-
-
-
-
-
 \cs_set_protected:Npn\pgfgo_stones:nn #1#2 {
 	\group_begin:
 
 	\pgfgo_kernel_points:n{#2} %Devuelve \l_pgfgo_kernel_points_seq
 
 	\keys_set_groups:nnn{ pgfgo / stone }{ preset }{#1}
-	%RECORDAR LAS PIEDAS
-	\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
+	%RECORDAR LAS PIEDRAS
 	\bool_if:NT \l_pgfgo_goban_remember_stone_bool {
+		\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
 		\pgfgo_kernel_remember_push:n {\exp_not:N\pgfgo_stones_parsed:nn{\exp_not:n{#1}}{\exp_not:V\l_tmpa_clist}}
 	}
 
-	\seq_map_variable:NNn \l_pgfgo_kernel_points_seq\l__pgfgo_item_tl {
-		%DIBUJAR LAS PIEDRAS
-		\pgfgo_stone:nV{#1}\l__pgfgo_item_tl
-	}
+	%DIBUJAR LAS PIEDRAS
+	\seq_map_inline:Nn \l_pgfgo_kernel_points_seq {\pgfgo_stone:nnn {#1} ##1}
 	\group_end:
 }
-
-\cs_generate_variant:Nn\pgfgo_stones:nn{nx}
-
-
-
-
-
 
 
 
 \NewDocumentCommand{\stones}{O{}m}{\pgfgo_stones:nn {#1}{#2}}
-
-%\let\stone\stones
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -654,12 +604,12 @@
 \tl_new:N \l_pgfgo_prisoner_options_tl
 \keys_define:nn {pgfgo} {prisoner .tl_set:N = \l_pgfgo_prisoner_options_tl}
 
-\NewDocumentCommand{\prisoners}{O{}m}{
-	\use:e {\exp_not:N\stones[prisoner, \exp_not:V\l_pgfgo_prisoner_options_tl, \exp_not:n{#1}]{\exp_not:n{#2}}}
+%#1 (\stone O \stones) CON prisoner Y LAS OPCIONES DE /pgfgo/prisoner ANTES DE LAS OPCIONES #2.
+\cs_new_protected:Npn \__pgfgo_prisoner:Nnn #1#2#3 {
+	\use:e {\exp_not:N #1 [prisoner, \exp_not:V\l_pgfgo_prisoner_options_tl, \exp_not:n{#2}]{\exp_not:n{#3}}}
 }
-\NewDocumentCommand{\prisoner}{O{}m}{
-	\use:e {\exp_not:N\stone[prisoner, \exp_not:V\l_pgfgo_prisoner_options_tl, \exp_not:n{#1}]{\exp_not:n{#2}}}
-}
+\NewDocumentCommand{\prisoners}{O{}m}{\__pgfgo_prisoner:Nnn \stones {#1} {#2}}
+\NewDocumentCommand{\prisoner}{O{}m}{\__pgfgo_prisoner:Nnn \stone {#1} {#2}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %-------------------------------------------MOVE------------------------------------------------%
@@ -669,23 +619,38 @@
 \tl_new:N \l_pgfgo_move_x_tl
 \tl_new:N \l_pgfgo_move_y_tl
 
+%EL COLOR DE LA PROXIMA JUGADA: black O white.
+\cs_new:Npn \__pgfgo_move_color: {\pgfgo_kernel_move_if_black:TF {black} {white}}
+
+%EL CODIGO QUE DIBUJA LA JUGADA (#1: NUMERADA, #2: OPCIONES, #3,#4: PUNTO) CON EL NUMERO Y EL COLOR
+%DE AHORA. PARA USAR DENTRO DE UNA EXPANSION e.
+\cs_new:Npn \__pgfgo_move_code:nnnn #1#2#3#4 {
+	\exp_not:N \__pgfgo_move_draw:nnnnnn
+		{\exp_not:n {#1}} {\exp_not:n {#2}} {\exp_not:n {#3}} {\exp_not:n {#4}}
+		{\pgfgo_kernel_move_number:} {\__pgfgo_move_color:}
+}
+
 %FUERA DE LA PARTE VISIBLE NO SE DIBUJA, PERO LA JUGADA CUENTA (NUMERO Y TURNO).
 \cs_set_protected:Npn\pgfgo_move:nnnn #1#2#3#4 {
 	\__pgfgo_notes_check:nnnn {#1} {#2} {#3} {#4}
-	\__pgfgo_points_put:nnn {#3} {#4} {\pgfgo_kernel_move_if_black:TF {black} {white}}
+	\__pgfgo_points_put:nnn {#3} {#4} {\__pgfgo_move_color:}
 	\bool_if:NTF \l_pgfgo_goban_captures_bool {
 		\__pgfgo_captures_move:nnnn {#1} {#2} {#3} {#4}
 	}{
 		%UNA JUGADA ANOTADA ("N at M") NO SE DIBUJA.
 		\bool_if:NF \l__pgfgo_notes_noted_bool {
-			\pgfgo_kernel_if_visible:nnT {#3} {#4} {
-				\__pgfgo_move_draw:nnnnee {#1} {#2} {#3} {#4}
-					{\pgfgo_kernel_move_number:} {\pgfgo_kernel_move_if_black:TF {black} {white}}
-			}
+			\pgfgo_kernel_if_visible:nnT {#3} {#4}
+				{\use:e {\__pgfgo_move_code:nnnn {#1} {#2} {#3} {#4}}}
 		}
 		\pgfgo_kernel_move_play:nn {#3} {#4}
 	}
 }
+
+%TAMANO DEL NUMERO SEGUN LA CANTIDAD DE LETRAS Y CIFRAS (SI NO SE FIJA CON label/font size).
+\regex_const:Nn \c__pgfgo_move_label_char_regex {[a-zA-Z\d]}
+\tl_new:N \l__pgfgo_move_label_tl
+\tl_new:N \l__pgfgo_move_label_size_tl
+\int_new:N \l__pgfgo_move_label_int
 
 %DIBUJA LA JUGADA NUMERO #5 DE #6 (black O white) EN (#3,#4). #1: MOSTRAR EL NUMERO. #2: OPCIONES.
 \cs_new_protected:Npn\__pgfgo_move_draw:nnnnnn #1#2#3#4#5#6 {
@@ -695,36 +660,31 @@
 
 	\keys_set:nn { pgfgo / stone }{#6}
 	\keys_set_exclude_groups:nnn {pgfgo / players / #6 / move} {external} {#2}
-	\pgfgo_get_variables_from_current_player:
+	\pgfgo_get_values_from_player:n {#6}
 	\__pgfgo_stone_draw:nnn{#6}{#3}{#4}
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%----------------------LABEL-----------------------%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-	\tl_set:Ne \l_tmpb_tl {\pgfgo_players_move_label_format:n{#5}}
-	\tl_set:Nn\l_tmpa_tl{0.45em}
-	%Ajustar el tamano de acuerdo a la cantidad de caracteres <--------
-	\regex_count:nVN{[a-zA-Z\d]}\l_tmpb_tl\l_tmpa_int
-	\int_case:nn{\l_tmpa_int}{
-		{1}{\tl_set:Nn\l_tmpa_tl{1em}}
-		{2}{\tl_set:Nn\l_tmpa_tl{0.65em}}
-		{3}{\tl_set:Nn\l_tmpa_tl{0.45em}}
-	}
-	%------------------------------------------------------------------
-
-	%label/font size FIJA EL TAMANO
-	\tl_if_empty:NF \l_pgfgo_players_move_label_font_size_tl
-		{\tl_set_eq:NN \l_tmpa_tl \l_pgfgo_players_move_label_font_size_tl}
-
 	\IfBooleanT{#1}{
+		\tl_set:Ne \l__pgfgo_move_label_tl {\pgfgo_players_move_label_format:n{#5}}
+		\tl_if_empty:NTF \l_pgfgo_players_move_label_font_size_tl
+			{
+				\regex_count:NVN \c__pgfgo_move_label_char_regex \l__pgfgo_move_label_tl \l__pgfgo_move_label_int
+				\tl_set:Ne \l__pgfgo_move_label_size_tl {
+					\int_case:nnF {\l__pgfgo_move_label_int}
+						{{1} {1em} {2} {0.65em}}
+						{0.45em}
+				}
+			}
+			{\tl_set_eq:NN \l__pgfgo_move_label_size_tl \l_pgfgo_players_move_label_font_size_tl}
+
 		\pgfscope
-		%TOMA EL COLOR CALCULADO ARRIBA
 		\pgfsetcolor{\l_pgfgo_players_move_label_color_tl}
 		\pgftext[at=\pgfpointxy{\l_pgfgo_move_x_tl}{\l_pgfgo_move_y_tl}]{
-			\bfseries\fontsize{ \l_tmpa_tl }{0pt}\selectfont
-			\pgfgo_players_move_label_format:n{#5}
+			\bfseries\fontsize{ \l__pgfgo_move_label_size_tl }{0pt}\selectfont
+			\l__pgfgo_move_label_tl
 		}
 		\pgfusepath{stroke}
 		\endpgfscope
@@ -732,13 +692,10 @@
 
 	\group_end:
 }
-\cs_generate_variant:Nn \__pgfgo_move_draw:nnnnnn {nnnnee}
+\cs_generate_variant:Nn \regex_count:NnN {NV}
 
 
 \cs_new:Nn\pgfgo_move:nnn{\pgfgo_move:nnnn{#1}{#2}#3}
-\cs_generate_variant:Nn \pgfgo_move:nnn {nnV}
-
-\cs_generate_variant:Nn\tl_count:n {x}
 
 
 
@@ -767,16 +724,16 @@
 
 	\keys_set_groups:nnn { pgfgo / move} {preset, player-id, first stone} {#2}
 	\keys_set_groups:nnn { pgfgo / players / neutral / move} { label } {#2}
-	%RECORDAR LAS PIEDAS (CON EL NUMERO Y EL COLOR DE LA PRIMERA JUGADA)
-	\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
+	%RECORDAR LAS PIEDRAS (CON EL NUMERO Y EL COLOR DE LA PRIMERA JUGADA)
 	\bool_if:NT \l_pgfgo_goban_remember_move_bool {
+		\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
 		\pgfgo_kernel_remember_push:n {
 			\exp_not:N\pgfgo_move_parsed:nnn
 				{\bool_if:NTF \l_pgfgo_goban_remember_move_label_bool {\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}}
 				{
 					\exp_not:n{#2},
 					from = \pgfgo_kernel_move_number:,
-					\pgfgo_kernel_move_if_black:TF {black} {white}
+					\__pgfgo_move_color:
 				}
 				{\exp_not:V\l_tmpa_clist}
 		}
@@ -785,10 +742,7 @@
 	%-------------------------------------------------------------------------
 
 
-	\seq_map_variable:NNn \l_pgfgo_kernel_points_seq\l__pgfgo_item_tl{
-		%PIEDRAS RESTANTES
-		\pgfgo_move:nnV {#1}{#2}\l__pgfgo_item_tl
-	}
+	\seq_map_inline:Nn \l_pgfgo_kernel_points_seq {\pgfgo_move:nnnn {#1} {#2} ##1}
 	\group_end:
 }
 
