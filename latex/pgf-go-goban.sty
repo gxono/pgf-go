@@ -4,15 +4,12 @@
 	%EL TAMANO, LA PARTE VISIBLE (\l_pgfgo_goban_from_x_int, ...) Y \l_pgfgo_goban_partial_bool
 	%ESTAN DECLARADOS EN pgf-go-kernel.sty.
 
-
 	%GRID
 	\bool_new:N\l_pgfgo_goban_grid_bool
 	\bool_set_true:N\l_pgfgo_goban_grid_bool
 	\dim_new:N\l_pgfgo_goban_grid_line_width_dim
 	\dim_new:N\l_pgfgo_goban_grid_x_sep_dim
 	\dim_new:N\l_pgfgo_goban_grid_y_sep_dim
-
-
 
 	%BORDER
 	\bool_new:N\l_pgfgo_goban_border_bool
@@ -23,7 +20,6 @@
 	\bool_set_true:N\l_pgfgo_goban_border_fill_bool
 
 	\dim_new:N\l_pgfgo_goban_border_sep_dim
-	\dim_set:Nn\l_pgfgo_goban_border_sep_dim{\fp_to_dim:n{\l_pgfgo_players_stone_radius_dim * 1.5}}
 	\dim_new:N\l_pgfgo_goban_border_line_width_dim
 	\dim_new:N\l_pgfgo_goban_border_rounded_corners_dim
 	\dim_new:N\l_pgfgo_goban_border_inner_rounded_corners_dim
@@ -44,7 +40,6 @@
 	\tl_new:N \l_pgfgo_goban_label_columns_from_tl
 	\tl_new:N \l_pgfgo_goban_label_rows_from_tl
 
-
 	%LAYERS
 	\pgfdeclarelayer{pgfgo_layer_goban_border}
 	\pgfdeclarelayer{pgfgo_layer_goban_grid}
@@ -54,10 +49,6 @@
 	\pgfdeclarelayer{pgfgo_layer_stone}
 	\pgfdeclarelayer{pgfgo_layer_stone_mark}
 	\pgfdeclarelayer{pgfgo_layer_mark}
-
-
-	
-
 
 	\keys_define:nn {pgfgo / goban}{
 		%EMPIEZA UNA MEMORIA NUEVA Y RECUERDA TODO LO QUE SE DIBUJE.
@@ -119,7 +110,7 @@
 		hoshi							.default:n	= {true},
 
 		border						.code:n 		= {\keys_set:nx{pgfgo / goban / border} {#1}}, %DEPRECATED
-		
+
 		background						.code:n 		= {\keys_set:nx{pgfgo / goban / background} {#1}},
 
 		label							.code:n 		= {\keys_set:nn{pgfgo / goban / label} {#1}},
@@ -164,14 +155,12 @@
 
 	\cs_generate_variant:Nn \pgfgo_kernel_board_size:n {V}
 
-
-
 	\keys_define:nn {pgfgo / goban / grid}{
 		false							.code:n			= {\bool_set_false:N \l_pgfgo_goban_grid_bool},
 		true							.code:n			= {\bool_set_true:N \l_pgfgo_goban_grid_bool},
-		
+
 		line							.code:n			= {\keys_set:nn {pgfgo / goban / grid / line} {#1}},
-		
+
 		x~sep							.dim_set:N	= \l_pgfgo_goban_grid_x_sep_dim,
 
 		y~sep							.dim_set:N	= \l_pgfgo_goban_grid_y_sep_dim,
@@ -196,7 +185,7 @@
 		tiles							.tl_set:N		= \l_pgfgo_goban_grid_image_tiles_tl,
 		false							.code:n			= {\tl_clear:N \l_pgfgo_goban_grid_image_tl},
 	}
-	
+
 	%PUNTOS DE ESTRELLA. SIN color, EL DE LA CUADRICULA. at ELIGE LOS PUNTOS (VACIO: LOS DE SIEMPRE).
 	\bool_new:N \l_pgfgo_goban_hoshi_bool
 	\dim_new:N \l_pgfgo_goban_hoshi_radius_dim
@@ -222,16 +211,13 @@
 	\keys_define:nn {pgfgo / goban / grid / line} {
 		color				.tl_set:N		= \l_pgfgo_goban_grid_color_tl,
 		color				.initial:n	= {black},
-		
+
 		opacity			.tl_set:N = \l_pgfgo_goban_grid_opacity_tl,
 		opacity			.initial:n	= {1},
-		
+
 		width				.dim_set:N	= \l_pgfgo_goban_grid_line_width_dim,
 		width				.initial:n	= {0.55pt}
 	}
-	
-
-	
 
 	\keys_define:nn {pgfgo / goban / background}{
 		false										.code:n = {\bool_set_false:N \l_pgfgo_goban_border_bool},
@@ -239,18 +225,17 @@
 
 		sep											.dim_set:N 	= \l_pgfgo_goban_border_sep_dim,
 		sep											.initial:n	= {0.825em},
-		
+
 		line										.code:n 	= {\keys_set:nn {pgfgo / goban / background / line} {#1}},
-		
+
 		fill										.code:n 	= {\keys_set:nn {pgfgo / goban / background / fill} {#1}},
 
 		rounded~corners					.code:n 	= {\keys_set:nn {pgfgo / goban / background / rounded~corners} {#1}},
-		
+
 		drop~shadow				.code:n =	{\keys_set:nn {pgfgo / goban / background / drop~shadow} {#1}},
 		drop~shadow				.default:n = {true}
 	}
-	
-	
+
 	\keys_define:nn {pgfgo / goban / background / rounded~corners } {
 		inner				.dim_set:N = \l_pgfgo_goban_border_inner_rounded_corners_dim,
 		inner				.initial:n = {0pt},
@@ -260,76 +245,54 @@
 			\dim_set:Nn\l_pgfgo_goban_border_rounded_corners_dim  			{\l_keys_key_str} \dim_set:Nn\l_pgfgo_goban_border_inner_rounded_corners_dim  {\l_keys_key_str}
 			},
 	}
-	
-	
-	
+
 	\bool_new:N \l_pgfgo_goban_background_drop_shadow_bool
 	\fp_new:N \l_pgfgo_goban_background_drop_shadow_angle_fp
 	\dim_new:N \l_pgfgo_goban_background_drop_shadow_offset_dim
 	\fp_new:N \l_pgfgo_goban_background_drop_shadow_opacity_fp
 	\tl_new:N \l_pgfgo_goban_background_drop_shadow_color_tl
-	
-	
-	
+
 	\keys_define:nn {pgfgo / goban / background / drop~shadow} {
 		true		.bool_set:N = \l_pgfgo_goban_background_drop_shadow_bool,
 		true		.default:n = {true},
-		
+
 		false		.bool_set:N = \l_pgfgo_goban_background_drop_shadow_bool,
 		false		.default:n = {false},
-		
+
 		angle		.fp_set:N = \l_pgfgo_goban_background_drop_shadow_angle_fp,
 		angle		.initial:n = {-45},
-		
+
 		offset 	.dim_set:N = \l_pgfgo_goban_background_drop_shadow_offset_dim,
 		offset	.initial:n = {1.5pt},
-		
+
 		opacity .fp_set:N = \l_pgfgo_goban_background_drop_shadow_opacity_fp,
 		opacity	.initial:n = {0.5},
-		
+
 		color 	.tl_set:N = \l_pgfgo_goban_background_drop_shadow_color_tl,
 		color		.initial:n = {black},
 	}
-	
-	
-
-%
-%\keys_define:nn {pgfgo / goban / background / custom}{
-%	source .tl_set:N  = ,
-%	
-%	scale 	.pf_set:N = ,
-%	x~scale 	.pf_set:N = ,
-%	y~scale 	.pf_set:N = ,
-%	x~shift 	.pf_set:N = ,
-%	y~shift 	.pf_set:N = ,
-%}
-
 
 \keys_define:nn {pgfgo / goban / background / line}{
 	color				.tl_set:N = \l_pgfgo_goban_border_color_tl,
 	color				.initial:n	= {black},
-	
+
 	opacity			.tl_set:N = \l_pgfgo_goban_border_opacity_tl,
 	opacity			.initial:n	= {1},
-	
+
 	width				.dim_set:N = \l_pgfgo_goban_border_line_width_dim,
 	width				.initial:n = {0.75pt},
-	
+
 	false				.code:n = {\bool_set_false:N\l_pgfgo_goban_border_line_bool},
 	true				.code:n = {\bool_set_true:N\l_pgfgo_goban_border_line_bool},
 }
 
-
-
-
-
 \keys_define:nn {pgfgo / goban / background / fill}{
 	color				.tl_set:N		= \l_pgfgo_goban_border_fill_color_tl,
 	color				.initial:n	= {white},
-	
+
 	opacity			.tl_set:N 	= \l_pgfgo_goban_border_fill_opacity_tl,
 	opacity			.initial:n	= {1},
-	
+
 	false				.code:n = {\bool_set_false:N\l_pgfgo_goban_border_fill_bool},
 	true				.code:n = {\bool_set_true:N\l_pgfgo_goban_border_fill_bool},
 
@@ -357,16 +320,8 @@
 	false				.code:n			= {\tl_clear:N \l_pgfgo_goban_background_image_tl},
 }
 
-
-
-
-
 	\keys_define:nn {pgfgo / goban / label} {
-		false				.code:n 		= {	\bool_set_false:N\l_pgfgo_goban_labels_pos_north_bool
-																\bool_set_false:N\l_pgfgo_goban_labels_pos_east_bool
-																\bool_set_false:N\l_pgfgo_goban_labels_pos_south_bool
-																\bool_set_false:N\l_pgfgo_goban_labels_pos_west_bool
-															},
+		false				.code:n 		= {\keys_set:nn {pgfgo / goban / label / at} {none}},
 
 		text~color	.tl_set:N 	= \l_pgfgo_goban_labels_color_tl,
 
@@ -446,8 +401,6 @@
 		\l_pgfgo_goban_label_font_tl
 	}
 
-
-
 	\keys_define:nn {pgfgo / goban / label / at} {
 		all					.code:n = {
 			\bool_set_true:N\l_pgfgo_goban_labels_pos_north_bool
@@ -488,78 +441,49 @@
 		left				.default:n = {true},
 	}
 
-
 	\keys_define:nn {pgfgo / goban / partial}{
 		from				.code:n 	= {\pgfgo_kernel_board_window:n{#1}},
 		false							.bool_set:N = \l_pgfgo_goban_partial_bool,
 		false							.default:n = {false}
 	}
 
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------------------------goban-----------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-	\cs_generate_variant:Nn \int_compare_p:nNn {fNn}
-
-
 	%EL CONTORNO DEL FONDO DE LA PARTE VISIBLE (#1 Y #2: EL TAMANO COMPLETO). LAS ESQUINAS DEL TABLERO
 	%COMPLETO VAN CON rounded corners/outer Y LAS DEMAS CON inner.
 	\cs_new_protected:Npn \__pgfgo_goban_background_path:nn #1#2 {
-		\pgfpathmoveto{
-			\pgfpointadd{
-				\pgfpointxy{\l_pgfgo_goban_from_x_int}{\l_pgfgo_goban_from_y_int}}{
-				\pgfpoint{-\l_pgfgo_goban_border_sep_dim}{-\l_pgfgo_goban_border_sep_dim}}
-		}
-		
-		
-		
-		\bool_if:nTF {\int_compare_p:nNn{\l_pgfgo_goban_to_x_int}={#1} && \int_compare_p:nNn{\l_pgfgo_goban_from_y_int}={1}}
-			{\pgfsetcornersarced{\pgfpoint{\l_pgfgo_goban_border_rounded_corners_dim}{\l_pgfgo_goban_border_rounded_corners_dim}}}
-			{\pgfsetcornersarced{\pgfpoint{\l_pgfgo_goban_border_inner_rounded_corners_dim}{\l_pgfgo_goban_border_inner_rounded_corners_dim}}}
-		
-		\pgfpathlineto{
-			\pgfpointadd{
-				\pgfpointxy{\l_pgfgo_goban_to_x_int}{\l_pgfgo_goban_from_y_int}}{
-				\pgfpoint{\l_pgfgo_goban_border_sep_dim}{-\l_pgfgo_goban_border_sep_dim}}
-		}
-		
-		
-		
-		\bool_if:nTF {\int_compare_p:nNn{\l_pgfgo_goban_to_x_int}={#1} &&
-									\int_compare_p:nNn{\l_pgfgo_goban_to_y_int}={#2}}
-			{\pgfsetcornersarced{\pgfpoint{\l_pgfgo_goban_border_rounded_corners_dim}{\l_pgfgo_goban_border_rounded_corners_dim}}}
-			{\pgfsetcornersarced{\pgfpoint{\l_pgfgo_goban_border_inner_rounded_corners_dim}{\l_pgfgo_goban_border_inner_rounded_corners_dim}}}
-		
-		\pgfpathlineto{
-			\pgfpointadd{
-				\pgfpointxy{\l_pgfgo_goban_to_x_int}{\l_pgfgo_goban_to_y_int}}{
-				\pgfpoint{\l_pgfgo_goban_border_sep_dim}{\l_pgfgo_goban_border_sep_dim}}
-		}
-		
-		
-		
-		\bool_if:nTF {\int_compare_p:nNn{\l_pgfgo_goban_from_x_int}={1} &&
-									\int_compare_p:nNn{\l_pgfgo_goban_to_y_int}={#2}}
-			{\pgfsetcornersarced{\pgfpoint{\l_pgfgo_goban_border_rounded_corners_dim}{\l_pgfgo_goban_border_rounded_corners_dim}}}
-			{\pgfsetcornersarced{\pgfpoint{\l_pgfgo_goban_border_inner_rounded_corners_dim}{\l_pgfgo_goban_border_inner_rounded_corners_dim}}}
-		
-		\pgfpathlineto{
-			\pgfpointadd{
-				\pgfpointxy{\l_pgfgo_goban_from_x_int}{\l_pgfgo_goban_to_y_int}}{
-				\pgfpoint{-\l_pgfgo_goban_border_sep_dim}{\l_pgfgo_goban_border_sep_dim}}
-		}
-		
-		\bool_if:nTF {\int_compare_p:nNn{\l_pgfgo_goban_from_x_int}={1} &&
-									\int_compare_p:nNn{\l_pgfgo_goban_from_y_int}={1}}
-			{\pgfsetcornersarced{\pgfpoint{\l_pgfgo_goban_border_rounded_corners_dim}{\l_pgfgo_goban_border_rounded_corners_dim}}}
-			{\pgfsetcornersarced{\pgfpoint{\l_pgfgo_goban_border_inner_rounded_corners_dim}{\l_pgfgo_goban_border_inner_rounded_corners_dim}}}
-		
+		\pgfpathmoveto {\__pgfgo_goban_background_point:NnNn \l_pgfgo_goban_from_x_int {-} \l_pgfgo_goban_from_y_int {-}}
+		\__pgfgo_goban_background_corner:NnnNnn \l_pgfgo_goban_to_x_int {#1} {} \l_pgfgo_goban_from_y_int {1} {-}
+		\__pgfgo_goban_background_corner:NnnNnn \l_pgfgo_goban_to_x_int {#1} {} \l_pgfgo_goban_to_y_int {#2} {}
+		\__pgfgo_goban_background_corner:NnnNnn \l_pgfgo_goban_from_x_int {1} {-} \l_pgfgo_goban_to_y_int {#2} {}
+		\__pgfgo_goban_background_arc:NnNn \l_pgfgo_goban_from_x_int {1} \l_pgfgo_goban_from_y_int {1}
 		\pgfpathclose
+	}
+
+	%LA ESQUINA DEL FONDO EN LA INTERSECCION (#1,#3), CORRIDA border sep HACIA AFUERA (#2 Y #4: - O NADA).
+	\cs_new_protected:Npn \__pgfgo_goban_background_point:NnNn #1#2#3#4 {
+		\pgfpointadd
+			{\pgfpointxy{#1}{#3}}
+			{\pgfpoint{#2\l_pgfgo_goban_border_sep_dim}{#4\l_pgfgo_goban_border_sep_dim}}
+	}
+
+	%EL REDONDEO DE LA PROXIMA ESQUINA, EN LA INTERSECCION (#1,#3): outer SI ES UNA ESQUINA DEL TABLERO
+	%COMPLETO (#1 = #2 Y #3 = #4), SI NO inner.
+	\cs_new_protected:Npn \__pgfgo_goban_background_arc:NnNn #1#2#3#4 {
+		\bool_lazy_and:nnTF {\int_compare_p:nNn {#1} = {#2}} {\int_compare_p:nNn {#3} = {#4}}
+			{\__pgfgo_goban_background_arc:N \l_pgfgo_goban_border_rounded_corners_dim}
+			{\__pgfgo_goban_background_arc:N \l_pgfgo_goban_border_inner_rounded_corners_dim}
+	}
+	\cs_new_protected:Npn \__pgfgo_goban_background_arc:N #1 {
+		\pgfsetcornersarced {\pgfpoint{#1}{#1}}
+	}
+
+	%UNA ESQUINA: (#1,#4), CON EL BORDE DEL TABLERO COMPLETO EN #2 Y #5 Y LOS SIGNOS EN #3 Y #6.
+	\cs_new_protected:Npn \__pgfgo_goban_background_corner:NnnNnn #1#2#3#4#5#6 {
+		\__pgfgo_goban_background_arc:NnNn #1 {#2} #4 {#5}
+		\pgfpathlineto {\__pgfgo_goban_background_point:NnNn #1 {#3} #4 {#6}}
 	}
 
 	%HAY IMAGEN DE FONDO (Y EL FONDO SE RELLENA).
@@ -718,10 +642,10 @@
 				- \dim_to_fp:n {#4}) / \dim_to_fp:n {#3}) - 1
 		}
 	}
-	\cs_generate_variant:Nn \pgfgo_image_load:nn {Vn}
 
-	%DIBUJA EL TABLERO. #2 Y #3 SON EL TAMANO COMPLETO; LA PARTE VISIBLE YA LA CALCULO \pgfgo_kernel_board_init:.
-	\cs_new:Npn\__pgfgo_goban:nnn #1#2#3 {
+	%DIBUJA EL TABLERO. #1 Y #2 SON EL TAMANO COMPLETO; LA PARTE VISIBLE YA LA CALCULO \pgfgo_kernel_board_init:.
+	%EL ENTORNO TERMINA CON \__pgfgo_goban_end:.
+	\cs_new_protected:Npn \__pgfgo_goban_begin:nn #1#2 {
 		\group_begin:
 		\pgfsetlayers{
 			pgfgo_layer_goban_border,
@@ -734,256 +658,223 @@
 			pgfgo_layer_mark,
 			main
 		}
-
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		%-----------------TIKZ PICTURE---------------------%
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 		\tikzpicture
 		\pgfsetxvec{\pgfpoint{ \l_pgfgo_goban_grid_x_sep_dim}{0}}
 		\pgfsetyvec{\pgfpoint{0}{ \l_pgfgo_goban_grid_y_sep_dim}}
 		\pgftransformscale{\l_pgfgo_goban_scale_tl}
 
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		%----------------BORDER AND FILL-------------------%
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 		\pgfonlayer{pgfgo_layer_goban_border}
-		\bool_if:NT\l_pgfgo_goban_border_bool{
-			\pgfscope
-				\pgfsetlinewidth{\l_pgfgo_goban_border_line_width_dim}
-				\pgfsetstrokecolor{\l_pgfgo_goban_border_color_tl}
-				\pgfsetstrokeopacity{\l_pgfgo_goban_border_opacity_tl}
-				\pgfsetfillcolor{\l_pgfgo_goban_border_fill_color_tl}
-				\pgfsetfillopacity{\l_pgfgo_goban_border_fill_opacity_tl}
-				
-%				\pgfsetcornersarced{\pgfpoint{\l_pgfgo_goban_border_rounded_corners_dim}{\l_pgfgo_goban_border_rounded_corners_dim}}
-				
-				%--------DROP SHADOW
-				
-				\bool_if:NT \l_pgfgo_goban_background_drop_shadow_bool {
-					\pgfscope
-						\pgftransformshift{
-							\pgfpointpolar
-								{\fp_to_decimal:N\l_pgfgo_goban_background_drop_shadow_angle_fp}
-								{\l_pgfgo_goban_background_drop_shadow_offset_dim}}
-						
-						
-						
-					
-						
-						\__pgfgo_goban_background_path:nn {#2} {#3}
-						
-						
-						\pgfsetfillcolor{\l_pgfgo_goban_background_drop_shadow_color_tl}
-						\pgfsetfillopacity{\fp_to_decimal:N\l_pgfgo_goban_background_drop_shadow_opacity_fp}
-						\pgfusepath{fill}
-					\endpgfscope
-				}
-				
-				
-				
-				
-				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-				%FONDO
-				%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-				\pgfgo_goban_if_background_image:TF {
-					\pgfscope
-						\__pgfgo_goban_background_path:nn {#2} {#3}
-						\pgfusepath{fill, clip}
-						\pgfgo_goban_background_image:
-					\endpgfscope
-					\bool_if:NT \l_pgfgo_goban_border_line_bool {
-						\__pgfgo_goban_background_path:nn {#2} {#3}
-						\pgfusepath{stroke}
-					}
-				}{
-					\__pgfgo_goban_background_path:nn {#2} {#3}
-					\pgfusepath{\bool_if:NT\l_pgfgo_goban_border_line_bool{stroke}, \bool_if:NT\l_pgfgo_goban_border_fill_bool{fill}}
-				}
-			\endpgfscope
-		}
+		\bool_if:NT \l_pgfgo_goban_border_bool {\__pgfgo_goban_background:nn {#1} {#2}}
 		\endpgfonlayer
-
-
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		%----------------------GRID------------------------%
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 		\pgfonlayer{pgfgo_layer_goban_grid}
 		\pgfscope
-		\bool_if:NT\l_pgfgo_goban_partial_bool{
+		\bool_if:NT \l_pgfgo_goban_partial_bool {
 			\pgfpathrectanglecorners
 				{\pgfpointxy{\int_use:N\l_pgfgo_goban_from_x_int-0.5}{\int_use:N\l_pgfgo_goban_from_y_int-0.5}}
 				{\pgfpointxy{\int_use:N\l_pgfgo_goban_to_x_int+0.5}{\int_use:N\l_pgfgo_goban_to_y_int+0.5}}
-		
 			\pgfusepath{clip}
 		}
-
-		\bool_if:NT\l_pgfgo_goban_grid_bool{
-			\tl_if_empty:NTF \l_pgfgo_goban_grid_image_tl {
-				\pgfscope
-				\pgfsetstrokecolor{\l_pgfgo_goban_grid_color_tl}
-				\pgfsetstrokeopacity{\l_pgfgo_goban_grid_opacity_tl}
-				\pgfsetlinewidth{\l_pgfgo_goban_grid_line_width_dim}
-				\pgfsetroundcap
-
-				\pgfpathgrid[step = \pgfpointxy{1}{1}] {\pgfpointxy{1}{1}}{\pgfpointxy{#2}{#3}}
-
-				\pgfusepath{stroke}
-				\endpgfscope
-			}{
-				\bool_lazy_and:nnT {\int_compare_p:nNn {#2} > {1}} {\int_compare_p:nNn {#3} > {1}} {
-					\pgfscope
-					\pgfsetfillopacity{\l_pgfgo_goban_grid_opacity_tl}
-					\str_if_eq:VnTF \l_pgfgo_goban_grid_image_fit_tl {tile} {
-						\tl_if_empty:NTF \l_pgfgo_goban_grid_image_tiles_tl
-							{
-								\int_set:Nn \l__pgfgo_goban_tiles_x_int {#2 - 1}
-								\int_set:Nn \l__pgfgo_goban_tiles_y_int {#3 - 1}
-							}
-							{
-								\__pgfgo_goban_tiles:VNN \l_pgfgo_goban_grid_image_tiles_tl
-									\l__pgfgo_goban_tiles_x_int \l__pgfgo_goban_tiles_y_int
-							}
-						\pgfgo_image_load:Ve \l_pgfgo_goban_grid_image_tl {
-							width = \fp_to_dim:n {\l_pgfgo_goban_grid_x_sep_dim * (#2 - 1) / \l__pgfgo_goban_tiles_x_int},
-							height = \fp_to_dim:n {\l_pgfgo_goban_grid_y_sep_dim * (#3 - 1) / \l__pgfgo_goban_tiles_y_int}
-						}
-						\__pgfgo_goban_mesh:nnnn {\l_pgfgo_goban_grid_x_sep_dim} {\l_pgfgo_goban_grid_y_sep_dim}
-							{\l__pgfgo_goban_tiles_x_int} {\l__pgfgo_goban_tiles_y_int}
-					}{
-						\pgfgo_image_load:Ve \l_pgfgo_goban_grid_image_tl {
-							width = \dim_eval:n {\l_pgfgo_goban_grid_x_sep_dim * (#2 - 1)},
-							height = \dim_eval:n {\l_pgfgo_goban_grid_y_sep_dim * (#3 - 1)}
-						}
-						\pgfgo_image_draw:n {\pgfpointxy {\fp_eval:n {(#2 + 1) / 2}} {\fp_eval:n {(#3 + 1) / 2}}}
-					}
-					\endpgfscope
-				}
-			}
-
-			%PUNTOS DE ESTRELLA, SOLO LOS DE LA PARTE VISIBLE.
-			\bool_if:NT \l_pgfgo_goban_hoshi_bool {
-				\tl_if_empty:NTF \l_pgfgo_goban_hoshi_at_tl
-					{\pgfgo_kernel_hoshi:}
-					{\pgfgo_kernel_points:V \l_pgfgo_goban_hoshi_at_tl}
-				\pgfscope
-				\pgfsetfillopacity{\l_pgfgo_goban_grid_opacity_tl}
-				\tl_if_empty:NTF \l_pgfgo_goban_hoshi_image_tl {
-					\pgfsetfillcolor{\tl_if_empty:NTF \l_pgfgo_goban_hoshi_color_tl
-						{\l_pgfgo_goban_grid_color_tl} {\l_pgfgo_goban_hoshi_color_tl}}
-					\seq_map_inline:Nn \l_pgfgo_kernel_points_seq {\__pgfgo_goban_hoshi:nn ##1}
-					\pgfusepath{fill}
-				}{
-					\pgfgo_image_load:Ve \l_pgfgo_goban_hoshi_image_tl
-						{width = \dim_eval:n {2 \l_pgfgo_goban_hoshi_radius_dim}}
-					\seq_map_inline:Nn \l_pgfgo_kernel_points_seq {\__pgfgo_goban_hoshi_image:nn ##1}
-				}
-				\endpgfscope
-			}
+		\bool_if:NT \l_pgfgo_goban_grid_bool {
+			\tl_if_empty:NTF \l_pgfgo_goban_grid_image_tl
+				{\__pgfgo_goban_grid_lines:nn {#1} {#2}}
+				{\__pgfgo_goban_grid_image:nn {#1} {#2}}
+			\bool_if:NT \l_pgfgo_goban_hoshi_bool {\__pgfgo_goban_hoshi:}
 		}
 		\endpgfscope
 		\endpgfonlayer
 
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		%----------------------LABELS----------------------%
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		
-
 		\pgfonlayer{pgfgo_layer_goban_labels}
-			\pgfscope
-				\pgfsetcolor{\l_pgfgo_goban_labels_color_tl}
-
-				\bool_if:NT\l_pgfgo_goban_labels_pos_north_bool{
-					\int_step_variable:nnNn {\l_pgfgo_goban_from_x_int} {\l_pgfgo_goban_to_x_int} \l__pgfgo_item_tl {
-						\pgftext[at = \pgfpointadd
-							{\pgfpointxy{\l__pgfgo_item_tl}{\l_pgfgo_goban_to_y_int}}
-							{\pgfpoint{0}{\l_pgfgo_goban_labels_sep_dim + \l_pgfgo_players_stone_radius_dim + 0.5em}}
-						]	{{
-								\__pgfgo_goban_label_font:\__pgfgo_goban_column_label:n{\l__pgfgo_item_tl}
-							}}}
-				}
-
-				
-				
-				\bool_if:NT\l_pgfgo_goban_labels_pos_east_bool{
-					\int_step_variable:nnNn {\l_pgfgo_goban_from_y_int} {\l_pgfgo_goban_to_y_int}\l__pgfgo_item_tl
-					{
-						%LOS KANJI (UNO, DOS O TRES) SE ALINEAN DEL LADO DEL TABLERO, PARA NO PISARLO.
-						\str_if_eq:VnTF \l_pgfgo_goban_label_rows_tl {kanji} {
-							\pgftext[left, at = \pgfpointadd{
-								\pgfpointxy{\l_pgfgo_goban_to_x_int}{\l__pgfgo_item_tl}}{
-								\pgfpoint{\l_pgfgo_goban_labels_sep_dim+\l_pgfgo_players_stone_radius_dim}{0}}
-							]	{{
-									\__pgfgo_goban_label_font:\__pgfgo_goban_row_label:n{\l__pgfgo_item_tl}
-							}}
-						}{
-							\pgftext[at = \pgfpointadd{
-								\pgfpointxy{\l_pgfgo_goban_to_x_int}{\l__pgfgo_item_tl}}{
-								\pgfpoint{\l_pgfgo_goban_labels_sep_dim+\l_pgfgo_players_stone_radius_dim+0.5em}{0}}
-							]	{{
-									\__pgfgo_goban_label_font:\__pgfgo_goban_row_label:n{\l__pgfgo_item_tl}
-							}}
-						}
-					}
-				}
-				
-				
-				
-
-
-
-				\bool_if:NT\l_pgfgo_goban_labels_pos_south_bool{
-					\int_step_variable:nnNn {\l_pgfgo_goban_from_x_int} {\l_pgfgo_goban_to_x_int} \l__pgfgo_item_tl {
-						\pgftext[at = \pgfpointadd{
-							\pgfpointxy{\l__pgfgo_item_tl}{\l_pgfgo_goban_from_y_int}}{
-							\pgfpoint{0}{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim-0.5em}}
-						]	{{
-								\__pgfgo_goban_label_font:\__pgfgo_goban_column_label:n{\l__pgfgo_item_tl}
-							}}}
-				}
-
-
-
-
-				\bool_if:NT\l_pgfgo_goban_labels_pos_west_bool{
-					\int_step_variable:nnNn {\l_pgfgo_goban_from_y_int} {\l_pgfgo_goban_to_y_int} \l__pgfgo_item_tl {
-						\str_if_eq:VnTF \l_pgfgo_goban_label_rows_tl {kanji} {
-							\pgftext[right, at = \pgfpointadd{
-								\pgfpointxy{\l_pgfgo_goban_from_x_int}{\l__pgfgo_item_tl}}{
-								\pgfpoint{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim}{0}}
-							]	{{
-									\__pgfgo_goban_label_font:\__pgfgo_goban_row_label:n{\l__pgfgo_item_tl}
-							}}
-						}{
-							\pgftext[at = \pgfpointadd{
-								\pgfpointxy{\l_pgfgo_goban_from_x_int}{\l__pgfgo_item_tl}}{
-								\pgfpoint{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim-0.5em}{0}}
-							]	{{
-									\__pgfgo_goban_label_font:\__pgfgo_goban_row_label:n{\l__pgfgo_item_tl}
-							}}
-						}
-					}
-				}
-			\endpgfscope
+		\pgfscope
+		\pgfsetcolor{\l_pgfgo_goban_labels_color_tl}
+		\__pgfgo_goban_labels:
+		\endpgfscope
 		\endpgfonlayer
 
+		\bool_if:NT \l_pgfgo_goban_resume_bool {\pgfgo_kernel_remember_replay:}
+	}
+	\cs_generate_variant:Nn \__pgfgo_goban_begin:nn {VV}
 
-
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-		%----------------------RESUME----------------------%
-		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-		\bool_if:NT\l_pgfgo_goban_resume_bool{
-			\pgfgo_kernel_remember_replay:}
+	%EL FONDO (#1 Y #2: EL TAMANO COMPLETO), CON SU SOMBRA, SU IMAGEN Y SU BORDE.
+	\cs_new_protected:Npn \__pgfgo_goban_background:nn #1#2 {
+		\pgfscope
+			\pgfsetlinewidth{\l_pgfgo_goban_border_line_width_dim}
+			\pgfsetstrokecolor{\l_pgfgo_goban_border_color_tl}
+			\pgfsetstrokeopacity{\l_pgfgo_goban_border_opacity_tl}
+			\pgfsetfillcolor{\l_pgfgo_goban_border_fill_color_tl}
+			\pgfsetfillopacity{\l_pgfgo_goban_border_fill_opacity_tl}
+			\bool_if:NT \l_pgfgo_goban_background_drop_shadow_bool {
+				\pgfscope
+					\pgftransformshift{
+						\pgfpointpolar
+							{\fp_to_decimal:N\l_pgfgo_goban_background_drop_shadow_angle_fp}
+							{\l_pgfgo_goban_background_drop_shadow_offset_dim}}
+					\__pgfgo_goban_background_path:nn {#1} {#2}
+					\pgfsetfillcolor{\l_pgfgo_goban_background_drop_shadow_color_tl}
+					\pgfsetfillopacity{\fp_to_decimal:N\l_pgfgo_goban_background_drop_shadow_opacity_fp}
+					\pgfusepath{fill}
+				\endpgfscope
+			}
+			\pgfgo_goban_if_background_image:TF {
+				\pgfscope
+					\__pgfgo_goban_background_path:nn {#1} {#2}
+					\pgfusepath{fill, clip}
+					\pgfgo_goban_background_image:
+				\endpgfscope
+				\bool_if:NT \l_pgfgo_goban_border_line_bool {
+					\__pgfgo_goban_background_path:nn {#1} {#2}
+					\pgfusepath{stroke}
+				}
+			}{
+				\__pgfgo_goban_background_path:nn {#1} {#2}
+				\pgfusepath{\bool_if:NT\l_pgfgo_goban_border_line_bool{stroke}, \bool_if:NT\l_pgfgo_goban_border_fill_bool{fill}}
+			}
+		\endpgfscope
 	}
 
+	%LAS LINEAS DE LA CUADRICULA DEL TABLERO COMPLETO (#1 x #2); EL RECORTE LO HACE QUIEN LLAMA.
+	\cs_new_protected:Npn \__pgfgo_goban_grid_lines:nn #1#2 {
+		\pgfscope
+		\pgfsetstrokecolor{\l_pgfgo_goban_grid_color_tl}
+		\pgfsetstrokeopacity{\l_pgfgo_goban_grid_opacity_tl}
+		\pgfsetlinewidth{\l_pgfgo_goban_grid_line_width_dim}
+		\pgfsetroundcap
+		\pgfpathgrid[step = \pgfpointxy{1}{1}] {\pgfpointxy{1}{1}}{\pgfpointxy{#1}{#2}}
+		\pgfusepath{stroke}
+		\endpgfscope
+	}
 
+	%LA IMAGEN EN LUGAR DE LAS LINEAS (#1 x #2: EL TAMANO COMPLETO).
+	\cs_new_protected:Npn \__pgfgo_goban_grid_image:nn #1#2 {
+		\bool_lazy_and:nnT {\int_compare_p:nNn {#1} > {1}} {\int_compare_p:nNn {#2} > {1}} {
+			\pgfscope
+			\pgfsetfillopacity{\l_pgfgo_goban_grid_opacity_tl}
+			\str_if_eq:VnTF \l_pgfgo_goban_grid_image_fit_tl {tile} {
+				\tl_if_empty:NTF \l_pgfgo_goban_grid_image_tiles_tl
+					{
+						\int_set:Nn \l__pgfgo_goban_tiles_x_int {#1 - 1}
+						\int_set:Nn \l__pgfgo_goban_tiles_y_int {#2 - 1}
+					}
+					{
+						\__pgfgo_goban_tiles:VNN \l_pgfgo_goban_grid_image_tiles_tl
+							\l__pgfgo_goban_tiles_x_int \l__pgfgo_goban_tiles_y_int
+					}
+				\pgfgo_image_load:Ve \l_pgfgo_goban_grid_image_tl {
+					width = \fp_to_dim:n {\l_pgfgo_goban_grid_x_sep_dim * (#1 - 1) / \l__pgfgo_goban_tiles_x_int},
+					height = \fp_to_dim:n {\l_pgfgo_goban_grid_y_sep_dim * (#2 - 1) / \l__pgfgo_goban_tiles_y_int}
+				}
+				\__pgfgo_goban_mesh:nnnn {\l_pgfgo_goban_grid_x_sep_dim} {\l_pgfgo_goban_grid_y_sep_dim}
+					{\l__pgfgo_goban_tiles_x_int} {\l__pgfgo_goban_tiles_y_int}
+			}{
+				\pgfgo_image_load:Ve \l_pgfgo_goban_grid_image_tl {
+					width = \dim_eval:n {\l_pgfgo_goban_grid_x_sep_dim * (#1 - 1)},
+					height = \dim_eval:n {\l_pgfgo_goban_grid_y_sep_dim * (#2 - 1)}
+				}
+				\pgfgo_image_draw:n {\pgfpointxy {\fp_eval:n {(#1 + 1) / 2}} {\fp_eval:n {(#2 + 1) / 2}}}
+			}
+			\endpgfscope
+		}
+	}
 
-	\cs_generate_variant:Nn \__pgfgo_goban:nnn {nVV}
+	%PUNTOS DE ESTRELLA, SOLO LOS DE LA PARTE VISIBLE: CIRCULOS (TODOS EN UN SOLO CAMINO) O LA IMAGEN.
+	\cs_new_protected:Npn \__pgfgo_goban_hoshi: {
+		\tl_if_empty:NTF \l_pgfgo_goban_hoshi_at_tl
+			{\pgfgo_kernel_hoshi:}
+			{\pgfgo_kernel_points:V \l_pgfgo_goban_hoshi_at_tl}
+		\pgfscope
+		\pgfsetfillopacity{\l_pgfgo_goban_grid_opacity_tl}
+		\tl_if_empty:NTF \l_pgfgo_goban_hoshi_image_tl {
+			\pgfsetfillcolor{\tl_if_empty:NTF \l_pgfgo_goban_hoshi_color_tl
+				{\l_pgfgo_goban_grid_color_tl} {\l_pgfgo_goban_hoshi_color_tl}}
+			\seq_map_inline:Nn \l_pgfgo_kernel_points_seq {
+				\__pgfgo_goban_if_visible:nnT ##1
+					{\pgfpathcircle {\pgfpointxy ##1} {\l_pgfgo_goban_hoshi_radius_dim}}
+			}
+			\pgfusepath{fill}
+		}{
+			\pgfgo_image_load:Ve \l_pgfgo_goban_hoshi_image_tl
+				{width = \dim_eval:n {2 \l_pgfgo_goban_hoshi_radius_dim}}
+			\seq_map_inline:Nn \l_pgfgo_kernel_points_seq
+				{\__pgfgo_goban_if_visible:nnT ##1 {\pgfgo_image_draw:n {\pgfpointxy ##1}}}
+		}
+		\endpgfscope
+	}
+	\cs_generate_variant:Nn \pgfgo_kernel_points:n {V}
+
+	%LA INTERSECCION (#1,#2) ESTA EN LA PARTE VISIBLE.
+	\prg_new_conditional:Npnn \__pgfgo_goban_if_visible:nn #1#2 {T} {
+		\bool_lazy_and:nnTF
+			{\int_compare_p:n {\l_pgfgo_goban_from_x_int <= #1 <= \l_pgfgo_goban_to_x_int}}
+			{\int_compare_p:n {\l_pgfgo_goban_from_y_int <= #2 <= \l_pgfgo_goban_to_y_int}}
+			{\prg_return_true:} {\prg_return_false:}
+	}
+
+	%LAS COORDENADAS EN LOS LADOS ELEGIDOS, SOLO LAS DE LA PARTE VISIBLE. LA DISTANCIA AL TABLERO SE
+	%CALCULA UNA VEZ POR LADO. LOS KANJI DE LAS FILAS (UNO, DOS O TRES) SE ALINEAN DEL LADO DEL TABLERO,
+	%PARA NO PISARLO.
+	\cs_new_protected:Npn \__pgfgo_goban_labels: {
+		\bool_if:NT \l_pgfgo_goban_labels_pos_north_bool {
+			\__pgfgo_goban_label_offset:nn {0}
+				{\l_pgfgo_goban_labels_sep_dim + \l_pgfgo_players_stone_radius_dim + 0.5em}
+			\int_step_inline:nnn {\l_pgfgo_goban_from_x_int} {\l_pgfgo_goban_to_x_int} {
+				\__pgfgo_goban_label:nnnn {} {##1} {\l_pgfgo_goban_to_y_int}
+					{\__pgfgo_goban_column_label:n {##1}}
+			}
+		}
+		\bool_if:NT \l_pgfgo_goban_labels_pos_east_bool {
+			\str_if_eq:VnTF \l_pgfgo_goban_label_rows_tl {kanji} {
+				\__pgfgo_goban_label_offset:nn
+					{\l_pgfgo_goban_labels_sep_dim+\l_pgfgo_players_stone_radius_dim} {0}
+				\__pgfgo_goban_row_labels:nN {left,} \l_pgfgo_goban_to_x_int
+			}{
+				\__pgfgo_goban_label_offset:nn
+					{\l_pgfgo_goban_labels_sep_dim+\l_pgfgo_players_stone_radius_dim+0.5em} {0}
+				\__pgfgo_goban_row_labels:nN {} \l_pgfgo_goban_to_x_int
+			}
+		}
+		\bool_if:NT \l_pgfgo_goban_labels_pos_south_bool {
+			\__pgfgo_goban_label_offset:nn {0}
+				{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim-0.5em}
+			\int_step_inline:nnn {\l_pgfgo_goban_from_x_int} {\l_pgfgo_goban_to_x_int} {
+				\__pgfgo_goban_label:nnnn {} {##1} {\l_pgfgo_goban_from_y_int}
+					{\__pgfgo_goban_column_label:n {##1}}
+			}
+		}
+		\bool_if:NT \l_pgfgo_goban_labels_pos_west_bool {
+			\str_if_eq:VnTF \l_pgfgo_goban_label_rows_tl {kanji} {
+				\__pgfgo_goban_label_offset:nn
+					{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim} {0}
+				\__pgfgo_goban_row_labels:nN {right,} \l_pgfgo_goban_from_x_int
+			}{
+				\__pgfgo_goban_label_offset:nn
+					{-\l_pgfgo_goban_labels_sep_dim-\l_pgfgo_players_stone_radius_dim-0.5em} {0}
+				\__pgfgo_goban_row_labels:nN {} \l_pgfgo_goban_from_x_int
+			}
+		}
+	}
+
+	%LA DISTANCIA DE UNA COORDENADA A SU INTERSECCION, CALCULADA COMO LA CALCULA \pgfpoint.
+	\dim_new:N \l__pgfgo_goban_label_x_dim
+	\dim_new:N \l__pgfgo_goban_label_y_dim
+	\cs_new_protected:Npn \__pgfgo_goban_label_offset:nn #1#2 {
+		\pgfmathsetlength \l__pgfgo_goban_label_x_dim {#1}
+		\pgfmathsetlength \l__pgfgo_goban_label_y_dim {#2}
+	}
+
+	%LAS COORDENADAS DE LAS FILAS VISIBLES AL LADO DE LA COLUMNA #2 (#1: OPCIONES DE \pgftext).
+	\cs_new_protected:Npn \__pgfgo_goban_row_labels:nN #1#2 {
+		\int_step_inline:nnn {\l_pgfgo_goban_from_y_int} {\l_pgfgo_goban_to_y_int}
+			{\__pgfgo_goban_label:nnnn {#1} {#2} {##1} {\__pgfgo_goban_row_label:n {##1}}}
+	}
+
+	%EL TEXTO #4 JUNTO A LA INTERSECCION (#2,#3), CORRIDO LA DISTANCIA DE \__pgfgo_goban_label_offset:nn.
+	%#1: OPCIONES DE \pgftext (VACIAS O TERMINADAS EN COMA).
+	\cs_new_protected:Npn \__pgfgo_goban_label:nnnn #1#2#3#4 {
+		\pgftext[#1 at = \pgfpointadd
+			{\pgfpointxy{#2}{#3}}
+			{\pgfqpoint{\l__pgfgo_goban_label_x_dim}{\l__pgfgo_goban_label_y_dim}}
+		]{{\__pgfgo_goban_label_font: #4}}
+	}
 
 	%LA VISTA DE LAS JUGADAS \l_pgfgo_goban_sgf_view_from_int A \l_pgfgo_goban_sgf_view_to_int (LAS DOS 0
 	%SI NO SE DICE OTRA COSA) DE LA LINEA \l_pgfgo_goban_sgf_view_variation_tl (\sgfdiagrams Y \sgfanimation
@@ -1020,24 +911,6 @@
 			{\pgfgo_kernel_column_name:n {#1} #2 ~ to ~ \pgfgo_kernel_column_name:n {#3} #4}
 	}
 	\cs_generate_variant:Nn \pgfgo_kernel_board_window:n {e}
-	\cs_generate_variant:Nn \pgfgo_kernel_points:n {V}
-
-	\cs_new_protected:Npn \__pgfgo_goban_hoshi_image:nn #1#2 {
-		\bool_lazy_and:nnT
-			{\int_compare_p:n {\l_pgfgo_goban_from_x_int <= #1 <= \l_pgfgo_goban_to_x_int}}
-			{\int_compare_p:n {\l_pgfgo_goban_from_y_int <= #2 <= \l_pgfgo_goban_to_y_int}}
-			{\pgfgo_image_draw:n {\pgfpointxy{#1}{#2}}}
-	}
-
-	\cs_new_protected:Npn \__pgfgo_goban_hoshi:nn #1#2 {
-		\bool_lazy_and:nnT
-			{\int_compare_p:n {\l_pgfgo_goban_from_x_int <= #1 <= \l_pgfgo_goban_to_x_int}}
-			{\int_compare_p:n {\l_pgfgo_goban_from_y_int <= #2 <= \l_pgfgo_goban_to_y_int}}
-			{\pgfpathcircle {\pgfpointxy{#1}{#2}} {\l_pgfgo_goban_hoshi_radius_dim}}
-	}
-
-
-
 	%PARA LAS ANIMACIONES POR CAPAS (VER pgf-go-sgf.sty): \l_pgfgo_goban_layers_clist ELIGE LAS CAPAS QUE
 	%SE DIBUJAN (VACIA: TODAS), Y \l_pgfgo_goban_bbox_tl FIJA EL TAMANO ({minx}{miny}{maxx}{maxy}). AL
 	%TERMINAR, EL TAMANO DEL ULTIMO goban QUEDA EN \g_pgfgo_goban_bbox_tl.
@@ -1056,7 +929,7 @@
 		\dim_gset:cn {pgf@picmaxy} {#4}
 	}
 
-	\cs_new:Npn\__end_pgfgo_goban: {
+	\cs_new_protected:Npn \__pgfgo_goban_end: {
 		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_end:}
 		\pgfgo_territory_end:
 		\tl_if_empty:NF \l_pgfgo_goban_bbox_tl
@@ -1077,12 +950,9 @@
 		\group_end:
 	}
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %------------------------------------------LATEX------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 	\NewDocumentEnvironment{goban}{O{}}{
 		%\mark Y \marks SOLO EXISTEN DENTRO DEL TABLERO (AFUERA SON LAS PRIMITIVAS DE TEX).
@@ -1102,9 +972,7 @@
 		\pgfgo_kernel_board_init:
 		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_begin:}
 
-		\__pgfgo_goban:nVV{}{\l_pgfgo_goban_size_x_int}{\l_pgfgo_goban_size_y_int}
-		}{\__end_pgfgo_goban:}
-
-
+		\__pgfgo_goban_begin:VV \l_pgfgo_goban_size_x_int \l_pgfgo_goban_size_y_int
+		}{\__pgfgo_goban_end:}
 
 \ExplSyntaxOff

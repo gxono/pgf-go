@@ -9,33 +9,22 @@
 
 
 \bool_new:N\l_pgfgo_goban_remember_stone_bool
-\bool_new:N\l_pgfgo_goban_remember_prisoner_bool%useless
 \bool_new:N\l_pgfgo_goban_remember_move_bool
 \bool_new:N\l_pgfgo_goban_remember_move_label_bool
 \bool_new:N\l_pgfgo_goban_remember_mark_bool
-\bool_new:N\l_pgfgo_goban_remember_label_bool
 \bool_new:N\l_pgfgo_goban_remember_territory_bool
 
 
-
-\cs_new:Nn \pgfgo_goban_remember_all: {
-	\bool_set_true:N\l_pgfgo_goban_remember_stone_bool
-	\bool_set_true:N\l_pgfgo_goban_remember_prisoner_bool
-	\bool_set_true:N\l_pgfgo_goban_remember_move_bool
-	\bool_set_true:N\l_pgfgo_goban_remember_move_label_bool
-	\bool_set_true:N\l_pgfgo_goban_remember_mark_bool
-	\bool_set_true:N\l_pgfgo_goban_remember_label_bool
-	\bool_set_true:N\l_pgfgo_goban_remember_territory_bool
+%#1 (\bool_set_true:N O \bool_set_false:N) EN TODO LO QUE SE PUEDE RECORDAR.
+\cs_new_protected:Npn \__pgfgo_remember_set_all:N #1 {
+	#1 \l_pgfgo_goban_remember_stone_bool
+	#1 \l_pgfgo_goban_remember_move_bool
+	#1 \l_pgfgo_goban_remember_move_label_bool
+	#1 \l_pgfgo_goban_remember_mark_bool
+	#1 \l_pgfgo_goban_remember_territory_bool
 }
 
-\cs_new:Nn \pgfgo_goban_remember_nothing: {
-	\bool_set_false:N\l_pgfgo_goban_remember_stone_bool
-	\bool_set_false:N\l_pgfgo_goban_remember_prisoner_bool
-	\bool_set_false:N\l_pgfgo_goban_remember_move_bool
-	\bool_set_false:N\l_pgfgo_goban_remember_move_label_bool
-	\bool_set_false:N\l_pgfgo_goban_remember_mark_bool
-	\bool_set_false:N\l_pgfgo_goban_remember_label_bool
-	\bool_set_false:N\l_pgfgo_goban_remember_territory_bool
-}
+\cs_new_protected:Npn \pgfgo_goban_remember_all: {\__pgfgo_remember_set_all:N \bool_set_true:N}
+\cs_new_protected:Npn \pgfgo_goban_remember_nothing: {\__pgfgo_remember_set_all:N \bool_set_false:N}
 
 \ExplSyntaxOff

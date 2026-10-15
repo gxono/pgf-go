@@ -30,6 +30,20 @@ local function count(name)
 	return tex.getcount(name)
 end
 
+-- RESPUESTA DE UN CONDICIONAL DE expl3.
+local function prg_return(ok)
+	tex_code(ok and "\\prg_return_true:" or "\\prg_return_false:")
+end
+
+-- DEJA LOS ELEMENTOS DE list, SEPARADOS POR COMAS, EN LA VARIABLE name DE TeX.
+local function set_clist(name, list)
+	token.set_macro(name, concat(list, ","))
+end
+
+local function goban_size()
+	return count("l_pgfgo_goban_size_x_int"), count("l_pgfgo_goban_size_y_int")
+end
+
 
 ---------------------------------------------------------------------------------------------------
 -- COLUMNAS
@@ -106,7 +120,7 @@ function pgfgo.board_window(spec, use_i)
 end
 
 function pgfgo.board_init(partial)
-	local sx, sy = count("l_pgfgo_goban_size_x_int"), count("l_pgfgo_goban_size_y_int")
+	local sx, sy = goban_size()
 	local fx, fy, tx, ty = 1, 1, sx, sy
 	if partial then
 		local wfx, wfy = count("l__pgfgo_kernel_window_from_x_int"), count("l__pgfgo_kernel_window_from_y_int")
@@ -124,7 +138,7 @@ end
 
 -- PUNTOS DE ESTRELLA (VER pgf-go-kernel.sty).
 function pgfgo.hoshi()
-	local sx, sy = count("l_pgfgo_goban_size_x_int"), count("l_pgfgo_goban_size_y_int")
+	local sx, sy = goban_size()
 	local function axis(s)
 		if s < 7 then return nil end
 		local near = s >= 13 and 4 or 3
@@ -148,7 +162,7 @@ function pgfgo.hoshi()
 		table.sort(all, function(a, b) return a[2] < b[2] or (a[2] == b[2] and a[1] < b[1]) end)
 		for _, p in ipairs(all) do insert(list, "{" .. p[1] .. "}{" .. p[2] .. "}") end
 	end
-	token.set_macro("l__pgfgo_kernel_points_clist", concat(list, ","))
+	set_clist("l__pgfgo_kernel_points_clist", list)
 end
 
 local function window()
@@ -157,16 +171,13 @@ local function window()
 end
 
 function pgfgo.if_visible(x, y)
-	if x >= 1 and x <= count("l_pgfgo_goban_size_x_int") and y >= 1 and y <= count("l_pgfgo_goban_size_y_int") then
+	local sx, sy = goban_size()
+	if x >= 1 and x <= sx and y >= 1 and y <= sy then
 		local fx, tx, fy, ty = window()
-		if x >= fx and x <= tx and y >= fy and y <= ty then
-			tex_code("\\prg_return_true:")
-		else
-			tex_code("\\prg_return_false:")
-		end
+		prg_return(x >= fx and x <= tx and y >= fy and y <= ty)
 	else
 		message("warning", "outside-board", x, y)
-		tex_code("\\prg_return_false:")
+		prg_return(false)
 	end
 end
 
@@ -337,13 +348,20 @@ local function expand_chains(s)
 	repeat
 		local out, i, replaced = {}, 1, false
 		while i <= #s do
-			local stop, op1, coordinate, op2 = chain_match(s, i)
+			-- UNA CADENA SOLO PUEDE EMPEZAR DONDE EMPIEZA UN OPERADOR; LO DEMAS PASA TAL CUAL.
+			local j = s:find("[-|rR]", i)
+			if not j then
+				insert(out, s:sub(i))
+				break
+			end
+			insert(out, s:sub(i, j - 1))
+			local stop, op1, coordinate, op2 = chain_match(s, j)
 			if stop then
 				insert(out, op1 .. " " .. coordinate .. ", " .. coordinate .. " " .. op2)
 				i, replaced = stop, true
 			else
-				insert(out, s:sub(i, i))
-				i = i + 1
+				insert(out, s:sub(j, j))
+				i = j + 1
 			end
 		end
 		s = concat(out)
@@ -431,7 +449,7 @@ function pgfgo.points(spec, use_i)
 	end
 	local unique, seen = {}, {}
 	for _, item in ipairs(list) do add_unique(unique, seen, item) end
-	token.set_macro("l__pgfgo_kernel_points_clist", concat(unique, ","))
+	set_clist("l__pgfgo_kernel_points_clist", unique)
 end
 
 -- PUNTOS DE UN POLIGONO: LAS INTERSECCIONES DEL TABLERO DENTRO DEL POLIGONO CERRADO O SOBRE SU BORDE,
@@ -444,7 +462,7 @@ local function on_segment(px, py, a, b)
 end
 
 local function in_polygon(px, py, v)
-	local n, inside_ = #v, false
+	local n, odd = #v, false
 	for i = 1, n do
 		local a, b = v[i], v[i % n + 1]
 		if on_segment(px, py, a, b) then return true end
@@ -454,11 +472,11 @@ local function in_polygon(px, py, v)
 			local lhs = (px - a[1]) * dy
 			local rhs = (py - a[2]) * (b[1] - a[1])
 			if (dy > 0 and lhs < rhs) or (dy < 0 and lhs > rhs) then
-				inside_ = not inside_
+				odd = not odd
 			end
 		end
 	end
-	return inside_
+	return odd
 end
 
 function pgfgo.polygon(text)
@@ -468,7 +486,7 @@ function pgfgo.polygon(text)
 	end
 	local list = {}
 	if #v > 0 then
-		local sx, sy = count("l_pgfgo_goban_size_x_int"), count("l_pgfgo_goban_size_y_int")
+		local sx, sy = goban_size()
 		local fx, tx, fy, ty = sx, 1, sy, 1
 		for _, p in ipairs(v) do
 			fx, tx = math.min(fx, p[1]), math.max(tx, p[1])
@@ -480,17 +498,15 @@ function pgfgo.polygon(text)
 			end
 		end
 	end
-	token.set_macro("l__pgfgo_kernel_points_clist", concat(list, ","))
+	set_clist("l__pgfgo_kernel_points_clist", list)
 end
 
 function pgfgo.point(spec, use_i)
 	local l, n = spec:match("^([A-Z])(%d%d?)$")
 	if l then
 		token.set_macro("l_pgfgo_kernel_point_tl", point(column_number(l, use_i), n))
-		tex_code("\\prg_return_true:")
-	else
-		tex_code("\\prg_return_false:")
 	end
+	prg_return(l)
 end
 
 
@@ -498,12 +514,18 @@ end
 -- PIEDRAS EN EL TABLERO (CAPTURAS)
 ---------------------------------------------------------------------------------------------------
 
--- UN TABLERO ES {stones = {["x,y"] = "black" | "white"}, sx = ancho, sy = alto}. EL DEL goban LEE SU
--- TAMANO DE TeX; LA LECTURA DE UN SGF USA OTRO PARA SIMULAR LA PARTIDA.
+-- CLAVE DE UNA INTERSECCION EN LAS TABLAS (UN ENTERO; x E y PUEDEN SER NEGATIVOS O PASARSE DEL TABLERO).
+local function key(x, y)
+	return y * 0x100000 + x
+end
+
+-- UN TABLERO ES {stones = {[key(x, y)] = "black" | "white"}, sx = ancho, sy = alto}. EL DEL goban LEE
+-- SU TAMANO DE TeX; LA LECTURA DE UN SGF USA OTRO PARA SIMULAR LA PARTIDA.
 local stones = {}
 
 local function goban_board()
-	return {stones = stones, sx = count("l_pgfgo_goban_size_x_int"), sy = count("l_pgfgo_goban_size_y_int")}
+	local sx, sy = goban_size()
+	return {stones = stones, sx = sx, sy = sy}
 end
 
 local function inside(b, x, y)
@@ -514,13 +536,12 @@ local function on_board(x, y)
 	return inside(goban_board(), x, y)
 end
 
-local function key(x, y)
-	return x .. "," .. y
-end
+-- OESTE, ESTE, SUR, NORTE (EL ORDEN DECIDE EL DE LAS PIEDRAS CAPTURADAS).
+local directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}}
 
 local function neighbours(b, x, y)
 	local list = {}
-	for _, d in ipairs({{-1, 0}, {1, 0}, {0, -1}, {0, 1}}) do
+	for _, d in ipairs(directions) do
 		local nx, ny = x + d[1], y + d[2]
 		if inside(b, nx, ny) then
 			insert(list, {nx, ny})
@@ -554,9 +575,10 @@ end
 -- removed CUENTA LAS PIEDRAS QUITADAS DE CADA COLOR.
 local function remove_group(b, members, captured, removed)
 	for _, p in ipairs(members) do
-		local color = b.stones[key(p[1], p[2])]
+		local k = key(p[1], p[2])
+		local color = b.stones[k]
 		removed[color] = (removed[color] or 0) + 1
-		b.stones[key(p[1], p[2])] = nil
+		b.stones[k] = nil
 		insert(captured, point(p[1], p[2]))
 	end
 end
@@ -603,11 +625,7 @@ end
 
 function pgfgo.board_if_occupied(x, y)
 	x, y = tonumber(x), tonumber(y)
-	if on_board(x, y) and stones[key(x, y)] then
-		tex_code("\\prg_return_true:")
-	else
-		tex_code("\\prg_return_false:")
-	end
+	prg_return(on_board(x, y) and stones[key(x, y)])
 end
 
 
@@ -646,7 +664,7 @@ function pgfgo.move_play(x, y)
 		prisoners.black = prisoners.black + (removed.white or 0)
 		prisoners.white = prisoners.white + (removed.black or 0)
 	end
-	token.set_macro("l__pgfgo_kernel_captured_clist", concat(captured, ","))
+	set_clist("l__pgfgo_kernel_captured_clist", captured)
 	move_number = move_number + 1
 	black_turn = not black_turn
 end
@@ -682,21 +700,24 @@ local function parse_sgf(s)
 		i = s:find("%S", i) or #s + 1
 	end
 	local function value()
-		-- i ESTA EN [. \] NO CIERRA EL VALOR.
+		-- i ESTA EN [. \ ESCAPA EL CARACTER QUE SIGUE: \] NO CIERRA EL VALOR. SE SALTA DE UNA \ O ] A LA
+		-- SIGUIENTE.
 		local out = {}
 		i = i + 1
-		while i <= #s do
-			local c = s:sub(i, i)
-			if c == "\\" then
-				insert(out, s:sub(i + 1, i + 1))
-				i = i + 2
-			elseif c == "]" then
-				i = i + 1
+		while true do
+			local j = s:find("[\\%]]", i)
+			if not j then
+				insert(out, s:sub(i))
+				i = #s + 1
 				break
-			else
-				insert(out, c)
-				i = i + 1
 			end
+			insert(out, s:sub(i, j - 1))
+			if s:byte(j) == 93 then
+				i = j + 1
+				break
+			end
+			insert(out, s:sub(j + 1, j + 1))
+			i = j + 2
 		end
 		return concat(out)
 	end
@@ -915,21 +936,51 @@ local function decode(kind, s)
 	return concat(out)
 end
 
-local function to_utf8(name, s)
-	local ca = s:match("CA%s*%[([^%]]*)%]")
+-- ARCHIVOS SGF YA LEIDOS, POR RUTA (UN DOCUMENTO SUELE LEER MUCHAS VECES EL MISMO ARCHIVO): {stamp =
+-- FECHA Y TAMANO, text = CONTENIDO, ca = VALOR DE CA, utf8 = SI ES UTF-8 VALIDO, games = {[CODIFICACION] =
+-- PARTIDAS}}. SI EL ARCHIVO CAMBIA, SE VUELVE A LEER.
+local sgf_files = {}
+
+local function sgf_file(path)
+	local attributes = lfs.attributes(path)
+	local stamp = attributes and (attributes.modification .. ":" .. attributes.size)
+	local file = sgf_files[path]
+	if not (file and stamp and file.stamp == stamp) then
+		local f = io.open(path, "rb")
+		local s = f:read("a")
+		f:close()
+		file = {stamp = stamp, text = s, ca = s:match("CA%s*%[([^%]]*)%]"), utf8 = utf8.len(s) ~= nil, games = {}}
+		sgf_files[path] = file
+	end
+	return file
+end
+
+-- LAS PARTIDAS DE UN ARCHIVO, CON SU TEXTO PASADO A UTF-8. AVISA SI LA CODIFICACION ES DESCONOCIDA.
+local function sgf_games(name, path)
+	local file = sgf_file(path)
 	local forced = token.get_macro("l_pgfgo_kernel_sgf_charset_tl") or "auto"
-	local wanted = (forced ~= "auto" and forced ~= "") and forced or ca
+	local wanted = (forced ~= "auto" and forced ~= "") and forced or file.ca
 	local kind = wanted and charset_kind(wanted)
 	if wanted and not kind then
 		message("warning", "sgf-charset", name, wanted)
 	end
-	if utf8.len(s) then
-		return s
+	if file.utf8 then
+		kind = "utf8"
+	elseif not kind or kind == "utf8" then
+		kind = "latin"
 	end
-	if kind and kind ~= "latin" and kind ~= "utf8" then
-		return decode(kind, s)
+	local games = file.games[kind]
+	if not games then
+		local s = file.text
+		if kind == "latin" then
+			s = s:gsub("[\128-\255]", function(c) return utf8.char(c:byte()) end)
+		elseif kind ~= "utf8" then
+			s = decode(kind, s)
+		end
+		games = parse_sgf(s)
+		file.games[kind] = games
 	end
-	return (s:gsub("[\128-\255]", function(c) return utf8.char(c:byte()) end))
+	return games
 end
 
 -- LA PARTIDA \l_pgfgo_kernel_sgf_game_int DEL ARCHIVO. AVISA SI NO EXISTE Y USA LA PRIMERA.
@@ -941,9 +992,7 @@ local function read_tree(name)
 		message("error", "sgf-not-found", name)
 		return nil
 	end
-	local f = io.open(path, "rb")
-	local games = parse_sgf(to_utf8(name, f:read("a")))
-	f:close()
+	local games = sgf_games(name, path)
 	local n = count("l_pgfgo_kernel_sgf_game_int")
 	if not games[n] then
 		if n ~= 1 then message("warning", "sgf-game", name, n) end
@@ -977,11 +1026,11 @@ function pgfgo.sgf_marks(k)
 	local list = {}
 	for _, p in ipairs(sgf_dim[k] or {}) do insert(list, "{dim}" .. p .. "{neutral}{}") end
 	for _, m in ipairs(sgf_marks[k] or {}) do insert(list, m) end
-	token.set_macro("l__pgfgo_kernel_sgf_marks_clist", concat(list, ","))
+	set_clist("l__pgfgo_kernel_sgf_marks_clist", list)
 end
 
 function pgfgo.sgf_annotations(k)
-	token.set_macro("l__pgfgo_kernel_sgf_annotations_clist", concat(sgf_notes[k] or {}, ","))
+	set_clist("l__pgfgo_kernel_sgf_annotations_clist", sgf_notes[k] or {})
 end
 
 function pgfgo.sgf_name(i)
@@ -1001,11 +1050,11 @@ function pgfgo.sgf_variations(k, mode)
 			if v ~= "" then insert(list, v .. "{" .. string.char(64 + i) .. "}") end
 		end
 	end
-	token.set_macro("l__pgfgo_kernel_sgf_variations_clist", concat(list, ","))
+	set_clist("l__pgfgo_kernel_sgf_variations_clist", list)
 end
 
 function pgfgo.sgf_lines(k)
-	token.set_macro("l__pgfgo_kernel_sgf_lines_clist", concat(sgf_lines[k] or {}, ","))
+	set_clist("l__pgfgo_kernel_sgf_lines_clist", sgf_lines[k] or {})
 end
 
 function pgfgo.sgf_label(i)
@@ -1087,7 +1136,7 @@ function pgfgo.sgf_tree(name)
 		end
 		walk(t, {})
 	end
-	token.set_macro("l__pgfgo_kernel_sgf_paths_clist", concat(paths, ","))
+	set_clist("l__pgfgo_kernel_sgf_paths_clist", paths)
 	token.set_macro("l_pgfgo_kernel_sgf_extent_tl", view_text(box))
 end
 
@@ -1117,7 +1166,7 @@ function pgfgo.sgf_read(name, path_text)
 		komi = root.KM and tonumber(root.KM[1]) and root.KM[1]:match("^%s*(.-)%s*$") or "0"
 		-- LA PARTIDA SIMULADA, PARA SABER DE QUE COLOR ES CADA PUNTO MARCADO.
 		local sim = {stones = {}, sx = size_x, sy = size_y}
-		local started, count = false, 0
+		local started, played = false, 0
 		local dim = {}
 		local function each_point(node, property, f)
 			for _, v in ipairs(node[property] or {}) do
@@ -1158,7 +1207,7 @@ function pgfgo.sgf_read(name, path_text)
 					view = {math.min(view[1], c[1]), math.min(view[2], c[2]),
 						math.max(view[3], c[1]), math.max(view[4], c[2])}
 				end)
-				local start = count + 1
+				local start = played + 1
 				if sgf_views[#sgf_views] and sgf_views[#sgf_views].start == start then
 					sgf_views[#sgf_views].rect = view
 				else
@@ -1201,20 +1250,20 @@ function pgfgo.sgf_read(name, path_text)
 						insert(moves, "{" .. player[2] .. "}" .. point(c[1], c[2]))
 						if inside(sim, c[1], c[2]) then play(sim, player[2], c[1], c[2]) end
 					end
-					count = count + 1
+					played = played + 1
 					-- LAS ALTERNATIVAS A ESTA JUGADA, CON LA POSICION DESPUES DE JUGARLA.
-					sgf_vars[count] = sgf_vars[count] or {}
-					sgf_vars[count].siblings = moves_of(sibs[idx])
+					sgf_vars[played] = sgf_vars[played] or {}
+					sgf_vars[played].siblings = moves_of(sibs[idx])
 				end
 			end
 			-- LAS JUGADAS QUE PUEDEN SEGUIR (LAS DEL ULTIMO NODO DE LA JUGADA).
-			sgf_vars[count] = sgf_vars[count] or {}
-			sgf_vars[count].children = moves_of(kids[idx])
+			sgf_vars[played] = sgf_vars[played] or {}
+			sgf_vars[played].children = moves_of(kids[idx])
 			-- FG: UNA FIGURA NUEVA EMPIEZA EN ESTA JUGADA (O EN LA SIGUIENTE, SI EL NODO NO TIENE JUGADA).
 			if n.FG then
 				local v = n.FG[1] or ""
 				local title = v:match("^%d*:(.*)$") or (v:match("^%d*$") and "") or v
-				local start = (n.B or n.W) and count or count + 1
+				local start = (n.B or n.W) and played or played + 1
 				local index = 0
 				if title ~= "" then
 					insert(sgf_names, title)
@@ -1229,8 +1278,8 @@ function pgfgo.sgf_read(name, path_text)
 			for _, prop in ipairs({"N", "TE", "BM", "DO", "IT", "GB", "GW", "DM", "UC"}) do
 				local v = n[prop]
 				if v then
-					local list = sgf_notes[count] or {}
-					sgf_notes[count] = list
+					local list = sgf_notes[played] or {}
+					sgf_notes[played] = list
 					if prop == "N" then
 						insert(sgf_names, (concat(v, " "):gsub("%s+", " "):match("^%s*(.-)%s*$")))
 						insert(list, "{N}{" .. #sgf_names .. "}")
@@ -1242,13 +1291,13 @@ function pgfgo.sgf_read(name, path_text)
 			if n.C then
 				local text = concat(n.C, " "):gsub("%s+", " "):match("^%s*(.-)%s*$")
 				if text ~= "" then
-					sgf_comments[count] = sgf_comments[count] and (sgf_comments[count] .. " " .. text) or text
+					sgf_comments[played] = sgf_comments[played] and (sgf_comments[played] .. " " .. text) or text
 				end
 			end
 			-- LAS MARCAS SE GUARDAN CON EL COLOR DE LA PIEDRA QUE HAY EN ESE MOMENTO.
 			local function mark(kind, c, i)
-				local list = sgf_marks[count] or {}
-				sgf_marks[count] = list
+				local list = sgf_marks[played] or {}
+				sgf_marks[played] = list
 				insert(list, "{" .. kind .. "}" .. point(c[1], c[2]) .. "{"
 					.. (sim.stones[key(c[1], c[2])] or "neutral") .. "}{" .. (i or "") .. "}")
 			end
@@ -1267,14 +1316,14 @@ function pgfgo.sgf_read(name, path_text)
 				dim = {}
 				each_point(n, "DD", function(p) insert(dim, p) end)
 			end
-			sgf_dim[count] = dim
+			sgf_dim[played] = dim
 			for _, kind in ipairs({{"AR", "arrow"}, {"LN", "line"}}) do
 				for _, v in ipairs(n[kind[1]] or {}) do
 					local a, b = v:match("^(%a%a):(%a%a)$")
 					local p, q = a and sgf_coords(a, size_y)[1], b and sgf_coords(b, size_y)[1]
 					if p and q then
-						local list = sgf_lines[count] or {}
-						sgf_lines[count] = list
+						local list = sgf_lines[played] or {}
+						sgf_lines[played] = list
 						insert(list, "{" .. kind[2] .. "}" .. point(p[1], p[2]) .. point(q[1], q[2]))
 					end
 				end
@@ -1283,15 +1332,15 @@ function pgfgo.sgf_read(name, path_text)
 	end
 	local figures = {}
 	for _, f in ipairs(sgf_figures) do insert(figures, "{" .. f[1] .. "}{" .. f[2] .. "}") end
-	token.set_macro("l__pgfgo_kernel_sgf_figures_clist", concat(figures, ","))
+	set_clist("l__pgfgo_kernel_sgf_figures_clist", figures)
 	token.set_macro("l_pgfgo_kernel_sgf_view_tl", view_text(views_between(0, 0)))
 	tex.setcount("l_pgfgo_kernel_sgf_print_int", print_mode)
 	token.set_macro("l_pgfgo_kernel_sgf_komi_tl", komi)
 	tex.setcount("l_pgfgo_kernel_sgf_size_x_int", size_x)
 	tex.setcount("l_pgfgo_kernel_sgf_size_y_int", size_y)
-	token.set_macro("l__pgfgo_kernel_sgf_black_clist", concat(black, ","))
-	token.set_macro("l__pgfgo_kernel_sgf_white_clist", concat(white, ","))
-	token.set_macro("l__pgfgo_kernel_sgf_moves_clist", concat(moves, ","))
+	set_clist("l__pgfgo_kernel_sgf_black_clist", black)
+	set_clist("l__pgfgo_kernel_sgf_white_clist", white)
+	set_clist("l__pgfgo_kernel_sgf_moves_clist", moves)
 end
 
 -- PROPIEDAD DE LA RAIZ DE LA PARTIDA (PB, PW, RE, KM, DT, ...), COMO TEXTO. VARIOS VALORES SE SEPARAN
@@ -1310,7 +1359,8 @@ end
 -- text: LAS PIEDRAS VIVAS, {x}{y}{black | white}. CADA REGION DE PUNTOS SIN PIEDRAS VIVAS (VACIOS O CON
 -- PIEDRAS MUERTAS) ES DEL COLOR QUE LA RODEA; SI LA TOCAN LOS DOS COLORES, O NINGUNO, ES neutral.
 function pgfgo.territory(text)
-	local b = {stones = {}, sx = count("l_pgfgo_goban_size_x_int"), sy = count("l_pgfgo_goban_size_y_int")}
+	local sx, sy = goban_size()
+	local b = {stones = {}, sx = sx, sy = sy}
 	for x, y, c in text:gmatch("{(%d+)}{(%d+)}{(%a+)}") do
 		b.stones[key(tonumber(x), tonumber(y))] = c
 	end
@@ -1348,7 +1398,7 @@ function pgfgo.territory(text)
 			if type(o) == "string" then insert(list, point(x, y) .. "{" .. o .. "}") end
 		end
 	end
-	token.set_macro("l__pgfgo_kernel_territory_clist", concat(list, ","))
+	set_clist("l__pgfgo_kernel_territory_clist", list)
 end
 
 -- DIRECCIONES DE LOS LADOS: 0 ESTE, 1 NORTE, 2 OESTE, 3 SUR.
@@ -1359,7 +1409,7 @@ local steps = {[0] = {1, 0}, {0, 1}, {-1, 0}, {0, -1}}
 -- TIENEN OTRA CASILLA PINTADA DEL OTRO LADO. SE RECORREN PREFIRIENDO GIRAR A LA IZQUIERDA (ASI UN CONTACTO
 -- POR UNA ESQUINA SEPARA LAS ZONAS) Y SOLO QUEDAN LOS VERTICES DONDE EL BORDE GIRA.
 function pgfgo.region(text)
-	local sx, sy = count("l_pgfgo_goban_size_x_int"), count("l_pgfgo_goban_size_y_int")
+	local sx, sy = goban_size()
 	local own, painted, out = {}, {}, {}
 	for x, y in text:gmatch("{(%-?%d+)}{(%-?%d+)}") do
 		own[key(tonumber(x), tonumber(y))] = true
@@ -1412,7 +1462,7 @@ function pgfgo.region(text)
 			end
 		end
 	end
-	token.set_macro("l__pgfgo_kernel_region_clist", concat(contours, ","))
+	set_clist("l__pgfgo_kernel_region_clist", contours)
 end
 
 ---------------------------------------------------------------------------------------------------

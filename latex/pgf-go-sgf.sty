@@ -1,6 +1,58 @@
 \ProvidesFile{pgf-go-sgf.sty}[2026/10/13 v0.2026.10.13 pgf-go: SGF games]
 \ExplSyntaxOn
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%-----------------------------------------COMUN-------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\cs_generate_variant:Nn \msg_warning:nnn {nnV}
+\cs_generate_variant:Nn \msg_warning:nnnnn {nnnee}
+\cs_generate_variant:Nn \prop_if_in_p:Nn {NV}
+\cs_generate_variant:Nn \prop_item:Nn {NV}
+\cs_generate_variant:Nn \prop_put:Nnn {Nne}
+\cs_generate_variant:Nn \prop_gput:Nnn {Nne}
+\cs_generate_variant:Nn \tl_if_eq:nnF {nV}
+\cs_generate_variant:Nn \str_case:nn {Vn}
+
+%LOS COMANDOS DE SGF NECESITAN UN KERNEL QUE LEA PARTIDAS (kernel = lua).
+\cs_new_protected:Npn \__pgfgo_sgf_if_kernel:n #1 {
+	\pgfgo_kernel_if_feature:nTF {sgf} {#1} {\pgfgo_kernel_require:n {sgf}}
+}
+
+%EL TAMANO DE LA ULTIMA PARTIDA LEIDA EN #1, COMO LA OPCION size DE goban (19x19).
+\cs_new_protected:Npn \__pgfgo_sgf_size:N #1 {
+	\tl_set:Ne #1 {\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
+}
+
+%VERDADERO SI EL EVENTO {#1}{#2}{#3} DE \l_pgfgo_kernel_sgf_moves_seq ES UNA JUGADA (NO UN CAMBIO DE UN NODO
+%NI UN NUMERO).
+\prg_new_conditional:Npnn \__pgfgo_sgf_if_move:nnn #1#2#3 {T} {
+	\str_case:nnF {#1} {
+		{black}	{\prg_return_true:}
+		{white}	{\prg_return_true:}
+	}{
+		\prg_return_false:
+	}
+}
+
+%DEJA EN #1 LA CANTIDAD DE JUGADAS DE LA ULTIMA PARTIDA LEIDA, SIN CONTAR MAS DE #2 (DEJA DE RECORRER AHI).
+\cs_new_protected:Npn \__pgfgo_sgf_count_moves:Nn #1#2 {
+	\int_zero:N #1
+	\int_compare:nNnT {#2} > {0} {
+		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {
+			\__pgfgo_sgf_if_move:nnnT ##1 {
+				\int_incr:N #1
+				\int_compare:nNnF {#1} < {#2} {\seq_map_break:}
+			}
+		}
+	}
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%------------------------------------------\sgf-------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %\sgf[from = <n>, to = <m>]{<archivo>} DIBUJA UNA PARTIDA EN EL goban ACTUAL. SOLO CON kernel = lua.
 %LAS PIEDRAS INICIALES (AB, AW) SON PIEDRAS COMO LAS DE \stones. LAS JUGADAS SON COMO LAS DE \moves:
 %ANTES DE from SIN NUMERO, DESDE from NUMERADAS, Y DESPUES DE to NO SE JUEGAN. AL TERMINAR, EL NUMERO
@@ -13,19 +65,33 @@
 \int_new:N \l__pgfgo_sgf_to_int
 \tl_new:N \l__pgfgo_sgf_variation_tl
 \bool_new:N \l__pgfgo_sgf_marks_bool
+\tl_new:N \l__pgfgo_sgf_restart_tl
+\tl_new:N \l__pgfgo_sgf_numbers_tl
+\tl_new:N \l__pgfgo_sgf_variations_tl
+\tl_new:N \l__pgfgo_sgf_file_tl
+%restart Y numbers YA RESUELTOS (CON auto, SEGUN PM).
 \int_new:N \l__pgfgo_sgf_restart_int
-%POSICION DE LA JUGADA EN EL ARCHIVO Y NUMERO SIN REINICIAR (SIGUE A MN).
+\bool_new:N \l__pgfgo_sgf_numbers_bool
+%POSICION DE LA JUGADA EN EL ARCHIVO, NUMERO SIN REINICIAR (SIGUE A MN) Y NUMERO QUE SE MUESTRA.
 \int_new:N \l__pgfgo_sgf_count_int
 \int_new:N \l__pgfgo_sgf_number_int
 \int_new:N \l__pgfgo_sgf_shown_int
+%LA ULTIMA JUGADA QUE SE MUESTRA.
+\int_new:N \l__pgfgo_sgf_last_int
+%SI LA JUGADA QUE SE DIBUJA LLEVA NUMERO.
+\bool_new:N \l__pgfgo_sgf_numbered_bool
+%LO USA \sgfdiagrams: DESDE from, LAS PIEDRAS CAPTURADAS NO SE QUITAN DEL DIBUJO.
+\bool_new:N \l__pgfgo_sgf_keep_numbered_bool
 %LAS ANIMACIONES SOLO COMPRUEBAN EL TAMANO EN EL PRIMER CUADRO.
 \bool_new:N \l__pgfgo_sgf_check_size_bool
 \bool_set_true:N \l__pgfgo_sgf_check_size_bool
+%LAS MARCAS Y LAS VARIANTES DE LA ULTIMA JUGADA QUE SE MUESTRA, Y "x,y" DE LOS PUNTOS QUE MARCAN.
+\seq_new:N \l__pgfgo_sgf_marks_seq
+\seq_new:N \l__pgfgo_sgf_variations_seq
+\prop_new:N \g__pgfgo_sgf_marked_prop
+\tl_new:N \l__pgfgo_sgf_mark_tl
+\bool_new:N \l__pgfgo_sgf_remove_warned_bool
 
-\tl_new:N \l__pgfgo_sgf_variations_tl
-\tl_new:N \l__pgfgo_sgf_restart_tl
-\tl_new:N \l__pgfgo_sgf_numbers_tl
-\bool_new:N \l__pgfgo_sgf_numbers_bool
 \keys_define:nn {pgfgo / sgf} {
 	from				.int_set:N	= \l__pgfgo_sgf_from_int,
 	from				.initial:n	= {1},
@@ -60,7 +126,10 @@
 
 \msg_new:nnn {pgfgo} {sgf-size}
 	{The~game~in~'#1'~is~for~a~#2~board,~but~the~goban~is~#3.}
-\cs_generate_variant:Nn \msg_warning:nnnnn {nnnee}
+%AE: SOLO SE PUEDE QUITAR UNA PIEDRA CON goban/captures (LAS PIEDRAS SE DIBUJAN AL FINAL). SIN CAPTURAS,
+%\sgf AVISA UNA VEZ.
+\msg_new:nnn {pgfgo} {sgf-remove}
+	{'#1'~removes~stones~(AE).~That~needs~goban/captures,~so~they~are~not~removed.}
 
 
 %PIEDRAS INICIALES. #1: black O white. #2: LISTA DE {x}{y}.
@@ -73,11 +142,19 @@
 }
 \cs_generate_variant:Nn \__pgfgo_sgf_stones:nn {nV}
 
+%LAS PIEDRAS INICIALES DE #1 (black O white), DE LA SECUENCIA #2 DEL KERNEL.
+\cs_new_protected:Npn \__pgfgo_sgf_setup_stones:nN #1#2 {
+	\clist_set_from_seq:NN \l_tmpa_clist #2
+	\__pgfgo_sgf_stones:nV {#1} \l_tmpa_clist
+}
 
 %UN EVENTO DE LA PARTIDA: UNA JUGADA ({black | white}{x}{y}), UN CAMBIO DE UN NODO POSTERIOR A LA
-%PRIMERA JUGADA ({add-black | add-white | remove}{x}{y}) O UN NUMERO DE JUGADA ({number}{n}{}, POR MN).
+%PRIMERA JUGADA ({add-black | add-white | remove}{x}{y}), UN NUMERO DE JUGADA ({number}{n}{}, POR MN) O
+%UN TURNO ({player}{black | white}{}, POR PL). LAS JUGADAS, QUE SON LA MAYORIA, SE PRUEBAN PRIMERO.
 \cs_new_protected:Npn \__pgfgo_sgf_event:nnn #1#2#3 {
 	\str_case:nnF {#1} {
+		{black}			{\__pgfgo_sgf_move:nnn {black} {#2} {#3}}
+		{white}			{\__pgfgo_sgf_move:nnn {white} {#2} {#3}}
 		{add-black}	{\__pgfgo_sgf_stones:nn {black} {{#2}{#3}}}
 		{add-white}	{\__pgfgo_sgf_stones:nn {white} {{#2}{#3}}}
 		{remove}		{\__pgfgo_sgf_remove:nn {#2} {#3}}
@@ -87,14 +164,6 @@
 		\__pgfgo_sgf_move:nnn {#1} {#2} {#3}
 	}
 }
-
-%AE: SOLO SE PUEDE QUITAR UNA PIEDRA CON goban/captures (LAS PIEDRAS SE DIBUJAN AL FINAL). SIN CAPTURAS,
-%\sgf AVISA UNA VEZ.
-\tl_new:N \l__pgfgo_sgf_file_tl
-\bool_new:N \l__pgfgo_sgf_remove_warned_bool
-\msg_new:nnn {pgfgo} {sgf-remove}
-	{'#1'~removes~stones~(AE).~That~needs~goban/captures,~so~they~are~not~removed.}
-\cs_generate_variant:Nn \msg_warning:nnn {nnV}
 
 \cs_new_protected:Npn \__pgfgo_sgf_remove:nn #1#2 {
 	\bool_if:nTF {\l_pgfgo_goban_captures_bool && ! \l_pgfgo_captures_collect_bool} {
@@ -128,37 +197,41 @@
 			\pgfgo_kernel_move_set_number:n {\l__pgfgo_sgf_shown_int + 1}
 			\pgfgo_kernel_move_set_player:n {\str_if_eq:nnTF {#1} {black} {white} {black}}
 		}{
-			\bool_set:Nn \l__pgfgo_captures_keep_bool {
-				\l__pgfgo_sgf_keep_numbered_bool &&
-				! \int_compare_p:nNn {\l__pgfgo_sgf_count_int} < {\l__pgfgo_sgf_from_int}
-			}
-			%SIN NUMERO ANTES DE from, Y TAMPOCO SI UNA MARCA DEL ARCHIVO CAE EN ESE PUNTO (LA MARCA LO REEMPLAZA).
-			\__pgfgo_captures_key:nn {#2} {#3}
-			\bool_set:Nn \l__pgfgo_sgf_numbered_bool {
-				\l__pgfgo_sgf_numbers_bool &&
-				! \int_compare_p:nNn {\l__pgfgo_sgf_count_int} < {\l__pgfgo_sgf_from_int} &&
-				! \prop_if_in_p:NV \g__pgfgo_sgf_marked_prop \l__pgfgo_captures_key_tl
-			}
-			\bool_if:NT \l_pgfgo_goban_remember_move_bool {
-				\pgfgo_kernel_remember_push:n {
-					\exp_not:N \pgfgo_move_parsed:nnn
-						{
-							\bool_if:nTF {\l__pgfgo_sgf_numbered_bool && \l_pgfgo_goban_remember_move_label_bool}
-								{\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}
-						}
-						{from = \int_use:N \l__pgfgo_sgf_shown_int, #1}
-						{{#2}{#3}}
-				}
-			}
-			\bool_if:NTF \l__pgfgo_sgf_numbered_bool
-				{\pgfgo_move:nnnn {\BooleanTrue} {} {#2} {#3}}
-				{\pgfgo_move:nnnn {\BooleanFalse} {} {#2} {#3}}
+			\__pgfgo_sgf_stone:nnn {#1} {#2} {#3}
 		}
 	}
 }
 
-%MARCAS DEL ARCHIVO (TR, SQ, CR, MA, LB; TB Y TW SON TERRITORIO): #1 FORMA, (#2,#3) PUNTO, #4 COLOR DE LA PIEDRA (black, white O
-%neutral, PARA QUE LA MARCA SE VEA), #5 TEXTO DE LB.
+%LA PIEDRA DE UNA JUGADA. SIN NUMERO ANTES DE from, Y TAMPOCO SI UNA MARCA DEL ARCHIVO CAE EN ESE PUNTO
+%(LA MARCA LO REEMPLAZA).
+\cs_new_protected:Npn \__pgfgo_sgf_stone:nnn #1#2#3 {
+	\bool_set:Nn \l__pgfgo_sgf_numbered_bool
+		{! \int_compare_p:nNn {\l__pgfgo_sgf_count_int} < {\l__pgfgo_sgf_from_int}}
+	\bool_set:Nn \l__pgfgo_captures_keep_bool
+		{\l__pgfgo_sgf_keep_numbered_bool && \l__pgfgo_sgf_numbered_bool}
+	\__pgfgo_captures_key:nn {#2} {#3}
+	\bool_set:Nn \l__pgfgo_sgf_numbered_bool {
+		\l__pgfgo_sgf_numbers_bool && \l__pgfgo_sgf_numbered_bool &&
+		! \prop_if_in_p:NV \g__pgfgo_sgf_marked_prop \l__pgfgo_captures_key_tl
+	}
+	\bool_if:NT \l_pgfgo_goban_remember_move_bool {
+		\pgfgo_kernel_remember_push:n {
+			\exp_not:N \pgfgo_move_parsed:nnn
+				{
+					\bool_if:nTF {\l__pgfgo_sgf_numbered_bool && \l_pgfgo_goban_remember_move_label_bool}
+						{\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}
+				}
+				{from = \int_use:N \l__pgfgo_sgf_shown_int, #1}
+				{{#2}{#3}}
+		}
+	}
+	\bool_if:NTF \l__pgfgo_sgf_numbered_bool
+		{\pgfgo_move:nnnn {\BooleanTrue} {} {#2} {#3}}
+		{\pgfgo_move:nnnn {\BooleanFalse} {} {#2} {#3}}
+}
+
+%MARCAS DEL ARCHIVO (TR, SQ, CR, MA, LB; TB Y TW SON TERRITORIO): #1 FORMA, (#2,#3) PUNTO, #4 COLOR DE LA
+%PIEDRA (black, white O neutral, PARA QUE LA MARCA SE VEA), #5 TEXTO DE LB.
 \cs_new_protected:Npn \__pgfgo_sgf_mark:nnnnn #1#2#3#4#5 {
 	\str_case:nnF {#1} {
 		{black-territory}	{\__pgfgo_sgf_territory:nnn {black} {#2} {#3}}
@@ -191,46 +264,20 @@
 			{custom = {\pgfgo_kernel_sgf_label:n {#5}}}
 			{#1}
 	}
-	\bool_if:NT \l_pgfgo_goban_remember_mark_bool {
-		\pgfgo_kernel_remember_push:n
-			{\exp_not:N \pgfgo_marks_parsed:nn {\exp_not:V \l__pgfgo_sgf_mark_tl} {{#2}{#3}}}
-	}
-	\pgfgo_marks_parsed:Vn \l__pgfgo_sgf_mark_tl {{#2}{#3}}
-}
-\tl_new:N \l__pgfgo_sgf_mark_tl
-\bool_new:N \l__pgfgo_sgf_numbered_bool
-%LO USA \sgfdiagrams: DESDE from, LAS PIEDRAS CAPTURADAS NO SE QUITAN DEL DIBUJO.
-\bool_new:N \l__pgfgo_sgf_keep_numbered_bool
-%"x,y" DE LOS PUNTOS QUE MARCA EL ULTIMO NODO QUE SE MUESTRA.
-\prop_new:N \g__pgfgo_sgf_marked_prop
-\int_new:N \l__pgfgo_sgf_last_int
-\cs_generate_variant:Nn \prop_if_in_p:Nn {NV}
-
-%CUENTA LAS JUGADAS (NO LOS CAMBIOS DE NODOS NI LOS NUMEROS) EN \l_tmpa_int.
-\cs_new_protected:Npn \__pgfgo_sgf_count_move:nnn #1#2#3 {
-	\str_case:nnT {#1} {{black} {} {white} {}} {\int_incr:N \l_tmpa_int}
+	\__pgfgo_sgf_mark_put:Vn \l__pgfgo_sgf_mark_tl {{#2}{#3}}
 }
 
-%DEJA EN \l_pgfgo_kernel_sgf_marks_seq LAS MARCAS DE LA JUGADA #1 Y SUS PUNTOS EN \g__pgfgo_sgf_marked_prop.
-\cs_new_protected:Npn \__pgfgo_sgf_marked_points:n #1 {
-	\prop_gclear:N \g__pgfgo_sgf_marked_prop
-	\pgfgo_kernel_sgf_marks:n {#1}
-	\seq_map_inline:Nn \l_pgfgo_kernel_sgf_marks_seq {\__pgfgo_sgf_marked_point:nnnnn ##1}
+%DIBUJA (Y RECUERDA) LA MARCA DE OPCIONES #1 EN EL PUNTO #2 ({x}{y}).
+\cs_new_protected:Npn \__pgfgo_sgf_mark_put:nn #1#2 {
+	\bool_if:NT \l_pgfgo_goban_remember_mark_bool
+		{\pgfgo_kernel_remember_push:n {\exp_not:N \pgfgo_marks_parsed:nn {\exp_not:n {#1}} {#2}}}
+	\pgfgo_marks_parsed:nn {#1} {#2}
 }
-%LOS PUNTOS ATENUADOS NO REEMPLAZAN EL NUMERO DE LA JUGADA.
-\cs_new_protected:Npn \__pgfgo_sgf_marked_point:nnnnn #1#2#3#4#5 {
-	\str_if_eq:nnF {#1} {dim} {
-		\__pgfgo_captures_key:nn {#2} {#3}
-		\prop_gput:NVn \g__pgfgo_sgf_marked_prop \l__pgfgo_captures_key_tl {}
-	}
-}
+\cs_generate_variant:Nn \__pgfgo_sgf_mark_put:nn {Vn}
 
 %LA LETRA #4 DE UNA VARIANTE EN (#1,#2), EN EL COLOR #3 DE LA PIEDRA QUE HAY AHI.
-\seq_new:N \l__pgfgo_sgf_variations_seq
 \cs_new_protected:Npn \__pgfgo_sgf_variation:nnnn #1#2#3#4 {
-	\bool_if:NT \l_pgfgo_goban_remember_mark_bool
-		{\pgfgo_kernel_remember_push:n {\exp_not:N \pgfgo_marks_parsed:nn {#3, custom = {#4}} {{#1}{#2}}}}
-	\pgfgo_marks_parsed:nn {#3, custom = {#4}} {{#1}{#2}}
+	\__pgfgo_sgf_mark_put:nn {#3, custom = {#4}} {{#1}{#2}}
 }
 
 %FLECHAS Y LINEAS DEL ARCHIVO (AR, LN): #1 arrow O line, DE (#2,#3) A (#4,#5).
@@ -239,66 +286,88 @@
 		{\pgfgo_kernel_remember_push:n {\exp_not:N \pgfgo_line_parsed:nnnnnn {#1} {} {#2} {#3} {#4} {#5}}}
 	\pgfgo_line_parsed:nnnnnn {#1} {} {#2} {#3} {#4} {#5}
 }
-\cs_generate_variant:Nn \pgfgo_marks_parsed:nn {Vn}
 
+%LOS PUNTOS QUE MARCA EL ULTIMO NODO QUE SE MUESTRA. LOS PUNTOS ATENUADOS NO REEMPLAZAN EL NUMERO DE LA JUGADA.
+\cs_new_protected:Npn \__pgfgo_sgf_marked_point:nnnnn #1#2#3#4#5 {
+	\str_if_eq:nnF {#1} {dim} {
+		\__pgfgo_captures_key:nn {#2} {#3}
+		\prop_gput:NVn \g__pgfgo_sgf_marked_prop \l__pgfgo_captures_key_tl {}
+	}
+}
+
+%restart Y numbers SEGUN LA OPCION Y, CON auto, SEGUN PM.
+\cs_new_protected:Npn \__pgfgo_sgf_numbering: {
+	\int_set:Nn \l__pgfgo_sgf_restart_int {
+		\str_if_eq:VnTF \l__pgfgo_sgf_restart_tl {auto}
+			{\int_compare:nNnTF {\l_pgfgo_kernel_sgf_print_int} = {2} {100} {0}}
+			{\l__pgfgo_sgf_restart_tl}
+	}
+	\bool_set:Nn \l__pgfgo_sgf_numbers_bool {
+		\str_if_eq_p:Vn \l__pgfgo_sgf_numbers_tl {true} ||
+		(\str_if_eq_p:Vn \l__pgfgo_sgf_numbers_tl {auto} &&
+			! \int_compare_p:nNn {\l_pgfgo_kernel_sgf_print_int} = {0})
+	}
+}
+
+%AVISA SI LA PARTIDA DEL ARCHIVO #1 NO ES DEL TAMANO DEL goban.
+\cs_new_protected:Npn \__pgfgo_sgf_check_size:n #1 {
+	\bool_lazy_and:nnF
+		{\int_compare_p:nNn {\l_pgfgo_kernel_sgf_size_x_int} = {\l_pgfgo_goban_size_x_int}}
+		{\int_compare_p:nNn {\l_pgfgo_kernel_sgf_size_y_int} = {\l_pgfgo_goban_size_y_int}}
+		{
+			\msg_warning:nnnee {pgfgo} {sgf-size} {#1}
+				{\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
+				{\int_use:N \l_pgfgo_goban_size_x_int x \int_use:N \l_pgfgo_goban_size_y_int}
+		}
+}
+
+%LAS MARCAS Y LAS LETRAS DE LAS VARIANTES DE LA ULTIMA JUGADA QUE SE MUESTRA. SE AVERIGUAN ANTES DE JUGAR,
+%PORQUE REEMPLAZAN LOS NUMEROS, Y SE DIBUJAN DESPUES.
+\cs_new_protected:Npn \__pgfgo_sgf_marked: {
+	\prop_gclear:N \g__pgfgo_sgf_marked_prop
+	\seq_clear:N \l__pgfgo_sgf_marks_seq
+	\bool_if:NT \l__pgfgo_sgf_marks_bool {
+		\pgfgo_kernel_sgf_marks:n {\l__pgfgo_sgf_last_int}
+		\seq_set_eq:NN \l__pgfgo_sgf_marks_seq \l_pgfgo_kernel_sgf_marks_seq
+		\seq_map_inline:Nn \l__pgfgo_sgf_marks_seq {\__pgfgo_sgf_marked_point:nnnnn ##1}
+	}
+	\seq_clear:N \l__pgfgo_sgf_variations_seq
+	\str_if_eq:VnF \l__pgfgo_sgf_variations_tl {none} {
+		\exp_args:NnV \pgfgo_kernel_sgf_variations:nn {\l__pgfgo_sgf_last_int} \l__pgfgo_sgf_variations_tl
+		\seq_set_eq:NN \l__pgfgo_sgf_variations_seq \l_pgfgo_kernel_sgf_variations_seq
+		\seq_map_inline:Nn \l__pgfgo_sgf_variations_seq {\__pgfgo_sgf_marked_point:nnnnn {variation} ##1}
+	}
+}
 
 \cs_new_protected:Npn \pgfgo_sgf:nn #1#2 {
 	\group_begin:
 		\keys_set:nn {pgfgo / sgf} {#1}
 		\tl_set:Nn \l__pgfgo_sgf_file_tl {#2}
 		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgf_variation_tl
-		\int_set:Nn \l__pgfgo_sgf_restart_int {
-			\str_if_eq:VnTF \l__pgfgo_sgf_restart_tl {auto}
-				{\int_compare:nNnTF {\l_pgfgo_kernel_sgf_print_int} = {2} {100} {0}}
-				{\l__pgfgo_sgf_restart_tl}
-		}
-		\bool_set:Nn \l__pgfgo_sgf_numbers_bool {
-			\str_if_eq_p:Vn \l__pgfgo_sgf_numbers_tl {true} ||
-			(\str_if_eq_p:Vn \l__pgfgo_sgf_numbers_tl {auto} &&
-				! \int_compare_p:nNn {\l_pgfgo_kernel_sgf_print_int} = {0})
-		}
-
-		\bool_if:nF {
-			! \l__pgfgo_sgf_check_size_bool ||
-			(\int_compare_p:nNn {\l_pgfgo_kernel_sgf_size_x_int} = {\l_pgfgo_goban_size_x_int} &&
-			\int_compare_p:nNn {\l_pgfgo_kernel_sgf_size_y_int} = {\l_pgfgo_goban_size_y_int})
-		}{
-			\msg_warning:nnnee {pgfgo} {sgf-size} {#2}
-				{\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
-				{\int_use:N \l_pgfgo_goban_size_x_int x \int_use:N \l_pgfgo_goban_size_y_int}
-		}
-
-		\clist_set_from_seq:NN \l_tmpa_clist \l_pgfgo_kernel_sgf_black_seq
-		\__pgfgo_sgf_stones:nV {black} \l_tmpa_clist
-		\clist_set_from_seq:NN \l_tmpa_clist \l_pgfgo_kernel_sgf_white_seq
-		\__pgfgo_sgf_stones:nV {white} \l_tmpa_clist
-
-		%LAS MARCAS DEL ULTIMO NODO QUE SE MUESTRA (SE AVERIGUAN ANTES DE JUGAR: REEMPLAZAN LOS NUMEROS). LAS
-		%LETRAS DE LAS VARIANTES TAMBIEN.
-		\int_zero:N \l_tmpa_int
-		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgf_count_move:nnn ##1}
-		\int_set:Nn \l__pgfgo_sgf_last_int {\int_min:nn {\l_tmpa_int} {\l__pgfgo_sgf_to_int}}
-		\prop_gclear:N \g__pgfgo_sgf_marked_prop
-		\bool_if:NT \l__pgfgo_sgf_marks_bool {\__pgfgo_sgf_marked_points:n {\l__pgfgo_sgf_last_int}}
-		\seq_clear:N \l__pgfgo_sgf_variations_seq
-		\str_if_eq:VnF \l__pgfgo_sgf_variations_tl {none} {
-			\exp_args:NnV \pgfgo_kernel_sgf_variations:nn {\l__pgfgo_sgf_last_int} \l__pgfgo_sgf_variations_tl
-			\seq_set_eq:NN \l__pgfgo_sgf_variations_seq \l_pgfgo_kernel_sgf_variations_seq
-			\seq_map_inline:Nn \l__pgfgo_sgf_variations_seq {\__pgfgo_sgf_marked_point:nnnnn {variation} ##1}
-		}
-
+		\__pgfgo_sgf_numbering:
+		\bool_if:NT \l__pgfgo_sgf_check_size_bool {\__pgfgo_sgf_check_size:n {#2}}
+		\__pgfgo_sgf_setup_stones:nN {black} \l_pgfgo_kernel_sgf_black_seq
+		\__pgfgo_sgf_setup_stones:nN {white} \l_pgfgo_kernel_sgf_white_seq
+		\__pgfgo_sgf_count_moves:Nn \l__pgfgo_sgf_last_int {\l__pgfgo_sgf_to_int}
+		\int_set:Nn \l__pgfgo_sgf_last_int {\int_min:nn {\l__pgfgo_sgf_last_int} {\l__pgfgo_sgf_to_int}}
+		\__pgfgo_sgf_marked:
+		%LAS JUGADAS.
 		\int_zero:N \l__pgfgo_sgf_count_int
 		\int_zero:N \l__pgfgo_sgf_number_int
 		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgf_event:nnn ##1}
-
+		%LAS MARCAS, LAS FLECHAS Y LAS VARIANTES DE LA ULTIMA JUGADA.
+		\seq_map_inline:Nn \l__pgfgo_sgf_marks_seq {\__pgfgo_sgf_mark:nnnnn ##1}
 		\bool_if:NT \l__pgfgo_sgf_marks_bool {
-			\pgfgo_kernel_sgf_marks:n {\l__pgfgo_sgf_last_int}
-			\seq_map_inline:Nn \l_pgfgo_kernel_sgf_marks_seq {\__pgfgo_sgf_mark:nnnnn ##1}
 			\pgfgo_kernel_sgf_lines:n {\l__pgfgo_sgf_last_int}
 			\seq_map_inline:Nn \l_pgfgo_kernel_sgf_lines_seq {\__pgfgo_sgf_line:nnnnn ##1}
 		}
 		\seq_map_inline:Nn \l__pgfgo_sgf_variations_seq {\__pgfgo_sgf_variation:nnnn ##1}
 	\group_end:
+}
+
+%\sgf SOLO EXISTE DENTRO DE goban (VER pgf-go-goban.sty).
+\NewDocumentCommand{\__pgfgo_sgf_command}{O{}m}{
+	\__pgfgo_sgf_if_kernel:n {\pgfgo_sgf:nn {#1} {#2}}
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -309,7 +378,10 @@
 %UC, CON LOS TEXTOS DE /pgfgo/sgf annotations) Y SU COMENTARIO (C).
 \bool_new:N \l__pgfgo_sgf_annotations_bool
 \bool_set_true:N \l__pgfgo_sgf_annotations_bool
+%EL COMENTARIO LEIDO: SUS ANOTACIONES COMO TEXTOS, SI TIENE ANOTACIONES Y EL TEXTO DE C.
 \seq_new:N \l__pgfgo_sgf_note_seq
+\bool_new:N \l__pgfgo_sgf_annotated_bool
+\tl_new:N \l__pgfgo_sgf_comment_tl
 
 \keys_define:nn {pgfgo / sgf~annotations} {
 	tesuji								.tl_set:N		= \l__pgfgo_sgf_note_TE_i_tl,
@@ -338,14 +410,10 @@
 	unclear								.initial:n	= {\pgfgo_text:n {unclear}},
 }
 %DM Y UC ENFATIZADOS USAN EL MISMO TEXTO; DO E IT NO TIENEN VALOR.
-\tl_new:N \l__pgfgo_sgf_note_DM_ii_tl
-\tl_set:Nn \l__pgfgo_sgf_note_DM_ii_tl {\l__pgfgo_sgf_note_DM_i_tl}
-\tl_new:N \l__pgfgo_sgf_note_UC_ii_tl
-\tl_set:Nn \l__pgfgo_sgf_note_UC_ii_tl {\l__pgfgo_sgf_note_UC_i_tl}
-\tl_new:N \l__pgfgo_sgf_note_DO_ii_tl
-\tl_set:Nn \l__pgfgo_sgf_note_DO_ii_tl {\l__pgfgo_sgf_note_DO_i_tl}
-\tl_new:N \l__pgfgo_sgf_note_IT_ii_tl
-\tl_set:Nn \l__pgfgo_sgf_note_IT_ii_tl {\l__pgfgo_sgf_note_IT_i_tl}
+\clist_map_inline:nn {DM, UC, DO, IT} {
+	\tl_new:c {l__pgfgo_sgf_note_ #1 _ii_tl}
+	\tl_set:ce {l__pgfgo_sgf_note_ #1 _ii_tl} {\exp_not:c {l__pgfgo_sgf_note_ #1 _i_tl}}
+}
 
 \keys_define:nn {pgfgo} {
 	sgf~annotations				.code:n			= {\keys_set:nn {pgfgo / sgf~annotations} {#1}},
@@ -360,28 +428,41 @@
 		}
 }
 
-%ESCRIBE EL COMENTARIO DE LA JUGADA #1 DE LA ULTIMA PARTIDA LEIDA (0: EL DE ANTES DE LA PRIMERA JUGADA).
-\cs_new_protected:Npn \pgfgo_sgf_comment:n #1 {
+%LEE EL COMENTARIO DE LA JUGADA #1 DE LA ULTIMA PARTIDA LEIDA (0: EL DE ANTES DE LA PRIMERA JUGADA), PARA
+%PREGUNTAR SI TIENE (\__pgfgo_sgf_if_comment:nT) Y ESCRIBIRLO (\__pgfgo_sgf_comment_use:) SIN VOLVER A PEDIRLO.
+\cs_new_protected:Npn \__pgfgo_sgf_comment_get:n #1 {
 	\seq_clear:N \l__pgfgo_sgf_note_seq
+	\bool_set_false:N \l__pgfgo_sgf_annotated_bool
 	\bool_if:NT \l__pgfgo_sgf_annotations_bool {
 		\pgfgo_kernel_sgf_annotations:n {#1}
-		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_annotations_seq {\__pgfgo_sgf_note:nn ##1}
+		\seq_if_empty:NF \l_pgfgo_kernel_sgf_annotations_seq {
+			\bool_set_true:N \l__pgfgo_sgf_annotated_bool
+			\seq_map_inline:Nn \l_pgfgo_kernel_sgf_annotations_seq {\__pgfgo_sgf_note:nn ##1}
+		}
 	}
+	\tl_set:Ne \l__pgfgo_sgf_comment_tl {\pgfgo_kernel_sgf_comment:n {#1}}
+}
+\cs_new_protected:Npn \__pgfgo_sgf_comment_use: {
 	\seq_if_empty:NF \l__pgfgo_sgf_note_seq {
 		\seq_use:Nn \l__pgfgo_sgf_note_seq {.~}.
-		\tl_if_blank:eF {\pgfgo_kernel_sgf_comment:n {#1}} {~}
+		\tl_if_blank:VF \l__pgfgo_sgf_comment_tl {~}
 	}
-	\pgfgo_kernel_sgf_comment:n {#1}
+	\tl_use:N \l__pgfgo_sgf_comment_tl
 }
 
-%VERDADERO SI LA JUGADA #1 TIENE COMENTARIO O ANOTACIONES.
+%ESCRIBE EL COMENTARIO DE LA JUGADA #1 DE LA ULTIMA PARTIDA LEIDA.
+\cs_new_protected:Npn \pgfgo_sgf_comment:n #1 {
+	\__pgfgo_sgf_comment_get:n {#1}
+	\__pgfgo_sgf_comment_use:
+}
+
+%VERDADERO SI LA JUGADA #1 TIENE COMENTARIO O ANOTACIONES. DEJA EL COMENTARIO LISTO PARA
+%\__pgfgo_sgf_comment_use:.
 \prg_new_protected_conditional:Npnn \__pgfgo_sgf_if_comment:n #1 {T} {
-	\bool_if:NTF \l__pgfgo_sgf_annotations_bool
-		{\pgfgo_kernel_sgf_annotations:n {#1}}
-		{\seq_clear:N \l_pgfgo_kernel_sgf_annotations_seq}
+	\__pgfgo_sgf_comment_get:n {#1}
 	\bool_lazy_or:nnTF
-		{! \seq_if_empty_p:N \l_pgfgo_kernel_sgf_annotations_seq}
-		{! \tl_if_blank_p:e {\pgfgo_kernel_sgf_comment:n {#1}}}
+		{\l__pgfgo_sgf_annotated_bool}
+		{! \tl_if_blank_p:V \l__pgfgo_sgf_comment_tl}
 		{\prg_return_true:} {\prg_return_false:}
 }
 
@@ -394,14 +475,12 @@
 	annotations			.default:n	= {true},
 }
 \NewDocumentCommand \sgfcomment {O{}mm} {
-	\pgfgo_kernel_if_feature:nTF {sgf} {
+	\__pgfgo_sgf_if_kernel:n {
 		\group_begin:
 			\keys_set:nn {pgfgo / sgf~comment} {#1}
 			\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfcomment_variation_tl
 			\pgfgo_sgf_comment:n {#3}
 		\group_end:
-	}{
-		\pgfgo_kernel_require:n {sgf}
 	}
 }
 
@@ -410,21 +489,12 @@
 	game					.code:n			= {\int_set:Nn \l_pgfgo_kernel_sgf_game_int {#1}},
 }
 \NewDocumentCommand \sgfinfo {O{}mm} {
-	\pgfgo_kernel_if_feature:nTF {sgf} {
+	\__pgfgo_sgf_if_kernel:n {
 		\group_begin:
 			\keys_set:nn {pgfgo / sgf~info} {#1}
 			\pgfgo_kernel_sgf_info:nn {#2} {#3}
 		\group_end:
-	}{
-		\pgfgo_kernel_require:n {sgf}
 	}
-}
-
-%\sgf SOLO EXISTE DENTRO DE goban (VER pgf-go-goban.sty).
-\NewDocumentCommand{\__pgfgo_sgf_command}{O{}m}{
-	\pgfgo_kernel_if_feature:nTF {sgf}
-		{\pgfgo_sgf:nn {#1} {#2}}
-		{\pgfgo_kernel_require:n {sgf}}
 }
 
 
@@ -437,7 +507,6 @@
 %SE USA FUERA DE goban. NECESITA kernel = lua Y \usepackage{animate}.
 
 \int_new:N \l__pgfgo_sgfanim_from_int
-\bool_new:N \l__pgfgo_sgfanim_layers_bool
 \int_new:N \l__pgfgo_sgfanim_to_int
 \tl_new:N \l__pgfgo_sgfanim_fps_tl
 \tl_new:N \l__pgfgo_sgfanim_goban_tl
@@ -447,8 +516,14 @@
 \bool_new:N \l__pgfgo_sgfanim_comments_bool
 \dim_new:N \l__pgfgo_sgfanim_comment_height_dim
 \tl_new:N \l__pgfgo_sgfanim_comment_font_tl
+\tl_new:N \l__pgfgo_sgfanim_variation_tl
+\bool_new:N \l__pgfgo_sgfanim_marks_bool
+\tl_new:N \l__pgfgo_sgfanim_restart_tl
+\bool_new:N \l__pgfgo_sgfanim_view_bool
+\bool_new:N \l__pgfgo_sgfanim_layers_bool
 \tl_new:N \l__pgfgo_sgfanim_file_tl
 \tl_new:N \l__pgfgo_sgfanim_size_tl
+%LAS JUGADAS (SIN LOS CAMBIOS DE NODOS NI LOS NUMEROS), {black | white}{x}{y}: LA JUGADA DE CADA CUADRO.
 \seq_new:N \l__pgfgo_sgfanim_moves_seq
 \box_new:N \l__pgfgo_sgfanim_box
 
@@ -508,7 +583,7 @@
 
 
 \cs_new_protected:Npn \__pgfgo_sgfanim_keep_move:nnn #1#2#3 {
-	\str_case:nnT {#1} {{black} {} {white} {}}
+	\__pgfgo_sgf_if_move:nnnT {#1} {#2} {#3}
 		{\seq_put_right:Nn \l__pgfgo_sgfanim_moves_seq {{#1}{#2}{#3}}}
 }
 
@@ -518,15 +593,15 @@
 	\tl_set:Nn \l__pgfgo_sgfanim_file_tl {#2}
 	\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfanim_variation_tl
 	%LOS TABLEROS TIENEN EL TAMANO DE LA PARTIDA (goban = {...} PUEDE CAMBIARLO).
-	\tl_set:Ne \l__pgfgo_sgfanim_size_tl
-		{\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
-	%SOLO LAS JUGADAS (SIN LOS CAMBIOS DE NODOS POSTERIORES): UN CUADRO POR JUGADA.
+	\__pgfgo_sgf_size:N \l__pgfgo_sgfanim_size_tl
+	%UN CUADRO POR JUGADA.
 	\seq_clear:N \l__pgfgo_sgfanim_moves_seq
 	\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgfanim_keep_move:nnn ##1}
-	\int_compare:nNnT {\l__pgfgo_sgfanim_to_int} < {0}
-		{\int_set:Nn \l__pgfgo_sgfanim_to_int {\seq_count:N \l__pgfgo_sgfanim_moves_seq}}
-	\int_set:Nn \l__pgfgo_sgfanim_to_int
-		{\int_min:nn {\l__pgfgo_sgfanim_to_int} {\seq_count:N \l__pgfgo_sgfanim_moves_seq}}
+	\int_set:Nn \l__pgfgo_sgfanim_to_int {
+		\int_compare:nNnTF {\l__pgfgo_sgfanim_to_int} < {0}
+			{\seq_count:N \l__pgfgo_sgfanim_moves_seq}
+			{\int_min:nn {\l__pgfgo_sgfanim_to_int} {\seq_count:N \l__pgfgo_sgfanim_moves_seq}}
+	}
 	\int_set:Nn \l__pgfgo_sgfanim_from_int
 		{\int_max:nn {0} {\int_min:nn {\l__pgfgo_sgfanim_from_int} {\l__pgfgo_sgfanim_to_int}}}
 	%TODOS LOS CUADROS TIENEN EL MISMO TABLERO: SI LA VISTA (VW) CAMBIA, EL QUE ABARCA TODAS.
@@ -537,17 +612,17 @@
 
 %MARCA LA JUGADA #2,#3 DE #1. UN PASE NO SE MARCA, NI UN PUNTO QUE YA MARCA EL ARCHIVO.
 \cs_new_protected:Npn \__pgfgo_sgfanim_mark:nnn #1#2#3 {
-	\tl_if_blank:nTF {#2}
-		{\tl_clear:N \l__pgfgo_captures_key_tl}
-		{\__pgfgo_captures_key:nn {#2} {#3}}
-	\bool_if:nF {
-		\tl_if_blank_p:n {#2} ||
-		(\l__pgfgo_sgfanim_marks_bool && \prop_if_in_p:NV \g__pgfgo_sgf_marked_prop \l__pgfgo_captures_key_tl)
-	} {
-		\use:e {
-			\exp_not:N \pgfgo_marks_parsed:nn
-				{#1, \exp_not:V \l__pgfgo_sgfanim_last_tl} {\exp_not:n {{#2}{#3}}}
-		}
+	\tl_if_blank:nF {#2} {
+		\__pgfgo_captures_key:nn {#2} {#3}
+		\bool_lazy_and:nnF
+			{\l__pgfgo_sgfanim_marks_bool}
+			{\prop_if_in_p:NV \g__pgfgo_sgf_marked_prop \l__pgfgo_captures_key_tl}
+			{
+				\use:e {
+					\exp_not:N \pgfgo_marks_parsed:nn
+						{#1, \exp_not:V \l__pgfgo_sgfanim_last_tl} {\exp_not:n {{#2}{#3}}}
+				}
+			}
 	}
 }
 
@@ -627,7 +702,6 @@
 %QUE APARECEN EN EL. TODAS TIENEN EL TAMANO DEL TABLERO.
 \int_new:N \g__pgfgo_sgfanim_layer_int
 \int_new:N \g__pgfgo_sgfanim_file_int
-\tl_new:N \l__pgfgo_sgfanim_bbox_tl
 \tl_new:N \l__pgfgo_sgfanim_sig_tl
 \tl_new:N \l__pgfgo_sgfanim_old_tl
 %"x,y" -> FIRMA DE LO QUE SE DIBUJA EN ESE PUNTO ({codigo}{atenuada}{marcas}), EN EL CUADRO ANTERIOR Y EN EL ACTUAL.
@@ -636,6 +710,8 @@
 %"x,y" -> LAMINA DE LA PIEDRA QUE SE VE AHORA, Y LAMINA -> CUADRO EN QUE APARECIO.
 \prop_new:N \l__pgfgo_sgfanim_active_prop
 \prop_new:N \l__pgfgo_sgfanim_start_prop
+%"x,y" -> LAMINA DE LAS PIEDRAS QUE APARECEN EN EL CUADRO QUE SE ARMA.
+\prop_new:N \g__pgfgo_sgfanim_new_prop
 %{LAMINA}{CUADRO EN QUE APARECE}{CANTIDAD DE CUADROS} DE CADA PIEDRA, Y CUADRO -> LAMINA DEL CUADRO.
 \seq_new:N \l__pgfgo_sgfanim_stones_seq
 \prop_new:N \l__pgfgo_sgfanim_own_prop
@@ -666,8 +742,9 @@
 	}
 }
 
-%LA LAMINA DE UNA PIEDRA: #1 PUNTO, #2 FIRMA.
-\cs_new_protected:Npn \__pgfgo_sgfanim_stone_layer:nn #1#2 {
+%UNA PIEDRA QUE APARECE EN EL PUNTO #1 CON LA FIRMA #2: SU LAMINA.
+\cs_new_protected:Npn \__pgfgo_sgfanim_new_stone:nn #1#2 {
+	\prop_gput:Nne \g__pgfgo_sgfanim_new_prop {#1} {\int_use:N \g__pgfgo_sgfanim_layer_int}
 	\__pgfgo_sgfanim_layer:nn {
 		\__pgfgo_sgfanim_collect:
 		\__pgfgo_sgfanim_put:nnnn {#1} #2
@@ -689,7 +766,6 @@
 		}
 	}
 }
-\cs_generate_variant:Nn \prop_item:Nn {NV}
 
 %EL CUADRO #1: SU LAMINA, Y LAS LAMINAS DE LAS PIEDRAS QUE CAMBIARON.
 \cs_new_protected:Npn \__pgfgo_sgfanim_layers_frame:n #1 {
@@ -732,14 +808,6 @@
 	\prop_gclear:N \g__pgfgo_sgfanim_new_prop
 	\prop_set_eq:NN \l__pgfgo_sgfanim_prev_prop \l__pgfgo_sgfanim_cur_prop
 }
-\prop_new:N \g__pgfgo_sgfanim_new_prop
-\cs_new_protected:Npn \__pgfgo_sgfanim_new_stone:nn #1#2 {
-	\prop_gput:Nne \g__pgfgo_sgfanim_new_prop {#1} {\int_use:N \g__pgfgo_sgfanim_layer_int}
-	\__pgfgo_sgfanim_stone_layer:nn {#1} {#2}
-}
-\cs_generate_variant:Nn \tl_if_eq:nnF {nV}
-\cs_generate_variant:Nn \prop_put:Nnn {Nne}
-\cs_generate_variant:Nn \prop_gput:Nnn {Nne}
 
 %ARMA TODAS LAS LAMINAS (DESPUES DE \pgfgo_sgfanimation_setup:nn).
 \cs_new_protected:Npn \pgfgo_sgfanimation_layers: {
@@ -778,6 +846,7 @@
 	}
 	\iow_close:N \g__pgfgo_sgfanim_iow
 }
+\cs_generate_variant:Nn \__pgfgo_sgfanim_timeline:n {V}
 \cs_new_protected:Npn \__pgfgo_sgfanim_timeline_stone:nnn #1#2#3 {
 	\prop_get:NnNTF \l_tmpa_prop {#2} \l_tmpa_tl
 		{\prop_put:Nne \l_tmpa_prop {#2} {\l_tmpa_tl , #1x#3}}
@@ -798,51 +867,56 @@
 		{\hbox_overlap_right:n {\box_use:c {g__pgfgo_sgfanim_ #2 _box}}}
 }
 
+%LA ANIMACION POR CAPAS: LAS LAMINAS, UNA POR CUADRO DE animate, Y EL timeline QUE DICE CUALES SE VEN.
+\cs_new_protected:Npn \__pgfgo_sgfanim_layered: {
+	\pgfgo_sgfanimation_layers:
+	\int_gincr:N \g__pgfgo_sgfanim_file_int
+	\tl_set:Ne \l__pgfgo_sgfanim_timeline_tl {\c_sys_jobname_str -pgfgo- \int_use:N \g__pgfgo_sgfanim_file_int .tln}
+	%animate LEE EL timeline SIN COMILLAS: UN ESPACIO EN EL NOMBRE DEL ARCHIVO LO CORTA. LAS LLAVES
+	%DE timeline = {...} PROTEGEN LAS COMAS Y LOS = DEL NOMBRE.
+	\tl_replace_all:Nnn \l__pgfgo_sgfanim_timeline_tl {~} {_}
+	\__pgfgo_sgfanim_timeline:V \l__pgfgo_sgfanim_timeline_tl
+	\tl_clear:N \l_tmpb_tl
+	\int_step_inline:nnn {0} {\g__pgfgo_sgfanim_layer_int - 2}
+		{\tl_put_right:Nn \l_tmpb_tl {\box_use:c {g__pgfgo_sgfanim_ ##1 _box} \newframe}}
+	\mode_leave_vertical:
+	\use:e {
+		\exp_not:N \begin{animateinline}
+			[\exp_not:V \l__pgfgo_sgfanim_animate_tl, timeline = {\l__pgfgo_sgfanim_timeline_tl}]
+			{\exp_not:V \l__pgfgo_sgfanim_fps_tl}
+			\exp_not:V \l_tmpb_tl
+			\exp_not:N \box_use:c {g__pgfgo_sgfanim_ \int_eval:n {\g__pgfgo_sgfanim_layer_int - 1} _box}
+		\exp_not:N \end{animateinline}
+	}
+}
+
+%LA ANIMACION SIN CAPAS: CADA CUADRO ES UN goban ENTERO.
+\cs_new_protected:Npn \__pgfgo_sgfanim_frames: {
+	\use:e {
+		\exp_not:N \begin{animateinline}
+			[\exp_not:V \l__pgfgo_sgfanim_animate_tl] {\exp_not:V \l__pgfgo_sgfanim_fps_tl}
+		\exp_not:N \multiframe
+			{\int_eval:n {\l__pgfgo_sgfanim_to_int - \l__pgfgo_sgfanim_from_int + 1}}
+			{iPgfgoFrame = \int_use:N \l__pgfgo_sgfanim_from_int + 1}
+			{\exp_not:N \pgfgo_sgfanimation_frame:n {\exp_not:N \iPgfgoFrame}}
+		\exp_not:N \end{animateinline}
+	}
+}
+
 \cs_new_protected:Npn \pgfgo_sgfanimation:nn #1#2 {
 	\group_begin:
-	\pgfgo_sgfanimation_setup:nn {#1} {#2}
-	\bool_if:NTF \l__pgfgo_sgfanim_layers_bool {
-		\pgfgo_sgfanimation_layers:
-		\int_gincr:N \g__pgfgo_sgfanim_file_int
-		\tl_set:Ne \l__pgfgo_sgfanim_timeline_tl {\c_sys_jobname_str -pgfgo- \int_use:N \g__pgfgo_sgfanim_file_int .tln}
-		%animate LEE EL timeline SIN COMILLAS: UN ESPACIO EN EL NOMBRE DEL ARCHIVO LO CORTA. LAS LLAVES
-		%DE timeline = {...} PROTEGEN LAS COMAS Y LOS = DEL NOMBRE.
-		\tl_replace_all:Nnn \l__pgfgo_sgfanim_timeline_tl {~} {_}
-		\__pgfgo_sgfanim_timeline:V \l__pgfgo_sgfanim_timeline_tl
-		\tl_clear:N \l_tmpb_tl
-		\int_step_inline:nnn {0} {\g__pgfgo_sgfanim_layer_int - 2}
-			{\tl_put_right:Nn \l_tmpb_tl {\box_use:c {g__pgfgo_sgfanim_ ##1 _box} \newframe}}
-		\mode_leave_vertical:
-		\use:e {
-			\exp_not:N \begin{animateinline}
-				[\exp_not:V \l__pgfgo_sgfanim_animate_tl, timeline = {\l__pgfgo_sgfanim_timeline_tl}]
-				{\exp_not:V \l__pgfgo_sgfanim_fps_tl}
-				\exp_not:V \l_tmpb_tl
-				\exp_not:N \box_use:c {g__pgfgo_sgfanim_ \int_eval:n {\g__pgfgo_sgfanim_layer_int - 1} _box}
-			\exp_not:N \end{animateinline}
-		}
-	}{
-		\use:e {
-			\exp_not:N \begin{animateinline}
-				[\exp_not:V \l__pgfgo_sgfanim_animate_tl] {\exp_not:V \l__pgfgo_sgfanim_fps_tl}
-			\exp_not:N \multiframe
-				{\int_eval:n {\l__pgfgo_sgfanim_to_int - \l__pgfgo_sgfanim_from_int + 1}}
-				{iPgfgoFrame = \int_use:N \l__pgfgo_sgfanim_from_int + 1}
-				{\exp_not:N \pgfgo_sgfanimation_frame:n {\exp_not:N \iPgfgoFrame}}
-			\exp_not:N \end{animateinline}
-		}
-	}
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\bool_if:NTF \l__pgfgo_sgfanim_layers_bool
+			{\__pgfgo_sgfanim_layered:}
+			{\__pgfgo_sgfanim_frames:}
 	\group_end:
 }
-\cs_generate_variant:Nn \__pgfgo_sgfanim_timeline:n {V}
 
 \NewDocumentCommand{\sgfanimation}{O{}m}{
-	\pgfgo_kernel_if_feature:nTF {sgf} {
+	\__pgfgo_sgf_if_kernel:n {
 		\cs_if_exist:NTF \animateinline
 			{\pgfgo_sgfanimation:nn {#1} {#2}}
 			{\msg_error:nn {pgfgo} {sgf-animation-animate}}
-	}{
-		\pgfgo_kernel_require:n {sgf}
 	}
 }
 
@@ -859,23 +933,26 @@
 \int_new:N \l__pgfgo_sgfdiag_from_int
 \int_new:N \l__pgfgo_sgfdiag_to_int
 \tl_new:N \l__pgfgo_sgfdiag_layout_tl
-\int_new:N \l__pgfgo_sgfdiag_last_int
 \tl_new:N \l__pgfgo_sgfdiag_goban_tl
 \tl_new:N \l__pgfgo_sgfdiag_variation_tl
 \tl_new:N \l__pgfgo_sgfdiag_title_tl
 \tl_new:N \l__pgfgo_sgfdiag_font_tl
-\tl_new:N \l__pgfgo_sgfdiag_file_tl
-\tl_new:N \l__pgfgo_sgfdiag_size_tl
-\bool_new:N \l__pgfgo_sgfdiag_notes_bool
 \bool_new:N \l__pgfgo_sgfdiag_restart_bool
-\box_new:N \l__pgfgo_sgfdiag_box
-\box_new:N \l__pgfgo_sgfdiag_caption_box
+\bool_new:N \l__pgfgo_sgfdiag_notes_bool
+\bool_new:N \l__pgfgo_sgfdiag_comments_bool
+\bool_new:N \l__pgfgo_sgfdiag_view_bool
+\bool_new:N \l__pgfgo_sgfdiag_figures_bool
 \bool_new:N \l__pgfgo_sgfdiag_result_bool
 \tl_new:N \l__pgfgo_sgfdiag_result_title_tl
 \tl_new:N \l__pgfgo_sgfdiag_result_format_tl
 \tl_new:N \l__pgfgo_sgfdiag_black_tl
 \tl_new:N \l__pgfgo_sgfdiag_white_tl
-\dim_new:N \l__pgfgo_sgfdiag_width_dim
+%LA PARTIDA: EL ARCHIVO, SU TAMANO, SU komi, SUS JUGADAS Y LA ULTIMA QUE SE DIBUJA.
+\tl_new:N \l__pgfgo_sgfdiag_file_tl
+\tl_new:N \l__pgfgo_sgfdiag_size_tl
+\tl_new:N \l__pgfgo_sgfdiag_komi_tl
+\int_new:N \l__pgfgo_sgfdiag_total_int
+\int_new:N \l__pgfgo_sgfdiag_last_int
 
 \keys_define:nn {pgfgo / sgf~diagrams} {
 	step						.int_set:N	= \l__pgfgo_sgfdiag_step_int,
@@ -933,16 +1010,28 @@
 	sgf~diagrams		.code:n			= {\keys_set:nn {pgfgo / sgf~diagrams} {#1}}
 }
 
-%ARMA UN DIAGRAMA EN \l__pgfgo_sgfdiag_cell_box: EL goban CON LAS JUGADAS #1 A #2 (NUMERADAS DESDE #1) DE LA
-%LINEA \l__pgfgo_sgfdiag_variation_tl, Y DEBAJO EL EPIGRAFE #3 Y LO QUE DIGA #4 (SE EJECUTA DESPUES DEL goban).
-%LAS OPCIONES DEL goban QUE ELIGEN LA PARTE VISIBLE ESTAN EN \l__pgfgo_sgfdiag_window_tl, Y restart EN
-%\l__pgfgo_sgfdiag_restart_tl. EN LA GRILLA (VER pgf-go-layout.sty) EL DIAGRAMA TIENE EL ANCHO DE LA CELDA, Y
-%CON fit TODOS LOS TABLEROS USAN LA ESCALA QUE LLENA LA CELDA CON EL PRIMERO (\l__pgfgo_sgfdiag_scale_tl).
+%UN DIAGRAMA (DE \sgfdiagrams O DE \sgfproblem) SE ARMA EN \l__pgfgo_sgfdiag_cell_box: EL goban CON LAS
+%JUGADAS #1 A #2 (NUMERADAS DESDE #1) DE LA LINEA \l__pgfgo_sgfdiag_variation_tl, Y DEBAJO EL EPIGRAFE #3 Y
+%LO QUE DIGA #4 (SE EJECUTA DESPUES DEL goban). LAS OPCIONES DEL goban QUE ELIGEN LA PARTE VISIBLE ESTAN EN
+%\l__pgfgo_sgfdiag_window_tl, Y restart EN \l__pgfgo_sgfdiag_restart_tl. EN LA GRILLA (VER pgf-go-layout.sty)
+%EL DIAGRAMA TIENE EL ANCHO DE LA CELDA, Y CON fit TODOS LOS TABLEROS USAN LA ESCALA QUE LLENA LA CELDA CON
+%EL PRIMERO (\l__pgfgo_sgfdiag_scale_tl). \l__pgfgo_sgfdiag_align_tl ES LA ALINEACION DE LO QUE VA DEBAJO.
 \tl_new:N \l__pgfgo_sgfdiag_window_tl
 \tl_new:N \l__pgfgo_sgfdiag_restart_tl
 \tl_new:N \l__pgfgo_sgfdiag_scale_tl
 \tl_new:N \l__pgfgo_sgfdiag_align_tl
+\dim_new:N \l__pgfgo_sgfdiag_width_dim
+\box_new:N \l__pgfgo_sgfdiag_box
+\box_new:N \l__pgfgo_sgfdiag_caption_box
 \box_new:N \l__pgfgo_sgfdiag_cell_box
+
+%EMPIEZA UNA SERIE DE DIAGRAMAS DEL ARCHIVO #2, CON LAS OPCIONES DE layout #1.
+\cs_new_protected:Npn \__pgfgo_sgfdiag_begin:Nn #1#2 {
+	\pgfgo_layout_begin:V #1
+	\tl_clear:N \l__pgfgo_sgfdiag_scale_tl
+	\tl_set:Nn \l__pgfgo_sgfdiag_file_tl {#2}
+}
+
 \cs_new_protected:Npn \__pgfgo_sgfdiag_draw:nnnn #1#2#3#4 {
 	\pgfgo_layout_if_fit:T {
 		\tl_if_empty:NT \l__pgfgo_sgfdiag_scale_tl {
@@ -980,6 +1069,11 @@
 				#4
 			}
 		}
+}
+%EL MISMO DIAGRAMA, PUESTO EN LA DISPOSICION.
+\cs_new_protected:Npn \__pgfgo_sgfdiag_add:nnnn #1#2#3#4 {
+	\__pgfgo_sgfdiag_draw:nnnn {#1} {#2} {#3} {#4}
+	\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box
 }
 
 %EL goban DEL DIAGRAMA (JUGADAS #1 A #2) EN \l__pgfgo_sgfdiag_box.
@@ -1026,7 +1120,7 @@
 		\__pgfgo_sgfdiag_below:nn {\raggedright} {
 			\int_step_inline:nnn {#1} {#2} {
 				\__pgfgo_sgf_if_comment:nT {##1}
-					{\par \textbf{##1}:~\pgfgo_sgf_comment:n {##1}}
+					{\par \textbf{##1}:~\__pgfgo_sgf_comment_use:}
 			}
 		}
 	}
@@ -1034,13 +1128,10 @@
 
 %EL DIAGRAMA #1, CON LAS JUGADAS #2 A #3. #4: EL NUMERO DEL NOMBRE DE SU FIGURA (0: SIN NOMBRE).
 \cs_new_protected:Npn \__pgfgo_sgfdiag_diagram:nnnn #1#2#3#4 {
-	\tl_set:Ne \l__pgfgo_sgfdiag_window_tl {
-		\bool_if:NT \l__pgfgo_sgfdiag_view_bool {sgf~view = {\exp_not:V \l__pgfgo_sgfdiag_file_tl}}
-	}
 	%LA VISTA QUE ABARCA LAS DE TODAS LAS JUGADAS DEL DIAGRAMA.
 	\int_set:Nn \l_pgfgo_goban_sgf_view_from_int {#2}
 	\int_set:Nn \l_pgfgo_goban_sgf_view_to_int {#3}
-	\__pgfgo_sgfdiag_draw:nnnn {#2} {#3}
+	\__pgfgo_sgfdiag_add:nnnn {#2} {#3}
 		{
 			\int_compare:nNnTF {#4} > {0}
 				{\pgfgo_kernel_sgf_name:n {#4}}
@@ -1054,13 +1145,17 @@
 				{\int_compare_p:nNn {#3} = {\l__pgfgo_sgfdiag_total_int}}
 				{\__pgfgo_sgfdiag_result:}
 		}
-	\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box
+}
+
+%EL DIAGRAMA #1 (JUGADAS #2 A #3, CON EL NOMBRE #4), SI TIENE JUGADAS DESDE from: EMPIEZA EN from O DESPUES.
+\cs_new_protected:Npn \__pgfgo_sgfdiag_range:nnnn #1#2#3#4 {
+	\int_compare:nNnF {#3} < {\l__pgfgo_sgfdiag_from_int} {
+		\__pgfgo_sgfdiag_diagram:nnnn {#1} {\int_max:nn {#2} {\l__pgfgo_sgfdiag_from_int}} {#3} {#4}
+	}
 }
 
 %DEBAJO DEL ULTIMO DIAGRAMA: EL RESULTADO (RE) Y, SI EL ARCHIVO MARCA EL TERRITORIO (TB, TW), EL PUNTAJE DE
 %CADA JUGADOR COMO EL DE \pgfgoscore (CON EL komi DE KM).
-\tl_new:N \l__pgfgo_sgfdiag_komi_tl
-\int_new:N \l__pgfgo_sgfdiag_total_int
 \tl_new:N \l__pgfgo_sgfdiag_re_tl
 \cs_new_protected:Npn \__pgfgo_sgfdiag_result: {
 	\tl_set:Ne \l__pgfgo_sgfdiag_re_tl {\exp_args:NV \pgfgo_kernel_sgf_info:nn \l__pgfgo_sgfdiag_file_tl {RE}}
@@ -1142,21 +1237,14 @@
 	\seq_put_right:Ne \l__pgfgo_sgfdiag_figures_seq {{\int_eval:n {\l__pgfgo_sgfdiag_last_int + 1}}{0}}
 	\int_zero:N \l__pgfgo_sgfdiag_count_int
 	\int_step_inline:nn {\seq_count:N \l__pgfgo_sgfdiag_figures_seq - 1} {
-		\exp_args:Nee \__pgfgo_sgfdiag_figure:nn
-			{\seq_item:Nn \l__pgfgo_sgfdiag_figures_seq {##1}}
-			{\seq_item:Nn \l__pgfgo_sgfdiag_figures_seq {##1 + 1}}
+		\use:e {
+			\exp_not:N \__pgfgo_sgfdiag_figure:nnnn
+				\seq_item:Nn \l__pgfgo_sgfdiag_figures_seq {##1}
+				\seq_item:Nn \l__pgfgo_sgfdiag_figures_seq {##1 + 1}
+		}
 	}
 }
-%EL DIAGRAMA #1 (JUGADAS #2 A #3, CON EL NOMBRE #4), SI TIENE JUGADAS DESDE from: EMPIEZA EN from O DESPUES.
-\cs_new_protected:Npn \__pgfgo_sgfdiag_range:nnnn #1#2#3#4 {
-	\int_compare:nNnF {#3} < {\l__pgfgo_sgfdiag_from_int} {
-		\__pgfgo_sgfdiag_diagram:nnnn {#1} {\int_max:nn {#2} {\l__pgfgo_sgfdiag_from_int}} {#3} {#4}
-	}
-}
-%#1: {JUGADA}{NOMBRE} DE LA FIGURA, #2: LA DE LA SIGUIENTE.
-\cs_new_protected:Npn \__pgfgo_sgfdiag_figure:nn #1#2 {
-	\__pgfgo_sgfdiag_figure:nnnn #1 #2
-}
+%#1#2: {JUGADA}{NOMBRE} DE LA FIGURA, #3#4: LOS DE LA SIGUIENTE.
 \cs_new_protected:Npn \__pgfgo_sgfdiag_figure:nnnn #1#2#3#4 {
 	\int_compare:nNnT {#1} < {#3} {
 		\int_compare:nNnF {#1} > {\l__pgfgo_sgfdiag_last_int} {
@@ -1167,47 +1255,47 @@
 	}
 }
 
+%UN DIAGRAMA CADA step JUGADAS.
+\cs_new_protected:Npn \__pgfgo_sgfdiag_steps: {
+	\int_step_inline:nnnn {1} {\l__pgfgo_sgfdiag_step_int} {\l__pgfgo_sgfdiag_last_int} {
+		\__pgfgo_sgfdiag_range:nnnn
+			{(##1 - 1) / \l__pgfgo_sgfdiag_step_int + 1}
+			{##1}
+			{\int_min:nn {##1 + \l__pgfgo_sgfdiag_step_int - 1} {\l__pgfgo_sgfdiag_last_int}}
+			{0}
+	}
+}
+
 \cs_new_protected:Npn \pgfgo_sgfdiagrams:nn #1#2 {
 	\group_begin:
 		\keys_set:nn {pgfgo / sgf~diagrams} {#1}
-		\pgfgo_layout_begin:V \l__pgfgo_sgfdiag_layout_tl
-		\tl_clear:N \l__pgfgo_sgfdiag_scale_tl
-		\tl_set:Nn \l__pgfgo_sgfdiag_file_tl {#2}
+		\__pgfgo_sgfdiag_begin:Nn \l__pgfgo_sgfdiag_layout_tl {#2}
 		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfdiag_variation_tl
-		\tl_set:Ne \l__pgfgo_sgfdiag_size_tl
-			{\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
+		\__pgfgo_sgf_size:N \l__pgfgo_sgfdiag_size_tl
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_komi_tl \l_pgfgo_kernel_sgf_komi_tl
 		\tl_set:Ne \l__pgfgo_sgfdiag_restart_tl
 			{\bool_if:NTF \l__pgfgo_sgfdiag_restart_bool {\int_use:N \l__pgfgo_sgfdiag_step_int} {auto}}
+		\tl_set:Ne \l__pgfgo_sgfdiag_window_tl {
+			\bool_if:NT \l__pgfgo_sgfdiag_view_bool {sgf~view = {\exp_not:n {#2}}}
+		}
 		\tl_set_eq:NN \l_pgfgo_goban_sgf_view_variation_tl \l__pgfgo_sgfdiag_variation_tl
-		\int_zero:N \l_tmpa_int
-		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgf_count_move:nnn ##1}
-		\int_set_eq:NN \l__pgfgo_sgfdiag_total_int \l_tmpa_int
+		\__pgfgo_sgf_count_moves:Nn \l__pgfgo_sgfdiag_total_int {\c_max_int}
 		\int_set:Nn \l__pgfgo_sgfdiag_last_int {
 			\int_compare:nNnTF {\l__pgfgo_sgfdiag_to_int} < {0}
-				{\l_tmpa_int} {\int_min:nn {\l__pgfgo_sgfdiag_to_int} {\l_tmpa_int}}
+				{\l__pgfgo_sgfdiag_total_int}
+				{\int_min:nn {\l__pgfgo_sgfdiag_to_int} {\l__pgfgo_sgfdiag_total_int}}
 		}
 		\int_compare:nNnT {\l__pgfgo_sgfdiag_step_int} < {1}
 			{\int_set:Nn \l__pgfgo_sgfdiag_step_int {1}}
 		\bool_lazy_and:nnTF {\l__pgfgo_sgfdiag_figures_bool} {! \seq_if_empty_p:N \l_pgfgo_kernel_sgf_figures_seq}
 			{\__pgfgo_sgfdiag_figures:}
-			{
-				\int_step_inline:nnnn {1} {\l__pgfgo_sgfdiag_step_int} {\l__pgfgo_sgfdiag_last_int} {
-					\__pgfgo_sgfdiag_range:nnnn
-						{(##1 - 1) / \l__pgfgo_sgfdiag_step_int + 1}
-						{##1}
-						{\int_min:nn {##1 + \l__pgfgo_sgfdiag_step_int - 1} {\l__pgfgo_sgfdiag_last_int}}
-						{0}
-				}
-			}
+			{\__pgfgo_sgfdiag_steps:}
 		\pgfgo_layout_end:
 	\group_end:
 }
 
 \NewDocumentCommand{\sgfdiagrams}{O{}m}{
-	\pgfgo_kernel_if_feature:nTF {sgf}
-		{\pgfgo_sgfdiagrams:nn {#1} {#2}}
-		{\pgfgo_kernel_require:n {sgf}}
+	\__pgfgo_sgf_if_kernel:n {\pgfgo_sgfdiagrams:nn {#1} {#2}}
 }
 
 
@@ -1238,6 +1326,12 @@
 \tl_new:N \l__pgfgo_sgfprob_white_tl
 \tl_new:N \l__pgfgo_sgfprob_player_tl
 \seq_new:N \l__pgfgo_sgfprob_paths_seq
+\tl_new:N \l__pgfgo_sgfprob_extent_tl
+%LA PARTE VISIBLE CON crop: x1, y1, x2, y2.
+\int_new:N \l__pgfgo_sgfprob_x_from_int
+\int_new:N \l__pgfgo_sgfprob_y_from_int
+\int_new:N \l__pgfgo_sgfprob_x_to_int
+\int_new:N \l__pgfgo_sgfprob_y_to_int
 
 \keys_define:nn {pgfgo / sgf~problem} {
 	%alone: EL ENUNCIADO VA SOLO EN SU FILA, Y LAS VARIANTES DEBAJO.
@@ -1288,66 +1382,96 @@
 
 %QUIEN JUEGA: EL PL DEL PRINCIPIO O, SI NO ESTA, EL COLOR DE LA PRIMERA JUGADA.
 \cs_new_protected:Npn \__pgfgo_sgfprob_player:nnn #1#2#3 {
-	\tl_if_empty:NT \l__pgfgo_sgfprob_player_tl {
-		\str_case:nn {#1} {
-			{player}	{\tl_set:Nn \l__pgfgo_sgfprob_player_tl {#2}}
-			{black}		{\tl_set:Nn \l__pgfgo_sgfprob_player_tl {black}}
-			{white}		{\tl_set:Nn \l__pgfgo_sgfprob_player_tl {white}}
-		}
+	\str_case:nnT {#1} {
+		{player}	{\tl_set:Nn \l__pgfgo_sgfprob_player_tl {#2}}
+		{black}		{\tl_set:Nn \l__pgfgo_sgfprob_player_tl {black}}
+		{white}		{\tl_set:Nn \l__pgfgo_sgfprob_player_tl {white}}
+	}{
+		\seq_map_break:
 	}
 }
 
 %LA PARTE VISIBLE CON crop: EL RECTANGULO DEL PROBLEMA, margin LINEAS MAS GRANDE. UN BORDE QUE QUEDA A DOS
 %LINEAS O MENOS DEL BORDE DEL TABLERO LLEGA HASTA EL.
 \cs_new:Npn \__pgfgo_sgfprob_low:n #1 {
-	\int_eval:n {\int_compare:nNnTF {#1 - \l__pgfgo_sgfprob_margin_int} > {3} {#1 - \l__pgfgo_sgfprob_margin_int} {1}}
+	\int_compare:nNnTF {#1 - \l__pgfgo_sgfprob_margin_int} > {3} {#1 - \l__pgfgo_sgfprob_margin_int} {1}
 }
 \cs_new:Npn \__pgfgo_sgfprob_high:nn #1#2 {
-	\int_eval:n {\int_compare:nNnTF {#1 + \l__pgfgo_sgfprob_margin_int} < {#2 - 2} {#1 + \l__pgfgo_sgfprob_margin_int} {#2}}
+	\int_compare:nNnTF {#1 + \l__pgfgo_sgfprob_margin_int} < {#2 - 2} {#1 + \l__pgfgo_sgfprob_margin_int} {#2}
 }
 \cs_new_protected:Npn \__pgfgo_sgfprob_crop:nnnn #1#2#3#4 {
-	\bool_lazy_and:nnF
-		{\int_compare_p:nNn {\__pgfgo_sgfprob_low:n {#1}} = {1}}
-		{\bool_lazy_and_p:nn
-			{\int_compare_p:nNn {\__pgfgo_sgfprob_low:n {#2}} = {1}}
-			{\bool_lazy_and_p:nn
-				{\int_compare_p:nNn {\__pgfgo_sgfprob_high:nn {#3} {\l_pgfgo_kernel_sgf_size_x_int}} = {\l_pgfgo_kernel_sgf_size_x_int}}
-				{\int_compare_p:nNn {\__pgfgo_sgfprob_high:nn {#4} {\l_pgfgo_kernel_sgf_size_y_int}} = {\l_pgfgo_kernel_sgf_size_y_int}}
+	\int_set:Nn \l__pgfgo_sgfprob_x_from_int {\__pgfgo_sgfprob_low:n {#1}}
+	\int_set:Nn \l__pgfgo_sgfprob_y_from_int {\__pgfgo_sgfprob_low:n {#2}}
+	\int_set:Nn \l__pgfgo_sgfprob_x_to_int {\__pgfgo_sgfprob_high:nn {#3} {\l_pgfgo_kernel_sgf_size_x_int}}
+	\int_set:Nn \l__pgfgo_sgfprob_y_to_int {\__pgfgo_sgfprob_high:nn {#4} {\l_pgfgo_kernel_sgf_size_y_int}}
+	\bool_lazy_all:nF {
+		{\int_compare_p:nNn {\l__pgfgo_sgfprob_x_from_int} = {1}}
+		{\int_compare_p:nNn {\l__pgfgo_sgfprob_y_from_int} = {1}}
+		{\int_compare_p:nNn {\l__pgfgo_sgfprob_x_to_int} = {\l_pgfgo_kernel_sgf_size_x_int}}
+		{\int_compare_p:nNn {\l__pgfgo_sgfprob_y_to_int} = {\l_pgfgo_kernel_sgf_size_y_int}}
+	}{
+		\tl_set:Ne \l__pgfgo_sgfdiag_window_tl {
+			partial = {from =
+				\pgfgo_kernel_column_name:n {\l__pgfgo_sgfprob_x_from_int} \int_use:N \l__pgfgo_sgfprob_y_from_int
+				~to~
+				\pgfgo_kernel_column_name:n {\l__pgfgo_sgfprob_x_to_int} \int_use:N \l__pgfgo_sgfprob_y_to_int
+			}
+		}
+	}
+}
+
+%LA PARTE VISIBLE ES LA MISMA EN TODOS LOS DIAGRAMAS: LA VISTA INICIAL DEL ARCHIVO #1, O LA DE crop.
+\cs_new_protected:Npn \__pgfgo_sgfprob_window:n #1 {
+	\tl_clear:N \l__pgfgo_sgfdiag_window_tl
+	\int_zero:N \l_pgfgo_goban_sgf_view_from_int
+	\int_zero:N \l_pgfgo_goban_sgf_view_to_int
+	\tl_clear:N \l_pgfgo_goban_sgf_view_variation_tl
+	\bool_lazy_and:nnTF {\l__pgfgo_sgfprob_view_bool} {! \tl_if_empty_p:N \l_pgfgo_kernel_sgf_view_tl}
+		{\tl_set:Nn \l__pgfgo_sgfdiag_window_tl {sgf~view = {#1}}}
+		{
+			\bool_lazy_and:nnT {\l__pgfgo_sgfprob_crop_bool} {! \tl_if_empty_p:N \l__pgfgo_sgfprob_extent_tl}
+				{\exp_after:wN \__pgfgo_sgfprob_crop:nnnn \l__pgfgo_sgfprob_extent_tl}
+		}
+}
+
+%EL ENUNCIADO: LA POSICION INICIAL, QUIEN JUEGA Y EL COMENTARIO DE LA RAIZ.
+\cs_new_protected:Npn \__pgfgo_sgfprob_statement: {
+	\tl_clear:N \l__pgfgo_sgfdiag_variation_tl
+	\__pgfgo_sgfdiag_draw:nnnn {1} {0}
+		{
+			\tl_if_empty:NF \l__pgfgo_sgfprob_title_tl {\l__pgfgo_sgfprob_title_tl :~}
+			\str_case:Vn \l__pgfgo_sgfprob_player_tl {
+				{black} {\l__pgfgo_sgfprob_black_tl}
+				{white} {\l__pgfgo_sgfprob_white_tl}
 			}
 		}
 		{
-			\tl_set:Ne \l__pgfgo_sgfdiag_window_tl {
-				partial = {from =
-					\pgfgo_kernel_column_name:n {\__pgfgo_sgfprob_low:n {#1}} \__pgfgo_sgfprob_low:n {#2}
-					~to~
-					\pgfgo_kernel_column_name:n {\__pgfgo_sgfprob_high:nn {#3} {\l_pgfgo_kernel_sgf_size_x_int}}
-					\__pgfgo_sgfprob_high:nn {#4} {\l_pgfgo_kernel_sgf_size_y_int}
-				}
+			\bool_if:NT \l__pgfgo_sgfdiag_comments_bool {
+				\__pgfgo_sgf_if_comment:nT {0}
+					{\__pgfgo_sgfdiag_below:nn {\raggedright} {\__pgfgo_sgf_comment_use:}}
 			}
 		}
+	\bool_if:NTF \l__pgfgo_sgfprob_alone_bool
+		{\pgfgo_layout_add_alone:N \l__pgfgo_sgfdiag_cell_box}
+		{\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box}
 }
 
 %EL DIAGRAMA DE LA LINEA #2 (#1 ES SU NUMERO).
 \cs_new_protected:Npn \__pgfgo_sgfprob_solution:nn #1#2 {
 	\tl_set:Nn \l__pgfgo_sgfdiag_variation_tl {#2}
 	\pgfgo_kernel_sgf_read:nn {\l__pgfgo_sgfdiag_file_tl} {#2}
-	\int_zero:N \l_tmpa_int
-	\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgf_count_move:nnn ##1}
-	\int_set_eq:NN \l__pgfgo_sgfprob_last_int \l_tmpa_int
+	\__pgfgo_sgf_count_moves:Nn \l__pgfgo_sgfprob_last_int {\c_max_int}
 	\int_compare:nNnT {\l__pgfgo_sgfprob_last_int} > {0} {
-		\__pgfgo_sgfdiag_draw:nnnn {1} {\l__pgfgo_sgfprob_last_int}
+		\__pgfgo_sgfdiag_add:nnnn {1} {\l__pgfgo_sgfprob_last_int}
 			{\l__pgfgo_sgfprob_variation_title_tl \nobreakspace #1}
 			{\__pgfgo_sgfdiag_notes:nn {1} {\l__pgfgo_sgfprob_last_int}}
-		\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box
 	}
 }
 
 \cs_new_protected:Npn \pgfgo_sgfproblem:nn #1#2 {
 	\group_begin:
 		\keys_set:nn {pgfgo / sgf~problem} {#1}
-		\pgfgo_layout_begin:V \l__pgfgo_sgfprob_layout_tl
-		\tl_clear:N \l__pgfgo_sgfdiag_scale_tl
-		\tl_set:Nn \l__pgfgo_sgfdiag_file_tl {#2}
+		\__pgfgo_sgfdiag_begin:Nn \l__pgfgo_sgfprob_layout_tl {#2}
 		\tl_set:Nn \l__pgfgo_sgfdiag_restart_tl {0}
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_goban_tl \l__pgfgo_sgfprob_goban_tl
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_font_tl \l__pgfgo_sgfprob_font_tl
@@ -1355,43 +1479,13 @@
 		\bool_set_eq:NN \l__pgfgo_sgfdiag_comments_bool \l__pgfgo_sgfprob_comments_bool
 		\pgfgo_kernel_sgf_tree:n {#2}
 		\seq_set_eq:NN \l__pgfgo_sgfprob_paths_seq \l_pgfgo_kernel_sgf_paths_seq
-		\tl_set_eq:NN \l_tmpb_tl \l_pgfgo_kernel_sgf_extent_tl
+		\tl_set_eq:NN \l__pgfgo_sgfprob_extent_tl \l_pgfgo_kernel_sgf_extent_tl
 		\pgfgo_kernel_sgf_read:n {#2}
-		\tl_set:Ne \l__pgfgo_sgfdiag_size_tl
-			{\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
+		\__pgfgo_sgf_size:N \l__pgfgo_sgfdiag_size_tl
 		\tl_clear:N \l__pgfgo_sgfprob_player_tl
 		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgfprob_player:nnn ##1}
-		%LA PARTE VISIBLE ES LA MISMA EN TODOS LOS DIAGRAMAS: LA VISTA INICIAL DEL ARCHIVO, O LA DE crop.
-		\tl_clear:N \l__pgfgo_sgfdiag_window_tl
-		\int_zero:N \l_pgfgo_goban_sgf_view_from_int
-		\int_zero:N \l_pgfgo_goban_sgf_view_to_int
-		\tl_clear:N \l_pgfgo_goban_sgf_view_variation_tl
-		\bool_lazy_and:nnTF {\l__pgfgo_sgfprob_view_bool} {! \tl_if_empty_p:N \l_pgfgo_kernel_sgf_view_tl}
-			{\tl_set:Nn \l__pgfgo_sgfdiag_window_tl {sgf~view = {#2}}}
-			{
-				\bool_lazy_and:nnT {\l__pgfgo_sgfprob_crop_bool} {! \tl_if_empty_p:N \l_tmpb_tl}
-					{\exp_after:wN \__pgfgo_sgfprob_crop:nnnn \l_tmpb_tl}
-			}
-		\bool_if:NT \l__pgfgo_sgfprob_statement_bool {
-			\tl_clear:N \l__pgfgo_sgfdiag_variation_tl
-			\__pgfgo_sgfdiag_draw:nnnn {1} {0}
-				{
-					\tl_if_empty:NF \l__pgfgo_sgfprob_title_tl {\l__pgfgo_sgfprob_title_tl :~}
-					\str_case:Vn \l__pgfgo_sgfprob_player_tl {
-						{black} {\l__pgfgo_sgfprob_black_tl}
-						{white} {\l__pgfgo_sgfprob_white_tl}
-					}
-				}
-				{
-					\bool_if:NT \l__pgfgo_sgfdiag_comments_bool {
-						\__pgfgo_sgf_if_comment:nT {0}
-							{\__pgfgo_sgfdiag_below:nn {\raggedright} {\pgfgo_sgf_comment:n {0}}}
-					}
-				}
-			\bool_if:NTF \l__pgfgo_sgfprob_alone_bool
-				{\pgfgo_layout_add_alone:N \l__pgfgo_sgfdiag_cell_box}
-				{\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box}
-		}
+		\__pgfgo_sgfprob_window:n {#2}
+		\bool_if:NT \l__pgfgo_sgfprob_statement_bool {\__pgfgo_sgfprob_statement:}
 		\bool_if:NT \l__pgfgo_sgfprob_solutions_bool {
 			\seq_map_indexed_inline:Nn \l__pgfgo_sgfprob_paths_seq
 				{\__pgfgo_sgfprob_solution:nn {##1} {##2}}
@@ -1399,12 +1493,9 @@
 		\pgfgo_layout_end:
 	\group_end:
 }
-\cs_generate_variant:Nn \str_case:nn {Vn}
 
 \NewDocumentCommand{\sgfproblem}{O{}m}{
-	\pgfgo_kernel_if_feature:nTF {sgf}
-		{\pgfgo_sgfproblem:nn {#1} {#2}}
-		{\pgfgo_kernel_require:n {sgf}}
+	\__pgfgo_sgf_if_kernel:n {\pgfgo_sgfproblem:nn {#1} {#2}}
 }
 
 \ExplSyntaxOff
