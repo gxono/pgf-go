@@ -16,7 +16,10 @@ All notable changes to `pgf-go` are listed here.
   any `goban` option (`background = false`, `label = false`, `grid = false`,
   `scale`, ...) can be given too, or for all views with
   `\pgfgoset{view = {...}}`. What was drawn with `forget` is only shown
-  with `view/forgotten`.
+  with `view/forgotten`. A view keeps the style the board had when it was
+  drawn (profile, `\pgfgoset` and its options), even if it changes later;
+  `\pgfgoset{view = {...}}` and the options of the view (`players`, `stone`,
+  `mark`, ...) go on top.
 - Shines of your own: `stone/shine` takes
   `image = {file, width, rotate, false}`, an image with transparency centered
   on the stone instead of the drawn shine. The shine is drawn on top of any

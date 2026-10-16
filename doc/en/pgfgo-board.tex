@@ -1360,7 +1360,9 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{codeexample}
 
 	\begin{command}{\pgfgoview\opt{\oarg{options}}\marg{name}\marg{part}}
-		Draws the intersection or the rectangle (written as in |partial|) of the |goban| with that name, as it was at the end. By default everything the |goban| drew in that part is shown (stones, move numbers, marks, arrows and territory) with the background and the coordinates of that |goban|, at the size of the text and centered at the height of the lowercase letters. The options are those of |/pgfgo/view|, which remove the marks, the numbers or the territory, or add what was forgotten, and, also, any |goban| option, which is applied after those of the named |goban|: this removes the background, the coordinates, the grid or the star points.
+		Draws the intersection or the rectangle (written as in |partial|) of the |goban| with that name, as it was at the end. By default everything the |goban| drew in that part is shown (stones, move numbers, marks, arrows and territory) with the background and the coordinates of that |goban|, at the size of the text and centered at the height of the lowercase letters. The options are those of |/pgfgo/view|, which remove the marks, the numbers or the territory, or add what was forgotten, and, also, any |goban| option, which is applied after those of the named |goban|: this removes the background, the coordinates, the grid or the star points, or changes the style of the stones, the marks and the board (|players|, |stone|, |mark|, |grid|, |background|, \ldots).
+
+		The view uses the style that |goban| had when it was drawn (the profile, what was set with |\pgfgoset| and its options), even if it changes later. |\pgfgoset{view = ...}| and the options of the view go on top.
 
 		A view changes nothing of what the last |goban| stores: |\pgfgoscore|, |\pgfgoprisoners| and |\pgfgomovenotes| still talk about it, and what each named |goban| stores stays the same.
 
