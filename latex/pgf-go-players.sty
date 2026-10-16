@@ -10,7 +10,7 @@
 \def\pgfgosetplayer#1#2{\pgfgoset{players = {#1 = {#2}}}}
 
 
-\def\pgfgochooseplayers#1#2#3{
+\def\pgfgocopyplayers#1#2#3{
 	\pgfgocopyplayer{neutral}	{#1}
 	\pgfgocopyplayer{black}		{#2}
 	\pgfgocopyplayer{white}		{#3}
@@ -238,9 +238,6 @@
 		drop~shadow					.default:n = {true},
 		shine								.code:n = {\keys_set:nn{ pgfgo / players / #1 / stone / shine }{##1}},
 		shine								.default:n = {true},
-		%NOMBRE VIEJO DE shine.
-		drop~shine					.code:n = {\keys_set:nn{ pgfgo / players / #1 / stone / shine }{##1}},
-		drop~shine					.default:n = {true},
 		image								.code:n = {\keys_set:nn{ pgfgo / players / #1 / stone / image }{##1}},
 		%LAS DEMAS OPCIONES DE \stones Y \moves.
 		mark							.groups:n	= { external },
@@ -482,7 +479,6 @@
 	\keys_define:nn { pgfgo / players / #1 / mark / sequence } {
 		true								.code:n			=	{\bool_set_true:c {l_pgfgo_players_ #1 _mark_sequence_bool}},
 		false								.code:n			=	{\bool_set_false:c {l_pgfgo_players_ #1 _mark_sequence_bool}},
-		use									.code:n			=	{\bool_set_true:c {l_pgfgo_players_ #1 _mark_sequence_bool}},
 		%ALIAS DOCUMENTADO DE mark/label/format
 		format							.code:n			= {
 			\bool_set_true:c {l_pgfgo_players_ #1 _mark_sequence_bool}
@@ -501,6 +497,6 @@
 
 %LOS JUGADORES REALES. TODO SE ASIGNA ACA
 \pgfgonewplayers{neutral, black, white}
-\pgfgochooseplayers{neutral}{black}{white}
+\pgfgocopyplayers{neutral}{black}{white}
 
 \ExplSyntaxOff

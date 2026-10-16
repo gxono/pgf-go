@@ -7,8 +7,8 @@
 \graphicspath{{images/}}
 \newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
 \pagestyle{empty}
-\pgfgodefinemark{star}[image = star.pdf]
-\pgfgodefinemark{big star}[image = star.pdf, width = 14pt]
+\pgfgodefinemark[image = {file = star.pdf}]{star}
+\pgfgodefinemark[image = {file = star.pdf, width = 14pt}]{big star}
 \pgfgodefinemark{diamond}{%
 	\pgfpathmoveto{\pgfpointxy{0}{0.7}}\pgfpathlineto{\pgfpointxy{0.7}{0}}%
 	\pgfpathlineto{\pgfpointxy{0}{-0.7}}\pgfpathlineto{\pgfpointxy{-0.7}{0}}%
@@ -24,7 +24,7 @@
 	\prisoners[w, image = {file = stone-white.png}]{A9}
 	\marks[triangle]{A1, E5}
 \end{goban}
-\begin{goban}[5, scale = 2, partial = {from = A1 to C3}]
+\begin{goban}[5, scale = 2, partial = A1:C3]
 	\stones[b, image = {file = stone-black.png}, drop shadow = {true, angle = -45, offset = 2pt}]{A1, B2}
 	\stones[w, image = {file = stone-white.png, width = 8pt}]{C3}
 \end{goban}
@@ -58,36 +58,36 @@
 	\stones[b]{C3}\stones[w]{D4}
 	\marks[circle]{A1, E5, C3}\marks[dim]{F6, D4}
 \end{goban}
-\begin{goban}[9, background = {fill = {image = {file = wood.jpg, fit = stretch}}, rounded corners = 6pt}, partial = {from = A1 to E5}]
+\begin{goban}[9, background = {fill = {image = {file = wood.jpg, fit = stretch}}, rounded corners = 6pt}, partial = A1:E5]
 	\marks[circle]{A1, E5}
 \end{goban}
-\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}, partial = {from = D4 to H8}]
+\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}, partial = D4:H8]
 	\marks[triangle]{E5}
 \end{goban}
 \begin{goban}[5, background = {fill = {image = {file = wood.jpg, false}}}]\marks[circle]{C3}\end{goban}
 
 \case{Tiles from corners and sides of the whole board and from the centre}
-\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, from = south east}}}]\end{goban}
-\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, from = north west}}}]\end{goban}
-\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, from = center}}}]\end{goban}
-\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, from = north}}}]\end{goban}
-\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, from = west}}}]\end{goban}
-\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, from = north east}}}, partial = {from = D4 to H8}]\end{goban}
+\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, anchor = south east}}}]\end{goban}
+\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, anchor = north west}}}]\end{goban}
+\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, anchor = center}}}]\end{goban}
+\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, anchor = north}}}]\end{goban}
+\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, anchor = west}}}]\end{goban}
+\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 0.9cm, anchor = north east}}}, partial = D4:H8]\end{goban}
 
 \case{Grid and hoshi images; the grid image is clipped by partial}
 \begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = {image = {file = hoshi.png}, radius = 3pt}, background = {fill = {image = {file = tile.png, fit = tile}}}]
 	\stones[b]{C3}
 \end{goban}
-\begin{goban}[9, grid = {image = {file = grid.png}}, partial = {from = C3 to G7}]\end{goban}
+\begin{goban}[9, grid = {image = {file = grid.png}}, partial = C3:G7]\end{goban}
 
 \case{Grid image as tiles: one per square of the grid (also with partial and with stones), a 4x4 and a 2x4 mesh; a 3x3 mesh on the background}
 \begin{goban}[9, grid = {image = {file = cell.png, fit = tile}}, hoshi = false, background = {fill = {color = black!70}}]
 	\stones[b]{C3}\stones[w]{D4}
 \end{goban}
-\begin{goban}[9, grid = {image = {file = cell.png, fit = tile}}, partial = {from = C3 to G7}]\end{goban}
+\begin{goban}[9, grid = {image = {file = cell.png, fit = tile}}, partial = C3:G7]\end{goban}
 \begin{goban}[5, grid = {image = {file = cell.png, fit = tile, false}}]\end{goban}
 \begin{goban}[9, grid = {image = {file = cell.png, fit = tile, tiles = 4}}, hoshi = false]\end{goban}
-\begin{goban}[9, grid = {image = {file = cell.png, fit = tile, tiles = 2x4}}, partial = {from = C3 to G7}]\end{goban}
+\begin{goban}[9, grid = {image = {file = cell.png, fit = tile, tiles = 2x4}}, partial = C3:G7]\end{goban}
 \begin{goban}[9, background = {fill = {image = {file = cell.png, fit = tile, tiles = 3x3}}}]\end{goban}
 
 \case{Custom marks: PDF image (default width and 14pt), pgf code with the mark colours, TikZ code; on black and white stones; as a territory mark}
@@ -109,4 +109,15 @@
 	\stones[b, image = {file = stone-black.png, opacity = 0.4}]{G3}
 	\marks[new star]{D5, F5}
 \end{goban}
+\case{rotate of the background image: stretch 90, cover 90 and 270, tiles turned at random, a mesh of tiles turned 180 / rotate of the grid image: stretch 90, tiles at random}
+\begin{goban}[5, background = {fill = {image = {file = wood.jpg, fit = stretch, rotate = 90}}}]\end{goban}
+\begin{goban}[5, background = {fill = {image = {file = wood.jpg, rotate = 90}}}]\end{goban}
+\begin{goban}[5, background = {fill = {image = {file = wood.jpg, rotate = 260}}}]\end{goban}
+\begin{goban}[5, background = {fill = {image = {file = wood.jpg, fit = tile, width = 1cm, rotate = random}}}]\end{goban}
+\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, tiles = 2x3, rotate = 180}}}]\end{goban}
+
+\begin{goban}[5, grid = {image = {file = grid.png, rotate = 90}}, hoshi = false]\end{goban}
+\begin{goban}[5, grid = {image = {file = tile.png, fit = tile, rotate = random}}, hoshi = false]\end{goban}
+\begin{goban}[5, grid = {image = {file = tile.png, fit = tile, rotate = 0:180}}, hoshi = false, partial = B2:D4]\end{goban}
+
 \end{document}

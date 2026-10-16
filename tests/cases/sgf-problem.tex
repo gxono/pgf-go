@@ -13,7 +13,7 @@
 \sgfproblem{problem.sgf}
 
 \case{title, variation title, caption font and texts / comments = false, notes = false}
-\sgfproblem[title = Problem 1, variation title = Variante, caption font = \itshape,
+\sgfproblem[title = Problem 1, variation title = Variante, caption = {font = \itshape},
 	black to play = Juegan negras, comments = false, notes = false]{problem.sgf}
 
 \case{statement only, crop = false (whole board), goban options}
@@ -25,5 +25,8 @@
 \case{A game with a view: the view is used; with view = false, the crop}
 \sgfproblem[solutions = false]{views.sgf}
 \sgfproblem[solutions = false, view = false]{views.sgf}
+
+\case{caption = \{font = \string\itshape\}}
+\sgfproblem[solutions = false, caption = {font = \itshape}]{views.sgf}
 
 \end{document}

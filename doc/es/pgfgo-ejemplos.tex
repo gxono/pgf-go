@@ -9,24 +9,24 @@
 	\pgfgouseprofile{pgfgosmooth}
 	
 	\begin{tabular}{cc}
-		\begin{goban}[partial = {from = A9 to E5}]
+		\begin{goban}[partial = A9:E5]
 			\stone[b]{C7}
 			\marks[sequence]{C8, D7, C6, B7}
 		\end{goban} &
 		%
-		\begin{goban}[partial = {from = E9 to I5}]
+		\begin{goban}[partial = E9:I5]
 			\stone[b]{G7}
 			\stone[w]{F7}
 			\marks[sequence]{G8, H7, G6}
 		\end{goban} \\
 		%
-		\begin{goban}[partial = {from = A1 to E5}]
+		\begin{goban}[partial = A1:E5]
 			\stone[b]{C3}
 			\stones[w]{B3,C2}
 			\marks[sequence]{C4, D3}
 		\end{goban} & 
 		%
-		\begin{goban}[partial = {from = E1 to I5}]
+		\begin{goban}[partial = E1:I5]
 			\stone[b]{G3}
 			\stones[w]{F3,G2, H3}
 			\marks[sequence]{G4}
@@ -37,7 +37,7 @@
 
 
 \begin{codeexample}[width=4.8cm]
-	\pgfgoset{use i = false}
+	\pgfgoset{goban = {use i = false}}
 	
 	\begin{goban}[13, label = {at = {all}}]
 		\stones[b]{A1, J1, K1, G7, N9, D12, D13}
@@ -53,7 +53,7 @@
 
 
 \begin{codeexample}[width=4.8cm]
-	\pgfgoset{use i = false}
+	\pgfgoset{goban = {use i = false}}
 	
 	\begin{goban}[9, label = {at = {south, west}}]
 		\stones[b]{A2-|D1, B1, G1|-F2|-G4|-J7-|E9, G8}
@@ -78,7 +78,7 @@
 
 
 \begin{codeexample}[width=4.8cm]	
-	\begin{goban}[9, partial = {from = A2 to H9}]
+	\begin{goban}[9, partial = A2:H9]
 		\stones[b]{A7,B6,C8,C7}
 		\stones[b, mark = triangle]{D6,D5,D4}
 		\stones[w]{C3,C4,C5,C6,D7,E7,E6}

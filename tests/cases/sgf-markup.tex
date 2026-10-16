@@ -20,7 +20,7 @@
 	\arrow[halo = false, color = red, width = 2pt]{C7}{G9}
 	\line[color = blue, opacity = 0.5]{A1}{J9}
 \end{goban}
-\begin{goban}[9, partial = {from = A1 to E5}]
+\begin{goban}[9, partial = A1:E5]
 	\arrow{B2}{H8}
 \end{goban}
 {\pgfgoset{arrow = {tip = Latex, color = green!50!black}}%
@@ -37,5 +37,19 @@
 \begin{goban}[9]\stones[b]{C3}\marks[dim]{A1:3, C3}\end{goban}
 \begin{goban}[5, new remember]\stones[b]{B2}\arrow{A1}{E5}\line[forget]{A5}{E1}\end{goban}
 \begin{goban}[5, resume]\end{goban}
+
+\case{bend: arrows and lines bent to the left and to the right, with shorten, halo, both tips and a dash; a bent arrow cut by a partial board}
+\begin{goban}[5]
+	\stones[b]{B2}\stones[w]{D4, C3}
+	\arrow[bend = 40, shorten = 5pt]{B2}{D4}
+	\arrow[bend = -60, tips = both, dash = dashed]{A5}{E5}
+	\line[bend = -30, width = 2pt]{A1}{E1}
+	\line[bend = 90, color = red]{E2}{E4}
+\end{goban}
+\begin{goban}[9, partial = A1:E5]
+	\arrow[bend = 45]{B2}{H8}
+\end{goban}
+{\pgfgoset{arrow = {bend = 30}}%
+\begin{goban}[5]\arrow{A1}{E5}\arrow[bend = 0]{A5}{E1}\end{goban}}
 
 \end{document}

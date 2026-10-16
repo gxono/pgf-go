@@ -27,7 +27,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Define el color de relleno de una piedra.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -46,7 +46,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Controla la opacidad del relleno de la piedra, desde 0 (transparente) hasta 1 (opaco).
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -70,7 +70,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Establece el color del borde de la piedra, que por defecto es negro para todas las piedras.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -89,7 +89,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Define la opacidad del borde de la piedra, permitiendo hacerlo más sutil o transparente.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -108,7 +108,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Controla el grosor del borde de la piedra.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -127,7 +127,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Establece el tamaño de la piedra mediante su radio.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -151,7 +151,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Asigna a la piedra las características del primer jugador (negro por defecto), incluyendo color de relleno y borde. Sin |black| (o |b|), |\stone| y |\stones| dibujan piedras neutrales.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -175,7 +175,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Asigna a la piedra las características del segundo jugador (blanco por defecto), con relleno blanco y borde negro.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -206,7 +206,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Sombra de la piedra: |true|, |false|, |angle|, |offset|, |opacity| y |color|. Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}).
 
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 
 		\begin{goban}
 			\stones[b, drop shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
@@ -216,10 +216,10 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 \end{key}
 
 \begin{key}{/pgfgo/stone/shine = \meta{options} (default true)}
-	Brillo de la piedra, dibujado encima: |true|, |false|, |angle|, |opacity|, |color| e |image|. Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}). Antes se llamaba |drop shine|, nombre que sigue funcionando.
+	Brillo de la piedra, dibujado encima: |true|, |false|, |angle|, |opacity|, |color| e |image|. Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}).
 
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 
 		\begin{goban}
 			\stones[b, shine]{C2,D3}
@@ -230,7 +230,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Con |image|, el brillo es una imagen con transparencia (PNG o PDF), centrada en la piedra. Si la piedra también es una imagen, el brillo se dibuja encima y no gira con ella: las piedras pueden tener vetas giradas al azar (|rotate = random|) y la luz siempre del mismo lado.
 
 	\begin{codeexample}[]
-		\begin{goban}[5, partial = {from = B2 to D4}]
+		\begin{goban}[5, partial = B2:D4]
 			\stones[w, image = {file = stone-white.png, rotate = random},
 				shine = {true, image = {file = shine.png}}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
@@ -248,7 +248,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Las imágenes SVG no se pueden usar directamente: hay que convertirlas antes a PDF, por ejemplo con |inkscape --export-type=pdf piedra.svg| o con |rsvg-convert -f pdf -o piedra.pdf piedra.svg|. Lo mismo vale para el fondo, la cuadrícula, los puntos de estrella y las marcas.
 
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 
 		\begin{goban}
 			\stones[b, image = {file = stone-black.png}, drop shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
@@ -263,7 +263,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 			black = {stone = {image = {file = stone-black.png}}},
 			white = {stone = {image = {file = stone-white.png}}}}}
 
-		\begin{goban}[5, partial = {from = B2 to D4}]
+		\begin{goban}[5, partial = B2:D4]
 			\moves{C3, D3, C2, B3}
 		\end{goban}
 	\end{codeexample}
@@ -273,7 +273,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	El archivo de la imagen. Con varios archivos, cada piedra usa uno, elegido por su posición: una piedra en un punto muestra siempre la misma imagen, en todos los diagramas. Sirve para variar el aspecto de las piedras, por ejemplo las vetas de las blancas.
 
 	\begin{codeexample}[]
-		\begin{goban}[5, partial = {from = B2 to D4}]
+		\begin{goban}[5, partial = B2:D4]
 			\stones[w, image = {file = {stone-white.png, stone-white-2.png}}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
@@ -287,7 +287,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Gira la imagen \meta{ángulo} grados, en sentido antihorario. Con |random|, cada piedra se gira un ángulo distinto, elegido por su posición: una piedra en un punto queda siempre igual, en todos los diagramas y en todos los cuadros de una animación. Sirve para que las vetas de una misma imagen no se vean repetidas. La sombra gira con la imagen, pero sigue cayendo hacia el mismo lado.
 
 	\begin{codeexample}[]
-		\begin{goban}[5, partial = {from = B2 to D4}]
+		\begin{goban}[5, partial = B2:D4]
 			\stones[w, image = {file = stone-white.png,
 				rotate = random}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
@@ -296,7 +296,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Con un rango \meta{mínimo}|:|\meta{máximo}, el ángulo se elige igual que con |random|, pero entre \meta{mínimo} y \meta{máximo} grados (|random| es lo mismo que |0:360|). Sirve para imágenes que no se pueden girar del todo, como una piedra con luz de un lado.
 
 	\begin{codeexample}[]
-		\begin{goban}[5, partial = {from = B2 to D4}]
+		\begin{goban}[5, partial = B2:D4]
 			\stones[w, image = {file = stone-white.png,
 				rotate = -20:20}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
@@ -316,7 +316,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Coloca una marca sobre la piedra (ej. triángulo, círculo). Las marcas pueden personalizarse ulteriormente con otras claves, como color o tamaño.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -335,7 +335,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Cuando el tablero usa un sistema de memoria (|new remember|, |resume|), esta opción indica que la piedra no debe recordarse, permitiendo excluirla de estados posteriores.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}[new remember]
 			\stones[b]{C2,D3}
@@ -352,7 +352,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	En un tablero con memoria activa, asegura que la piedra se recuerde incluso si el entorno general usa |forget|.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}[forget]
 			\stones[b]{C2,D3}
@@ -369,7 +369,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Caracteriza a una piedra como prisionera, típicamente con una opacidad reducida (0.5 por defecto) para indicar que ha sido capturada. Pueden añadirse otras opciones para personalizar su apariencia.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -406,7 +406,7 @@ Dentro de un mismo |goban|, la numeración y el turno continúan de un |\moves| 
 Las opciones de |\moves| también aceptan las del estilo de la piedra (|fill|, |line|, |radius|, |shine|, |image|, etc.) y |mark|, como |\stones|. Por ejemplo, para marcar la última jugada:
 
 \begin{codeexample}[]
-	\begin{goban}[5, partial = {from = B2 to D4}]
+	\begin{goban}[5, partial = B2:D4]
 		\moves{C3, D3, C2}
 		\moves[mark = circle]{B3}
 	\end{goban}
@@ -419,7 +419,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Establece que la secuencia de movimientos comienza con el jugador negro, útil para forzar el inicio de una jugada en diagramas específicos.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -438,7 +438,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Establece que la secuencia comienza con el jugador blanco, alterando el orden natural de las jugadas.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -465,7 +465,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Define el número inicial de una secuencia numerada de movimientos, permitiendo continuar desde un punto específico en lugar de empezar en 1.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -489,7 +489,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Ajusta el tamaño de la fuente de las etiquetas, permitiendo adaptarlas al tamaño de las piedras o al diseño general. Si no se indica, el tamaño se ajusta solo según la cantidad de cifras del número.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -513,7 +513,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Usa números arábigos, el formato por defecto para las etiquetas de movimientos.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -532,7 +532,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Usa letras minúsculas para las etiquetas.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -552,7 +552,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Usa letras mayúsculas.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -572,7 +572,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Usa números romanos minúsculos.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -592,7 +592,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Usa números romanos mayúsculos.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\stones[b]{C2,D3}
@@ -612,7 +612,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Define el color de las etiquetas.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
 			\moves*{C2,B4}
@@ -631,7 +631,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	Evita que las etiquetas de movimientos se guarden en la memoria del tablero cuando se usa |remember|, permitiendo que las piedras persistan sin sus números.
 	
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}[new remember]
 			\moves*[label = forget]{C2,B4,D3}
@@ -747,8 +747,12 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/sgf/restart = \meta{number o auto} (initially auto)}
-	Reinicia la numeración cada \meta{number} jugadas, como en los libros: con |restart = 100|, la jugada 101 se muestra como 1. Con 0, no se reinicia. Con |auto|, hace lo que pide el archivo con |PM|: con |PM[2]|, se reinicia cada 100 jugadas; si no, no se reinicia.
+\begin{key}{/pgfgo/sgf/step = \meta{number} o \meta{list of numbers} (initially 100)}
+	El tamaño de los tramos en que |restart| reinicia la numeración. Con una lista, cada número es el tamaño de un tramo, y el último se repite: con |step = {50, 100}|, el primer tramo tiene 50 jugadas y los demás 100. Es la misma \emph{key} que |/pgfgo/sgf diagrams/step|, donde cada tramo es un diagrama.
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart = \meta{restart options} (default true)}
+	Desde el segundo tramo de |step| jugadas, cada uno numera desde 1 (o desde |restart/from|), como en los libros: con |step = 100, restart|, la jugada 101 se muestra como 1. El primer tramo conserva los números de la partida. Las mismas opciones tienen |\sgfanimation| y |\sgfdiagrams|.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variantes.sgf]
@@ -756,9 +760,25 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 		\end{goban}
 
 		\begin{goban}[sgf size = variantes.sgf]
-			\sgf[restart = 3]{variantes.sgf}
+			\sgf[step = 3, restart]{variantes.sgf}
 		\end{goban}
 	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart/true}
+	Reinicia la numeración en cada tramo.
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart/false}
+	No la reinicia: las jugadas llevan los números de la partida (con |MN|).
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart/auto}
+	Hace lo que pide el archivo con |PM|: con |PM[2]|, la numeración se reinicia cada 100 jugadas, sin importar |step| (la 101 se muestra como 1); si no, no se reinicia. Es el valor inicial.
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart/from = \meta{number} (initially 1)}
+	El número de la primera jugada de cada tramo, desde el segundo. También prende |restart|. Con |step = 99| y |restart = {from = 0}|, la jugada 100 se muestra como 0, la 101 como 1, y así.
 \end{key}
 
 \begin{key}{/pgfgo/sgf/numbers = \meta{true, false o auto} (default true, initially auto)}
@@ -934,15 +954,23 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Marca de la última jugada, con el color de quien jugó. Con |false|, la última jugada no se marca. No se usa con |numbers|, ni cuando el archivo ya marca ese punto.
 \end{key}
 
-\begin{key}{/pgfgo/sgf animation/comments = \meta{boolean} (default true, initially false)}
-	Muestra debajo del tablero el comentario (|C|) de la jugada. El del cuadro 0 es el de los nodos anteriores a la primera jugada.
+\begin{key}{/pgfgo/sgf animation/comments = \meta{comments options} (default true)}
+	Muestra debajo del tablero el comentario (|C|) de la jugada. El del cuadro 0 es el de los nodos anteriores a la primera jugada. Se prende con |comments| o |comments = true| y se apaga con |false| (es el valor inicial); |height| y |font| no la prenden: |comments = {true, height = 6em}|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf animation/comment height = \meta{dimension} (initially 4em)}
+\begin{stylekey}{/pgfgo/sgf animation/comments/true}
+	Muestra los comentarios.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf animation/comments/false}
+	No muestra los comentarios. Es el valor inicial.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf animation/comments/height = \meta{dimension} (initially 4em)}
 	Alto del espacio para los comentarios. Es el mismo en todos los cuadros, para que no cambien de tamaño.
 \end{key}
 
-\begin{key}{/pgfgo/sgf animation/comment font = \meta{font commands} (initially \texttt{\string\small})}
+\begin{key}{/pgfgo/sgf animation/comments/font = \meta{font commands} (initially \texttt{\string\small})}
 	Fuente de los comentarios.
 \end{key}
 
@@ -958,8 +986,28 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Como |/pgfgo/sgf/marks|: cada cuadro muestra las marcas de su jugada.
 \end{key}
 
-\begin{key}{/pgfgo/sgf animation/restart = \meta{number o auto} (initially auto)}
+\begin{key}{/pgfgo/sgf animation/step = \meta{number} o \meta{list of numbers} (initially 100)}
+	Como |/pgfgo/sgf/step|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart = \meta{restart options} (default true)}
 	Como |/pgfgo/sgf/restart|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart/true}
+	Como |/pgfgo/sgf/restart/true|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart/false}
+	Como |/pgfgo/sgf/restart/false|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart/auto}
+	Como |/pgfgo/sgf/restart/auto|. Es el valor inicial.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart/from = \meta{number} (initially 1)}
+	Como |/pgfgo/sgf/restart/from|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/annotations = \meta{boolean} (default true, initially true)}
@@ -1008,8 +1056,8 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Como |/pgfgo/sgf/last mark|, en cada diagrama.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/restart = \meta{restart options} (default true, initially false)}
-	Desde el segundo diagrama, cada uno numera desde 1 (o desde |restart/from|), como algunos libros. El primer diagrama conserva los números de la partida. Sin |restart|, la numeración sigue lo que pide el archivo con |PM|, como |/pgfgo/sgf/restart = auto|.
+\begin{key}{/pgfgo/sgf diagrams/restart = \meta{restart options} (default true)}
+	Como |/pgfgo/sgf/restart|, con un diagrama por tramo: desde el segundo diagrama, cada uno numera desde 1 (o desde |restart/from|), como algunos libros. El primer diagrama conserva los números de la partida.
 
 	\begin{codeexample}[code only]
 		\sgfdiagrams[step = {2, 3}, restart = {from = 0}]{partida.sgf}
@@ -1019,11 +1067,15 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \sgfdiagrams[step = {2, 3}, to = 8, restart = {from = 0}, title = Diagrama]{partida.sgf}
 
 \begin{key}{/pgfgo/sgf diagrams/restart/true}
-	Prende |restart|.
+	Reinicia la numeración en cada diagrama.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/restart/false}
-	Apaga |restart|.
+	No la reinicia: las jugadas llevan los números de la partida.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/restart/auto}
+	Como |/pgfgo/sgf/restart/auto|: con |PM[2]|, cada 100 jugadas, sin importar los diagramas. Es el valor inicial.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/restart/from = \meta{number} (initially 1)}
@@ -1038,8 +1090,12 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Palabra del epígrafe: «Diagrama 2 (51--100)».
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/caption font = \meta{font commands} (initially \texttt{\string\small})}
-	Fuente del epígrafe y de las notas.
+\begin{key}{/pgfgo/sgf diagrams/caption = \meta{caption options}}
+	Opciones del epígrafe y de las notas.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/caption/font = \meta{font commands} (initially \texttt{\string\small})}
+	Fuente del epígrafe y de las notas: |caption = {font = \itshape}|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/goban = \meta{goban options}}
@@ -1074,12 +1130,24 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Como |/pgfgo/sgf/game|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/result = \meta{boolean} (default true, initially true)}
-	Escribe debajo del último diagrama, si llega al final de la partida, el resultado (|RE|) y, si el archivo marca el territorio (|TB|, |TW|), el puntaje de cada jugador: «Resultado: Ganan Negras por 0.5 puntos (Negras 6, Blancas 5.5)». El puntaje se cuenta como con |\pgfgoscore| (pág.~\pageref{subsec:territorio}), con el komi del archivo (|KM|).
+\begin{key}{/pgfgo/sgf diagrams/result = \meta{result options} (default true)}
+	Escribe debajo del último diagrama, si llega al final de la partida, el resultado (|RE|) y, si el archivo marca el territorio (|TB|, |TW|), el puntaje de cada jugador: «Resultado: Ganan Negras por 0.5 puntos (Negras 6, Blancas 5.5)». El puntaje se cuenta como con |\pgfgoscore| (pág.~\pageref{subsec:territorio}), con el komi del archivo (|KM|). Se apaga con |result = false|; |title| y |format| no lo prenden.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/result title = \meta{text} (initially Result o su traducción)}
+\begin{stylekey}{/pgfgo/sgf diagrams/result/true}
+	Escribe el resultado. Es el valor inicial.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/result/false}
+	No escribe el resultado.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf diagrams/result/title = \meta{text} (initially Result o su traducción)}
 	Palabra que precede al resultado.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/result/format = \meta{text o raw} (initially text)}
+	Cómo se escribe el resultado. |text|: en palabras, en el idioma del documento (pág.~\pageref{subsec:idiomas}), «Ganan Negras por abandono»; |raw|: como está en el archivo, «B+R». Con |text| se entienden |0| o |Draw| (empate), |Void| (sin resultado), |?| (desconocido) y |B+| o |W+| seguido de nada, de la diferencia, de |R| o |Resign|, de |T| o |Time|, o de |F| o |Forfeit|. Otro resultado se escribe como está.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/black name = \meta{text} (initially Black o su traducción)}
@@ -1088,10 +1156,6 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 
 \begin{key}{/pgfgo/sgf diagrams/white name = \meta{text} (initially White o su traducción)}
 	Nombre de las blancas en el puntaje y en el resultado.
-\end{key}
-
-\begin{key}{/pgfgo/sgf diagrams/result format = \meta{text o raw} (initially text)}
-	Cómo se escribe el resultado. |text|: en palabras, en el idioma del documento (pág.~\pageref{subsec:idiomas}), «Ganan Negras por abandono»; |raw|: como está en el archivo, «B+R». Con |text| se entienden |0| o |Draw| (empate), |Void| (sin resultado), |?| (desconocido) y |B+| o |W+| seguido de nada, de la diferencia, de |R| o |Resign|, de |T| o |Time|, o de |F| o |Forfeit|. Otro resultado se escribe como está.
 \end{key}
 
 \begin{command}{\pgfgowinner}
@@ -1150,7 +1214,11 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Escribe las notas «N en M» de cada variante.
 \end{key}
 
-\begin{key}{/pgfgo/sgf problem/caption font = \meta{font commands} (initially \texttt{\string\small})}
+\begin{key}{/pgfgo/sgf problem/caption = \meta{caption options}}
+	Opciones de los epígrafes, las notas y los comentarios.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/caption/font = \meta{font commands} (initially \texttt{\string\small})}
 	Fuente de los epígrafes, las notas y los comentarios.
 \end{key}
 

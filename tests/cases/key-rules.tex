@@ -1,10 +1,9 @@
 % engines: lualatex, pdflatex
-% expect-warnings: 1
+% expect-warnings: 0
 % expect-errors: 0
 %
 % The rules of the keys: what turns things on and off, the options of /pgfgo
 % in a goban, the style of the stones in \moves, and the keys added with them.
-% The warning is the one of the old key goban/border.
 \documentclass{article}
 \usepackage[margin=1cm]{geometry}
 \usepackage{../../latex/pgf-go}
@@ -30,7 +29,7 @@
 \begin{goban}[5]
 	\stones[b, line = false, line]{A1}\stones[w, fill = false, fill]{B1}
 	\stones[b, drop shadow = {offset = 2pt}]{C1}\stones[b, drop shadow, drop shadow = {offset = 2pt, color = red}]{D1}
-	\stones[b, shine = {angle = 45}]{A3}\stones[b, shine]{B3}\stones[w, drop shine = {true, color = red}]{C3}
+	\stones[b, shine = {angle = 45}]{A3}\stones[b, shine]{B3}\stones[w, shine = {true, color = red}]{C3}
 	\stones[b, shine = {true, opacity = 0.5}, scale = 1.6]{E3}
 \end{goban}
 
@@ -63,12 +62,11 @@
 	\moves[from = 9, b, line = {color = blue, width = 1.5pt}]{E1, E2}
 \end{goban}
 
-\case{The options of /pgfgo in a goban apply only to it; the old key border}
+\case{The options of /pgfgo in a goban apply only to it}
 \begin{goban}[5, stone = {radius = 3pt}, mark = {line = {color = blue}}, players = {white = {stone = {fill = {color = yellow}}}}]
 	\stones[b]{B2}\stones[w]{C2}\marks[circle]{D2}
 \end{goban}
 \begin{goban}[5]\stones[b]{B2}\stones[w]{C2}\marks[circle]{D2}\end{goban}
-\begin{goban}[5, border = {sep = 1.4em}]\end{goban}
 
 \case{partial with the corners alone; background image anchor; hoshi opacity}
 \begin{goban}[9, partial = C3:G7]\stones[b]{E5}\end{goban}

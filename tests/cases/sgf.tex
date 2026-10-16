@@ -20,7 +20,7 @@
 \begin{goban}[9]\sgf{game.sgf}\moves*{E7}\end{goban}
 
 \case{Partial board, with captures and marks; resume}
-\begin{goban}[9, captures, new remember, partial = {from = A1 to E9}, label = {at = all}]
+\begin{goban}[9, captures, new remember, partial = A1:E9, label = {at = all}]
 	\sgf{game.sgf}\marks[b, triangle]{C6}
 \end{goban}
 \begin{goban}[9, resume]\end{goban}
@@ -36,9 +36,9 @@
 \begin{goban}[sgf size = variations.sgf]\sgf[variation = 2]{variations.sgf}\end{goban}
 \begin{goban}[sgf size = variations.sgf]\sgf[variation = 1.2]{variations.sgf}\end{goban}
 
-\case{MN[10] on move 4: 1, 2, 3, 10, 11 / restart = 3: 1, 2, 3, 1, 2 / variation = 3 does not exist: one warning, main line}
+\case{MN[10] on move 4: 1, 2, 3, 10, 11 / step = 3, restart: 1, 2, 3, 1, 2 / variation = 3 does not exist: one warning, main line}
 \begin{goban}[sgf size = variations.sgf]\sgf{variations.sgf}\end{goban}
-\begin{goban}[sgf size = variations.sgf]\sgf[restart = 3]{variations.sgf}\end{goban}
+\begin{goban}[sgf size = variations.sgf]\sgf[step = 3, restart]{variations.sgf}\end{goban}
 \begin{goban}[sgf size = variations.sgf]\sgf[variation = 3]{variations.sgf}\end{goban}
 
 \case{sgfinfo: PB = \sgfinfo{variations.sgf}{PB}, PW = \sgfinfo{variations.sgf}{PW}, RE = \sgfinfo{variations.sgf}{RE}, KM = \sgfinfo{variations.sgf}{KM}, DT = \sgfinfo{variations.sgf}{DT}, missing XX = [\sgfinfo{variations.sgf}{XX}]}

@@ -56,7 +56,7 @@ white: \pgfgoregion{w}{polygons} (0), neutral: \pgfgoregion{n}{area} (0).
 \end{goban}
 
 \case{Partial board (A1-E5): the region is clipped, the line ends like the grid / marks on the vertices}
-\begin{goban}[partial = {from = A1 to E5}, label = {at = {above, left}}]
+\begin{goban}[partial = A1:E5, label = {at = {above, left}}]
 	\territory[b, draw = region, line, vertices]{A1,G1,G3,C3,C7,A7}
 \end{goban}
 \begin{goban}

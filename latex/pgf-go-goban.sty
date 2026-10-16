@@ -50,9 +50,6 @@
 	\pgfdeclarelayer{pgfgo_layer_stone_mark}
 	\pgfdeclarelayer{pgfgo_layer_mark}
 
-	\msg_new:nnn {pgfgo} {deprecated-key}
-		{The~key~'#1'~is~deprecated.~Use~'#2'~instead.}
-
 	\keys_define:nn {pgfgo / goban}{
 		%EMPIEZA UNA MEMORIA NUEVA Y RECUERDA TODO LO QUE SE DIBUJE.
 		new~remember					.code:n			= {
@@ -68,8 +65,6 @@
 																			\bool_set_true:N\l_pgfgo_goban_remember_add_bool
 																			\pgfgo_goban_remember_all:
 																		},
-
-		add~to~remember	.code:n			= {\keys_set:nn {pgfgo / goban} {remember}},
 
 		%BORRA LA MEMORIA Y NO RECUERDA NADA (SALVO LO MARCADO CON remember).
 		forget								.code:n			= {
@@ -113,27 +108,21 @@
 		hoshi							.code:n 		= {\keys_set:nn{pgfgo / goban / hoshi}		{#1}},
 		hoshi							.default:n	= {true},
 
-		%NOMBRE VIEJO DE background.
-		border						.code:n 		= {
-																			\msg_warning:nnnn {pgfgo} {deprecated-key} {goban/border} {goban/background}
-																			\keys_set:nn {pgfgo / goban / background} {#1}
-																		},
-
 		background						.code:n 		= {\keys_set:nx{pgfgo / goban / background} {#1}},
 		background						.default:n	= {true},
 
 		label							.code:n 		= {\keys_set:nn{pgfgo / goban / label} {#1}},
 		label							.default:n	= {true},
 
-		%CON CLAVES (from, false) O CON LAS ESQUINAS: partial = B2:D4, {B2, D4} O {B2 to D4}.
-		partial						.code:n 		= {	\bool_set_true:N\l_pgfgo_goban_partial_bool
-																			\str_if_in:nnTF {#1} {=}
-																				{\keys_set:nx{pgfgo / goban / partial} {#1}}
+		%LAS ESQUINAS (partial = B2:D4, {B2, D4} O {B2 to D4}) O false.
+		partial						.code:n 		= {
+																			\str_if_eq:nnTF {#1} {false}
+																				{\bool_set_false:N \l_pgfgo_goban_partial_bool}
 																				{
-																					\str_if_eq:nnTF {#1} {false}
-																						{\keys_set:nn{pgfgo / goban / partial} {false}}
-																						{\__pgfgo_goban_partial_corners:n {#1}}
-																				}},
+																					\bool_set_true:N \l_pgfgo_goban_partial_bool
+																					\__pgfgo_goban_partial_corners:n {#1}
+																				}
+																		},
 
 		scale							.tl_set:N		= \l_pgfgo_goban_scale_tl,
 		scale							.initial:n	= {1},
@@ -202,16 +191,19 @@
 
 	%UNA IMAGEN EN LUGAR DE LAS LINEAS. stretch: ESTIRADA DE A1 A LA ESQUINA OPUESTA DEL TABLERO COMPLETO;
 	%tile: EN UNA MALLA DE tiles (<COLUMNAS>x<FILAS>) SOBRE ESA MISMA AREA, ESTIRADA AL TAMANO DE CADA
-	%CELDA. SIN tiles, UNA EN CADA CASILLA DE LA CUADRICULA.
+	%CELDA. SIN tiles, UNA EN CADA CASILLA DE LA CUADRICULA. rotate: COMO EN stone/image, REDONDEADO AL
+	%CUARTO DE VUELTA (CADA BALDOSA EL SUYO); GIRADA, LA IMAGEN OCUPA EL MISMO LUGAR.
 	\tl_new:N \l_pgfgo_goban_grid_image_tl
 	\tl_new:N \l_pgfgo_goban_grid_image_fit_tl
 	\tl_new:N \l_pgfgo_goban_grid_image_tiles_tl
+	\tl_new:N \l_pgfgo_goban_grid_image_rotate_tl
 	\keys_define:nn {pgfgo / goban / grid / image}{
 		file							.tl_set:N		= \l_pgfgo_goban_grid_image_tl,
 		fit								.choices:nn	= {stretch, tile}
 			{\tl_set_eq:NN \l_pgfgo_goban_grid_image_fit_tl \l_keys_choice_tl},
 		fit								.initial:n	= {stretch},
 		tiles							.tl_set:N		= \l_pgfgo_goban_grid_image_tiles_tl,
+		rotate						.tl_set:N		= \l_pgfgo_goban_grid_image_rotate_tl,
 		false							.code:n			= {\tl_clear:N \l_pgfgo_goban_grid_image_tl},
 	}
 
@@ -345,12 +337,14 @@
 
 %IMAGEN DE FONDO, SOBRE EL COLOR. SE UBICA SEGUN EL TABLERO COMPLETO (CON partial SE VE LA PARTE QUE
 %CORRESPONDE). stretch: OCUPA TODO EL FONDO; cover: MANTIENE LA PROPORCION Y CUBRE EL FONDO, CENTRADA;
-%tile: BALDOSAS DE ANCHO width (SIN width, EL NATURAL) DESDE LA ESQUINA O EL BORDE from (O EL CENTRO).
+%tile: BALDOSAS DE ANCHO width (SIN width, EL NATURAL) DESDE LA ESQUINA O EL BORDE anchor (O EL CENTRO).
+%rotate: COMO EN grid/image.
 \tl_new:N \l_pgfgo_goban_background_image_tl
 \tl_new:N \l_pgfgo_goban_background_image_fit_tl
 \tl_new:N \l_pgfgo_goban_background_image_width_tl
-\tl_new:N \l_pgfgo_goban_background_image_from_tl
+\tl_new:N \l_pgfgo_goban_background_image_anchor_tl
 \tl_new:N \l_pgfgo_goban_background_image_tiles_tl
+\tl_new:N \l_pgfgo_goban_background_image_rotate_tl
 \keys_define:nn {pgfgo / goban / background / fill / image}{
 	file				.tl_set:N		= \l_pgfgo_goban_background_image_tl,
 	fit					.choices:nn	= {stretch, cover, tile}
@@ -358,11 +352,10 @@
 	fit					.initial:n	= {cover},
 	width				.tl_set:N		= \l_pgfgo_goban_background_image_width_tl,
 	anchor			.choices:nn	= {south~west, south, south~east, west, center, east, north~west, north, north~east}
-		{\tl_set_eq:NN \l_pgfgo_goban_background_image_from_tl \l_keys_choice_tl},
+		{\tl_set_eq:NN \l_pgfgo_goban_background_image_anchor_tl \l_keys_choice_tl},
 	anchor			.initial:n	= {south~west},
-	%NOMBRE VIEJO DE anchor.
-	from				.code:n			= {\keys_set:nn {pgfgo / goban / background / fill / image} {anchor = {#1}}},
 	tiles				.tl_set:N		= \l_pgfgo_goban_background_image_tiles_tl,
+	rotate			.tl_set:N		= \l_pgfgo_goban_background_image_rotate_tl,
 	false				.code:n			= {\tl_clear:N \l_pgfgo_goban_background_image_tl},
 }
 
@@ -372,8 +365,6 @@
 		true				.code:n 		= {\keys_set:nn {pgfgo / goban / label / at} {none, south, west}},
 
 		color				.tl_set:N 	= \l_pgfgo_goban_labels_color_tl,
-		%NOMBRE VIEJO DE color.
-		text~color	.tl_set:N 	= \l_pgfgo_goban_labels_color_tl,
 
 		sep					.dim_set:N 	= \l_pgfgo_goban_labels_sep_dim,
 
@@ -491,11 +482,6 @@
 		left				.default:n = {true},
 	}
 
-	\keys_define:nn {pgfgo / goban / partial}{
-		from				.code:n 	= {\pgfgo_kernel_board_window:n{#1}},
-		false							.bool_set:N = \l_pgfgo_goban_partial_bool,
-		false							.default:n = {false},
-	}
 	%LAS ESQUINAS #1: <ESQUINA>:<ESQUINA>, <ESQUINA>, <ESQUINA> O <ESQUINA> to <ESQUINA>. EL VALOR SE PASA A
 	%CADENA: EL : PUEDE LLEGAR ACTIVO (babel francais).
 	\msg_new:nnn {pgfgo} {partial-corners}
@@ -589,22 +575,30 @@
 			{\l_pgfgo_goban_grid_y_sep_dim * (\l_pgfgo_goban_size_y_int - 1) + 2 \l_pgfgo_goban_border_sep_dim}
 		\str_case:Vn \l_pgfgo_goban_background_image_fit_tl {
 			{stretch} {
-				\pgfgo_image_load:Ve \l_pgfgo_goban_background_image_tl {
-					width = \dim_use:N \l__pgfgo_goban_image_w_dim,
-					height = \dim_use:N \l__pgfgo_goban_image_h_dim
-				}
-				\__pgfgo_goban_background_image_center:
+				\__pgfgo_goban_image_fill:NNnnnnn
+					\l_pgfgo_goban_background_image_tl \l_pgfgo_goban_background_image_rotate_tl
+					{\l__pgfgo_goban_image_w_dim} {\l__pgfgo_goban_image_h_dim}
+					{\__pgfgo_goban_background_image_center:} {1} {1}
 			}
+			%CON UN CUARTO DE VUELTA, EL ANCHO DE LA IMAGEN CUBRE EL ALTO DEL FONDO Y AL REVES.
 			{cover} {
 				\pgfgo_image_measure:V \l_pgfgo_goban_background_image_tl
+				\__pgfgo_goban_quarter:Nnn \l_pgfgo_goban_background_image_rotate_tl {1} {1}
+				\int_if_odd:nT {\l__pgfgo_goban_quarter_int} {
+					\dim_set_eq:NN \l__pgfgo_goban_cell_w_dim \l_pgfgo_image_width_dim
+					\dim_set_eq:NN \l_pgfgo_image_width_dim \l_pgfgo_image_height_dim
+					\dim_set_eq:NN \l_pgfgo_image_height_dim \l__pgfgo_goban_cell_w_dim
+				}
 				\fp_set:Nn \l__pgfgo_goban_image_fp {
 					max(\dim_to_fp:n {\l__pgfgo_goban_image_w_dim} / \dim_to_fp:n {\l_pgfgo_image_width_dim},
 						\dim_to_fp:n {\l__pgfgo_goban_image_h_dim} / \dim_to_fp:n {\l_pgfgo_image_height_dim})
 				}
 				\pgfgo_image_load:Ve \l_pgfgo_goban_background_image_tl {
-					width = \fp_to_dim:n {ceil(\l__pgfgo_goban_image_fp * \l_pgfgo_image_width_dim, 2)}
+					width = \fp_to_dim:n {ceil(\l__pgfgo_goban_image_fp *
+						\int_if_odd:nTF {\l__pgfgo_goban_quarter_int}
+							{\l_pgfgo_image_height_dim} {\l_pgfgo_image_width_dim}, 2)}
 				}
-				\__pgfgo_goban_background_image_center:
+				\__pgfgo_goban_image_turn:n {\__pgfgo_goban_background_image_center:}
 			}
 			{tile} {
 				\tl_if_empty:NTF \l_pgfgo_goban_background_image_tiles_tl
@@ -616,23 +610,69 @@
 							width = \fp_to_dim:n {\l__pgfgo_goban_image_w_dim / \l__pgfgo_goban_tiles_x_int},
 							height = \fp_to_dim:n {\l__pgfgo_goban_image_h_dim / \l__pgfgo_goban_tiles_y_int}
 						}
-						\__pgfgo_goban_mesh:nnnn {\l__pgfgo_goban_image_x_dim} {\l__pgfgo_goban_image_y_dim}
+						\__pgfgo_goban_mesh:NNnnnn
+							\l_pgfgo_goban_background_image_tl \l_pgfgo_goban_background_image_rotate_tl
+							{\l__pgfgo_goban_image_x_dim} {\l__pgfgo_goban_image_y_dim}
 							{\l__pgfgo_goban_tiles_x_int} {\l__pgfgo_goban_tiles_y_int}
 					}
 			}
 		}
 	}
 
-	\cs_new_protected:Npn \__pgfgo_goban_background_image_center: {
-		\pgfgo_image_draw:n {
-			\pgfpoint
-				{\l__pgfgo_goban_image_x_dim + 0.5 \l__pgfgo_goban_image_w_dim}
-				{\l__pgfgo_goban_image_y_dim + 0.5 \l__pgfgo_goban_image_h_dim}
-		}
+	%EL CENTRO DEL FONDO DEL TABLERO COMPLETO (UN PUNTO DE PGF).
+	\cs_new:Npn \__pgfgo_goban_background_image_center: {
+		\pgfpoint
+			{\l__pgfgo_goban_image_x_dim + 0.5 \l__pgfgo_goban_image_w_dim}
+			{\l__pgfgo_goban_image_y_dim + 0.5 \l__pgfgo_goban_image_h_dim}
 	}
 
-	%SOLO LAS BALDOSAS QUE TOCAN EL FONDO DE LA PARTE VISIBLE. LAS BALDOSAS SE ALINEAN CON LA ESQUINA from
-	%O EL BORDE from DEL FONDO DEL TABLERO COMPLETO (CENTRADAS EN EL BORDE); CON center, EN EL CENTRO.
+	%EL GIRO DE LAS IMAGENES DE LA CUADRICULA Y DEL FONDO: EL ANGULO DE #1 (rotate) EN LA CELDA (#2,#3),
+	%REDONDEADO AL CUARTO DE VUELTA, EN \l__pgfgo_goban_quarter_int (0 A 3; SIN rotate, 0).
+	\int_new:N \l__pgfgo_goban_quarter_int
+	\cs_new_protected:Npn \__pgfgo_goban_quarter:Nnn #1#2#3 {
+		\tl_if_blank:VTF #1
+			{\int_zero:N \l__pgfgo_goban_quarter_int}
+			{
+				\pgfgo_image_angle:Nnn #1 {#2} {#3}
+				\int_set:Nn \l__pgfgo_goban_quarter_int {\fp_eval:n {round(\l_pgfgo_image_angle_fp / 90)}}
+				\int_set:Nn \l__pgfgo_goban_quarter_int
+					{\l__pgfgo_goban_quarter_int - 4 * \int_div_truncate:nn {\l__pgfgo_goban_quarter_int} {4}}
+				\int_compare:nNnT {\l__pgfgo_goban_quarter_int} < {0} {\int_add:Nn \l__pgfgo_goban_quarter_int {4}}
+			}
+	}
+	%DIBUJA LA ULTIMA IMAGEN CARGADA, CENTRADA EN #1 Y GIRADA \l__pgfgo_goban_quarter_int CUARTOS DE VUELTA.
+	\cs_new_protected:Npn \__pgfgo_goban_image_turn:n #1 {
+		\int_compare:nNnTF {\l__pgfgo_goban_quarter_int} = {0}
+			{\pgfgo_image_draw:n {#1}}
+			{
+				\pgfscope
+					\pgftransformshift {#1}
+					\pgftransformrotate {\int_eval:n {90 * \l__pgfgo_goban_quarter_int}}
+					\pgfgo_image_draw:
+				\endpgfscope
+			}
+	}
+	%DIBUJA LA IMAGEN #1, GIRADA SEGUN #2 (rotate) EN LA CELDA (#6,#7), EN EL RECTANGULO DE #3 x #4 CENTRADO
+	%EN #5: CON UN CUARTO DE VUELTA, SE CARGA CON EL ANCHO Y EL ALTO CAMBIADOS.
+	\cs_new_protected:Npn \__pgfgo_goban_image_fill:NNnnnnn #1#2#3#4#5#6#7 {
+		\__pgfgo_goban_quarter:Nnn #2 {#6} {#7}
+		\int_if_odd:nTF {\l__pgfgo_goban_quarter_int}
+			{\pgfgo_image_load:Ve #1 {width = \dim_eval:n {#4}, height = \dim_eval:n {#3}}}
+			{\pgfgo_image_load:Ve #1 {width = \dim_eval:n {#3}, height = \dim_eval:n {#4}}}
+		\__pgfgo_goban_image_turn:n {#5}
+	}
+	%UNA BALDOSA: SIN rotate, LA ULTIMA IMAGEN CARGADA, SIN VOLVER A CARGARLA.
+	\cs_new_protected:Npn \__pgfgo_goban_image_cell:NNnnnnn #1#2#3#4#5#6#7 {
+		\tl_if_blank:VTF #2
+			{\pgfgo_image_draw:n {#5}}
+			{\__pgfgo_goban_image_fill:NNnnnnn #1 #2 {#3} {#4} {#5} {#6} {#7}}
+	}
+	%EL TAMANO DE LAS BALDOSAS (EL DE LA IMAGEN SIN GIRAR).
+	\dim_new:N \l__pgfgo_goban_cell_w_dim
+	\dim_new:N \l__pgfgo_goban_cell_h_dim
+
+	%SOLO LAS BALDOSAS QUE TOCAN EL FONDO DE LA PARTE VISIBLE. LAS BALDOSAS SE ALINEAN CON LA ESQUINA anchor
+	%O EL BORDE anchor DEL FONDO DEL TABLERO COMPLETO (CENTRADAS EN EL BORDE); CON center, EN EL CENTRO.
 	\dim_new:N \l__pgfgo_goban_tile_x_dim
 	\dim_new:N \l__pgfgo_goban_tile_y_dim
 	\cs_new_protected:Npn \__pgfgo_goban_background_image_tile: {
@@ -642,25 +682,31 @@
 				\pgfgo_image_load:Ve \l_pgfgo_goban_background_image_tl
 					{width = \dim_eval:n {\l_pgfgo_goban_background_image_width_tl}}
 			}
+		\dim_set_eq:NN \l__pgfgo_goban_cell_w_dim \l_pgfgo_image_width_dim
+		\dim_set_eq:NN \l__pgfgo_goban_cell_h_dim \l_pgfgo_image_height_dim
 		%LA ESQUINA INFERIOR IZQUIERDA DE UNA BALDOSA, DESDE LA DEL FONDO COMPLETO: CONTRA EL BORDE QUE
-		%NOMBRA from O, EN LA OTRA DIRECCION, CENTRADA.
+		%NOMBRA anchor O, EN LA OTRA DIRECCION, CENTRADA.
 		\__pgfgo_goban_tile_start:Nnnnn \l__pgfgo_goban_tile_x_dim
-			{west} {east} {\l__pgfgo_goban_image_w_dim} {\l_pgfgo_image_width_dim}
+			{west} {east} {\l__pgfgo_goban_image_w_dim} {\l__pgfgo_goban_cell_w_dim}
 		\__pgfgo_goban_tile_start:Nnnnn \l__pgfgo_goban_tile_y_dim
-			{south} {north} {\l__pgfgo_goban_image_h_dim} {\l_pgfgo_image_height_dim}
+			{south} {north} {\l__pgfgo_goban_image_h_dim} {\l__pgfgo_goban_cell_h_dim}
 		\int_step_inline:nnn
-			{\__pgfgo_goban_tile_first:nnnn {\l_pgfgo_goban_from_x_int} {\l_pgfgo_goban_grid_x_sep_dim} {\l_pgfgo_image_width_dim} {\l__pgfgo_goban_tile_x_dim}}
-			{\__pgfgo_goban_tile_last:nnnn {\l_pgfgo_goban_to_x_int} {\l_pgfgo_goban_grid_x_sep_dim} {\l_pgfgo_image_width_dim} {\l__pgfgo_goban_tile_x_dim}}
+			{\__pgfgo_goban_tile_first:nnnn {\l_pgfgo_goban_from_x_int} {\l_pgfgo_goban_grid_x_sep_dim} {\l__pgfgo_goban_cell_w_dim} {\l__pgfgo_goban_tile_x_dim}}
+			{\__pgfgo_goban_tile_last:nnnn {\l_pgfgo_goban_to_x_int} {\l_pgfgo_goban_grid_x_sep_dim} {\l__pgfgo_goban_cell_w_dim} {\l__pgfgo_goban_tile_x_dim}}
 			{
 				\int_step_inline:nnn
-					{\__pgfgo_goban_tile_first:nnnn {\l_pgfgo_goban_from_y_int} {\l_pgfgo_goban_grid_y_sep_dim} {\l_pgfgo_image_height_dim} {\l__pgfgo_goban_tile_y_dim}}
-					{\__pgfgo_goban_tile_last:nnnn {\l_pgfgo_goban_to_y_int} {\l_pgfgo_goban_grid_y_sep_dim} {\l_pgfgo_image_height_dim} {\l__pgfgo_goban_tile_y_dim}}
+					{\__pgfgo_goban_tile_first:nnnn {\l_pgfgo_goban_from_y_int} {\l_pgfgo_goban_grid_y_sep_dim} {\l__pgfgo_goban_cell_h_dim} {\l__pgfgo_goban_tile_y_dim}}
+					{\__pgfgo_goban_tile_last:nnnn {\l_pgfgo_goban_to_y_int} {\l_pgfgo_goban_grid_y_sep_dim} {\l__pgfgo_goban_cell_h_dim} {\l__pgfgo_goban_tile_y_dim}}
 					{
-						\pgfgo_image_draw:n {
-							\pgfpoint
-								{\l__pgfgo_goban_image_x_dim + \l__pgfgo_goban_tile_x_dim + \fp_to_dim:n {(##1 + 0.5) * \l_pgfgo_image_width_dim}}
-								{\l__pgfgo_goban_image_y_dim + \l__pgfgo_goban_tile_y_dim + \fp_to_dim:n {(####1 + 0.5) * \l_pgfgo_image_height_dim}}
-						}
+						\__pgfgo_goban_image_cell:NNnnnnn
+							\l_pgfgo_goban_background_image_tl \l_pgfgo_goban_background_image_rotate_tl
+							{\l__pgfgo_goban_cell_w_dim} {\l__pgfgo_goban_cell_h_dim}
+							{
+								\pgfpoint
+									{\l__pgfgo_goban_image_x_dim + \l__pgfgo_goban_tile_x_dim + \fp_to_dim:n {(##1 + 0.5) * \l__pgfgo_goban_cell_w_dim}}
+									{\l__pgfgo_goban_image_y_dim + \l__pgfgo_goban_tile_y_dim + \fp_to_dim:n {(####1 + 0.5) * \l__pgfgo_goban_cell_h_dim}}
+							}
+							{##1} {####1}
 					}
 			}
 	}
@@ -682,27 +728,32 @@
 	\int_new:N \l__pgfgo_goban_tiles_x_int
 	\int_new:N \l__pgfgo_goban_tiles_y_int
 
-	%DIBUJA LA ULTIMA IMAGEN CARGADA EN CADA CELDA DE UNA MALLA DE #3 x #4 QUE EMPIEZA EN (#1,#2) (PUNTOS
-	%DE PGF EN dim) Y CUYAS CELDAS MIDEN LO QUE LA IMAGEN.
-	\cs_new_protected:Npn \__pgfgo_goban_mesh:nnnn #1#2#3#4 {
-		\int_step_inline:nnn {0} {#3 - 1} {
-			\int_step_inline:nnn {0} {#4 - 1} {
-				\pgfgo_image_draw:n {
-					\pgfpoint
-						{#1 + \fp_to_dim:n {(##1 + 0.5) * \l_pgfgo_image_width_dim}}
-						{#2 + \fp_to_dim:n {(####1 + 0.5) * \l_pgfgo_image_height_dim}}
-				}
+	%DIBUJA LA ULTIMA IMAGEN CARGADA (#1, GIRADA SEGUN #2) EN CADA CELDA DE UNA MALLA DE #5 x #6 QUE
+	%EMPIEZA EN (#3,#4) (PUNTOS DE PGF EN dim) Y CUYAS CELDAS MIDEN LO QUE LA IMAGEN.
+	\cs_new_protected:Npn \__pgfgo_goban_mesh:NNnnnn #1#2#3#4#5#6 {
+		\dim_set_eq:NN \l__pgfgo_goban_cell_w_dim \l_pgfgo_image_width_dim
+		\dim_set_eq:NN \l__pgfgo_goban_cell_h_dim \l_pgfgo_image_height_dim
+		\int_step_inline:nnn {0} {#5 - 1} {
+			\int_step_inline:nnn {0} {#6 - 1} {
+				\__pgfgo_goban_image_cell:NNnnnnn #1 #2
+					{\l__pgfgo_goban_cell_w_dim} {\l__pgfgo_goban_cell_h_dim}
+					{
+						\pgfpoint
+							{#3 + \fp_to_dim:n {(##1 + 0.5) * \l__pgfgo_goban_cell_w_dim}}
+							{#4 + \fp_to_dim:n {(####1 + 0.5) * \l__pgfgo_goban_cell_h_dim}}
+					}
+					{##1} {####1}
 			}
 		}
 	}
 
-	%#1: DONDE EMPIEZA LA BALDOSA ALINEADA EN UNA DIRECCION: 0 SI from NOMBRA EL BORDE #2, EL TAMANO DEL
+	%#1: DONDE EMPIEZA LA BALDOSA ALINEADA EN UNA DIRECCION: 0 SI anchor NOMBRA EL BORDE #2, EL TAMANO DEL
 	%FONDO #4 SI NOMBRA EL BORDE #3 Y, SI NO NOMBRA NINGUNO, CENTRADA (#5: TAMANO DE LA BALDOSA).
 	\cs_new_protected:Npn \__pgfgo_goban_tile_start:Nnnnn #1#2#3#4#5 {
-		\tl_if_in:NnTF \l_pgfgo_goban_background_image_from_tl {#2}
+		\tl_if_in:NnTF \l_pgfgo_goban_background_image_anchor_tl {#2}
 			{\dim_zero:N #1}
 			{
-				\tl_if_in:NnTF \l_pgfgo_goban_background_image_from_tl {#3}
+				\tl_if_in:NnTF \l_pgfgo_goban_background_image_anchor_tl {#3}
 					{\dim_set:Nn #1 {#4}}
 					{\dim_set:Nn #1 {0.5 #4 - 0.5 #5}}
 			}
@@ -840,14 +891,13 @@
 					width = \fp_to_dim:n {\l_pgfgo_goban_grid_x_sep_dim * (#1 - 1) / \l__pgfgo_goban_tiles_x_int},
 					height = \fp_to_dim:n {\l_pgfgo_goban_grid_y_sep_dim * (#2 - 1) / \l__pgfgo_goban_tiles_y_int}
 				}
-				\__pgfgo_goban_mesh:nnnn {\l_pgfgo_goban_grid_x_sep_dim} {\l_pgfgo_goban_grid_y_sep_dim}
+				\__pgfgo_goban_mesh:NNnnnn \l_pgfgo_goban_grid_image_tl \l_pgfgo_goban_grid_image_rotate_tl
+					{\l_pgfgo_goban_grid_x_sep_dim} {\l_pgfgo_goban_grid_y_sep_dim}
 					{\l__pgfgo_goban_tiles_x_int} {\l__pgfgo_goban_tiles_y_int}
 			}{
-				\pgfgo_image_load:Ve \l_pgfgo_goban_grid_image_tl {
-					width = \dim_eval:n {\l_pgfgo_goban_grid_x_sep_dim * (#1 - 1)},
-					height = \dim_eval:n {\l_pgfgo_goban_grid_y_sep_dim * (#2 - 1)}
-				}
-				\pgfgo_image_draw:n {\pgfpointxy {\fp_eval:n {(#1 + 1) / 2}} {\fp_eval:n {(#2 + 1) / 2}}}
+				\__pgfgo_goban_image_fill:NNnnnnn \l_pgfgo_goban_grid_image_tl \l_pgfgo_goban_grid_image_rotate_tl
+					{\l_pgfgo_goban_grid_x_sep_dim * (#1 - 1)} {\l_pgfgo_goban_grid_y_sep_dim * (#2 - 1)}
+					{\pgfpointxy {\fp_eval:n {(#1 + 1) / 2}} {\fp_eval:n {(#2 + 1) / 2}}} {1} {1}
 			}
 			\endpgfscope
 		}
