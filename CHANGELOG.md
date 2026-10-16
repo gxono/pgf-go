@@ -177,6 +177,9 @@ All notable changes to `pgf-go` are listed here.
 - A background of tiles (`background/fill/image = {fit = tile}`) no longer
   makes the board take more room: the tiles that are cut off on the edges
   left a blank margin above and to the right.
+- `players/<player>/mark/sequence/from` was ignored: `\marks` started the
+  sequence at the `from` of the neutral player. Now it starts at the `from`
+  of the player of the marks.
 
 ### Behaviour changes
 
@@ -261,6 +264,11 @@ All notable changes to `pgf-go` are listed here.
   animations in the PDF and in `beamer`, a problem, Spanish, Japanese, Chinese
   and Korean texts, captures and ko, territory and score, and arrows and lines.
 - Every example in `doc/examples` ends with a page that shows its code.
+- More drawn examples in the manuals: the keys whose effect is seen in the
+  drawing and had none got one, usually shared by sibling keys (the line
+  of an arrow, the label of the moves of a player, the result of
+  `\sgfdiagrams`, the layout of the diagrams, ...).
+- `variantes.sgf` (Spanish manual) has a standard result, `RE[B+R]`.
 
 ### Tests
 

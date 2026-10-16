@@ -185,6 +185,13 @@ By default, the texts are in the language set by babel or polyglossia, and they 
 			|unknown result| & Unknown result & Resultado desconocido \\
 		\end{tabular}
 	\end{center}
+
+	\begin{codeexample}[]
+		\pgfgotext{black to play}. \pgfgotext{tesuji}.
+
+		\pgfgoset{lang = fr}
+		\pgfgotext{black to play}.
+	\end{codeexample}
 \end{command}
 
 \begin{command}{\pgfgodefinelanguage\marg{language}\marg{texts}}
@@ -591,6 +598,18 @@ Profiles are equivalent to styles in \tikzname. In short, they allow saving a bo
 
 \begin{key}{/pgfgo/players profile = \meta{name}}
 	Applies only the players |name-neutral|, |name-black| and |name-white|, each one after going back to the initial style.
+
+	\begin{codeexample}[]
+		\begin{goban}[3, goban profile = pgfgo]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+
+		\begin{goban}[3, players profile = pgfgo]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/black/profile = \meta{player name}}
@@ -693,6 +712,19 @@ Player options can be configured all at once with the \emph{key} |all|, or separ
 
 \begin{key}{/pgfgo/players/white = \meta{second player options}}
 	Options of the second player.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {
+			all = {stone = {line = {color = red}}},
+			neutral = {stone = {fill = {color = yellow}}},
+			black = {stone = {fill = {color = blue!60!black}}}}}
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+			\stone{A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 To avoid writing the whole path, there are four commands:
@@ -703,6 +735,17 @@ To avoid writing the whole path, there are four commands:
 
 \begin{command}{\pgfgosetallplayers\marg{player options}}
 	Applies the options to the three players. It is the same as |\pgfgoset{players = {all = {...}}}|.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgosetallplayers{stone = {radius = 0.3cm}}
+		\pgfgosetplayer{white}{stone = {fill = {color = orange}}}
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+			\stone{A3}
+		\end{goban}
+	\end{codeexample}
 \end{command}
 
 \begin{command}{\pgfgocopyplayer\marg{target player}\marg{source player}}
@@ -720,6 +763,16 @@ To avoid writing the whole path, there are four commands:
 
 \begin{command}{\pgfgocopyplayers\marg{neutral source}\marg{black source}\marg{white source}}
 	Copies, in this order, |neutral source| into the neutral player, |black source| into the black one and |white source| into the white one (with |\pgfgocopyplayer|). Since the copies are made one after the other, it cannot be used to swap players.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgocopyplayers{neutral}{white}{black}
+		% It does not swap them: both are white.
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+	\end{codeexample}
 \end{command}
 
 \label{subsec:players}Each player has access to the same key tree. For this reason, the following, although they mention |white|, apply to all players. Each is explained in the section corresponding to the object type, but they are briefly illustrated here.
@@ -1017,6 +1070,17 @@ To avoid writing the whole path, there are four commands:
 
 \begin{key}{/pgfgo/players/white/stone/drop shadow/color = \meta{color} (initially black)}
 	The color of the shadow.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		\pgfgoset{players = {white = {stone = {drop shadow = {color = blue, offset = 0.1cm}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/stone/shine = \meta{stone shine options} (default true)}
@@ -1089,6 +1153,17 @@ To avoid writing the whole path, there are four commands:
 
 \begin{key}{/pgfgo/players/white/stone/shine/color = \meta{color} (initially gray!50!white)}
 	Controls the color of the drawn shine.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		\pgfgoset{players = {black = {stone = {shine = {color = red}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/stone/shine/image = \meta{options}}
@@ -1115,6 +1190,16 @@ To avoid writing the whole path, there are four commands:
 
 \begin{key}{/pgfgo/players/white/stone/shine/image/rotate = \meta{angle} (initially 0)}
 	Turns the image of the shine, the same on every stone.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {stone = {
+			image = {file = stone-white.png},
+			shine = {true, image = {file = shine.png, width = 0.3cm, rotate = 90}}}}}}
+
+		\begin{goban}[5, partial = B2:D4]
+			\stones[w]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{stylekey}{/pgfgo/players/white/stone/shine/image/false}
@@ -1131,6 +1216,15 @@ To avoid writing the whole path, there are four commands:
 
 \begin{key}{/pgfgo/players/white/move/label = \meta{move label options}}
 	Controls the labels (the numbers) of their moves.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {move = {label = {
+			color = red, font = \itshape, font size = 6pt, opacity = 0.6}}}}}
+
+		\begin{goban}[3]
+			\moves*{A1, B2, C3, A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/font = \meta{font commands} (initially \texttt{\string\bfseries})}
@@ -1151,6 +1245,16 @@ To avoid writing the whole path, there are four commands:
 
 \begin{key}{/pgfgo/players/white/move/label/format = \meta{format}}
 	Format of the numbers: |arabic|, |alph|, |Alph|, |roman| or |Roman|.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {
+			black = {move = {label = {format = Roman}}},
+			white = {move = {label = {format = alph}}}}}
+
+		\begin{goban}[3]
+			\moves*{A1, B2, C3, A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/format/arabic}
@@ -1251,14 +1355,49 @@ To avoid writing the whole path, there are four commands:
 
 \begin{key}{/pgfgo/players/white/mark/fill/opacity = \meta{float} (initially 1)}
 	Opacity of the fill of the marks.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {
+			fill = {color = red, opacity = 0.5},
+			line = {opacity = 0.3}}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\marks[w, filled square]{A1, B2}
+			\marks[w, triangle]{C3, A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/scale = \meta{float} (initially 1)}
 	Size of their marks compared with the usual one (the shapes and the text).
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {scale = 1.5}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\stones[b]{C1}
+			\marks[w, circle]{A1, B2}
+			\marks[b, circle]{C1}
+			\marks[circle]{C3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/label = \meta{mark label options}}
 	Controls label options for markings that have them (|sequence| and |custom|).
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {label = {
+			color = red, font = \itshape, font size = 6pt}}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\marks[w, sequence]{A1, B2, C3}
+			\marks[w, custom = {?}]{A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/label/color = \meta{color}}
@@ -1299,6 +1438,16 @@ To avoid writing the whole path, there are four commands:
 
 \begin{key}{/pgfgo/players/white/mark/sequence = \meta{mark sequence options} (default from = 1)}
 	Numbers their marks in order.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {sequence = {from = 4, format = roman}}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\marks[w]{A1, B2, C3}
+			\marks[sequence]{A3, C1}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/sequence/true}

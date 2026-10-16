@@ -215,6 +215,15 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/sequence=\meta{options} (default from = 1)}
 	Permite numerar una serie de marcas en orden.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = B2:D4]
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[sequence]{C3,B3,C4}
+			\marks[sequence = {format = Alph}]{B2,D2,D4}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/mark/sequence/true}
@@ -328,6 +337,18 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/define mark/image/width = \meta{dimension} (initially 1.2 radios de piedra)}
 	El ancho de la imagen; el alto mantiene la proporción. Sin esta \emph{key}, la marca es del tamaño del círculo (|circle|), y cambia con el radio de las piedras.
+
+	\begin{codeexample}[]
+		\pgfgodefinemark[image = {file = star.pdf}]{estrella}
+		\pgfgodefinemark[image = {file = star.pdf, width = 0.6em}]{estrellita}
+
+		\begin{goban}[5, partial = B2:D4]
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[estrella]{C3, B4}
+			\marks[estrellita]{B3, D3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 
@@ -600,6 +621,18 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 \begin{key}{/pgfgo/mark/neutral}
 	
 	Mantiene la marca sin asociarla a ningún jugador.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = B2:D4]
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+			\marks[b, t-square]{B2, C3}
+			\marks[w, t-square]{D2, B3}
+			\marks[n, t-square]{D4}
+			\marks[b, triangle]{C2, D3}
+			\marks[w, triangle]{B4}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/mark/b}
@@ -658,6 +691,15 @@ Las flechas y las líneas unen dos intersecciones. Se dibujan encima de las pied
 
 \begin{key}{/pgfgo/arrow/opacity=\meta{number} (initially 1)}
 	Opacidad de la flecha.
+
+	\begin{codeexample}[]
+		\begin{goban}[5]
+			\stones[b]{C2, C4}\stone[w]{D3}
+			\arrow[width = 0.4pt]{A1}{E1}
+			\arrow[color = blue, width = 2.5pt]{A3}{E3}
+			\arrow[color = red, opacity = 0.4, width = 2.5pt]{A5}{E5}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/arrow/dash=\meta{solid, dashed o dotted} (initially solid)}
@@ -695,6 +737,14 @@ Las flechas y las líneas unen dos intersecciones. Se dibujan encima de las pied
 
 \begin{key}{/pgfgo/arrow/tips=\meta{end o both} (initially end)}
 	Dónde va la punta: solo al final, o en los dos extremos.
+
+	\begin{codeexample}[]
+		\begin{goban}[5]
+			\arrow[tip = Latex]{A1}{E1}
+			\arrow[tip = Triangle, tips = both]{A3}{E3}
+			\arrow[tip = {Circle[open]}]{A5}{E5}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/arrow/halo=\meta{halo options} (default true)}
@@ -715,6 +765,15 @@ Las flechas y las líneas unen dos intersecciones. Se dibujan encima de las pied
 
 \begin{key}{/pgfgo/arrow/halo/width=\meta{dimension} (initially 0.8pt)}
 	Ancho del halo a cada lado de la flecha.
+
+	\begin{codeexample}[]
+		\begin{goban}[5]
+			\stones[b]{B1, B3, B5}\stones[w]{D1, D3, D5}
+			\arrow[halo = false]{A1}{E1}
+			\arrow{A3}{E3}
+			\arrow[halo = {color = yellow, width = 2pt}]{A5}{E5}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/arrow/forget}

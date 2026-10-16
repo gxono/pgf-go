@@ -214,6 +214,18 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/grid/sep =\meta{dimension} (initially 1.25em)}
 		Define simultáneamente la separación vertical y horizontal de las líneas, asegurando un espaciado uniforme en ambas direcciones. Es una opción conveniente para mantener proporciones equilibradas.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, grid = {x sep = 1.8em}]
+				\stones[b]{B2, C3}
+				\stone[w]{D3}
+			\end{goban}
+
+			\begin{goban}[5, grid = {sep = 0.9em}]
+				\stones[b]{B2, C3}
+				\stone[w]{D3}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/grid/image =\meta{options}}
@@ -302,6 +314,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/goban/hoshi/opacity=\meta{float}}
 		Opacidad de los puntos (también de su imagen). Sin esta \emph{key}, toman la opacidad de la cuadrícula.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, hoshi = {radius = 3pt, opacity = 0.3}]
+				\stones[b]{C3}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/hoshi/at=\meta{coordinates}}
@@ -332,6 +350,14 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/goban/hoshi/image/rotate=\meta{ángulo}, |random| o \meta{mínimo}|:|\meta{máximo} (initially 0)}
 		Gira la imagen, como |stone/image/rotate| (pág.~\pageref{subsec:piedrasimagen}): con |random| o un rango, cada punto con un ángulo distinto, siempre el mismo.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, hoshi = {image = {file = hoshi.png, width = 8pt}}]
+			\end{goban}
+
+			\begin{goban}[9, hoshi = {image = {file = hoshi.png, width = 8pt, rotate = 45}}]
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{stylekey}{/pgfgo/goban/hoshi/image/false}
@@ -867,6 +893,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\begin{key}{/pgfgo/goban/label/color = \meta{color} (initially black)}
 		
 		Define el color del texto de las etiquetas.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, label = {at = {south, west}, color = red, sep = 0.6cm}]
+				\stones[b]{A1}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/columns = \meta{letters, numbers o kanji} (initially letters)}
@@ -879,6 +911,13 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/goban/label/columns direction = \meta{left to right o right to left} (initially left to right)}
 		En qué sentido se cuentan las columnas.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, label = {at = {north, east},
+					columns direction = right to left, rows = letters}]
+				\stones[b]{B4}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/rows direction = \meta{bottom to top o top to bottom} (initially bottom to top)}
@@ -1116,6 +1155,15 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/players/black/territory/mark=\meta{mark options} (initially t-circle)}
 		Marca de cada punto, con |draw = marks|. Es |t-circle| para las negras y |t-square| para las blancas y los puntos neutrales.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, mark = {t-square}]{A1, A5, B5, B1}
+				\territory[w]{E1, E5}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/fill=\meta{fill options} (default true)}
@@ -1136,6 +1184,16 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/players/black/territory/fill/opacity=\meta{number} (initially 0.35)}
 		Opacidad del relleno: |0.35| para las negras y los puntos neutrales, |0.7| para las blancas.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = fill,
+					fill = {color = blue, opacity = 0.5}]{A1, A5, B5, B1}
+				\territory[w, draw = fill]{E1, E5}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/line=\meta{line options} (default true)}
@@ -1178,6 +1236,22 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/players/black/territory/line/above=\meta{boolean} (default true, initially true)}
 		Con |true|, el contorno y los vértices se dibujan encima de las piedras y de las marcas. Con |false|, debajo de las piedras, junto con el relleno.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = region, fill = false,
+					line = {true, color = red, width = 2pt, opacity = 0.7}]{A1, A5, B5, B1}
+			\end{goban}
+
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = region, fill = false,
+					line = {true, color = red, width = 2pt, opacity = 0.7, above = false}]{A1, A5, B5, B1}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/vertices=\meta{options} (default true)}
@@ -1198,6 +1272,15 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/players/black/territory/vertices/color=\meta{color}}
 		Color de los puntos. Sin esta \emph{key}, toman el color del contorno.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = region,
+					vertices = {true, radius = 3pt, color = red}]{A1, A5, B5, B1}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{command}{\pgfgoscore\opt{\oarg{options}}\marg{player}}
@@ -1212,6 +1295,16 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/score/komi=\meta{number} (initially 0)}
 		Komi que se suma al puntaje de las blancas. Puede fijarse para todo el documento con |\pgfgoset{score = {komi = 6.5}}|.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory{auto}
+			\end{goban}
+
+			Negras: \pgfgoscore{b}. Blancas: \pgfgoscore[komi = 6.5]{w}.
+		\end{codeexample}
 	\end{key}
 
 	\begin{command}{\pgfgoregion\marg{player}\marg{property}}
@@ -1278,6 +1371,19 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/notes/separator = \meta{text} (initially una coma y un espacio)}
 		Texto entre las notas.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, partial = A2:E4, notes]
+				\stones[b]{B3,C2,C4}
+				\stones[w]{D2,D4,E3}
+				\moves*[w]{C3}
+				\moves*{D3}
+				\moves*[from = 3, w]{C3}
+				\moves*{D3}
+			\end{goban}
+
+			\pgfgomovenotes[at = en, separator = {; }]
+		\end{codeexample}
 	\end{key}
 
 	\subsection{Recordar un tablero}
@@ -1342,6 +1448,23 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/goban/resume/territory=\meta{boolean} (default true, initially false)}
 		Trae también el territorio.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = B2:D4}}
+
+			\begin{goban}[name = guardado]
+				\stones[b]{C2:4}
+				\moves*[w]{D3}
+				\marks[triangle]{B3}
+				\territory[b]{B2, B4}
+			\end{goban}
+
+			\begin{goban}[resume = guardado]
+			\end{goban}
+
+			\begin{goban}[resume = {guardado, numbers, marks, territory}]
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	Para que |resume| no traiga una piedra, una jugada, una marca, una flecha o un territorio, se dibuja con la opción |forget| (|\stone[forget]{C3}|, |\marks[forget, circle]{A1}|, \ldots); con |label = forget|, una jugada viene sin su número aunque se pida |numbers|. Lo olvidado queda guardado: |\pgfgoview| lo muestra con |forgotten|.
@@ -1419,6 +1542,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/view/raise=\meta{dimension} (initially 0.5ex)}
 		A qué altura sobre la línea de base del texto queda el centro de la vista.
+
+		\begin{codeexample}[]
+			Texto \pgfgoview[raise = 0pt]{tablero2}{C3}
+			texto \pgfgoview{tablero2}{C3}
+			texto \pgfgoview[raise = 1.5ex]{tablero2}{C3}.
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/view/profile=\meta{name} (initially false)}

@@ -185,6 +185,13 @@ Por defecto, los textos están en el idioma que fijan babel o polyglossia, y lo 
 			|unknown result| & Unknown result & Resultado desconocido \\
 		\end{tabular}
 	\end{center}
+
+	\begin{codeexample}[]
+		\pgfgotext{black to play}. \pgfgotext{tesuji}.
+
+		\pgfgoset{lang = fr}
+		\pgfgotext{black to play}.
+	\end{codeexample}
 \end{command}
 
 \begin{command}{\pgfgodefinelanguage\marg{idioma}\marg{textos}}
@@ -585,6 +592,18 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 
 \begin{key}{/pgfgo/players profile = \meta{name}}
 	Aplica solo los jugadores |name-neutral|, |name-black| y |name-white|, cada uno después de volver al estilo inicial.
+
+	\begin{codeexample}[]
+		\begin{goban}[3, goban profile = pgfgo]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+
+		\begin{goban}[3, players profile = pgfgo]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/black/profile = \meta{player name}}
@@ -687,6 +706,19 @@ Las opciones de los jugadores pueden configurarse todas juntas con la \emph{key}
 
 \begin{key}{/pgfgo/players/white = \meta{second player options}}
 	Opciones del segundo jugador.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {
+			all = {stone = {line = {color = red}}},
+			neutral = {stone = {fill = {color = yellow}}},
+			black = {stone = {fill = {color = blue!60!black}}}}}
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+			\stone{A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 Para no escribir la ruta completa, hay cuatro comandos:
@@ -697,6 +729,17 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{command}{\pgfgosetallplayers\marg{player options}}
 	Aplica las opciones a los tres jugadores. Es lo mismo que |\pgfgoset{players = {all = {...}}}|.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgosetallplayers{stone = {radius = 0.3cm}}
+		\pgfgosetplayer{white}{stone = {fill = {color = orange}}}
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+			\stone{A3}
+		\end{goban}
+	\end{codeexample}
 \end{command}
 
 \begin{command}{\pgfgocopyplayer\marg{target player}\marg{source player}}
@@ -714,6 +757,16 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{command}{\pgfgocopyplayers\marg{neutral source}\marg{black source}\marg{white source}}
 	Copia, en este orden, |neutral source| en el jugador neutral, |black source| en el negro y |white source| en el blanco (con |\pgfgocopyplayer|). Como las copias se hacen una tras otra, no sirve para intercambiar jugadores.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgocopyplayers{neutral}{white}{black}
+		% No intercambia: las dos son blancas.
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+	\end{codeexample}
 \end{command}
 
 \label{subsec:jugadores}Cada jugador tiene acceso al mismo árbol de \emph{keys}. Por esta razón, las siguientes, aunque mencionen |white|, aplican a todos los jugadores. Cada una de ellas se explica en la sección correspondiente al tipo de objeto, pero se ilustran brevemente ac\'a.
@@ -1011,6 +1064,17 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/stone/drop shadow/color = \meta{color} (initially black)}
 	El color de la sombra.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		\pgfgoset{players = {white = {stone = {drop shadow = {color = blue, offset = 0.1cm}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/stone/shine = \meta{stone shine options} (default true)}
@@ -1083,6 +1147,17 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/stone/shine/color = \meta{color} (initially gray!50!white)}
 	Controla el color del brillo dibujado.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		\pgfgoset{players = {black = {stone = {shine = {color = red}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/stone/shine/image = \meta{options}}
@@ -1109,6 +1184,16 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/stone/shine/image/rotate = \meta{ángulo} (initially 0)}
 	Gira la imagen del brillo, igual en todas las piedras.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {stone = {
+			image = {file = stone-white.png},
+			shine = {true, image = {file = shine.png, width = 0.3cm, rotate = 90}}}}}}
+
+		\begin{goban}[5, partial = B2:D4]
+			\stones[w]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{stylekey}{/pgfgo/players/white/stone/shine/image/false}
@@ -1125,6 +1210,15 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/move/label = \meta{move label options}}
 	Controla las etiquetas (los números) de sus jugadas.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {move = {label = {
+			color = red, font = \itshape, font size = 6pt, opacity = 0.6}}}}}
+
+		\begin{goban}[3]
+			\moves*{A1, B2, C3, A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/font = \meta{font commands} (initially \texttt{\string\bfseries})}
@@ -1145,6 +1239,16 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/move/label/format = \meta{format}}
 	Formato de los números: |arabic|, |alph|, |Alph|, |roman| o |Roman|.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {
+			black = {move = {label = {format = Roman}}},
+			white = {move = {label = {format = alph}}}}}
+
+		\begin{goban}[3]
+			\moves*{A1, B2, C3, A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/format/arabic}
@@ -1245,14 +1349,49 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/mark/fill/opacity = \meta{float} (initially 1)}
 	Opacidad del relleno de las marcas.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {
+			fill = {color = red, opacity = 0.5},
+			line = {opacity = 0.3}}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\marks[w, filled square]{A1, B2}
+			\marks[w, triangle]{C3, A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/scale = \meta{float} (initially 1)}
 	Tamaño de sus marcas respecto del de siempre (las formas y el texto).
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {scale = 1.5}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\stones[b]{C1}
+			\marks[w, circle]{A1, B2}
+			\marks[b, circle]{C1}
+			\marks[circle]{C3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/label = \meta{mark label options}}
 	Controla las opciones de etiqueta para las marcas que las tengan (|sequence| y |custom|).
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {label = {
+			color = red, font = \itshape, font size = 6pt}}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\marks[w, sequence]{A1, B2, C3}
+			\marks[w, custom = {?}]{A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/label/color = \meta{color}}
@@ -1293,6 +1432,16 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/mark/sequence = \meta{mark sequence options} (default from = 1)}
 	Numera sus marcas en orden.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {sequence = {from = 4, format = roman}}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\marks[w]{A1, B2, C3}
+			\marks[sequence]{A3, C1}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/sequence/true}
