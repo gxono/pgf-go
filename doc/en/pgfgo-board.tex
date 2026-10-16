@@ -214,6 +214,18 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	
 	\begin{key}{/pgfgo/goban/grid/sep =\meta{dimension} (initially 1.25em)}
 		Simultaneously defines the vertical and horizontal spacing of the lines, ensuring uniform spacing in both directions. This is a convenient option for maintaining balanced proportions.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, grid = {x sep = 1.8em}]
+				\stones[b]{B2, C3}
+				\stone[w]{D3}
+			\end{goban}
+
+			\begin{goban}[5, grid = {sep = 0.9em}]
+				\stones[b]{B2, C3}
+				\stone[w]{D3}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/grid/image =\meta{options}}
@@ -302,6 +314,12 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/goban/hoshi/opacity=\meta{float}}
 		Opacity of the points (also of their image). Without this \emph{key}, they take the opacity of the grid.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, hoshi = {radius = 3pt, opacity = 0.3}]
+				\stones[b]{C3}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/hoshi/at=\meta{coordinates}}
@@ -332,6 +350,14 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/goban/hoshi/image/rotate=\meta{angle}, |random| or \meta{min}|:|\meta{max} (initially 0)}
 		Turns the image, like |stone/image/rotate| (p.~\pageref{subsec:stoneimages}): with |random| or a range, each point gets a different angle, always the same.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, hoshi = {image = {file = hoshi.png, width = 8pt}}]
+			\end{goban}
+
+			\begin{goban}[9, hoshi = {image = {file = hoshi.png, width = 8pt, rotate = 45}}]
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{stylekey}{/pgfgo/goban/hoshi/image/false}
@@ -865,6 +891,12 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\begin{key}{/pgfgo/goban/label/color = \meta{color} (initially black)}
 		
 		Defines the text color of the labels.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, label = {at = {south, west}, color = red, sep = 0.6cm}]
+				\stones[b]{A1}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/columns = \meta{letters, numbers or kanji} (initially letters)}
@@ -877,6 +909,13 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/goban/label/columns direction = \meta{left to right or right to left} (initially left to right)}
 		The side from which the columns are counted.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, label = {at = {north, east},
+					columns direction = right to left, rows = letters}]
+				\stones[b]{B4}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/rows direction = \meta{bottom to top or top to bottom} (initially bottom to top)}
@@ -1114,6 +1153,15 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/players/black/territory/mark=\meta{mark options} (initially t-circle)}
 		Mark of every point, with |draw = marks|. It is |t-circle| for Black and |t-square| for White and the neutral points.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, mark = {t-square}]{A1, A5, B5, B1}
+				\territory[w]{E1, E5}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/fill=\meta{fill options} (default true)}
@@ -1134,6 +1182,16 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/players/black/territory/fill/opacity=\meta{number} (initially 0.35)}
 		Opacity of the fill: |0.35| for Black and the neutral points, |0.7| for White.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = fill,
+					fill = {color = blue, opacity = 0.5}]{A1, A5, B5, B1}
+				\territory[w, draw = fill]{E1, E5}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/line=\meta{line options} (default true)}
@@ -1176,6 +1234,22 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/players/black/territory/line/above=\meta{boolean} (default true, initially true)}
 		With |true|, the outline and the vertices are drawn above the stones and the marks. With |false|, below the stones, together with the fill.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = region, fill = false,
+					line = {true, color = red, width = 2pt, opacity = 0.7}]{A1, A5, B5, B1}
+			\end{goban}
+
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = region, fill = false,
+					line = {true, color = red, width = 2pt, opacity = 0.7, above = false}]{A1, A5, B5, B1}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/vertices=\meta{options} (default true)}
@@ -1196,6 +1270,15 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/players/black/territory/vertices/color=\meta{color}}
 		Color of the dots. Without this key, they take the color of the outline.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = region,
+					vertices = {true, radius = 3pt, color = red}]{A1, A5, B5, B1}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{command}{\pgfgoscore\opt{\oarg{options}}\marg{player}}
@@ -1210,6 +1293,16 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/score/komi=\meta{number} (initially 0)}
 		Komi added to the score of White. It can be set for the whole document with |\pgfgoset{score = {komi = 6.5}}|.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory{auto}
+			\end{goban}
+
+			Black: \pgfgoscore{b}. White: \pgfgoscore[komi = 6.5]{w}.
+		\end{codeexample}
 	\end{key}
 
 	\begin{command}{\pgfgoregion\marg{player}\marg{property}}
@@ -1276,6 +1369,19 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/notes/separator = \meta{text} (initially a comma and a space)}
 		Text between the notes.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, partial = A2:E4, notes]
+				\stones[b]{B3,C2,C4}
+				\stones[w]{D2,D4,E3}
+				\moves*[w]{C3}
+				\moves*{D3}
+				\moves*[from = 3, w]{C3}
+				\moves*{D3}
+			\end{goban}
+
+			\pgfgomovenotes[at = on, separator = {; }]
+		\end{codeexample}
 	\end{key}
 
 	\subsection{Remembering a Board}
@@ -1340,6 +1446,23 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/goban/resume/territory=\meta{boolean} (default true, initially false)}
 		Also brings the territory.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = B2:D4}}
+
+			\begin{goban}[name = saved]
+				\stones[b]{C2:4}
+				\moves*[w]{D3}
+				\marks[triangle]{B3}
+				\territory[b]{B2, B4}
+			\end{goban}
+
+			\begin{goban}[resume = saved]
+			\end{goban}
+
+			\begin{goban}[resume = {saved, numbers, marks, territory}]
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	So that |resume| does not bring a stone, a move, a mark, an arrow or a territory, it is drawn with the option |forget| (|\stone[forget]{C3}|, |\marks[forget, circle]{A1}|, \ldots); with |label = forget|, a move comes without its number even with |numbers|. What is forgotten is still stored: |\pgfgoview| shows it with |forgotten|.
@@ -1417,6 +1540,12 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/view/raise=\meta{dimension} (initially 0.5ex)}
 		How high above the baseline of the text the center of the view is.
+
+		\begin{codeexample}[]
+			Text \pgfgoview[raise = 0pt]{board2}{C3}
+			text \pgfgoview{board2}{C3}
+			text \pgfgoview[raise = 1.5ex]{board2}{C3}.
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/view/profile=\meta{name} (initially false)}

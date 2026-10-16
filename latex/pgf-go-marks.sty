@@ -389,10 +389,9 @@
 \cs_new_protected:Nn \pgfgo_marks_parsed:nn {
 	\group_begin:
 		\pgfgo_players_set_current:n {neutral}
-		%SOLO PARA EL NUMERO INICIAL DE LA SECUENCIA; EL RESTO LO APLICA \__pgfgo_mark_setup:n.
-		\keys_set_groups:nnn{ pgfgo / players / neutral / mark } { sequence }{#1}
-		\pgfgo_kernel_sequence_reset:n {\l_pgfgo_neutral_mark_sequence_from_int}
 		\__pgfgo_mark_setup:n {#1}
+		%LA SECUENCIA EMPIEZA EN EL from DEL JUGADOR DE LAS MARCAS.
+		\pgfgo_kernel_sequence_reset:n {\l_pgfgo_mark_sequence_from_int}
 		\bool_set_true:N \l__pgfgo_mark_ready_bool
 		\clist_map_inline:nn {#2} {\__pgfgo_marks_point:nnn {#1} ##1}
 	\group_end:

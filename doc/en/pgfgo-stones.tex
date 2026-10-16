@@ -140,6 +140,14 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 \begin{key}{/pgfgo/stone/scale = \meta{float} (initially 1)}
 	
 	Defines a scaling factor that affects all elements of the stone (radius, border, markings), maintaining their proportions.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = B2:D4]
+			\stones[b, mark = circle]{C2}
+			\stones[b, scale = 0.7, mark = circle]{D3}
+			\stone[w, scale = 1.3, mark = triangle]{B4}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/stone/black}
@@ -192,6 +200,15 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 
 \begin{key}{/pgfgo/stone/neutral}
 	The stone belongs to the neutral player. It is the default player of |\stone| and |\stones|.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = B2:D4]
+			\stones[b]{C2}
+			\stones[w]{D3}
+			\stone{B4}
+			\stone[n]{C3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/stone/n}
@@ -301,6 +318,14 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 
 \begin{key}{/pgfgo/stone/image/opacity = \meta{float} (initially 1)}
 	The opacity of the image.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = B2:D4]
+			\stones[b, image = {file = stone-black.png}]{C2}
+			\stones[b, image = {file = stone-black.png, width = 8pt}]{D3}
+			\stone[w, image = {file = stone-white.png, opacity = 0.5}]{B4}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{stylekey}{/pgfgo/stone/image/false}
@@ -745,6 +770,12 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 
 \begin{key}{/pgfgo/sgf/restart/from = \meta{number} (initially 1)}
 	The number of the first move of each stretch, from the second one on. It also turns |restart| on. With |step = 99| and |restart = {from = 0}|, move 100 is shown as 0, 101 as 1, and so on.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations.sgf]
+			\sgf[step = 3, restart = {from = 0}]{variations.sgf}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/sgf/numbers = \meta{true, false or auto} (default true, initially auto)}
@@ -821,16 +852,30 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 
 \begin{key}{/pgfgo/sgf comment/variation = \meta{numbers} (initially the main line)}
 	Like |/pgfgo/sgf/variation|.
+
+	\begin{codeexample}[]
+		\sgfcomment[variation = 2]{problem.sgf}{1}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/sgf comment/annotations = \meta{boolean} (default true, initially true)}
 	Writes the name and the annotations. With |false|, only the comment.
+
+	\begin{codeexample}[]
+		With: \sgfcomment{game.sgf}{7}
+		\quad Without: \sgfcomment[annotations = false]{game.sgf}{7}
+	\end{codeexample}
 \end{key}
 
 The texts of the annotations are in the language of the document (p.~\pageref{subsec:languages}), and they can be changed for the whole document with |\pgfgoset{sgf annotations = {...}}|, for example |bad move = Mala jugada|. The emphasized annotations of |DM| and |UC| use the same text.
 
 \begin{key}{/pgfgo/sgf annotations/tesuji = \meta{text} (initially Tesuji or its translation)}
 	Text of |TE|.
+
+	\begin{codeexample}[]
+		\pgfgoset{sgf annotations = {tesuji = Good move}}
+		\sgfcomment{game.sgf}{7}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/sgf annotations/very good tesuji = \meta{text} (initially Very good tesuji or its translation)}
@@ -918,6 +963,11 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/sgf animation/last mark = \meta{mark options or false} (initially circle)}
 	Mark of the last move, in the colour of the player who made it. With |false|, the last move is not marked. It is not used with |numbers|, nor when the file already marks that point.
+
+	\begin{codeexample}[width=5cm]
+		\sgfanimation[from = 5, to = 7, last mark = triangle, fps = 2,
+			animate = {controls, loop}, goban = {captures}]{game.sgf}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/comments = \meta{comments options} (default true)}
@@ -938,6 +988,11 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/sgf animation/comments/font = \meta{font commands} (initially \texttt{\string\small})}
 	Font of the comments.
+
+	\begin{codeexample}[width=5cm]
+		\sgfanimation[from = 7, to = 9, goban = {captures},
+			comments = {true, height = 2.5em, font = \itshape}]{game.sgf}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/variation = \meta{numbers} (initially the main line)}
@@ -1020,6 +1075,12 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/sgf diagrams/last mark = \meta{mark options} or |false| (initially false)}
 	Like |/pgfgo/sgf/last mark|, on each diagram.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 5, to = 10, numbers = false, last mark = circle]{game.sgf}
+	\end{codeexample}
+
+	\sgfdiagrams[step = 5, to = 10, numbers = false, last mark = circle]{game.sgf}
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/restart = \meta{restart options} (default true)}
@@ -1062,6 +1123,14 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/sgf diagrams/caption/font = \meta{font commands} (initially \texttt{\string\small})}
 	Font of the caption and the notes: |caption = {font = \itshape}|.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[from = 6, title = Figure, caption = {font = \itshape},
+			goban = {label = {at = {north, west}}}]{game.sgf}
+	\end{codeexample}
+
+	\sgfdiagrams[from = 6, title = Figure, caption = {font = \itshape},
+		goban = {label = {at = {north, west}}}]{game.sgf}
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/goban = \meta{goban options}}
@@ -1082,6 +1151,14 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/sgf diagrams/annotations = \meta{boolean} (default true, initially true)}
 	With |comments|, it also writes the name and the annotations of each move.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 10, comments]{game.sgf}
+		\sgfdiagrams[step = 10, comments, annotations = false]{game.sgf}
+	\end{codeexample}
+
+	\sgfdiagrams[step = 10, comments]{game.sgf}
+	\sgfdiagrams[step = 10, comments, annotations = false]{game.sgf}
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/figures = \meta{boolean} (default true, initially true)}
@@ -1122,6 +1199,14 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/sgf diagrams/white name = \meta{text} (initially White or its translation)}
 	Name of White in the score and in the result.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[result = {title = Final, format = raw}]{variations.sgf}
+		\sgfdiagrams[black name = Ann, white name = Bob]{variations.sgf}
+	\end{codeexample}
+
+	\sgfdiagrams[result = {title = Final, format = raw}]{variations.sgf}
+	\sgfdiagrams[black name = Ann, white name = Bob]{variations.sgf}
 \end{key}
 
 \begin{command}{\pgfgowinner}
@@ -1148,6 +1233,12 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/sgf problem/solutions = \meta{boolean} (default true, initially true)}
 	Draws the variations. With |solutions = false|, only the statement is left, to put the solutions somewhere else (for example, with |statement = false| at the end of the chapter).
+
+	\begin{codeexample}[code only]
+		\sgfproblem[solutions = false, title = Problem 2]{problem.sgf}
+	\end{codeexample}
+
+	\sgfproblem[solutions = false, title = Problem 2]{problem.sgf}
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/title = \meta{text} (initially empty)}
@@ -1184,6 +1275,14 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/sgf problem/caption/font = \meta{font commands} (initially \texttt{\string\small})}
 	Font of the captions, the notes and the comments.
+
+	\begin{codeexample}[code only]
+		\sgfproblem[statement = alone, comments = false, notes = false,
+			caption = {font = \itshape}]{problem.sgf}
+	\end{codeexample}
+
+	\sgfproblem[statement = alone, comments = false, notes = false,
+		caption = {font = \itshape}]{problem.sgf}
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/goban = \meta{goban options}}
@@ -1204,6 +1303,12 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/sgf problem/margin = \meta{number} (initially 1)}
 	Lines that |crop| adds around the problem.
+
+	\begin{codeexample}[code only]
+		\sgfproblem[solutions = false, margin = 3]{problem.sgf}
+	\end{codeexample}
+
+	\sgfproblem[solutions = false, margin = 3]{problem.sgf}
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/game = \meta{number} (initially 1)}
@@ -1248,6 +1353,14 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/layout/align = \meta{center, left or right} (initially center)}
 	Where each diagram goes within its column, with its caption and its notes. The comments are always aligned to the left.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 2, to = 6, layout = {columns = 2, width = 0.6\linewidth,
+			column sep = 3em, row sep = 2em, align = left}]{game.sgf}
+	\end{codeexample}
+
+	\sgfdiagrams[step = 2, to = 6, layout = {columns = 2, width = 0.6\linewidth,
+		column sep = 3em, row sep = 2em, align = left}]{game.sgf}
 \end{key}
 
 \begin{environment}{{pgfgolayout}\opt{\oarg{layout options}}}
@@ -1287,5 +1400,22 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 \begin{key}{/pgfgo/prisoner=\meta{stone options} (default fill opacity = 0.5)}
 	
 	Defines the characteristics of prisoner stones, with a default fill opacity of 0.5 to indicate their status. Other |\stone| options, such as color or size, can be applied.
-	
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = B2:D4}}
+
+		\begin{goban}
+			\stones[b]{C2}
+			\prisoners[b]{D3}
+			\prisoner[w]{B4}
+		\end{goban}
+
+		\pgfgoset{prisoner = {fill = {opacity = 0.2}, line = {color = red}}}
+
+		\begin{goban}
+			\stones[b]{C2}
+			\prisoners[b]{D3}
+			\prisoner[w]{B4}
+		\end{goban}
+	\end{codeexample}
 \end{key}
