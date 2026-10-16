@@ -18,13 +18,13 @@
 			\marks[w, t-square]{G3|-I1|-H4, C9-|A8, B7}
 			\marks[t-square, fill = {color = red}] {E1}
 		\end{goban}&
-		\pgfgouseprofile{pgfgo}
+		\pgfgoset{profile = pgfgo}
 		\begin{goban}[resume = {profiles, marks}]
 		\end{goban}\\
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\begin{goban}[resume = {profiles, marks}]
 		\end{goban}&
-		\pgfgouseprofile{wain}
+		\pgfgoset{profile = wain}
 		\begin{goban}[resume = {profiles, marks}]
 		\end{goban}
 	\end{tabular}

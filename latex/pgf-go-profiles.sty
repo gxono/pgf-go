@@ -25,29 +25,81 @@
 }
 \cs_generate_variant:Nn \__pgfgo_profile_get:nn {nv}
 
+%EL REINICIO: LOS VALORES DEL ASPECTO DEL TABLERO Y DE CADA JUGADOR AL TERMINAR DE CARGAR EL PAQUETE (CON EL
+%PERFIL default). USAR UN PERFIL VUELVE A ELLOS ANTES DE PONER SUS CLAVES, ASI NO HEREDA LO QUE NO DEFINE.
+%DEL TABLERO NO SE TOCA LO QUE NO ES ASPECTO: LAS VARIABLES CON ESTOS NOMBRES (EL TAMANO Y use i NO SON
+%VARIABLES DEL ESTILO).
+\clist_const:Nn \c__pgfgo_profile_keep_goban_clist {
+	captures, captured_marks, notes, scale, partial, layers, bbox, labels_pos, label_columns, label_rows, hoshi_at
+}
+\tl_new:N \g__pgfgo_profile_reset_goban_tl
+\clist_map_inline:nn {neutral, black, white} {\tl_new:c {g__pgfgo_profile_reset_ #1 _tl}}
+\str_new:N \l__pgfgo_profile_var_str
+\seq_new:N \l__pgfgo_profile_var_seq
+\bool_new:N \l__pgfgo_profile_keep_bool
+
+%SE LLAMA UNA VEZ, AL FINAL DE pgf-go.sty. USA LAS VARIABLES DEL ESTILO (\g_pgfgo_style_vars_seq) Y
+%\__pgfgo_style_value:nN (pgf-go-goban.sty).
+\cs_new_protected:Npn \pgfgo_profile_save_reset: {
+	\seq_map_inline:Nn \g_pgfgo_style_vars_seq {\__pgfgo_profile_save_reset:nN ##1}
+	\clist_map_inline:nn {neutral, black, white} {
+		\clist_map_inline:nn {move_label_format:n, mark_sequence_format:n} {
+			\cs_gset_eq:cc {pgfgo~profile~reset~##1~####1} {pgfgo_players_ ##1 _ ####1}
+			\tl_gput_right:ce {g__pgfgo_profile_reset_ ##1 _tl}
+				{\exp_not:N \cs_set_eq:cc {pgfgo_players_ ##1 _ ####1} {pgfgo~profile~reset~##1~####1}}
+		}
+	}
+}
+\cs_new_protected:Npn \__pgfgo_profile_save_reset:nN #1#2 {
+	\str_set:Ne \l__pgfgo_profile_var_str {\cs_to_str:N #2}
+	\regex_match:nVTF {\Al_pgfgo_goban_} \l__pgfgo_profile_var_str {
+		\bool_set_false:N \l__pgfgo_profile_keep_bool
+		\clist_map_inline:Nn \c__pgfgo_profile_keep_goban_clist {
+			\str_if_in:NnT \l__pgfgo_profile_var_str {##1} {\bool_set_true:N \l__pgfgo_profile_keep_bool}
+		}
+		\bool_if:NF \l__pgfgo_profile_keep_bool
+			{\tl_gput_right:Ne \g__pgfgo_profile_reset_goban_tl {\__pgfgo_style_value:nN {#1} #2}}
+	}{
+		%LAS DE UN JUGADOR, SALVO l_pgfgo_players_<jugador>_bool (SI LA PIEDRA ES DE ESE JUGADOR).
+		\regex_extract_once:nVNT {\Al_pgfgo_players_(neutral|black|white)_(.*)\Z}
+			\l__pgfgo_profile_var_str \l__pgfgo_profile_var_seq {
+				\str_if_eq:eeF {\seq_item:Nn \l__pgfgo_profile_var_seq {3}} {bool} {
+					\tl_gput_right:ce {g__pgfgo_profile_reset_ \seq_item:Nn \l__pgfgo_profile_var_seq {2} _tl}
+						{\__pgfgo_style_value:nN {#1} #2}
+				}
+			}
+	}
+}
+\cs_generate_variant:Nn \regex_extract_once:nnNT {nV}
+\cs_generate_variant:Nn \tl_gput_right:Nn {ce}
+
 \cs_new_protected:Npn \pgfgo_profile_use_goban:n #1 {
+	\prop_if_in:NnT \g_pgfgo_profile_goban_prop {#1} {\tl_use:N \g__pgfgo_profile_reset_goban_tl}
 	\__pgfgo_profile_get:nn {goban} {#1}
 	\pgfgo_set:e {goban = {\exp_not:V \l__pgfgo_profile_options_tl}}
 }
 
 %#1: neutral, black O white. #2: NOMBRE DEL PERFIL.
-\cs_new_protected:Npn \__pgfgo_profile_use_player:nn #1#2 {
+\cs_new_protected:Npn \pgfgo_profile_use_player:nn #1#2 {
+	\prop_if_in:NnT \g_pgfgo_profile_player_prop {#2} {\tl_use:c {g__pgfgo_profile_reset_ #1 _tl}}
 	\__pgfgo_profile_get:nn {player} {#2}
 	\pgfgo_set:e {players = {#1 = {\exp_not:V \l__pgfgo_profile_options_tl}}}
 }
-\cs_new_protected:Npn \pgfgo_profile_use_neutral:n	{\__pgfgo_profile_use_player:nn {neutral}}
-\cs_new_protected:Npn \pgfgo_profile_use_black:n		{\__pgfgo_profile_use_player:nn {black}}
-\cs_new_protected:Npn \pgfgo_profile_use_white:n		{\__pgfgo_profile_use_player:nn {white}}
 
-\cs_new_protected:Npn \pgfgo_profile_use_players:nnn #1#2#3 {
-	\__pgfgo_profile_use_player:nn {neutral}	{#1}
-	\__pgfgo_profile_use_player:nn {black}		{#2}
-	\__pgfgo_profile_use_player:nn {white}		{#3}
+%players profile = <nombre>: LOS JUGADORES <nombre>-neutral, <nombre>-black Y <nombre>-white. profile = <nombre>:
+%ADEMAS, EL TABLERO <nombre>. EL DEL TABLERO SOLO ES goban profile (NO goban/profile: EN LAS OPCIONES DE UN goban,
+%profile SERIA EL DEL TABLERO).
+\cs_new_protected:Npn \pgfgo_profile_use_players:n #1 {
+	\clist_map_inline:nn {neutral, black, white} {\pgfgo_profile_use_player:nn {##1} {#1-##1}}
 }
-
 \cs_new_protected:Npn \pgfgo_profile_use_profile:n #1 {
 	\pgfgo_profile_use_goban:n {#1}
-	\pgfgo_profile_use_players:nnn {#1-neutral} {#1-black} {#1-white}
+	\pgfgo_profile_use_players:n {#1}
+}
+\keys_define:nn {pgfgo} {
+	profile					.code:n	= {\pgfgo_profile_use_profile:n {#1}},
+	goban~profile		.code:n	= {\pgfgo_profile_use_goban:n {#1}},
+	players~profile	.code:n	= {\pgfgo_profile_use_players:n {#1}},
 }
 
 %OPCIONES DE \pgfgodefinegoban Y \pgfgodefineplayer: from = <PERFIL> EMPIEZA CON LAS CLAVES DE ESE PERFIL;
@@ -79,7 +131,7 @@
 \DeclareDocumentCommand{\pgfgodefineplayer}{O{}mm}{\__pgfgo_profile_define:nnnn {player} {#1} {#2} {#3}}
 
 %\pgfgodefineprofile[from = <perfil>]{<nombre>}{goban = .., all = .., neutral = .., black = .., white = ..}
-%DEFINE DE UNA VEZ EL PERFIL <nombre> (PARA \pgfgouseprofile): EL TABLERO <nombre> Y LOS JUGADORES
+%DEFINE DE UNA VEZ EL PERFIL <nombre> (PARA profile = <nombre>): EL TABLERO <nombre> Y LOS JUGADORES
 %<nombre>-neutral, <nombre>-black Y <nombre>-white. all VA A LOS TRES JUGADORES, ANTES DE LO DE CADA UNO.
 %CON from, CADA PARTE EMPIEZA CON LA DEL PERFIL <perfil> (<perfil>, <perfil>-neutral, ...).
 \tl_new:N \l__pgfgo_profile_from_tl
@@ -112,13 +164,6 @@
 	\group_end:
 }
 
-\let\pgfgouseprofile	\pgfgo_profile_use_profile:n 		%CARGA TABLERO, PIEDRAS con sufijo -goban, white, black, neutral
-\let\pgfgousegoban		\pgfgo_profile_use_goban:n			%CARGA GOBAN
-\let\pgfgouseplayers	\pgfgo_profile_use_players:nnn 	%CARGA TODOS LOS JUGADORES {neutral}{black}{white}
-\let\pgfgouseneutral	\pgfgo_profile_use_neutral:n 		%CARGA UN PERFIL PARA LOS NEUTROS
-\let\pgfgouseblack		\pgfgo_profile_use_black:n 			%CARGA UN PERFIL PARA LAS NEGRAS
-\let\pgfgousewhite		\pgfgo_profile_use_white:n 			%CARGA UN PERFIL PARA LAS BLANCAS
-
 \ExplSyntaxOff
 
 
@@ -129,8 +174,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \pgfgodefinegoban{default}{
-	scale = 1,
-	use i = true,
 	background = {
 		line = {
 			true,
@@ -157,10 +200,7 @@
 	},
 	label = {
 		color = black,
-		false,
-		sep = 0.35cm},
-	partial = {false},
-	size = 9
+		sep = 0.35cm}
 }
 
 
@@ -488,4 +528,18 @@
 	
 \pgfgodefineplayer[from = pgfgo-white]{pgfgosmooth-white}{
 	stone = {line = false}	
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%SIMPLE (SIN BORDE, LINEAS FINAS; PARA VISTAS, POR EJEMPLO)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pgfgodefineprofile[from = default]{simple}{
+	goban = {
+		background = {line = false},
+		grid = {line = {width = 0.4pt}}
+	},
+	all = {stone = {line = {width = 0.5pt}}}
 }

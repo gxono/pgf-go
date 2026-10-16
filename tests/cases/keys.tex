@@ -66,7 +66,7 @@
 \begin{goban}[5]\stones[b]{B2}\stones[w]{D2}\stone{C4}\end{goban}}
 
 \case{Profiles built with from and append}
-{\pgfgousegoban{keysgoban}\pgfgouseblack{keys-black}
+{\pgfgoset{goban profile = keysgoban}\pgfgoset{players = {black = {profile = keys-black}}}
 \begin{goban}[5]\stones[b]{B2}\stones[w]{D2}\end{goban}}
 
 \case{Grid: x sep, y sep, line opacity and width}

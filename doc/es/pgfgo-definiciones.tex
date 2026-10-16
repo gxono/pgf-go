@@ -5,7 +5,7 @@
 	\subsubsection{pgfgo}
 	
 	\begin{center}
-		\pgfgouseprofile{pgfgo}
+		\pgfgoset{profile = pgfgo}
 		\begin{goban}[10x2, label = {at = {all}}, scale = 2]
 			\stone{A1}
 			\moves[b]{A:D2}
@@ -101,7 +101,7 @@
 
 	\subsubsection{pgfgosmooth}
 	\begin{center}
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\begin{goban}[10x2, label = {at = {all}}, scale = 2]
 			\stone{A1}
 			\moves[b]{A:D2}
@@ -138,7 +138,7 @@
 	\subsubsection{wain}
 	
 	\begin{center}
-		\pgfgouseprofile{wain}
+		\pgfgoset{profile = wain}
 		\begin{goban}[10x2, label = {at = {all}}, scale = 2]
 			\stone{A1}
 			\moves[b]{A:D2}
@@ -255,7 +255,7 @@
 \subsection{Tableros}
 \subsubsection{pgfgo}
 \begin{center}
-	\pgfgouseprofile{pgfgo}
+	\pgfgoset{profile = pgfgo}
 	\begin{goban}[10x2, label = {at = all}, scale = 2]
 	\end{goban}
 \end{center}
@@ -287,7 +287,7 @@
 
 \subsubsection{pgfgosmooth}
 \begin{center}
-	\pgfgouseprofile{pgfgosmooth}
+	\pgfgoset{profile = pgfgosmooth}
 	\begin{goban}[10x2, label = {at = all}, scale = 2]
 	\end{goban}
 \end{center}
@@ -313,7 +313,7 @@
 
 \subsubsection{wain}
 \begin{center}
-	\pgfgouseprofile{wain}
+	\pgfgoset{profile = wain}
 	\begin{goban}[10x2, label = {at = all}, scale = 2]
 	\end{goban}
 \end{center}
@@ -333,5 +333,26 @@
 				width = 1pt}
 			},
 		label = {color = waingoban}
+	}
+\end{codeexample}
+
+
+\subsection{Perfiles completos}
+\subsubsection{simple}
+\begin{center}
+	\pgfgoset{profile = simple}
+	\begin{goban}[10x2, label = {at = all}, scale = 2]
+		\stones[b]{B1, D2}
+		\stones[w]{C1, E2}
+	\end{goban}
+\end{center}
+
+\begin{codeexample}[code only]
+	\pgfgodefineprofile[from = default]{simple}{
+		goban = {
+			background = {line = false},
+			grid = {line = {width = 0.4pt}}
+		},
+		all = {stone = {line = {width = 0.5pt}}}
 	}
 \end{codeexample}

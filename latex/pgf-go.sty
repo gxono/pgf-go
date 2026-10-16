@@ -114,6 +114,9 @@
 	players			.code:n			= {\keys_set:nn {pgfgo / players} {#1}},
 }
 
-\ExplSyntaxOff
+%EL ESTILO INICIAL: EL PERFIL default, QUE ES TAMBIEN A LO QUE VUELVE profile ANTES DE PONER UN PERFIL.
+\pgfgo_set:e {goban = {size = 9}}
+\pgfgo_profile_use_profile:n {default}
+\pgfgo_profile_save_reset:
 
-\pgfgouseprofile{default}
+\ExplSyntaxOff

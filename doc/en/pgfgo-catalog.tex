@@ -4,7 +4,7 @@
 \subsection{Profiles}
 \subsubsection{default}
 \begin{codeexample}[width=4cm]
-	\pgfgouseprofile{default}
+	\pgfgoset{profile = default}
 	
 	\begin{goban}[partial = A1:G3]
 		\moves*[from = 1]{A:F 3}
@@ -25,7 +25,7 @@
 
 \subsubsection{pgfgo}
 \begin{codeexample}[width=4cm]
-	\pgfgouseprofile{pgfgo}
+	\pgfgoset{profile = pgfgo}
 	
 	\begin{goban}[partial = A1:G3]
 		\moves*[from = 1]{A:F 3}
@@ -46,7 +46,7 @@
 
 \subsubsection{pgfgosmooth}
 \begin{codeexample}[width=4cm]
-	\pgfgouseprofile{pgfgosmooth}
+	\pgfgoset{profile = pgfgosmooth}
 	
 	\begin{goban}[partial = A1:G3]
 		\moves*[from = 1]{A:F 3}
@@ -67,7 +67,7 @@
 
 \subsubsection{wain}
 \begin{codeexample}[width=4cm]
-	\pgfgouseprofile{wain}
+	\pgfgoset{profile = wain}
 	
 	\begin{goban}[partial = A1:G3]
 		\moves*[from = 1]{A:F 3}
@@ -83,6 +83,28 @@
 		\mark[w, t-square]{G1}
 		\mark[b, t-circle]{G2}
 		\mark[n, t-square]{G3}
+	\end{goban}
+\end{codeexample}
+
+
+\subsubsection{simple}
+\begin{codeexample}[width=4cm]
+	\pgfgoset{profile = simple}
+
+	\begin{goban}[partial = A1:G3]
+		\moves*[from = 1]{A:F 3}
+		\stones[w]{A1:2}
+		\stones[b]{B1:2}
+		\stones[n]{C1:2}
+		\stone[w, mark = circle]{D1}
+		\mark[w, circle]{D2}
+		\stone[b, mark = circle]{E1}
+		\mark[b, circle]{E2}
+		\stone[n, mark = circle]{F1}
+		\mark[n, circle]{F2}
+		\mark[w, t-square]{F1}
+		\mark[b, t-circle]{F1}
+		\mark[n, t-square]{F1}
 	\end{goban}
 \end{codeexample}
 

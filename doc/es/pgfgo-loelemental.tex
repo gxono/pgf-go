@@ -224,7 +224,7 @@ Cuando \pgfgoname\ tiene que leer el argumento de las coordenadas se puede encon
 Lo primero que intentar\'a hacer es dividir el argumento entre los |;| y construir dos grupos: el grupo aditivo y el grupo sustractivo. El grupo aditivo es el encargado de a\~nadir piedras mediante nuestra sintaxis. El grupo sustractivo es el encargado de eliminarlas. Estos grupos alternan automáticamente al colocar un |;|. Esto se ve con mas detalle en la subsecci\'on correspondiente. Si no se coloca un |;|, \pgfgoname\ a\~nadir\'a todas las piedras al grupo aditivo. Se pueden a\~nadir varias piedras o varios grupos separados por |,|. En conjunto, todo esto provee una interfaz para crear grupos complejos con pocos \emph{tokens};
 
 \begin{codeexample}[width=0pt]
-	\pgfgouseprofile{pgfgosmooth}
+	\pgfgoset{profile = pgfgosmooth}
 	
 	\begin{goban}[17, partial = A1:Q5, label = {at = {north, west}}]
 		\stones[b]{*;B,D,H,L,Q2,P,F2:4,J2rK5,N[1:2,4];B3}
@@ -563,35 +563,36 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 	\end{key}
 \end{command}
 
-\begin{command}{\pgfgousegoban\marg{goban name}}
-	Aplica localmente las opciones del goban definido mediante |goban name|.
-\end{command}
+\begin{key}{/pgfgo/profile = \meta{name}}
+	Aplica el perfil |name|: el goban |name| y los jugadores |name-neutral|, |name-black| y |name-white|. Sirve en |\pgfgoset|, en las opciones de un |goban| y en las de una vista (p.~\pageref{subsec:vistas}).
 
-\begin{command}{\pgfgouseneutral\marg{player name}}
-	Aplica localmente las opciones de piedras definidas mediante |player name| al jugador neutral.
-\end{command}
+	Antes de aplicarlo, el tablero y los jugadores vuelven al estilo inicial (el del perfil |default|): así un perfil no hereda lo que no define, y una sombra o una imagen puesta antes se pierde. Lo que no es estilo queda como estaba: el tamaño, |partial|, |scale|, dónde van las coordenadas y cuáles son, |hoshi/at|, las capturas y las notas. Lo que va después del perfil se suma a él.
 
-\begin{command}{\pgfgouseblack\marg{player name}}
-	Aplica localmente las opciones de piedras definidas mediante |player name| al jugador negro.
-\end{command}
-
-\begin{command}{\pgfgousewhite\marg{player name}}
-	Aplica localmente las opciones de piedras definidas mediante |player name| al jugador blanco.
-\end{command}
-
-\begin{command}{\pgfgouseplayers\marg{neutral player name}\marg{black player name}\marg{white player name}}
-	Aplica localmente las opciones de piedras definidas mediante |neutral player name|, |black player name| y |white player name| a los jugadores correspondientes.
-\end{command}
-
-\begin{command}{\pgfgouseprofile\marg{name}}
-	Esta macro es equivalente a:
-	\begin{codeexample}[code only]
-		\pgfgousegoban{name}
-		\pgfgouseplayers{name-neutral}{name-black}{name-white}
+	\begin{codeexample}[width=3cm]
+		\pgfgoset{stone = {drop shadow}}
+		\begin{goban}[3, profile = default]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
 	\end{codeexample}
-	
-	Nótese que es necesario que existan piedras llamadas |name-neutral|, |name-black| y |name-white|. Por ejemplo, cuando previamente ejecutamos |\pgfgouseprofile{pgfgo}| funcionó porque existe un goban llamado |pgfgo|, y piedras denominadas |pgfgo-neutral|, |pgfgo-black| y |pgfgo-white|.
-\end{command}
+
+	Es necesario que existan el goban |name| y los jugadores |name-neutral|, |name-black| y |name-white|. Por ejemplo, |profile = pgfgo| funciona porque existe un goban llamado |pgfgo|, y jugadores llamados |pgfgo-neutral|, |pgfgo-black| y |pgfgo-white|.
+\end{key}
+
+\begin{key}{/pgfgo/goban profile = \meta{goban name}}
+	Aplica solo el goban |goban name|, después de volver el tablero al estilo inicial.
+\end{key}
+
+\begin{key}{/pgfgo/players profile = \meta{name}}
+	Aplica solo los jugadores |name-neutral|, |name-black| y |name-white|, cada uno después de volver al estilo inicial.
+\end{key}
+
+\begin{key}{/pgfgo/players/black/profile = \meta{player name}}
+	Aplica el jugador |player name| a uno de los jugadores (|neutral|, |black| o |white|), después de volverlo al estilo inicial. Con |all|, el mismo a los tres.
+	\begin{codeexample}[code only]
+		\pgfgoset{goban profile = pgfgo, players = {black = {profile = wain-black}}}
+	\end{codeexample}
+\end{key}
 
 \begin{codeexample}[width=3cm]
 	\pgfgodefinegoban{example}{background = {fill = {color = blue!05}}}
@@ -607,7 +608,7 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 	\pgfgodefineplayer[from = example-neutral]{example-black}
 	{stone = {fill = {color = blue}}}
 	
-	\pgfgouseprofile{example}
+	\pgfgoset{profile = example}
 	
 	\begin{goban}[partial = A1:C3]
 		\moves{A1:3}
@@ -618,7 +619,7 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 \end{codeexample}
 
 \begin{command}{\pgfgodefineprofile\opt{\oarg{options}}\marg{name}\marg{profile options}}
-	Define de una vez un perfil completo para |\pgfgouseprofile|: el goban |name| y los jugadores |name-neutral|, |name-black| y |name-white|. Es lo mismo que el ejemplo de arriba, en un solo comando.
+	Define de una vez un perfil completo para |profile|: el goban |name| y los jugadores |name-neutral|, |name-black| y |name-white|. Es lo mismo que el ejemplo de arriba, en un solo comando.
 
 	\begin{codeexample}[width=3cm]
 		\pgfgodefineprofile[from = default]{ejemplo2}{
@@ -627,7 +628,7 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 			white = {stone = {fill = {color = yellow}}},
 			black = {stone = {fill = {color = blue}}}}
 
-		\pgfgouseprofile{ejemplo2}
+		\pgfgoset{profile = ejemplo2}
 
 		\begin{goban}[partial = A1:C3]
 			\moves{A1:3}
@@ -729,7 +730,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Determina si aparece o no la frontera de una piedra.
 	
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -753,7 +754,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Determina el grosor de la frontera de una piedra.
 	
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -774,7 +775,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Determina el color de la frontera de una piedra.
 	
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -795,7 +796,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Determina la opacidad de la frontera de una piedra.
 	
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -821,7 +822,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/stone/fill/false}
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -841,7 +842,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/stone/fill/color = \meta{color}}
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -862,7 +863,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Establece la opacidad del relleno de la piedra.
 	
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -883,7 +884,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Establece el radio de la piedra.
 	
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -903,7 +904,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/stone/scale = \meta{float}}
 	Controla la escala de la piedra, lo que afecta también a las marcas.
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -931,7 +932,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/stone/drop shadow/false}
 	Desactiva la sombra en la piedra.
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -951,7 +952,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/stone/drop shadow/angle = \meta{float}}
 	Establece el ángulo de la sombra.
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -971,7 +972,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/stone/drop shadow/offset = \meta{dimension}}
 	Establece el desplazamiento de la sombra respecto al centro.
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -991,7 +992,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/stone/drop shadow/opacity = \meta{float}}
 	Controla la opacidad de la sombra.
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
@@ -1023,7 +1024,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/stone/shine/false}
 	No dibuja el brillo.
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 
 		\begin{goban}
@@ -1043,7 +1044,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/stone/shine/angle = \meta{float} (initially 0)}
 	Gira el brillo dibujado. Con |0|, la luz viene de arriba a la izquierda.
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 
 		\begin{goban}
@@ -1063,7 +1064,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/stone/shine/opacity = \meta{float} (initially 1)}
 	Controla la opacidad del brillo (también la del brillo con imagen).
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 
 		\begin{goban}
@@ -1181,7 +1182,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/mark/line/color = \meta{color}}
 	Controla el color de línea de las marcas.
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 
 		\begin{goban}
@@ -1203,7 +1204,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/mark/line/width = \meta{dimension}}
 	Controla el grosor de línea de las marcas.
 	\begin{codeexample}[width=4cm]
-		\pgfgouseprofile{pgfgosmooth}
+		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
 
 		\begin{goban}

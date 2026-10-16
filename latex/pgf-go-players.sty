@@ -212,6 +212,8 @@
 		move                    .code:n = {\keys_set:nn {pgfgo / players / #1 / move}          {##1}},
 		mark                    .code:n = {\keys_set:nn {pgfgo / players / #1 / mark}          {##1}},
 		territory           		.code:n = {\keys_set:nn {pgfgo / players / #1 / territory} 		 {##1}},
+		%EL PERFIL DE JUGADOR (VER pgf-go-profiles.sty).
+		profile									.code:n = {\pgfgo_profile_use_player:nn {#1} {##1}},
 	}
 
 
