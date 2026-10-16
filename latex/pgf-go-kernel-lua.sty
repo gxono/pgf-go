@@ -132,6 +132,14 @@
 	\lua_now:e {pgfgo.board_put("\lua_escape:e {#1}", "\lua_escape:e {#2}", "\lua_escape:e {#3}")}
 }
 
+\cs_new_protected:Npn \pgfgo_kernel_board_save:n #1 {
+	\lua_now:e {pgfgo.board_save("\lua_escape:e {#1}")}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_board_restore:n #1 {
+	\lua_now:e {pgfgo.board_restore("\lua_escape:e {#1}")}
+}
+
 \cs_new:Npn \pgfgo_kernel_prisoners:n #1 {
 	\lua_now:e {pgfgo.prisoners("\lua_escape:e {#1}")}
 }

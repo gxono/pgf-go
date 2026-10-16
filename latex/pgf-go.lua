@@ -669,6 +669,29 @@ function pgfgo.move_play(x, y)
 	black_turn = not black_turn
 end
 
+-- COPIAS CON NOMBRE DEL TABLERO, LOS PRISIONEROS, EL NUMERO Y EL TURNO (PARA SEGUIR UNA PARTIDA DESDE
+-- DONDE QUEDO, SIN VOLVER A JUGARLA).
+local saved_boards = {}
+
+local function copy(t)
+	local c = {}
+	for k, v in pairs(t) do
+		c[k] = v
+	end
+	return c
+end
+
+function pgfgo.board_save(name)
+	saved_boards[name] = {copy(stones), copy(prisoners), move_number, black_turn}
+end
+
+function pgfgo.board_restore(name)
+	local s = saved_boards[name]
+	if s then
+		stones, prisoners, move_number, black_turn = copy(s[1]), copy(s[2]), s[3], s[4]
+	end
+end
+
 
 ---------------------------------------------------------------------------------------------------
 -- SECUENCIAS DE MARCAS

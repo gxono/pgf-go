@@ -1,6 +1,6 @@
 % engines: lualatex
 % expect-warnings: 0
-% expect-errors: 4
+% expect-errors: 6
 % render: no
 \documentclass{article}
 \usepackage{../../latex/pgf-go}
@@ -9,6 +9,9 @@
 
 % Each of these must raise exactly one error.
 \begin{goban}[5]\marks[trinagle]{C3}\end{goban} % misspelled mark shape
+% The options of \marks are read once for all the points: one error, not three.
+\begin{goban}[5]\marks[trinagle]{A1,B2,C3}\end{goban}
+\begin{goban}[5]\territory[w, mark = trinagle]{A1,A3}\end{goban} % the same with draw = marks
 \begin{goban}[19x]\end{goban}                   % invalid size
 \pgfgousegoban{does-not-exist}                  % unknown profile
 \sgfanimation{game.sgf}                          % animate is not loaded

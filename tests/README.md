@@ -57,7 +57,11 @@ not affect the manuals, create them locally with
   `latex/*.sty` must be documented in both manuals, and every key and command
   documented in a manual must exist. Keys that are not documented on purpose
   are listed in `UNDOCUMENTED` in `check_docs.py`. It can also be run alone:
-  `python tests/check_docs.py`.
+  `python tests/check_docs.py`. It reads the keys written in `\keys_define`
+  (`players/#1` in a path means any player) and the commands defined with
+  `\let`, `\def` or `\cs_new_eq:NN`. Keys made by a helper or a loop must be
+  listed in a comment line of the `.sty` that starts with `%CLAVES:`, for
+  example `%CLAVES: /pgfgo/{arrow, line}/{color, width}`.
 
 - `cases/*.tex`: one document per area (stones, moves, marks, coordinates,
   board, profiles, remember/resume). `keys.tex` uses every option with a

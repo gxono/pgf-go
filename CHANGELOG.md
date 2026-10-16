@@ -107,6 +107,10 @@ All notable changes to `pgf-go` are listed here.
   Use `restart = 0` or `numbers` to get the old behaviour.
 - `\sgfdiagrams` writes the result below the last diagram when the file has
   `RE` or territory. Use `result = false` to leave it out.
+- A wrong option in `\marks` (or in `\territory` with `draw = marks`) gives
+  one error for the whole command, instead of one error for each point.
+- The package no longer defines the colors `tablero2`, `tablero3` and
+  `tablero4`, which no profile used. Define them in the document if needed.
 
 ### Documentation
 

@@ -201,5 +201,32 @@
 \pgfgo_kernel_remember_replay:
 \__test:nnn {clear} {\g_tmpa_tl} {a6ba6b}
 
+% Captures: a saved board comes back with its stones, prisoners, number and turn.
+\pgfgo_kernel_if_feature:nT {captures} {
+	\group_begin:
+		\pgfgo_kernel_board_size:n {5}
+		\pgfgo_kernel_board_clear:
+		\pgfgo_kernel_move_reset:
+		\pgfgo_kernel_board_put:nnn {white} {1} {1}
+		\pgfgo_kernel_move_play:nn {2} {1}
+		\pgfgo_kernel_move_play:nn {5} {5}
+		\pgfgo_kernel_board_save:n {test}
+		\pgfgo_kernel_move_play:nn {1} {2}
+		\__test:nnn {capture} {\seq_use:Nn \l_pgfgo_kernel_captured_seq {,} \pgfgo_kernel_prisoners:n {black}} {{1}{1}1}
+		\pgfgo_kernel_board_restore:n {test}
+		\__test:nnn {restored~number} {\pgfgo_kernel_move_number: \pgfgo_kernel_move_if_black:TF {b} {w}} {3b}
+		\__test:nnn {restored~prisoners} {\pgfgo_kernel_prisoners:n {black}} {0}
+		\__test_if:nnn {restored~stone} {\pgfgo_kernel_board_if_occupied:nnTF {1} {1}} {yes}
+		\__test_if:nnn {restored~empty} {\pgfgo_kernel_board_if_occupied:nnTF {1} {2}} {no}
+		\pgfgo_kernel_move_play:nn {1} {2}
+		\pgfgo_kernel_board_restore:n {test}
+		\__test_if:nnn {restored~twice} {\pgfgo_kernel_board_if_occupied:nnTF {1} {2}} {no}
+		\pgfgo_kernel_board_restore:n {none}
+		\__test_if:nnn {no~copy} {\pgfgo_kernel_board_if_occupied:nnTF {1} {1}} {yes}
+		\pgfgo_kernel_board_clear:
+		\pgfgo_kernel_move_reset:
+	\group_end:
+}
+
 \ExplSyntaxOff
 Kernel checks done.

@@ -409,9 +409,13 @@
 	{Move~#1~is~played~on~#2,~which~is~not~empty.}
 \cs_generate_variant:Nn \msg_warning:nnnn {nnee}
 
+%SI HUBO ESE AVISO (LO MIRA pgf-go-sgf.sty: UNA PARTIDA CON AVISOS NO SE GUARDA PARA SEGUIRLA DESPUES).
+\bool_new:N \g__pgfgo_captures_warned_bool
+
 \cs_new_protected:Npn \__pgfgo_captures_move:nnnn #1#2#3#4 {
 	\bool_if:NF \l_pgfgo_captures_collect_bool {
 		\pgfgo_kernel_board_if_occupied:nnT {#3} {#4} {
+			\bool_gset_true:N \g__pgfgo_captures_warned_bool
 			\msg_warning:nnee {pgfgo} {occupied-point}
 				{\pgfgo_kernel_move_number:} {\pgfgo_kernel_column_name:n {#3} \int_eval:n {#4}}
 		}
