@@ -34,6 +34,12 @@ All notable changes to `pgf-go` are listed here.
   `stone/image/rotate`).
 - `\arrow` and `\line`: `dash` (`solid`, `dashed`, `dotted`), `shorten`
   (both ends) and, for arrows, `tips = both`.
+- `\sgfdiagrams`: `step` takes a list, and the last number is repeated
+  (`step = {5, 10, 3}`: diagrams of 5, 10, 3, 3, 3... moves), and
+  `restart = {from = <n>}` numbers each diagram from `<n>` (from the second
+  one on: with `step = 99` and `restart = {from = 0}`, move 100 is shown as
+  0). `restart` alone is `from = 1`. The first diagram now always keeps the
+  numbers of the game, and `restart` works with figures (`FG`).
 - `partial` also takes the two corners alone: `partial = B2:D4`,
   `partial = {B2, D4}` or `partial = {B2 to D4}`.
 - `goban/background/fill/image/anchor`, the new name of `from`.
