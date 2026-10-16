@@ -14,7 +14,7 @@
 
 \case{\textbackslash arrow and \textbackslash line: over stones (with halo), halo = false, style options, a partial board}
 \begin{goban}[9]
-	\stones{C3, D3, E3}\stones[w]{E5}
+	\stones[b]{C3, D3, E3}\stones[w]{E5}
 	\arrow{B3}{F3}
 	\line{C5}{G5}
 	\arrow[halo = false, color = red, width = 2pt]{C7}{G9}
@@ -34,8 +34,8 @@
 
 \case{marks = false: no markup / the dim mark by hand / new remember and resume}
 \begin{goban}[9]\sgf[to = 1, marks = false]{markup.sgf}\end{goban}
-\begin{goban}[9]\stones{C3}\marks[dim]{A1:3, C3}\end{goban}
-\begin{goban}[5, new remember]\stones{B2}\arrow{A1}{E5}\line[forget]{A5}{E1}\end{goban}
+\begin{goban}[9]\stones[b]{C3}\marks[dim]{A1:3, C3}\end{goban}
+\begin{goban}[5, new remember]\stones[b]{B2}\arrow{A1}{E5}\line[forget]{A5}{E1}\end{goban}
 \begin{goban}[5, resume]\end{goban}
 
 \end{document}

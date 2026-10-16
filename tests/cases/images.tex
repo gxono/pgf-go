@@ -55,7 +55,7 @@
 
 \case{Background images: cover, stretch (rounded corners, partial), tile (partial); marks on empty points show the image under them; dim}
 \begin{goban}[9, background = {fill = {image = {file = wood.jpg}}}]
-	\stones{C3}\stones[w]{D4}
+	\stones[b]{C3}\stones[w]{D4}
 	\marks[circle]{A1, E5, C3}\marks[dim]{F6, D4}
 \end{goban}
 \begin{goban}[9, background = {fill = {image = {file = wood.jpg, fit = stretch}}, rounded corners = 6pt}, partial = {from = A1 to E5}]
@@ -76,13 +76,13 @@
 
 \case{Grid and hoshi images; the grid image is clipped by partial}
 \begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = {image = {file = hoshi.png}, radius = 3pt}, background = {fill = {image = {file = tile.png, fit = tile}}}]
-	\stones{C3}
+	\stones[b]{C3}
 \end{goban}
 \begin{goban}[9, grid = {image = {file = grid.png}}, partial = {from = C3 to G7}]\end{goban}
 
 \case{Grid image as tiles: one per square of the grid (also with partial and with stones), a 4x4 and a 2x4 mesh; a 3x3 mesh on the background}
 \begin{goban}[9, grid = {image = {file = cell.png, fit = tile}}, hoshi = false, background = {fill = {color = black!70}}]
-	\stones{C3}\stones[w]{D4}
+	\stones[b]{C3}\stones[w]{D4}
 \end{goban}
 \begin{goban}[9, grid = {image = {file = cell.png, fit = tile}}, partial = {from = C3 to G7}]\end{goban}
 \begin{goban}[5, grid = {image = {file = cell.png, fit = tile, false}}]\end{goban}
@@ -92,11 +92,21 @@
 
 \case{Custom marks: PDF image (default width and 14pt), pgf code with the mark colours, TikZ code; on black and white stones; as a territory mark}
 \begin{goban}[7]
-	\stones{B2}\stones[w]{D2}
+	\stones[b]{B2}\stones[w]{D2}
 	\marks[star]{A1, B2}\marks[big star]{C1}
 	\marks[diamond]{A3}\marks[b, diamond]{B2}\marks[w, diamond]{D2}
 	\marks[bar]{A5}\marks[b, bar]{E5}
 	\marks[w, fill = {true, color = red}, bar]{G5}
 	\territory[b, mark = star]{F1, G1}
+\end{goban}
+
+\case{Shine: an image over stone images turned at random (the shine does not turn), the drawn shine over an image stone, a turned shine image, image opacity; hoshi images with width and random rotation; marks defined with the new syntax}
+\pgfgodefinemark[image = {file = star.pdf, width = 10pt}]{new star}
+\begin{goban}[7, hoshi = {image = {file = star.pdf, width = 6pt, rotate = random}, at = {B6, F6}}]
+	\stones[w, image = {file = stone-white.png, rotate = random}, shine = {true, image = {file = shine.png}}]{A1, B1, C1, D1, E1}
+	\stones[b, image = {file = stone-black.png, rotate = random}, shine]{A3, B3, C3}
+	\stones[w, image = {file = stone-white.png}, shine = {true, image = {file = shine.png, rotate = 90, width = 9pt}}]{E3}
+	\stones[b, image = {file = stone-black.png, opacity = 0.4}]{G3}
+	\marks[new star]{D5, F5}
 \end{goban}
 \end{document}

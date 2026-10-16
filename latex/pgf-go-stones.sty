@@ -91,12 +91,13 @@
 	\fp_use:N\l_tmpa_fp * \l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp
 }
 
-\cs_new:Nn \pgfgo_stones_shine_default: {
+%EL BRILLO DIBUJADO: UN TRAZO CURVO Y UNA ELIPSE, PROPORCIONALES AL RADIO DE LA PIEDRA.
+\cs_new_protected:Nn \pgfgo_stones_shine_default: {
 	\pgfscope
-	\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_drop_shine_opacity_fp}
+	\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_shine_opacity_fp}
 	\pgftransformrotate{-45}
-	\pgftransformrotate{\fp_to_decimal:N\l_pgfgo_players_stone_drop_shine_angle_fp}
-	\pgfsetfillcolor{\l_pgfgo_players_stone_drop_shine_color_tl}
+	\pgftransformrotate{\fp_to_decimal:N\l_pgfgo_players_stone_shine_angle_fp}
+	\pgfsetfillcolor{\l_pgfgo_players_stone_shine_color_tl}
 	\fp_set:Nn\l_tmpa_fp{0.8}
 	\pgfpathmoveto{\pgfpointpolar{135}{\c__pgfgo_stone_shine_radius_tl}}
 	\pgfpatharc{135}{190}{\c__pgfgo_stone_shine_radius_tl}
@@ -106,12 +107,41 @@
 
 	\pgfusepath{fill}
 
-	\pgfsetfillcolor{\l_pgfgo_players_stone_drop_shine_color_tl}
 	\pgftransformshift{\pgfpointpolar{-45}{\c__pgfgo_stone_shine_radius_tl}}
 	\pgftransformrotate{45}
-	\pgfpathellipse{\pgfpointorigin}{\pgfpoint{0.04cm}{0cm}}{\pgfpoint{0cm}{0.01cm}}
+	%LOS SEMIEJES: 4/17 Y 1/17 DEL RADIO (0.04cm Y 0.01cm CON UN RADIO DE 0.17cm).
+	\dim_set:Nn \l__pgfgo_stone_shine_a_dim {\fp_to_dim:n
+		{4 / 17 * \l_pgfgo_players_stone_radius_dim * \l_pgfgo_players_stone_scale_fp}}
+	\dim_set:Nn \l__pgfgo_stone_shine_b_dim {\fp_to_dim:n
+		{1 / 17 * \l_pgfgo_players_stone_radius_dim * \l_pgfgo_players_stone_scale_fp}}
+	\pgfpathellipse{\pgfpointorigin}{\pgfpoint{\l__pgfgo_stone_shine_a_dim}{0cm}}
+		{\pgfpoint{0cm}{\l__pgfgo_stone_shine_b_dim}}
 	\pgfusepath{fill}
 	\endpgfscope
+}
+\dim_new:N \l__pgfgo_stone_shine_a_dim
+\dim_new:N \l__pgfgo_stone_shine_b_dim
+
+%EL BRILLO, ENCIMA DE LA PIEDRA: EL DIBUJADO O LA IMAGEN shine/image (DE ANCHO width, O EL DIAMETRO DE LA
+%PIEDRA, GIRADA rotate). NO GIRA CON LA IMAGEN DE LA PIEDRA.
+\cs_new_protected:Npn \__pgfgo_stone_shine: {
+	\bool_if:NT \l_pgfgo_players_stone_shine_bool {
+		\tl_if_empty:NTF \l_pgfgo_players_stone_shine_image_tl
+			{\pgfgo_stones_shine_default:}
+			{
+				\pgfgo_image_load:Ve \l_pgfgo_players_stone_shine_image_tl {
+					width = \tl_if_empty:NTF \l_pgfgo_players_stone_shine_image_width_tl
+						{\fp_to_dim:n {2 * \l_pgfgo_players_stone_radius_dim * \l_pgfgo_players_stone_scale_fp}}
+						{\dim_eval:n {\l_pgfgo_players_stone_shine_image_width_tl}}
+				}
+				\pgfscope
+					\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_shine_opacity_fp}
+					\tl_if_blank:VF \l_pgfgo_players_stone_shine_image_rotate_tl
+						{\pgftransformrotate{\fp_eval:n {\l_pgfgo_players_stone_shine_image_rotate_tl}}}
+					\pgfgo_image_draw:
+				\endpgfscope
+			}
+	}
 }
 
 
@@ -134,61 +164,68 @@
 	\bool_if:NT\l_pgfgo_players_stone_drop_shadow_bool{
 		\pgfscope
 		\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_drop_shadow_opacity_fp}
-		\pgfsetfillcolor{black}
+		\pgfsetfillcolor{\l_pgfgo_players_stone_drop_shadow_color_tl}
 		\pgftransformshift{\pgfpointpolar{\fp_use:N\l_pgfgo_players_stone_drop_shadow_angle_fp}{\dim_use:N\l_pgfgo_players_stone_drop_shadow_offset_dim}}
 		#1
 		\endpgfscope
 	}
 }
 
-%LA PIEDRA ES UNA IMAGEN: SIN CIRCULO, BORDE NI BRILLO. LA SOMBRA TIENE LA FORMA DE LA IMAGEN.
+%LA PIEDRA ES UNA IMAGEN: SIN CIRCULO NI BORDE. LA SOMBRA TIENE LA FORMA DE LA IMAGEN. EL BRILLO VA ENCIMA
+%Y NO GIRA CON ELLA.
 \cs_new_protected:Npn \__pgfgo_stone_image: {
 	\__pgfgo_stone_image_load:
-	\__pgfgo_stone_image_angle:
+	\pgfgo_image_angle:Nnn \l_pgfgo_players_stone_image_rotate_tl
+		{\l_pgfgo_parsed_x_coordinate_tl} {\l_pgfgo_parsed_y_coordinate_tl}
 	\__pgfgo_stone_shadow:n {
-		\pgftransformrotate{\fp_use:N\l__pgfgo_stone_image_angle_fp}
+		\pgftransformrotate{\fp_use:N\l_pgfgo_image_angle_fp}
 		\pgfgo_image_shadow:
 	}
 	\pgfscope
-	\pgftransformrotate{\fp_use:N\l__pgfgo_stone_image_angle_fp}
+	\pgftransformrotate{\fp_use:N\l_pgfgo_image_angle_fp}
+	\str_if_eq:VnF \l_pgfgo_players_stone_image_opacity_tl {1}
+		{\pgfsetfillopacity{\l_pgfgo_players_stone_image_opacity_tl}}
 	\pgfgo_image_draw:
 	\endpgfscope
+	\__pgfgo_stone_shine:
 }
 
-%EL GIRO DE LA IMAGEN. CON random (= 0:360) O UN RANGO <MIN>:<MAX>, UN ANGULO DEL RANGO QUE DEPENDE SOLO
-%DE LA POSICION: LA PIEDRA DE UN PUNTO QUEDA SIEMPRE IGUAL (EN TODOS LOS DIAGRAMAS Y EN TODOS LOS CUADROS
-%DE UNA ANIMACION). EL VALOR SE PASA A CADENA: EL : PUEDE LLEGAR ACTIVO (babel francais).
-\fp_new:N \l__pgfgo_stone_image_angle_fp
-\str_new:N \l__pgfgo_stone_image_rotate_str
-\seq_new:N \l__pgfgo_stone_image_rotate_seq
-\cs_new_protected:Npn \__pgfgo_stone_image_angle: {
-	\str_set:NV \l__pgfgo_stone_image_rotate_str \l_pgfgo_players_stone_image_rotate_tl
-	\str_if_eq:VnTF \l__pgfgo_stone_image_rotate_str {random}
-		{\__pgfgo_stone_image_angle_range:nn {0} {360}}
+%EL GIRO DE UNA IMAGEN (#1: UN ANGULO, random O <MIN>:<MAX>) EN EL PUNTO (#2,#3), EN \l_pgfgo_image_angle_fp.
+%CON random (= 0:360) O UN RANGO, UN ANGULO DEL RANGO QUE DEPENDE SOLO DE LA POSICION: LA IMAGEN DE UN
+%PUNTO QUEDA SIEMPRE IGUAL (EN TODOS LOS DIAGRAMAS Y EN TODOS LOS CUADROS DE UNA ANIMACION). EL VALOR SE
+%PASA A CADENA: EL : PUEDE LLEGAR ACTIVO (babel francais). LO USAN stone/image Y goban/hoshi/image.
+\fp_new:N \l_pgfgo_image_angle_fp
+\str_new:N \l__pgfgo_image_rotate_str
+\seq_new:N \l__pgfgo_image_rotate_seq
+\cs_new_protected:Npn \pgfgo_image_angle:Nnn #1#2#3 {
+	\str_set:NV \l__pgfgo_image_rotate_str #1
+	\str_if_eq:VnTF \l__pgfgo_image_rotate_str {random}
+		{\__pgfgo_image_angle_range:nnnn {0} {360} {#2} {#3}}
 		{
-			\str_if_in:NnTF \l__pgfgo_stone_image_rotate_str {:}
+			\str_if_in:NnTF \l__pgfgo_image_rotate_str {:}
 				{
-					\seq_set_split:NVV \l__pgfgo_stone_image_rotate_seq \c_colon_str \l__pgfgo_stone_image_rotate_str
-					\__pgfgo_stone_image_angle_range:ee
-						{\seq_item:Nn \l__pgfgo_stone_image_rotate_seq {1}}
-						{\seq_item:Nn \l__pgfgo_stone_image_rotate_seq {2}}
+					\seq_set_split:NVV \l__pgfgo_image_rotate_seq \c_colon_str \l__pgfgo_image_rotate_str
+					\__pgfgo_image_angle_range:eenn
+						{\seq_item:Nn \l__pgfgo_image_rotate_seq {1}}
+						{\seq_item:Nn \l__pgfgo_image_rotate_seq {2}}
+						{#2} {#3}
 				}
 				{
-					\tl_if_blank:VTF \l_pgfgo_players_stone_image_rotate_tl
-						{\fp_zero:N \l__pgfgo_stone_image_angle_fp}
-						{\fp_set:Nn \l__pgfgo_stone_image_angle_fp {\l__pgfgo_stone_image_rotate_str}}
+					\tl_if_blank:VTF #1
+						{\fp_zero:N \l_pgfgo_image_angle_fp}
+						{\fp_set:Nn \l_pgfgo_image_angle_fp {\l__pgfgo_image_rotate_str}}
 				}
 		}
 }
-\cs_new_protected:Npn \__pgfgo_stone_image_angle_range:nn #1#2 {
-	\fp_set:Nn \l__pgfgo_stone_image_angle_fp {
-		sin(\l_pgfgo_parsed_x_coordinate_tl * 12.9898 + \l_pgfgo_parsed_y_coordinate_tl * 78.233) * 43758.5453
+\cs_new_protected:Npn \__pgfgo_image_angle_range:nnnn #1#2#3#4 {
+	\fp_set:Nn \l_pgfgo_image_angle_fp {
+		sin((#3) * 12.9898 + (#4) * 78.233) * 43758.5453
 	}
-	\fp_set:Nn \l__pgfgo_stone_image_angle_fp {
-		(#1) + (\l__pgfgo_stone_image_angle_fp - floor(\l__pgfgo_stone_image_angle_fp)) * ((#2) - (#1))
+	\fp_set:Nn \l_pgfgo_image_angle_fp {
+		(#1) + (\l_pgfgo_image_angle_fp - floor(\l_pgfgo_image_angle_fp)) * ((#2) - (#1))
 	}
 }
-\cs_generate_variant:Nn \__pgfgo_stone_image_angle_range:nn {ee}
+\cs_generate_variant:Nn \__pgfgo_image_angle_range:nnnn {eenn}
 \cs_generate_variant:Nn \str_if_eq:nnTF {Vn}
 \cs_generate_variant:Nn \seq_set_split:Nnn {NVV}
 
@@ -228,12 +265,7 @@
 	\pgfsetlinewidth{\l_pgfgo_players_stone_line_width_dim * \fp_use:N \l_pgfgo_players_stone_scale_fp}
 	\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}
 	\pgfusepath{\bool_if:NT\l_pgfgo_players_stone_line_bool{stroke},\bool_if:NT\l_pgfgo_players_stone_fill_bool{fill}}
-	%SHINE
-	\bool_if:NT \l_pgfgo_players_stone_drop_shine_bool {
-		\pgfscope
-			\pgfgo_stones_shine_default:
-		\endpgfscope
-	}
+	\__pgfgo_stone_shine:
 	}{\__pgfgo_stone_image:}
 	\endpgftransparencygroup
 }
@@ -276,12 +308,12 @@
 	\prop_gremove:NV \g_pgfgo_points_prop \l__pgfgo_captures_key_tl
 }
 
-%DIBUJA UNA PIEDRA. SI #1 NO INDICA EL JUGADOR, LA PIEDRA ES NEGRA.
+%DIBUJA UNA PIEDRA. SI #1 NO INDICA EL JUGADOR, LA PIEDRA ES NEUTRAL.
 %SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO. CON CAPTURAS, LAS PIEDRAS NEGRAS Y BLANCAS
 %QUE NO SON PRISIONEROS VAN AL TABLERO DEL KERNEL Y SE DIBUJAN AL CERRAR EL goban.
 \cs_set_protected:Npn\pgfgo_stone:nnn #1#2#3 {
 	\group_begin:
-		\keys_set:nn { pgfgo / stone } {black}
+		\keys_set:nn { pgfgo / stone } {neutral}
 		\keys_set_groups:nnn { pgfgo / stone } {player-id, captures-id} {#1}
 		\__pgfgo_points_put:nnn {#2} {#3}
 			{\bool_if:NT \l__pgfgo_stone_prisoner_bool {dead-} \__pgfgo_players_current:}
@@ -306,7 +338,7 @@
 
 \cs_new_protected:Npn\__pgfgo_stone_draw_aux:nnn #1#2#3 {
 	\group_begin:
-	\keys_set:nn { pgfgo / stone }{black}
+	\keys_set:nn { pgfgo / stone }{neutral}
 	\keys_set_groups:nnn{ pgfgo / stone }{ player-id }{#1}
 	\keys_set_exclude_groups:enn { pgfgo / players / \__pgfgo_players_current: / stone } { external } {#1}
 	\pgfgo_get_variables_from_current_player:
@@ -572,7 +604,7 @@
 	\group_begin:
 	\keys_set_groups:nnn{ pgfgo / stone }{ preset }{#1}
 	\pgfgo_kernel_point:nTF {#2} { %Devuelve \l_pgfgo_kernel_point_tl
-		%\stone SIN JUGADOR DIBUJA UNA PIEDRA NEUTRAL (\stones, EN CAMBIO, UNA NEGRA).
+		%\stone SIN JUGADOR DIBUJA UNA PIEDRA NEUTRAL, COMO \stones.
 		%RECORDAR LAS PIEDRAS
 		\bool_if:NT \l_pgfgo_goban_remember_stone_bool {
 			\pgfgo_kernel_remember_push:n {
@@ -681,7 +713,8 @@
 	\keys_set:nn { pgfgo / stone }{#6}
 	\keys_set_exclude_groups:nnn {pgfgo / players / #6 / move} {external} {#2}
 	\pgfgo_get_values_from_player:n {#6}
-	\__pgfgo_stone_draw:nnn{#6}{#3}{#4}
+	%LAS OPCIONES DE PIEDRA Y mark VAN A LA PIEDRA; EL COLOR (#6) VA AL FINAL PARA QUE NO LO CAMBIE b O w.
+	\__pgfgo_stone_draw:nnn{#2, #6}{#3}{#4}
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%----------------------LABEL-----------------------%
@@ -702,8 +735,10 @@
 
 		\pgfscope
 		\pgfsetcolor{\l_pgfgo_players_move_label_color_tl}
+		\str_if_eq:VnF \l_pgfgo_players_move_label_opacity_tl {1}
+			{\pgfsetfillopacity{\l_pgfgo_players_move_label_opacity_tl}}
 		\pgftext[at=\pgfpointxy{\l_pgfgo_move_x_tl}{\l_pgfgo_move_y_tl}]{
-			\bfseries\fontsize{ \l__pgfgo_move_label_size_tl }{0pt}\selectfont
+			\l_pgfgo_players_move_label_font_tl\fontsize{ \l__pgfgo_move_label_size_tl }{0pt}\selectfont
 			\l__pgfgo_move_label_tl
 		}
 		\pgfusepath{stroke}

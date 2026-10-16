@@ -71,6 +71,18 @@
 	custom					.groups:n		=	{ shape },
 }
 
+%EL ESTILO DE LAS MARCAS DE LOS TRES JUGADORES, PARA \pgfgoset{mark = {...}} (EN \marks LAS TOMA
+%pgfgo/players/<jugador>/mark ANTES DE LLEGAR ACA).
+%CLAVES: /pgfgo/mark/{line, fill, label, sequence, scale}
+\clist_map_inline:nn {line, fill, label, sequence, scale} {
+	\keys_define:nn {pgfgo / mark} {
+		#1		.code:n		= {
+			\keys_set:ne {pgfgo / players}
+				{all = {mark = {#1 \tl_if_empty:nF {##1} {= {\exp_not:n {##1}}}}}}
+		},
+	}
+}
+
 %JUGADOR
 %CLAVES: /pgfgo/mark/{black, b, white, w, neutral, n}
 \pgfgo_players_define_id_keys:nN {pgfgo / mark} \pgfgo_players_set_current:n
@@ -81,15 +93,25 @@
 %----------------------------------------MARCAS-------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%EL TRAZO DE LA MARCA DEL JUGADOR, Y SU COLOR DE RELLENO (GRIS SIN mark/fill) COMO ARGUMENTO DE #1.
+%LA OPACIDAD #2 CON #1 (\pgfsetstrokeopacity O \pgfsetfillopacity), SALVO QUE SEA 1.
+\cs_new_protected:Npn \__pgfgo_mark_opacity:NN #1#2 {
+	\str_if_eq:VnF #2 {1} {#1 {#2}}
+}
+\cs_generate_variant:Nn \str_if_eq:nnF {Vn}
+
+%EL TRAZO DE LA MARCA DEL JUGADOR.
 \cs_new_protected:Npn \__pgfgo_mark_stroke_style: {
 	\pgfsetstrokecolor{\l_pgfgo_players_mark_line_color_tl}
+	\__pgfgo_mark_opacity:NN \pgfsetstrokeopacity \l_pgfgo_players_mark_line_opacity_tl
 	\pgfsetlinewidth{\l_pgfgo_players_mark_line_width_dim}
 }
-\cs_new_protected:Npn \__pgfgo_mark_fill_color:n #1 {
-	\bool_if:NTF \l_pgfgo_players_mark_fill_bool
-		{#1 {\l_pgfgo_players_mark_fill_color_tl}}
-		{#1 {gray}}
+%EL RELLENO: #1 RECIBE EL COLOR. CON mark/fill = false NO SE RELLENA NADA.
+\cs_new_protected:Npn \__pgfgo_mark_fill:nn #1#2 {
+	\bool_if:NT \l_pgfgo_players_mark_fill_bool {
+		\__pgfgo_mark_opacity:NN \pgfsetfillopacity \l_pgfgo_players_mark_fill_opacity_tl
+		#1 {\l_pgfgo_players_mark_fill_color_tl}
+		#2
+	}
 }
 
 %UN CUADRADO DE MEDIO LADO #1 RADIOS DE PIEDRA.
@@ -121,23 +143,26 @@
 }
 
 \cs_new_protected:Nn\pgfgo_mark_hatched_lines: {
-	\__pgfgo_mark_fill_color:n {\pgfsetfillpattern{north~west~lines}}
-	\pgfpathrectanglecorners
-		{\pgfpoint{\l_pgfgo_players_stone_radius_dim}{\l_pgfgo_players_stone_radius_dim}}
-		{\pgfpoint{-\l_pgfgo_players_stone_radius_dim}{-\l_pgfgo_players_stone_radius_dim}}
-	\pgfusepath{fill}
+	\__pgfgo_mark_fill:nn {\pgfsetfillpattern{north~west~lines}} {
+		\pgfpathrectanglecorners
+			{\pgfpoint{\l_pgfgo_players_stone_radius_dim}{\l_pgfgo_players_stone_radius_dim}}
+			{\pgfpoint{-\l_pgfgo_players_stone_radius_dim}{-\l_pgfgo_players_stone_radius_dim}}
+		\pgfusepath{fill}
+	}
 }
 
 \cs_new_protected:Nn\pgfgo_mark_filled_square: {
-	\__pgfgo_mark_fill_color:n {\pgfsetfillcolor}
-	\__pgfgo_mark_square_path:n {0.7071 * 0.5}
-	\pgfusepath{fill}
+	\__pgfgo_mark_fill:nn {\pgfsetfillcolor} {
+		\__pgfgo_mark_square_path:n {0.7071 * 0.5}
+		\pgfusepath{fill}
+	}
 }
 
 \cs_new_protected:Nn\pgfgo_mark_filled_circle: {
-	\__pgfgo_mark_fill_color:n {\pgfsetfillcolor}
-	\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * 0.5}
-	\pgfusepath{fill}
+	\__pgfgo_mark_fill:nn {\pgfsetfillcolor} {
+		\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * 0.5}
+		\pgfusepath{fill}
+	}
 }
 
 \cs_new_protected:Nn\pgfgo_mark_cross: {
@@ -202,7 +227,18 @@
 \cs_generate_variant:Nn \regex_count:NnN {NV}
 
 \cs_new_protected:Npn \__pgfgo_mark_text:nnn #1#2#3 {
-	\tl_set:Ne \l__pgfgo_mark_text_size_tl {\int_case:nnF {#1} {{1} {#2} {2} {0.65em}} {0.45em}}
+	\tl_if_empty:NTF \l_pgfgo_players_mark_label_font_size_tl
+		{\tl_set:Ne \l__pgfgo_mark_text_size_tl {\int_case:nnF {#1} {{1} {#2} {2} {0.65em}} {0.45em}}}
+		{\tl_set_eq:NN \l__pgfgo_mark_text_size_tl \l_pgfgo_players_mark_label_font_size_tl}
+	%CON mark/scale, EL TAMANO SE CALCULA ADENTRO DE \pgftext: EN LA FIGURA, em VALE 0 (\nullfont).
+	\fp_compare:nNnF {\l_pgfgo_players_mark_scale_fp} = {1} {
+		\tl_set:Ne \l__pgfgo_mark_text_size_tl {
+			\exp_not:N \dim_eval:n {
+				\fp_use:N \l_pgfgo_players_mark_scale_fp
+				\exp_not:N \dimexpr \exp_not:V \l__pgfgo_mark_text_size_tl \exp_not:N \scan_stop:
+			}
+		}
+	}
 	\pgftext{{
 			\fontsize{\l__pgfgo_mark_text_size_tl}{0pt}\selectfont
 			\l_pgfgo_players_mark_label_font_tl
@@ -285,10 +321,23 @@
 	\group_end:
 }
 
+\cs_new_protected:Npn \__pgfgo_mark_shape: {
+	\bool_if:NTF \l_pgfgo_players_mark_sequence_bool
+		{\pgfgo_mark_sequence:}
+		{\pgfgo_mark_current:}
+}
+\cs_generate_variant:Nn \str_if_eq_p:nn {Vn}
+
 %DIBUJA EN (#1,#2) LA MARCA DE LAS OPCIONES YA PUESTAS.
 \bool_new:N \l__pgfgo_mark_no_shadow_bool
 \cs_new_protected:Npn\__pgfgo_mark_draw:nn #1#2 {
 	\group_begin:
+
+	%CON mark/scale, LAS FORMAS (Y SU SOMBRA) SE DIBUJAN CON UN RADIO DE PIEDRA PROPORCIONAL.
+	\fp_compare:nNnF {\l_pgfgo_players_mark_scale_fp} = {1} {
+		\dim_set:Nn \l_pgfgo_players_stone_radius_dim
+			{\fp_to_dim:n {\l_pgfgo_players_mark_scale_fp * \l_pgfgo_players_stone_radius_dim}}
+	}
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%---------------------SHADOW-----------------------%
@@ -328,9 +377,12 @@
 	\tl_set:Nn \l__pgfgo_mark_y_tl {#2}
 	\pgftransformshift{\pgfpointxy{#1}{#2}}
 	\pgfonlayer{pgfgo_layer_mark}
-	\bool_if:NTF \l_pgfgo_players_mark_sequence_bool
-		{\pgfgo_mark_sequence:}
-		{\pgfgo_mark_current:}
+	%CON OPACIDAD, UN AMBITO LA LIMITA A ESTA MARCA (UN GRUPO DE TEX NO LA LIMITA EN EL PDF).
+	\bool_lazy_and:nnTF
+		{\str_if_eq_p:Vn \l_pgfgo_players_mark_line_opacity_tl {1}}
+		{\str_if_eq_p:Vn \l_pgfgo_players_mark_fill_opacity_tl {1}}
+		{\__pgfgo_mark_shape:}
+		{\pgfscope \__pgfgo_mark_shape: \endpgfscope}
 	\endpgfonlayer
 	\pgftransformreset
 	\group_end:
@@ -375,30 +427,43 @@
 %-----------------------------------MARCAS PROPIAS----------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\pgfgodefinemark{<nombre>}{<codigo pgf>} O \pgfgodefinemark{<nombre>}[image = <archivo>, width = <dim>]
+%\pgfgodefinemark{<nombre>}{<codigo pgf>} O \pgfgodefinemark[image = {file = <archivo>, width = <dim>}]{<nombre>}
 %DEFINE UNA MARCA QUE SE USA COMO LAS DEMAS (\marks[<nombre>], players/<jugador>/mark, territory/mark).
 %EL CODIGO SE DIBUJA CENTRADO EN EL PUNTO, CON EL RADIO DE LA PIEDRA COMO UNIDAD DE LAS COORDENADAS SIN
 %UNIDAD, Y CON LOS COLORES pgfgomarkline Y pgfgomarkfill (mark/line Y mark/fill DEL JUGADOR).
+%LA FORMA VIEJA \pgfgodefinemark{<nombre>}[image = <archivo>, width = <dim>] SIGUE ANDANDO.
 \tl_new:N \l__pgfgo_mark_define_image_tl
 \tl_new:N \l__pgfgo_mark_define_width_tl
 \keys_define:nn {pgfgo / define mark} {
-	image		.tl_set:N	= \l__pgfgo_mark_define_image_tl,
+	%image = <archivo> (FORMA VIEJA) O image = {file = <archivo>, width = <dim>}.
+	image		.code:n		= {
+		\tl_if_in:nnTF {#1} {=}
+			{\keys_set:nn {pgfgo / define mark / image} {#1}}
+			{\tl_set:Nn \l__pgfgo_mark_define_image_tl {#1}}
+	},
+	width		.tl_set:N	= \l__pgfgo_mark_define_width_tl,
+}
+\keys_define:nn {pgfgo / define mark / image} {
+	file		.tl_set:N	= \l__pgfgo_mark_define_image_tl,
 	width		.tl_set:N	= \l__pgfgo_mark_define_width_tl,
 }
 
-\NewDocumentCommand \pgfgodefinemark {mo} {
-	\IfNoValueTF {#2}
-		{\__pgfgo_mark_define_code:nn {#1}}
-		{
-			\group_begin:
-				\keys_set:nn {pgfgo / define mark} {#2}
-				\cs_gset:cpe {__pgfgo_mark_user_ #1 :} {
+\NewDocumentCommand \pgfgodefinemark {omo} {
+	\group_begin:
+		\tl_clear:N \l__pgfgo_mark_define_image_tl
+		\tl_clear:N \l__pgfgo_mark_define_width_tl
+		\IfValueT {#1} {\keys_set:nn {pgfgo / define mark} {#1}}
+		\IfValueT {#3} {\keys_set:nn {pgfgo / define mark} {#3}}
+		\tl_if_empty:NTF \l__pgfgo_mark_define_image_tl
+			{\group_end: \__pgfgo_mark_define_code:nn {#2}}
+			{
+				\cs_gset:cpe {__pgfgo_mark_user_ #2 :} {
 					\exp_not:N \__pgfgo_mark_image:nn
 						{\exp_not:V \l__pgfgo_mark_define_image_tl} {\exp_not:V \l__pgfgo_mark_define_width_tl}
 				}
-			\group_end:
-			\__pgfgo_mark_define_key:n {#1}
-		}
+				\group_end:
+				\__pgfgo_mark_define_key:n {#2}
+			}
 }
 
 \cs_new_protected:Npn \__pgfgo_mark_define_code:nn #1#2 {
@@ -415,20 +480,26 @@
 		\pgfsetxvec{\pgfpoint{\l_pgfgo_players_stone_radius_dim}{0pt}}
 		\pgfsetyvec{\pgfpoint{0pt}{\l_pgfgo_players_stone_radius_dim}}
 		\colorlet{pgfgomarkline}{\l_pgfgo_players_mark_line_color_tl}
-		\__pgfgo_mark_fill_color:n {\colorlet{pgfgomarkfill}}
+		\colorlet{pgfgomarkfill}{\l_pgfgo_players_mark_fill_color_tl}
 		\pgfsetstrokecolor{pgfgomarkline}
 		\pgfsetfillcolor{pgfgomarkfill}
+		\__pgfgo_mark_opacity:NN \pgfsetstrokeopacity \l_pgfgo_players_mark_line_opacity_tl
+		\__pgfgo_mark_opacity:NN \pgfsetfillopacity \l_pgfgo_players_mark_fill_opacity_tl
 		\pgfsetlinewidth{\l_pgfgo_players_mark_line_width_dim}
 		#1
 	\endpgfscope
 }
 
-%SIN width, 1.2 VECES EL RADIO DE LA PIEDRA (COMO EL CIRCULO).
+%SIN width, 1.2 VECES EL RADIO DE LA PIEDRA (COMO EL CIRCULO). CON width, POR mark/scale.
 \cs_new_protected:Npn \__pgfgo_mark_image:nn #1#2 {
 	\pgfgo_image_load:ne {#1} {
 		width = \tl_if_blank:nTF {#2}
 			{\dim_eval:n {1.2 \l_pgfgo_players_stone_radius_dim}}
-			{\dim_eval:n {#2}}
+			{
+				\fp_compare:nNnTF {\l_pgfgo_players_mark_scale_fp} = {1}
+					{\dim_eval:n {#2}}
+					{\fp_to_dim:n {\l_pgfgo_players_mark_scale_fp * (\dim_eval:n {#2})}}
+			}
 	}
 	\pgfgo_image_draw:
 }

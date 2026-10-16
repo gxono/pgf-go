@@ -7,12 +7,14 @@
 %LAS SEPARA DE LAS PIEDRAS. TAMBIEN LAS USA \sgf (AR Y LN).
 
 %LAS DOS TIENEN EL MISMO ESTILO, CADA UNA EN SU ARBOL: /pgfgo/arrow Y /pgfgo/line. #1: arrow O line.
-%CLAVES: /pgfgo/{arrow, line}/{color, width, opacity, halo, remember, forget}
+%CLAVES: /pgfgo/{arrow, line}/{color, width, opacity, dash, shorten, halo, remember, forget}
 %CLAVES: /pgfgo/{arrow, line}/halo/{true, false, color, width}
 \cs_new_protected:Npn \__pgfgo_lines_new:n #1 {
 	\tl_new:c {l__pgfgo_ #1 _color_tl}
 	\dim_new:c {l__pgfgo_ #1 _width_dim}
 	\tl_new:c {l__pgfgo_ #1 _opacity_tl}
+	\tl_new:c {l__pgfgo_ #1 _dash_tl}
+	\dim_new:c {l__pgfgo_ #1 _shorten_dim}
 	\bool_new:c {l__pgfgo_ #1 _halo_bool}
 	\tl_new:c {l__pgfgo_ #1 _halo_color_tl}
 	\dim_new:c {l__pgfgo_ #1 _halo_width_dim}
@@ -23,6 +25,12 @@
 		width				.initial:n	= {1.2pt},
 		opacity			.tl_set:c		= {l__pgfgo_ #1 _opacity_tl},
 		opacity			.initial:n	= {1},
+		%EL TRAZO: solid, dashed O dotted (EL HALO ES SIEMPRE CONTINUO).
+		dash				.choices:nn	= {solid, dashed, dotted} {\tl_set_eq:cN {l__pgfgo_ #1 _dash_tl} \l_keys_choice_tl},
+		dash				.initial:n	= {solid},
+		%ACORTA LOS DOS EXTREMOS (POR EJEMPLO, PARA NO TAPAR LAS PIEDRAS).
+		shorten			.dim_set:c	= {l__pgfgo_ #1 _shorten_dim},
+		shorten			.initial:n	= {0pt},
 		halo				.code:n			= {\keys_set:nn {pgfgo / #1 / halo} {##1}},
 		halo				.default:n	= {true},
 		remember		.code:n			= {\bool_set_true:N \l_pgfgo_goban_remember_mark_bool},
@@ -43,12 +51,17 @@
 \__pgfgo_lines_new:n {arrow}
 \__pgfgo_lines_new:n {line}
 
-%LA PUNTA DE LAS FLECHAS (UNA PUNTA DE arrows.meta).
+%LA PUNTA DE LAS FLECHAS (UNA PUNTA DE arrows.meta) Y EN QUE EXTREMOS VA: end O both.
 \tl_new:N \l__pgfgo_arrow_tip_tl
+\bool_new:N \l__pgfgo_arrow_both_bool
 \keys_define:nn {pgfgo / arrow} {
 	tip					.tl_set:N		= \l__pgfgo_arrow_tip_tl,
 	tip					.initial:n	= {Stealth},
+	tips				.choices:nn	= {end, both}
+		{\bool_set:Nn \l__pgfgo_arrow_both_bool {\str_if_eq_p:Vn \l_keys_choice_tl {both}}},
+	tips				.initial:n	= {end},
 }
+\cs_generate_variant:Nn \str_case:nn {vn}
 
 \keys_define:nn {pgfgo} {
 	arrow				.code:n			= {\keys_set:nn {pgfgo / arrow} {#1}},
@@ -107,7 +120,14 @@
 				\pgfusepath{clip}
 				\pgfsetroundcap
 				\pgfsetroundjoin
-				\str_if_eq:nnT {#1} {arrow} {\pgfsetarrowsend{\tl_use:N \l__pgfgo_arrow_tip_tl}}
+				\str_if_eq:nnT {#1} {arrow} {
+					\pgfsetarrowsend{\tl_use:N \l__pgfgo_arrow_tip_tl}
+					\bool_if:NT \l__pgfgo_arrow_both_bool {\pgfsetarrowsstart{\tl_use:N \l__pgfgo_arrow_tip_tl}}
+				}
+				\dim_compare:nNnF {\dim_use:c {l__pgfgo_ #1 _shorten_dim}} = {0pt} {
+					\pgfsetshortenstart{\dim_use:c {l__pgfgo_ #1 _shorten_dim}}
+					\pgfsetshortenend{\dim_use:c {l__pgfgo_ #1 _shorten_dim}}
+				}
 				\bool_if:cT {l__pgfgo_ #1 _halo_bool} {
 					\tl_if_empty:cTF {l__pgfgo_ #1 _halo_color_tl}
 						{\tl_set_eq:NN \l__pgfgo_lines_halo_tl \l_pgfgo_goban_border_fill_color_tl}
@@ -130,6 +150,10 @@
 				\pgfsetfillcolor {\tl_use:c {l__pgfgo_ #1 _color_tl}}
 				\pgfsetstrokeopacity {\tl_use:c {l__pgfgo_ #1 _opacity_tl}}
 				\pgfsetfillopacity {\tl_use:c {l__pgfgo_ #1 _opacity_tl}}
+				\str_case:vn {l__pgfgo_ #1 _dash_tl} {
+					{dashed}	{\pgfsetdash {{3\pgflinewidth} {2\pgflinewidth}} {0pt}}
+					{dotted}	{\pgfsetdash {{0pt} {2\pgflinewidth}} {0pt}}
+				}
 				\__pgfgo_lines_path:nnnn {#3} {#4} {#5} {#6}
 				\pgfusepath{stroke}
 			\endpgfscope

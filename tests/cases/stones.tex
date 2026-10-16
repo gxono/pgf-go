@@ -9,7 +9,7 @@
 \begin{document}
 
 \case{Default players: \textbackslash stone is neutral (C3), \textbackslash stones is black (B2, D2)}
-\begin{goban}[5]\stone{C3}\stones{B2,D2}\end{goban}
+\begin{goban}[5]\stone{C3}\stones[b]{B2,D2}\end{goban}
 
 \case{Explicit players: b, w, n and their long names}
 \begin{goban}[5]
@@ -19,14 +19,14 @@
 
 \case{Stone options: radius 3pt (B2), scale 1.4 (C3), red 2pt line (D4)}
 \begin{goban}[5]
-	\stones[radius = 3pt]{B2}
-	\stones[scale = 1.4]{C3}
+	\stones[b, radius = 3pt]{B2}
+	\stones[b, scale = 1.4]{C3}
 	\stones[w, line = {color = red, width = 2pt}]{D4}
 \end{goban}
 
 \case{Drop shine and drop shadow with the default profile}
 \begin{goban}[5]
-	\stones[drop shine = {true}]{B3}
+	\stones[b, drop shine = {true}]{B3}
 	\stones[w, drop shadow = {true, offset = 1pt, angle = -45}]{D3}
 \end{goban}
 

@@ -23,12 +23,12 @@ La macro |\pgfgoset{...}| permite definir configuraciones generales para el paqu
 	Establece opciones generales para los movimientos, como el formato de sus números. Es lo mismo que |\pgfgoset{players = {all = {move = {...}}}}|.
 \end{key}
 
-%\begin{key}{/pgfgo/mark = \meta{mark options}}
-%	Establece opciones generales para las marcas, permitiendo definir formas (círculos, triángulos, etc.) o colores por defecto para destacar posiciones específicas en el tablero.
-%\end{key}
+\begin{key}{/pgfgo/mark = \meta{mark options}}
+	Establece opciones generales para las marcas: la forma por defecto de |\marks| (|\pgfgoset{mark = {triangle}}|) y el estilo de las marcas de los tres jugadores (|line|, |fill|, |label|, |sequence| y |scale|). |\pgfgoset{mark = {line = {color = red}}}| es lo mismo que |\pgfgoset{players = {all = {mark = {line = {color = red}}}}}|.
+\end{key}
 
 \begin{key}{/pgfgo/use i = \meta{boolean} (default true)}
-	Permite decidir si se utiliza o no la etiqueta «I» en el tablero. Por defecto, está activada («true»), lo que significa que las coordenadas incluyen la letra «I». Si se desactiva («false»), el sistema omite esta letra y pasa directamente de «H» a «J», algo habitual en ciertas representaciones del juego de Go.
+	Permite decidir si se utiliza o no la etiqueta «I» en el tablero. Por defecto, está activada («true»), lo que significa que las coordenadas incluyen la letra «I». Si se desactiva («false»), el sistema omite esta letra y pasa directamente de «H» a «J», algo habitual en ciertas representaciones del juego de Go. Es lo mismo que |/pgfgo/goban/use i| (pág.~\pageref{subsec:usei}), que es el nombre que conviene usar.
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation = \meta{sgf animation options}}
@@ -41,6 +41,14 @@ La macro |\pgfgoset{...}| permite definir configuraciones generales para el paqu
 
 \begin{key}{/pgfgo/sgf problem = \meta{sgf problem options}}
 	Opciones de todos los |\sgfproblem| del documento (pág.~\pageref{subsec:sgf}).
+\end{key}
+
+\begin{key}{/pgfgo/sgf comment = \meta{sgf comment options}}
+	Opciones de todos los |\sgfcomment| del documento (pág.~\pageref{subsec:sgf}).
+\end{key}
+
+\begin{key}{/pgfgo/sgf info = \meta{sgf info options}}
+	Opciones de todos los |\sgfinfo| del documento (pág.~\pageref{subsec:sgf}).
 \end{key}
 
 \begin{key}{/pgfgo/sgf annotations = \meta{texts}}
@@ -97,7 +105,15 @@ La macro |\pgfgoset{...}| permite definir configuraciones generales para el paqu
 	\end{goban}
 \end{codeexample}
 
-Los entornos |goban| posteriores heredan estas configuraciones, aunque pueden sobrescribirse localmente si es necesario.
+Los entornos |goban| posteriores heredan estas configuraciones, aunque pueden sobrescribirse localmente si es necesario. Las opciones de un |goban| aceptan, además de las del tablero, las de |\pgfgoset|, que valen solo para ese tablero: |\begin{goban}[9, stone = {radius = 4pt}, mark = {line = {color = red}}]|.
+
+\label{subsec:prender}Muchas \emph{keys} prenden o apagan algo: la cuadrícula, el fondo, las coordenadas, el borde y el relleno de las piedras, sus sombras y sus brillos, etc. Todas siguen la misma regla:
+\begin{itemize}
+	\item la \emph{key} sola, o con |true|, lo prende: |shine|, |shine = true|;
+	\item con |false| lo apaga: |shine = false|;
+	\item dar opciones no lo prende: |shine = {angle = 45}| cambia el ángulo, pero el brillo sigue como estaba. Para prenderlo y cambiarlo a la vez, |shine = {true, angle = 45}|.
+\end{itemize}
+Las excepciones son las \emph{keys} cuyo valor es el contenido mismo, como |partial| (la parte del tablero) y |sequence| (desde dónde se numera).
 
 \subsection{El kernel de cálculo}
 \label{subsec:kernel}
@@ -547,7 +563,7 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 	\end{key}
 
 	\begin{key}{/pgfgo/profiles/player/append}
-		Amplía las opciones de un jugador ya definido. Es lo mismo que |from = \meta{player name}| con su propio nombre.
+		Amplía las opciones de un jugador ya definido. Es lo mismo que |from = |\meta{player name} con su propio nombre.
 	\end{key}
 \end{command}
 
@@ -604,6 +620,51 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 		\stone{B2}
 	\end{goban}
 \end{codeexample}
+
+\begin{command}{\pgfgodefineprofile\opt{\oarg{options}}\marg{name}\marg{profile options}}
+	Define de una vez un perfil completo para |\pgfgouseprofile|: el goban |name| y los jugadores |name-neutral|, |name-black| y |name-white|. Es lo mismo que el ejemplo de arriba, en un solo comando.
+
+	\begin{codeexample}[width=3cm]
+		\pgfgodefineprofile[from = default]{ejemplo2}{
+			goban = {background = {fill = {color = blue!05}}},
+			all = {stone = {line = {color = magenta!20!black}}},
+			white = {stone = {fill = {color = yellow}}},
+			black = {stone = {fill = {color = blue}}}}
+
+		\pgfgouseprofile{ejemplo2}
+
+		\begin{goban}[partial = {from = A1 to C3}]
+			\moves{A1:3}
+			\stones[b]{B1,B3,C2}
+			\stones[w]{C1,C3}
+			\stone{B2}
+		\end{goban}
+	\end{codeexample}
+
+	\begin{key}{/pgfgo/profiles/profile/goban = \meta{goban options}}
+		Las opciones del goban.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/all = \meta{player options}}
+		Opciones de los tres jugadores. Van antes de las de cada uno.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/neutral = \meta{player options}}
+		Opciones del jugador neutral.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/black = \meta{player options}}
+		Opciones del jugador negro.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/white = \meta{player options}}
+		Opciones del jugador blanco.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/from = \meta{profile name}}
+		Opción del comando: cada parte empieza con la del perfil \meta{profile name} (el goban \meta{profile name}, el jugador \meta{profile name}|-neutral|, etc.).
+	\end{key}
+\end{command}
 
 \subsection{Cambiar opciones sobre la marcha}
 
@@ -664,7 +725,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Controla las opciones de las piedras del segundo jugador.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/line = \meta{stone line options}}
+\begin{key}{/pgfgo/players/white/stone/line = \meta{stone line options} (default true)}
 	Controla las opciones de los bordes de las piedras del segundo jugador.
 \end{key}
 
@@ -755,7 +816,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/fill = \meta{stone fill options}}
+\begin{key}{/pgfgo/players/white/stone/fill = \meta{stone fill options} (default true)}
 	Controla las opciones referidas al relleno de la piedra.
 \end{key}
 
@@ -863,7 +924,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shadow = \meta{stone drop shadow options}}
+\begin{key}{/pgfgo/players/white/stone/drop shadow = \meta{stone drop shadow options} (default true)}
 	Controla las opciones propias de las sombras en las piedras.
 \end{key}
 
@@ -951,27 +1012,31 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shine = \meta{stone drop shine options}}
-	Controla los brillos sobre las piedras.
+\begin{key}{/pgfgo/players/white/stone/drop shadow/color = \meta{color} (initially black)}
+	El color de la sombra.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shine/true}
+\begin{key}{/pgfgo/players/white/stone/shine = \meta{stone shine options} (default true)}
+	Controla el brillo de las piedras, que se dibuja encima de la piedra, sea un círculo o una imagen. Su nombre viejo, |drop shine|, sigue funcionando.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shine/false}
-	Oculta los brillos sobre las piedras.
+\begin{key}{/pgfgo/players/white/stone/shine/true}
+	Dibuja el brillo.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/false}
+	No dibuja el brillo.
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
 		\pgfgoset{goban = {partial = {from = A1 to C3}}}
-		
+
 		\begin{goban}
 			\stones[b]{B1,C2}
 			\stone[w]{A3}
 		\end{goban}
-		
-		\pgfgoset{players = {black = {stone = {drop shine = false}}}}
-		% Sobre black que se nota más.
-		
+
+		\pgfgoset{players = {black = {stone = {shine = false}}}}
+
 		\begin{goban}
 			\stones[b]{B1,C2}
 			\stone[w]{A3}
@@ -979,21 +1044,19 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shine/angle = \meta{float}}
-	Controla el ángulo del brillo.
-	
+\begin{key}{/pgfgo/players/white/stone/shine/angle = \meta{float} (initially 0)}
+	Gira el brillo dibujado. Con |0|, la luz viene de arriba a la izquierda.
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
 		\pgfgoset{goban = {partial = {from = A1 to C3}}}
-		
+
 		\begin{goban}
 			\stones[b]{B1,C2}
 			\stone[w]{A3}
 		\end{goban}
-		
-		\pgfgoset{players = {black = {stone = {drop shine = {angle = 0}}}}}
-		% Sobre black que se nota más.
-		
+
+		\pgfgoset{players = {black = {stone = {shine = {angle = 45}}}}}
+
 		\begin{goban}
 			\stones[b]{B1,C2}
 			\stone[w]{A3}
@@ -1001,21 +1064,19 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shine/opacity = \meta{float}}
-	Controla la opacidad del brillo.
-	
+\begin{key}{/pgfgo/players/white/stone/shine/opacity = \meta{float} (initially 1)}
+	Controla la opacidad del brillo (también la del brillo con imagen).
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
 		\pgfgoset{goban = {partial = {from = A1 to C3}}}
-		
+
 		\begin{goban}
 			\stones[b]{B1,C2}
 			\stone[w]{A3}
 		\end{goban}
-		
-		\pgfgoset{players = {black = {stone = {drop shine = {opacity = 0.5}}}}}
-		% Sobre black que se nota más.
-		
+
+		\pgfgoset{players = {black = {stone = {shine = {opacity = 0.5}}}}}
+
 		\begin{goban}
 			\stones[b]{B1,C2}
 			\stone[w]{A3}
@@ -1023,9 +1084,39 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shine/color = \meta{color} (initially gray!50!white)}
-	Controla el color del brillo.
+\begin{key}{/pgfgo/players/white/stone/shine/color = \meta{color} (initially gray!50!white)}
+	Controla el color del brillo dibujado.
 \end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/image = \meta{options}}
+	Un brillo propio: una imagen con transparencia (PNG o PDF), centrada en la piedra, en lugar del brillo dibujado. No gira con la imagen de la piedra (|stone/image/rotate|), así que la luz queda siempre del mismo lado. Cada archivo se guarda una sola vez en el PDF.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {stone = {
+			image = {file = stone-white.png, rotate = random},
+			shine = {true, image = {file = shine.png}}}}}}
+
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\stones[w]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/image/file = \meta{file}}
+	El archivo de la imagen. Se busca como con |\includegraphics|.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/image/width = \meta{dimension} (initially el diámetro de la piedra)}
+	El ancho de la imagen; el alto mantiene la proporción.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/image/rotate = \meta{ángulo} (initially 0)}
+	Gira la imagen del brillo, igual en todas las piedras.
+\end{key}
+
+\begin{stylekey}{/pgfgo/players/white/stone/shine/image/false}
+	Quita la imagen: vuelve el brillo dibujado.
+\end{stylekey}
 
 \begin{key}{/pgfgo/players/white/stone/prisoner = \meta{stone options}}
 	Dibuja la piedra como prisionero: baja la opacidad del relleno a 0.5 y aplica las \meta{stone options}. Es lo que usan |\prisoner| y |\prisoners|.
@@ -1039,12 +1130,20 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Controla las etiquetas (los números) de sus jugadas.
 \end{key}
 
+\begin{key}{/pgfgo/players/white/move/label/font = \meta{font commands} (initially \texttt{\string\bfseries})}
+	Fuente de los números.
+\end{key}
+
 \begin{key}{/pgfgo/players/white/move/label/font size = \meta{dimension}}
 	Tamaño de los números. Si no se fija, se ajusta según la cantidad de dígitos.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/color = \meta{color}}
 	Color de los números.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/opacity = \meta{float} (initially 1)}
+	Opacidad de los números.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/format = \meta{format}}
@@ -1131,20 +1230,32 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/fill = \meta{mark fill options}}
-	Controla el relleno de sus marcas rellenas (|filled square|, |filled circle| y |hatched lines|).
+\begin{key}{/pgfgo/players/white/mark/line/opacity = \meta{float} (initially 1)}
+	Opacidad de la línea de las marcas.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/fill = \meta{mark fill options} (default true)}
+	Controla el relleno de sus marcas rellenas (|filled square|, |filled circle| y |hatched lines|) y el color |pgfgomarkfill| de las marcas propias (pág.~\pageref{subsec:marcaspropias}).
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/fill/true}
-	Las marcas rellenas usan |fill/color|.
+	Las marcas rellenas se rellenan con |fill/color|. Es el valor inicial.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/fill/false}
-	Las marcas rellenas se rellenan de gris. Es el valor inicial.
+	Las marcas rellenas no se rellenan: no se ven.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/mark/fill/color = \meta{color}}
-	Color de relleno de las marcas. Solo se usa con |fill = true|.
+\begin{key}{/pgfgo/players/white/mark/fill/color = \meta{color} (initially gray)}
+	Color de relleno de las marcas.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/fill/opacity = \meta{float} (initially 1)}
+	Opacidad del relleno de las marcas.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/scale = \meta{float} (initially 1)}
+	Tamaño de sus marcas respecto del de siempre (las formas y el texto).
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/label = \meta{mark label options}}
@@ -1157,6 +1268,10 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/mark/label/font = \meta{font commands}}
 	Fuente de las etiquetas de sus marcas.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/font size = \meta{dimension}}
+	Tamaño de las etiquetas. Si no se fija, se ajusta según la cantidad de caracteres.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/label/format = \meta{format}}
@@ -1192,7 +1307,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/sequence/use}
-	Lo mismo que |sequence/true|.
+	Lo mismo que |sequence/true|. Es un nombre viejo: conviene usar |true|.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/sequence/false}

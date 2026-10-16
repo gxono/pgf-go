@@ -9,7 +9,7 @@ Stones are the fundamental elements. In \pgfgoname, commands and options are pro
 \end{command}
 
 \begin{command}{\stones\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
-	Similar to |\stone|, but allows placing multiple stones using the corresponding syntax (see Coordinate Syntax). If no player is given, the stones are \emph{black}.
+	Similar to |\stone|, but allows placing multiple stones using the corresponding syntax (see Coordinate Syntax). If no player is given, the stones are also \emph{neutral}: black stones are written |\stones[b]{...}|.
 \end{command}
 
 Stones, marks and labels that fall outside the visible region of a partial board are not drawn. A coordinate that does not exist on the board (for example, |E9| on a 5$\times$5 board) is ignored and produces a warning.
@@ -144,7 +144,7 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 
 \begin{key}{/pgfgo/stone/black}
 	
-	Assigns the stone the characteristics of the first player (black by default), including fill and border color. This is the player used by |\stones| unless another one is specified; |\stone|, instead, uses the neutral player.
+	Assigns the stone the characteristics of the first player (black by default), including fill and border color. Without |black| (or |b|), |\stone| and |\stones| draw neutral stones.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -191,7 +191,7 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 \end{key}
 
 \begin{key}{/pgfgo/stone/neutral}
-	The stone belongs to the neutral player. It is the default player of |\stone|.
+	The stone belongs to the neutral player. It is the default player of |\stone| and |\stones|.
 \end{key}
 
 \begin{key}{/pgfgo/stone/n}
@@ -199,7 +199,7 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 \end{key}
 
 \begin{key}{/pgfgo/stone/drop shadow = \meta{options}}
-	Shadow of the stone: |true|, |false|, |angle|, |offset| and |opacity|. The options are described in the player reference (p.~\pageref{subsec:players}).
+	Shadow of the stone: |true|, |false|, |angle|, |offset|, |opacity| and |color|. The options are described in the player reference (p.~\pageref{subsec:players}).
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -211,22 +211,31 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/stone/drop shine = \meta{options}}
-	Highlight of the stone: |true|, |false|, |angle|, |opacity| and |color|. The options are described in the player reference (p.~\pageref{subsec:players}).
+\begin{key}{/pgfgo/stone/shine = \meta{options} (default true)}
+	Highlight of the stone, drawn on top of it: |true|, |false|, |angle|, |opacity|, |color| and |image|. The options are described in the player reference (p.~\pageref{subsec:players}). Its old name, |drop shine|, still works.
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
 
 		\begin{goban}
-			\stones[b, drop shine = true]{C2,D3}
-			\stone[w, drop shine = {true, color = gray}]{B4}
+			\stones[b, shine]{C2,D3}
+			\stone[w, shine = {true, color = gray}]{B4}
+		\end{goban}
+	\end{codeexample}
+
+	With |image|, the shine is an image with transparency (PNG or PDF), centered on the stone. If the stone is an image too, the shine is drawn on top of it and does not turn with it: the stones can have their grain turned at random (|rotate = random|) and the light always on the same side.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\stones[w, image = {file = stone-white.png, rotate = random},
+				shine = {true, image = {file = shine.png}}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
 
 
-\begin{key}{/pgfgo/stone/image = \meta{options}}
-	Draws the stone with an image (PNG, JPG or PDF) instead of the circle: the fill, the outline and the shine are not drawn, and the image does not need to be round. The shadow (|drop shadow|) has the shape of the image; for that, the image must have transparency (a PNG with an alpha channel, or a PDF): the shadow of a JPG is a rectangle. A prisoner with an image is translucent, like any prisoner.
+\label{subsec:stoneimages}\begin{key}{/pgfgo/stone/image = \meta{options}}
+	Draws the stone with an image (PNG, JPG or PDF) instead of the circle: the fill and the outline are not drawn, and the image does not need to be round. If the shine (|shine|) is on, it is drawn on top of the image. The shadow (|drop shadow|) has the shape of the image; for that, the image must have transparency (a PNG with an alpha channel, or a PDF): the shadow of a JPG is a rectangle. A prisoner with an image is translucent, like any prisoner.
 
 	Files are looked up like with |\includegraphics| (for example, in the folders of |\graphicspath|). Each file, at each size, is stored only once in the PDF, however many stones use it. The shadow with the shape of the image needs pdf\LaTeX\ or Lua\LaTeX\ (with PDF output); with other engines the stone is drawn without a shadow, with a warning.
 
@@ -288,6 +297,10 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 				rotate = -20:20}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/image/opacity = \meta{float} (initially 1)}
+	The opacity of the image.
 \end{key}
 
 \begin{stylekey}{/pgfgo/stone/image/false}
@@ -381,6 +394,15 @@ Move commands allow representing sequences of plays, automatically alternating b
 \end{command}
 
 Within the same |goban|, numbering and turn carry over from one |\moves| to the next. Each new |goban| starts at move 1 with Black; to continue a game in another diagram, use |from| and |b| or |w|, or |resume|.
+
+The options of |\moves| also accept those of the style of the stone (|fill|, |line|, |radius|, |shine|, |image|, etc.) and |mark|, like |\stones|. For example, to mark the last move:
+
+\begin{codeexample}[]
+	\begin{goban}[5, partial = {from = B2 to D4}]
+		\moves{C3, D3, C2}
+		\moves[mark = circle]{B3}
+	\end{goban}
+\end{codeexample}
 
 It is possible to change options for all players using |\pgfgoset{move = {...}}|, which is equivalent to |\pgfgoset{players = {all = {move = {...}}}}|.
 
@@ -673,9 +695,9 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/sgf/to = \meta{number} (initially the last move)}
+\begin{key}{/pgfgo/sgf/to = \meta{number} or |last| (initially last)}
 
-	Number of the last move that is played. The following ones are not drawn.
+	Number of the last move that is played. The following ones are not drawn. With |last| (or a negative number), up to the last one.
 
 	\begin{codeexample}[width=5cm]
 		\begin{goban}[captures]
@@ -731,11 +753,21 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 \end{key}
 
 \begin{key}{/pgfgo/sgf/numbers = \meta{true, false or auto} (default true, initially auto)}
-	With |false|, the moves are drawn without numbers. With |auto|, it does what the file asks for with |PM|: with |PM[0]|, they are not numbered. |\sgfdiagrams| and |\sgfproblem| always number them.
+	With |false|, the moves are drawn without numbers. With |auto|, it does what the file asks for with |PM|: with |PM[0]|, they are not numbered. |\sgfdiagrams| has its own |numbers| \emph{key}, and |\sgfproblem| always numbers them.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variations.sgf]
 			\sgf[numbers = false]{variations.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/last mark = \meta{mark options} or |false| (initially false)}
+	Marks the last move shown, with the options of a mark (|circle|, |triangle|, |custom = ...|, etc.). A pass is not marked, and neither is a point the file already marks. The mark goes over the number: it is mostly useful with |numbers = false|.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations.sgf]
+			\sgf[numbers = false, last mark = circle]{variations.sgf}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -865,8 +897,8 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 	First frame.
 \end{key}
 
-\begin{key}{/pgfgo/sgf animation/to = \meta{number} (initially the last move)}
-	Last frame.
+\begin{key}{/pgfgo/sgf animation/to = \meta{number} or |last| (initially last)}
+	Last frame. With |last| (or |-1|), the frame of the last move.
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/fps = \meta{number} (initially 1)}
@@ -955,8 +987,16 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 	First move. The diagrams are the same as without |from|, with the same number: only the ones with moves from |from| on are drawn, and the first one starts at |from|. With |step = 50| and |from = 120|, the first one is "Diagram 3 (120--150)".
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/to = \meta{number} (initially the last move)}
-	Last move.
+\begin{key}{/pgfgo/sgf diagrams/to = \meta{number} or |last| (initially last)}
+	Last move. With |last| (or |-1|), the last one of the game.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/numbers = \meta{boolean} (default true, initially true)}
+	With |false|, the moves of each diagram are drawn without numbers (the "N at M" notes still use the numbers of the game).
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/last mark = \meta{mark options} or |false| (initially false)}
+	Like |/pgfgo/sgf/last mark|, on each diagram.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/restart = \meta{boolean} (default true, initially false)}
@@ -1154,7 +1194,7 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 	\begin{codeexample}[code only]
 		\begin{pgfgolayout}[columns = 4, fit]
-			\begin{goban}[5]\stones{C3}\end{goban}
+			\begin{goban}[5]\stones[b]{C3}\end{goban}
 			\begin{goban}[5]\stones[w]{C3}\end{goban}
 			\sgfdiagrams[step = 5]{game.sgf}
 		\end{pgfgolayout}
@@ -1162,7 +1202,7 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 \end{environment}
 
 \begin{pgfgolayout}[columns = 4, fit]
-	\begin{goban}[5]\stones{C3}\end{goban}
+	\begin{goban}[5]\stones[b]{C3}\end{goban}
 	\begin{goban}[5]\stones[w]{C3}\end{goban}
 	\sgfdiagrams[step = 5]{game.sgf}
 \end{pgfgolayout}

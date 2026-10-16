@@ -22,10 +22,10 @@
 \begin{goban}[9, use i = false, label = {at = {south}}]\end{goban}
 
 \case{Partial boards hide what is outside the window (only C3 visible)}
-\begin{goban}[5, partial = {from = B2 to D4}]\stones{A1,E5}\stones[w]{C3}\marks[circle]{A5}\moves*{A2,C2}\end{goban}
+\begin{goban}[5, partial = {from = B2 to D4}]\stones[b]{A1,E5}\stones[w]{C3}\marks[circle]{A5}\moves*{A2,C2}\end{goban}
 
 \case{A partial window larger than the board is clipped}
-\begin{goban}[3, partial = {from = B2 to D4}]\stones{*}\end{goban}
+\begin{goban}[3, partial = {from = B2 to D4}]\stones[b]{*}\end{goban}
 
 \case{Grid and background: false, then true again after a global false}
 \begin{goban}[5, grid = false]\stone{C3}\end{goban}
@@ -38,6 +38,6 @@
 \begin{goban}[5, background = {rounded corners = {outer = 6pt}, drop shadow = true, fill = {color = orange!30}}]\end{goban}
 
 \case{Scale 0.6}
-\begin{goban}[5, scale = 0.6]\stones{C3}\end{goban}
+\begin{goban}[5, scale = 0.6]\stones[b]{C3}\end{goban}
 
 \end{document}

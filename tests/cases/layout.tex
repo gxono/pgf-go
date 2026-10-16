@@ -35,7 +35,7 @@
 \case{pgfgolayout, columns = 4, fit: two gobans of different size, a sgfdiagrams (its layout is ignored) and a goban in the second row}
 \begin{pgfgolayout}[columns = 4, fit]
 	\begin{goban}[5]
-		\stones{C3}
+		\stones[b]{C3}
 	\end{goban}
 	\begin{goban}[9, partial = {from = A1 to E5}]
 		\stones[w]{C3}
@@ -43,13 +43,13 @@
 	\end{goban}
 	\sgfdiagrams[step = 3, layout = {columns = 2}]{game.sgf}
 	\begin{goban}[7]
-		\stones{C3}
+		\stones[b]{C3}
 	\end{goban}
 \end{pgfgolayout}
 
 \case{pgfgolayout, columns = auto: the gobans in the paragraph}
 \begin{pgfgolayout}
-	\begin{goban}[5, scale = 0.5]\stones{C3}\end{goban}
+	\begin{goban}[5, scale = 0.5]\stones[b]{C3}\end{goban}
 	\begin{goban}[5, scale = 0.5]\stones[w]{C3}\end{goban}
 \end{pgfgolayout}
 
