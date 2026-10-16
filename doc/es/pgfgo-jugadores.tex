@@ -1,0 +1,950 @@
+\section{Jugadores y perfiles}
+\label{sec:jugadores}
+
+Cada piedra, jugada y marca pertenece a uno de tres jugadores: el primero (|black|), el segundo (|white|) o el neutral (|neutral|). Su aspecto no está en cada comando sino en el jugador: el árbol de \emph{keys} de cada uno reúne las opciones de sus piedras, sus jugadas, sus marcas y su territorio, que en las secciones anteriores aparecen bajo |stone|, |move| y |mark|. Esta sección describe ese árbol completo y, después, los perfiles: cómo guardar con un nombre el estilo del tablero y de los jugadores, y cómo usarlo.
+
+\subsection{Jugadores}
+
+Cuando se desea cambiar una opción de tablero con |\pgfgoset|, puede hacerse directamente con |\pgfgoset{goban = {...}}|. Para los jugadores, la situación es algo distinta. Para ello, se cuenta con las siguientes \emph{keys}:
+
+\begin{key}{/pgfgo/players = \meta{players options}}
+	Permite ajustar las opciones de los jugadores. Por defecto, son tres: |neutral|, |black| y |white|. No hay que confundir jugadores con perfiles de piedras. Una vez cargado el perfil de una piedra, se puede realizar un cambio con estas \emph{keys}.
+\end{key}
+
+Las opciones de los jugadores pueden configurarse todas juntas con la \emph{key} |all|, o por separado. Los cambios realizados aquí no afectarán la definición de los perfiles. Es decir, si cargamos el perfil |pgfgo| y modificamos al jugador negro, esto no afectar\'a a la definici\'on de |pgfgo-black|, sino que a las opciones propias del jugador primero.
+
+\begin{key}{/pgfgo/players/all = \meta{all player options}}
+	Aplica las opciones a los tres jugadores.
+\end{key}
+
+\begin{key}{/pgfgo/players/neutral = \meta{neutral player options}}
+	Opciones del jugador neutral (las piedras sin jugador).
+\end{key}
+
+\begin{key}{/pgfgo/players/black = \meta{first player options}}
+	Opciones del primer jugador.
+\end{key}
+
+\begin{key}{/pgfgo/players/white = \meta{second player options}}
+	Opciones del segundo jugador.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {
+			all = {stone = {line = {color = red}}},
+			neutral = {stone = {fill = {color = yellow}}},
+			black = {stone = {fill = {color = blue!60!black}}}}}
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+			\stone{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+Para no escribir la ruta completa, hay cuatro comandos:
+
+\begin{command}{\pgfgosetplayer\marg{player}\marg{player options}}
+	Es lo mismo que |\pgfgoset{players = {<player> = {<player options>}}}|.
+\end{command}
+
+\begin{command}{\pgfgosetallplayers\marg{player options}}
+	Aplica las opciones a los tres jugadores. Es lo mismo que |\pgfgoset{players = {all = {...}}}|.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgosetallplayers{stone = {radius = 0.3cm}}
+		\pgfgosetplayer{white}{stone = {fill = {color = orange}}}
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+			\stone{A3}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\begin{command}{\pgfgocopyplayer\marg{target player}\marg{source player}}
+	Copia las opciones actuales de |source player| en |target player|.
+
+	\begin{codeexample}[width=3cm]
+		\pgfgocopyplayer{neutral}{white}
+
+		\begin{goban}[partial = A1:C3]
+			\stone{B2} % Neutral, pero con el aspecto de las blancas.
+			\stones[b]{A1,C3}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\begin{command}{\pgfgocopyplayers\marg{neutral source}\marg{black source}\marg{white source}}
+	Copia, en este orden, |neutral source| en el jugador neutral, |black source| en el negro y |white source| en el blanco (con |\pgfgocopyplayer|). Como las copias se hacen una tras otra, no sirve para intercambiar jugadores.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgocopyplayers{neutral}{white}{black}
+		% No intercambia: las dos son blancas.
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\label{subsec:jugadores}Cada jugador tiene acceso al mismo árbol de \emph{keys}. Por esta razón, las siguientes, aunque mencionen |white|, aplican a todos los jugadores. Cada una de ellas se explica en la sección correspondiente al tipo de objeto, pero se ilustran brevemente ac\'a.
+
+\begin{key}{/pgfgo/players/white/stone = \meta{stone options}}
+	Controla las opciones de las piedras del segundo jugador.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line = \meta{stone line options} (default true)}
+	Controla las opciones de los bordes de las piedras del segundo jugador.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line/true}
+	Determina si aparece o no la frontera de una piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {line = true}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line/false}	
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line/width = \meta{dimension}}
+	Determina el grosor de la frontera de una piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {line = {true, width = 1pt}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line/color = \meta{color}}
+	Determina el color de la frontera de una piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {line = {true, width = 1pt, color = red}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/line/opacity = \meta{float}}
+	Determina la opacidad de la frontera de una piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {line = {true, width = 2pt, opacity = 0.25}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/fill = \meta{stone fill options} (default true)}
+	Controla las opciones referidas al relleno de la piedra.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/fill/true}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/fill/false}
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {fill = false}}}}
+		% Lo que se ve en la figura es lo que queda de la piedra: sombras y brillos.
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/fill/color = \meta{color}}
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {fill = {color = magenta!20}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/fill/opacity = \meta{float}}
+	Establece la opacidad del relleno de la piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {fill = {opacity = 0.5}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/radius = \meta{dimension}}
+	Establece el radio de la piedra.
+	
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {radius = 0.3cm}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/scale = \meta{float}}
+	Controla la escala de la piedra, lo que afecta también a las marcas.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {scale = 1.25}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w, mark = circle]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow = \meta{stone drop shadow options} (default true)}
+	Controla las opciones propias de las sombras en las piedras.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow/true}
+	Habilita la sombra en la piedra.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow/false}
+	Desactiva la sombra en la piedra.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {drop shadow = false}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow/angle = \meta{float}}
+	Establece el ángulo de la sombra.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {drop shadow = {angle = 225}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow/offset = \meta{dimension}}
+	Establece el desplazamiento de la sombra respecto al centro.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {drop shadow = {offset = 0.125cm}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow/opacity = \meta{float}}
+	Controla la opacidad de la sombra.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+		
+		\pgfgoset{players = {white = {stone = {drop shadow = {offset = 0.125cm, opacity = 0.1}}}}}
+		
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/drop shadow/color = \meta{color} (initially black)}
+	El color de la sombra.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		\pgfgoset{players = {white = {stone = {drop shadow = {color = blue, offset = 0.1cm}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine = \meta{stone shine options} (default true)}
+	Controla el brillo de las piedras, que se dibuja encima de la piedra, sea un círculo o una imagen.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/true}
+	Dibuja el brillo.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/false}
+	No dibuja el brillo.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {black = {stone = {shine = false}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/angle = \meta{float} (initially 0)}
+	Gira el brillo dibujado. Con |0|, la luz viene de arriba a la izquierda.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {black = {stone = {shine = {angle = 45}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/opacity = \meta{float} (initially 1)}
+	Controla la opacidad del brillo (también la del brillo con imagen).
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {black = {stone = {shine = {opacity = 0.5}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/color = \meta{color} (initially gray!50!white)}
+	Controla el color del brillo dibujado.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		\pgfgoset{players = {black = {stone = {shine = {color = red}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/image = \meta{options}}
+	Un brillo propio: una imagen con transparencia (PNG o PDF), centrada en la piedra, en lugar del brillo dibujado. No gira con la imagen de la piedra (|stone/image/rotate|), así que la luz queda siempre del mismo lado. Cada archivo se guarda una sola vez en el PDF.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {stone = {
+			image = {file = stone-white.png, rotate = random},
+			shine = {true, image = {file = shine.png}}}}}}
+
+		\begin{goban}[5, partial = B2:D4]
+			\stones[w]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/image/file = \meta{file}}
+	El archivo de la imagen. Se busca como con |\includegraphics|.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/image/width = \meta{dimension} (initially el diámetro de la piedra)}
+	El ancho de la imagen; el alto mantiene la proporción.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/image/rotate = \meta{ángulo} (initially 0)}
+	Gira la imagen del brillo, igual en todas las piedras.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {stone = {
+			image = {file = stone-white.png},
+			shine = {true, image = {file = shine.png, width = 0.3cm, rotate = 90}}}}}}
+
+		\begin{goban}[5, partial = B2:D4]
+			\stones[w]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{stylekey}{/pgfgo/players/white/stone/shine/image/false}
+	Quita la imagen: vuelve el brillo dibujado.
+\end{stylekey}
+
+\begin{key}{/pgfgo/players/white/stone/prisoner = \meta{stone options}}
+	El estilo de los prisioneros del jugador: los de |\prisoner|, |\prisoners| y la \emph{key} |prisoner| de |\stone| y |\stones|, y las piedras capturadas con |captures = fade|. Se aplica después de la opacidad de relleno 0.5 y de |/pgfgo/prisoner|, y antes de las opciones de la piedra. Las demás piedras del jugador no cambian.
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = B2:D4}}
+		\pgfgoset{players = {white = {stone = {prisoner = {line = {color = red}}}}}}
+
+		\begin{goban}
+			\stones[w]{B3}
+			\prisoner[b]{C3}
+			\prisoner[w]{D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move = \meta{move options}}
+	Controla las opciones de las jugadas del jugador.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label = \meta{move label options}}
+	Controla las etiquetas (los números) de sus jugadas.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {move = {label = {
+			color = red, font = \itshape, font size = 6pt, opacity = 0.6}}}}}
+
+		\begin{goban}[3]
+			\moves*{A1, B2, C3, A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/font = \meta{font commands} (initially \texttt{\string\bfseries})}
+	Fuente de los números.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/font size = \meta{dimension}}
+	Tamaño de los números. Si no se fija, se ajusta según la cantidad de dígitos.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/color = \meta{color}}
+	Color de los números.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/opacity = \meta{float} (initially 1)}
+	Opacidad de los números.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format = \meta{format}}
+	Formato de los números: |arabic|, |alph|, |Alph|, |roman| o |Roman|.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {
+			black = {move = {label = {format = Roman}}},
+			white = {move = {label = {format = alph}}}}}
+
+		\begin{goban}[3]
+			\moves*{A1, B2, C3, A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format/arabic}
+	Números arábigos (1, 2, 3).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format/alph}
+	Letras minúsculas (a, b, c).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format/Alph}
+	Letras mayúsculas (A, B, C).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format/roman}
+	Números romanos en minúscula (i, ii, iii).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format/Roman}
+	Números romanos en mayúscula (I, II, III).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/forget}
+	Los números de sus jugadas se olvidan, como con |/pgfgo/move/label/forget|: |resume| los trae sin número.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark = \meta{mark options}}
+	Controla el estilo de las marcas del jugador. La forma (|triangle|, |custom|, \dots) no es parte del estilo: va en las opciones de cada marca (como en |\marks[w, custom = {?}]{A3}|) o en |/pgfgo/mark|. Dentro de |\pgfgoset{players = ...}| da error.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/line = \meta{mark line options}}
+	Controla la línea de sus marcas.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/line/color = \meta{color}}
+	Controla el color de línea de las marcas.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {white = {mark = {line = {color = red!80!black}}}}}
+
+		\begin{goban}
+			\stones[b] {B1}
+			\stone [b, mark] {C2}
+			\stone [w, mark = circle] {A3}
+			\mark  [w, circle] {A2}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/line/width = \meta{dimension}}
+	Controla el grosor de línea de las marcas.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {white = {mark = {line = {width = 0.3pt}}}}}
+
+		\begin{goban}
+			\stones[b] {B1}
+			\stone [b, mark] {C2}
+			\stone [w, mark = circle] {A3}
+			\mark  [w, circle] {A2}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/line/opacity = \meta{float} (initially 1)}
+	Opacidad de la línea de las marcas.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/fill = \meta{mark fill options} (default true)}
+	Controla el relleno de sus marcas rellenas (|filled square|, |filled circle| y |hatched lines|) y el color |pgfgomarkfill| de las marcas propias (pág.~\pageref{subsec:marcaspropias}).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/fill/true}
+	Las marcas rellenas se rellenan con |fill/color|. Es el valor inicial.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/fill/false}
+	Las marcas rellenas no se rellenan: no se ven.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/fill/color = \meta{color} (initially gray)}
+	Color de relleno de las marcas.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/fill/opacity = \meta{float} (initially 1)}
+	Opacidad del relleno de las marcas.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {
+			fill = {color = red, opacity = 0.5},
+			line = {opacity = 0.3}}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\marks[w, filled square]{A1, B2}
+			\marks[w, triangle]{C3, A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/scale = \meta{float} (initially 1)}
+	Tamaño de sus marcas respecto del de siempre (las formas y el texto).
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {scale = 1.5}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\stones[b]{C1}
+			\marks[w, circle]{A1, B2}
+			\marks[b, circle]{C1}
+			\marks[circle]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label = \meta{mark label options}}
+	Controla las opciones de etiqueta para las marcas que las tengan (|sequence| y |custom|).
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {label = {
+			color = red, font = \itshape, font size = 6pt}}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\marks[w, sequence]{A1, B2, C3}
+			\marks[w, custom = {?}]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/color = \meta{color}}
+	Color de las etiquetas de sus marcas.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/font = \meta{font commands}}
+	Fuente de las etiquetas de sus marcas.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/font size = \meta{dimension}}
+	Tamaño de las etiquetas. Si no se fija, se ajusta según la cantidad de caracteres.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/format = \meta{format}}
+	Formato de los números de |sequence|: |arabic|, |alph|, |Alph|, |roman| o |Roman|.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/format/arabic}
+	Números arábigos (1, 2, 3).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/format/alph}
+	Letras minúsculas (a, b, c).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/format/Alph}
+	Letras mayúsculas (A, B, C).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/format/roman}
+	Números romanos en minúscula (i, ii, iii).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/format/Roman}
+	Números romanos en mayúscula (I, II, III).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence = \meta{mark sequence options} (default from = 1)}
+	Numera sus marcas en orden.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {sequence = {from = 4, format = roman}}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\marks[w]{A1, B2, C3}
+			\marks[sequence]{A3, C1}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/true}
+	Activa la secuencia.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/false}
+	Desactiva la secuencia.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/from = \meta{number}}
+	Activa la secuencia y la empieza en \meta{number}.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/sequence/format = \meta{format}}
+	Activa la secuencia y elige el formato de los números (lo mismo que |label/format|).
+\end{key}
+
+
+\subsection{Perfiles}
+\label{subsec:perfiles}
+
+Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten guardar una configuración de tablero y piedras con un nombre y llamarla cuando se desee.
+
+\begin{command}{\pgfgodefinegoban\opt{\oarg{options}}\marg{goban name}\marg{goban options}}
+	Permite asignar un nombre a un grupo de opciones de goban. Tiene dos posibles opciones no obligatorias.
+	
+	\begin{key}{/pgfgo/profiles/goban/from = \meta{goban name}}
+		Permite definir un goban a partir de una copia de otro.
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[from = gobanA]{gobanB}{...}
+		\end{codeexample}
+		
+		Es posible copiarse a sí mismo para añadir opciones, aunque no es la mejor alternativa.
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[from = gobanB]{gobanB}{...}
+		\end{codeexample}
+	\end{key}
+	
+	\begin{key}{/pgfgo/profiles/goban/append}
+		Permite ampliar las opciones de un goban.
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[append]{gobanB}{...}
+		\end{codeexample}
+		Es equivalente a:
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[from = gobanB]{gobanB}{...}
+		\end{codeexample}
+	\end{key}
+\end{command}
+
+\begin{command}{\pgfgodefineplayer\opt{\oarg{options}}\marg{player name}\marg{player options}}
+	Permite asignar un nombre a un grupo de opciones de piedras. Sus opciones son equivalentes a las de |\pgfgodefinegoban|.
+
+	\begin{key}{/pgfgo/profiles/player/from = \meta{player name}}
+		Define el jugador a partir de una copia de otro.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/player/append}
+		Amplía las opciones de un jugador ya definido. Es lo mismo que |from = |\meta{player name} con su propio nombre.
+	\end{key}
+\end{command}
+
+\begin{key}{/pgfgo/profile = \meta{name}}
+	Aplica el perfil |name|: el goban |name| y los jugadores |name-neutral|, |name-black| y |name-white|. Sirve en |\pgfgoset|, en las opciones de un |goban| y en las de una vista (p.~\pageref{subsec:vistas}).
+
+	Antes de aplicarlo, el tablero y los jugadores vuelven al estilo inicial (el del perfil |default|): así un perfil no hereda lo que no define, y una sombra o una imagen puesta antes se pierde. Lo que no es estilo queda como estaba: el tamaño, |partial|, |scale|, dónde van las coordenadas y cuáles son, |hoshi/at|, las capturas y las notas. Lo que va después del perfil se suma a él.
+
+	\begin{codeexample}[width=3cm]
+		\pgfgoset{stone = {drop shadow}}
+		\begin{goban}[3, profile = default]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+	\end{codeexample}
+
+	Es necesario que existan el goban |name| y los jugadores |name-neutral|, |name-black| y |name-white|. Por ejemplo, |profile = pgfgo| funciona porque existe un goban llamado |pgfgo|, y jugadores llamados |pgfgo-neutral|, |pgfgo-black| y |pgfgo-white|.
+\end{key}
+
+\begin{key}{/pgfgo/goban profile = \meta{goban name}}
+	Aplica solo el goban |goban name|, después de volver el tablero al estilo inicial.
+\end{key}
+
+\begin{key}{/pgfgo/players profile = \meta{name}}
+	Aplica solo los jugadores |name-neutral|, |name-black| y |name-white|, cada uno después de volver al estilo inicial.
+
+	\begin{codeexample}[]
+		\begin{goban}[3, goban profile = pgfgo]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+
+		\begin{goban}[3, players profile = pgfgo]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/black/profile = \meta{player name}}
+	Aplica el jugador |player name| a uno de los jugadores (|neutral|, |black| o |white|), después de volverlo al estilo inicial. Con |all|, el mismo a los tres.
+	\begin{codeexample}[code only]
+		\pgfgoset{goban profile = pgfgo, players = {black = {profile = wain-black}}}
+	\end{codeexample}
+\end{key}
+
+\begin{codeexample}[width=3cm]
+	\pgfgodefinegoban{example}{background = {fill = {color = blue!05}}}
+	\pgfgodefineplayer[from = default-neutral]{example-neutral}
+	{stone = {
+			fill = {color = gray},
+			line = {color = magenta!20!black}}
+	}
+	
+	\pgfgodefineplayer[from = example-neutral]{example-white}
+	{stone = {fill = {color = yellow}}}
+	
+	\pgfgodefineplayer[from = example-neutral]{example-black}
+	{stone = {fill = {color = blue}}}
+	
+	\pgfgoset{profile = example}
+	
+	\begin{goban}[partial = A1:C3]
+		\moves{A1:3}
+		\stones[b]{B1,B3,C2}
+		\stones[w]{C1,C3}
+		\stone{B2}
+	\end{goban}
+\end{codeexample}
+
+\begin{command}{\pgfgodefineprofile\opt{\oarg{options}}\marg{name}\marg{profile options}}
+	Define de una vez un perfil completo para |profile|: el goban |name| y los jugadores |name-neutral|, |name-black| y |name-white|. Es lo mismo que el ejemplo de arriba, en un solo comando.
+
+	\begin{codeexample}[width=3cm]
+		\pgfgodefineprofile[from = default]{ejemplo2}{
+			goban = {background = {fill = {color = blue!05}}},
+			all = {stone = {line = {color = magenta!20!black}}},
+			white = {stone = {fill = {color = yellow}}},
+			black = {stone = {fill = {color = blue}}}}
+
+		\pgfgoset{profile = ejemplo2}
+
+		\begin{goban}[partial = A1:C3]
+			\moves{A1:3}
+			\stones[b]{B1,B3,C2}
+			\stones[w]{C1,C3}
+			\stone{B2}
+		\end{goban}
+	\end{codeexample}
+
+	\begin{key}{/pgfgo/profiles/profile/goban = \meta{goban options}}
+		Las opciones del goban.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/all = \meta{player options}}
+		Opciones de los tres jugadores. Van antes de las de cada uno.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/neutral = \meta{player options}}
+		Opciones del jugador neutral.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/black = \meta{player options}}
+		Opciones del jugador negro.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/white = \meta{player options}}
+		Opciones del jugador blanco.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/from = \meta{profile name}}
+		Opción del comando: cada parte empieza con la del perfil \meta{profile name} (el goban \meta{profile name}, el jugador \meta{profile name}|-neutral|, etc.).
+	\end{key}
+\end{command}

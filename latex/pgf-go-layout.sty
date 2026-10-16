@@ -12,6 +12,13 @@
 \tl_new:N \l__pgfgo_layout_row_sep_tl
 \bool_new:N \l__pgfgo_layout_fit_bool
 \tl_new:N \l_pgfgo_layout_align_tl
+\int_new:N \l__pgfgo_layout_per_page_int
+\int_new:N \l__pgfgo_layout_per_frame_int
+\cs_new_protected:Npn \__pgfgo_layout_set_per:Nn #1#2 {
+	\str_if_eq:nnTF {#2} {false}
+		{\int_zero:N #1}
+		{\int_set:Nn #1 {\int_max:nn {#2} {0}}}
+}
 
 \keys_define:nn {pgfgo / layout} {
 	%auto: 0.
@@ -33,7 +40,17 @@
 	fit							.initial:n	= {false},
 	align						.choices:nn	= {center, left, right} {\tl_set_eq:NN \l_pgfgo_layout_align_tl \l_keys_choice_tl},
 	align						.initial:n	= {center},
+	%CADA n DIAGRAMAS, UNA PAGINA NUEVA (per page) O UNA DIAPOSITIVA NUEVA DE beamer (per frame). 0 O false:
+	%SIN CORTES.
+	per~page				.code:n			= {\__pgfgo_layout_set_per:Nn \l__pgfgo_layout_per_page_int {#1}},
+	per~page				.initial:n	= {0},
+	per~frame				.code:n			= {\__pgfgo_layout_set_per:Nn \l__pgfgo_layout_per_frame_int {#1}},
+	per~frame				.default:n	= {1},
+	per~frame				.initial:n	= {0},
 }
+
+\msg_new:nnn {pgfgo} {layout-per-frame}
+	{The~layout~key~'per~frame'~needs~beamer~and~is~ignored.}
 
 \keys_define:nn {pgfgo} {
 	layout					.code:n			= {\keys_set:nn {pgfgo / layout} {#1}}
@@ -49,6 +66,7 @@
 \dim_new:N \l_pgfgo_layout_cell_dim
 \box_new:N \l__pgfgo_layout_box
 \box_new:N \l__pgfgo_layout_row_box
+\bool_new:N \l__pgfgo_layout_first_bool
 
 \prg_new_conditional:Npnn \pgfgo_layout_if_grid: {p, T, F, TF} {
 	\int_compare:nNnTF {\l_pgfgo_layout_columns_int} > {0} {\prg_return_true:} {\prg_return_false:}
@@ -62,6 +80,14 @@
 \cs_new_protected:Npn \pgfgo_layout_begin:n #1 {
 	\int_compare:nNnT {\g__pgfgo_layout_depth_int} = {0} {
 		\keys_set:nn {pgfgo / layout} {#1}
+		\int_compare:nNnT {\l__pgfgo_layout_per_frame_int} > {0} {
+			\cs_if_exist:cF {beamer@slideinframe} {
+				\msg_warning:nn {pgfgo} {layout-per-frame}
+				\int_zero:N \l__pgfgo_layout_per_frame_int
+			}
+		}
+		\int_gzero:N \g__pgfgo_layout_group_count_int
+		\bool_gset_true:N \g__pgfgo_layout_group_new_bool
 		\pgfgo_layout_if_grid:T {
 			\dim_set:Nn \l_pgfgo_layout_cell_dim {
 				(
@@ -108,8 +134,46 @@
 	}
 }
 
+%LOS GRUPOS DE per page Y per frame: CUANTAS CELDAS LLEVA EL GRUPO, Y SI TODAVIA NO SE DIBUJO NADA DE EL.
+%EN beamer, per frame GANA (LAS PAGINAS SON LAS DIAPOSITIVAS).
+\int_new:N \g__pgfgo_layout_group_count_int
+\bool_new:N \g__pgfgo_layout_group_new_bool
+\cs_new:Npn \__pgfgo_layout_per: {
+	\int_compare:nNnTF {\l__pgfgo_layout_per_frame_int} > {0}
+		{\l__pgfgo_layout_per_frame_int}
+		{\l__pgfgo_layout_per_page_int}
+}
+
+%ANTES DE CADA CELDA: SI EL GRUPO ESTA LLENO, LO TERMINA (LA FILA A MEDIAS SE DIBUJA) Y EMPIEZA OTRO, EN
+%UNA PAGINA NUEVA O EN LA DIAPOSITIVA SIGUIENTE.
+\cs_new_protected:Npn \__pgfgo_layout_group_next: {
+	\int_compare:nNnT {\__pgfgo_layout_per:} > {0} {
+		\int_compare:nNnT {\g__pgfgo_layout_group_count_int} = {\__pgfgo_layout_per:} {
+			\pgfgo_layout_if_grid:T {\__pgfgo_layout_ship:}
+			\int_compare:nNnT {\l__pgfgo_layout_per_frame_int} = {0} {\par \newpage}
+			\bool_gset_true:N \g__pgfgo_layout_first_row_bool
+			\bool_gset_true:N \g__pgfgo_layout_group_new_bool
+			\int_gzero:N \g__pgfgo_layout_group_count_int
+		}
+		\int_gincr:N \g__pgfgo_layout_group_count_int
+	}
+}
+
+%CON per frame, #1 SE VE SOLO EN LA DIAPOSITIVA DE SU GRUPO: LO PRIMERO DE CADA GRUPO PASA A LA
+%DIAPOSITIVA SIGUIENTE (<+>) Y LO DEMAS VA EN LA MISMA (<.>). ASI SE SUMA A LAS OTRAS CAPAS DEL frame.
+\cs_new_protected:Npn \__pgfgo_layout_slide:n #1 {
+	\int_compare:nNnTF {\l__pgfgo_layout_per_frame_int} > {0}
+		{
+			\bool_if:NTF \g__pgfgo_layout_group_new_bool
+				{\bool_gset_false:N \g__pgfgo_layout_group_new_bool \only<+>{#1}}
+				{\only<.>{#1}}
+		}
+		{#1}
+}
+
 %AGREGA LA CELDA #1.
 \cs_new_protected:Npn \pgfgo_layout_add:N #1 {
+	\__pgfgo_layout_group_next:
 	\pgfgo_layout_if_grid:TF
 		{
 			\int_compare:nNnT {\g__pgfgo_layout_count_int} = {\l_pgfgo_layout_columns_int}
@@ -126,13 +190,16 @@
 		}
 		{
 			\mode_leave_vertical:
-			\box_use:N #1
-			\skip_horizontal:n {1em plus 1fil}
+			\__pgfgo_layout_slide:n {
+				\box_use:N #1
+				\skip_horizontal:n {1em plus 1fil}
+			}
 		}
 }
 
 %AGREGA LA CELDA #1 SOLA EN SU FILA, CENTRADA EN EL ANCHO DE LA DISPOSICION.
 \cs_new_protected:Npn \pgfgo_layout_add_alone:N #1 {
+	\__pgfgo_layout_group_next:
 	\pgfgo_layout_if_grid:TF
 		{
 			\__pgfgo_layout_ship:
@@ -145,8 +212,8 @@
 		}
 		{
 			\par
-			\noindent \hbox_to_wd:nn {\linewidth} {\hfil \box_use:N #1 \hfil}
-			\par
+			\__pgfgo_layout_slide:n
+				{\noindent \hbox_to_wd:nn {\linewidth} {\hfil \box_use:N #1 \hfil} \par}
 		}
 }
 
@@ -154,14 +221,18 @@
 %COLUMNAS), SE SUBE PARA QUE TENGA ALTURA Y NO PROFUNDIDAD, Y SE CENTRA EN LA LINEA. ENTRE FILAS, row sep.
 \cs_new_protected:Npn \__pgfgo_layout_ship: {
 	\int_compare:nNnT {\g__pgfgo_layout_count_int} > {0} {
-		\bool_if:NTF \g__pgfgo_layout_first_row_bool
-			{\bool_gset_false:N \g__pgfgo_layout_first_row_bool}
-			{\nointerlineskip \skip_vertical:n {\l__pgfgo_layout_row_sep_tl}}
+		\bool_set_eq:NN \l__pgfgo_layout_first_bool \g__pgfgo_layout_first_row_bool
+		\bool_gset_false:N \g__pgfgo_layout_first_row_bool
 		\hbox_set_to_wd:Nnn \l__pgfgo_layout_row_box {\l__pgfgo_layout_width_tl}
 			{\hbox_unpack:N \g__pgfgo_layout_row_box \hfil}
 		\hbox_set:Nn \l__pgfgo_layout_row_box
 			{\box_move_up:nn {\box_dp:N \l__pgfgo_layout_row_box} {\box_use:N \l__pgfgo_layout_row_box}}
-		\hbox_to_wd:nn {\linewidth} {\hfil \box_use_drop:N \l__pgfgo_layout_row_box \hfil}
+		\__pgfgo_layout_slide:n {
+			\bool_if:NF \l__pgfgo_layout_first_bool
+				{\nointerlineskip \skip_vertical:n {\l__pgfgo_layout_row_sep_tl}}
+			\hbox_to_wd:nn {\linewidth} {\hfil \box_use:N \l__pgfgo_layout_row_box \hfil}
+		}
+		\box_clear:N \l__pgfgo_layout_row_box
 		\box_gclear:N \g__pgfgo_layout_row_box
 		\int_gzero:N \g__pgfgo_layout_count_int
 	}

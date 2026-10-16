@@ -39,6 +39,15 @@
 \end{goban}
 \pgfgoset{prisoner = {}}
 
+\case{Prisoner style of white only (red line): white stone (B2) and black prisoner (C2) unchanged, white prisoner (D2) red}
+\pgfgoset{players = {white = {stone = {prisoner = {line = {color = red}}}}}}
+\begin{goban}[5]
+	\stones[w]{B2}
+	\prisoner[b]{C2}
+	\prisoner[w]{D2}
+\end{goban}
+\pgfgoset{players = {white = {stone = {prisoner = {}}}}}
+
 \case{use i = false: J is the 9th column}
 \begin{goban}[9, use i = false, label = {at = south}]\stone[b]{J1}\stones[w]{J2}\end{goban}
 

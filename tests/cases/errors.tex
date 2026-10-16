@@ -1,6 +1,6 @@
 % engines: lualatex
 % expect-warnings: 0
-% expect-errors: 8
+% expect-errors: 12
 % render: no
 \documentclass{article}
 \usepackage{../../latex/pgf-go}
@@ -17,5 +17,9 @@
 \sgfanimation{game.sgf}                          % animate is not loaded
 \begin{goban}[5, resume = nobody]\end{goban}    % no goban with that name
 \begin{goban}[5, resume]\end{goban}             % resume needs a name
+\pgfgoset{players = {white = {mark = {custom = ?}}}}  % a mark shape is not a player style
+\pgfgoset{players = {black = {mark = {triangle}}}}    % the same with a named shape
+\begin{goban}[5]\moves{A1 R B2}\end{goban}  % a rectangle has no order
+\begin{goban}[5]\moves{A1; B1}\end{goban}   % neither has a subtraction
 
 \end{document}

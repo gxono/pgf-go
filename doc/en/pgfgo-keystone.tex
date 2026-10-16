@@ -1207,7 +1207,18 @@ To avoid writing the whole path, there are four commands:
 \end{stylekey}
 
 \begin{key}{/pgfgo/players/white/stone/prisoner = \meta{stone options}}
-	Draws the stone as a prisoner: it lowers the fill opacity to 0.5 and applies the \meta{stone options}. It is what |\prisoner| and |\prisoners| use.
+	The style of the player's prisoners: those of |\prisoner|, |\prisoners| and the \emph{key} |prisoner| of |\stone| and |\stones|, and the stones captured with |captures = fade|. It is applied after the fill opacity 0.5 and |/pgfgo/prisoner|, and before the options of the stone. The other stones of the player do not change.
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = B2:D4}}
+		\pgfgoset{players = {white = {stone = {prisoner = {line = {color = red}}}}}}
+
+		\begin{goban}
+			\stones[w]{B3}
+			\prisoner[b]{C3}
+			\prisoner[w]{D3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move = \meta{move options}}
@@ -1282,7 +1293,7 @@ To avoid writing the whole path, there are four commands:
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark = \meta{mark options}}
-	Controls the options for markings associated with the corresponding player.
+	Controls the style of the player's marks. The shape (|triangle|, |custom|, \dots) is not part of the style: it goes in the options of each mark (as in |\marks[w, custom = {?}]{A3}|) or in |/pgfgo/mark|. Inside |\pgfgoset{players = ...}| it raises an error.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/line = \meta{mark line options}}
@@ -1464,8 +1475,4 @@ To avoid writing the whole path, there are four commands:
 
 \begin{key}{/pgfgo/players/white/mark/sequence/format = \meta{format}}
 	Turns the sequence on and chooses the number format (the same as |label/format|).
-\end{key}
-
-\begin{key}{/pgfgo/players/white/mark/custom = \meta{token list}}
-	Custom mark with text or symbols, like |/pgfgo/mark/custom|.
 \end{key}

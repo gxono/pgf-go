@@ -52,6 +52,8 @@
 	#1 {tl}		{l_pgfgo_players_}	{stone_image_rotate_tl}
 	#1 {tl}		{l_pgfgo_players_}	{stone_image_opacity_tl}
 
+	#1 {tl}		{l_pgfgo_players_}	{stone_prisoner_tl}
+
 	#1 {tl}		{l_pgfgo_players_}	{move_label_font_tl}
 	#1 {tl}		{l_pgfgo_players_}	{move_label_font_size_tl}
 	#1 {tl}		{l_pgfgo_players_}	{move_label_color_tl}
@@ -116,6 +118,8 @@
 \tl_new:N		\l_pgfgo_players_stone_image_width_tl
 \tl_new:N		\l_pgfgo_players_stone_image_rotate_tl
 \tl_new:N		\l_pgfgo_players_stone_image_opacity_tl
+
+\tl_new:N		\l_pgfgo_players_stone_prisoner_tl
 
 \tl_new:N 	\l_pgfgo_players_move_label_font_tl
 \tl_new:N 	\l_pgfgo_players_move_label_font_size_tl
@@ -196,6 +200,19 @@
 
 
 
+%LAS OPCIONES DE UNA MARCA QUE NO SON DEL ESTILO DEL JUGADOR (LA FORMA, custom, EL JUGADOR) SOLO VALEN
+%MIENTRAS SE DIBUJA UNA MARCA (\l_pgfgo_players_mark_options_bool, VER pgf-go-marks.sty): EN
+%\pgfgoset{players = ...} CAMBIARIAN LA MARCA DE LOS TRES JUGADORES. #1: EL JUGADOR. #2: LA CLAVE.
+\bool_new:N \l_pgfgo_players_mark_options_bool
+\msg_new:nnn {pgfgo} {player-mark-key}
+	{'#2'~is~not~a~key~of~/pgfgo/players/#1/mark.~Mark~shapes~go~in~the~options~of~a~mark~or~in~/pgfgo/mark.}
+\cs_new_protected:Npn \__pgfgo_players_mark_other:nn #1#2 {
+	\bool_if:NTF \l_pgfgo_players_mark_options_bool
+		{\keys_set:nn {pgfgo / mark} {#2}}
+		{\msg_error:nnnn {pgfgo} {player-mark-key} {#1} {#2}}
+}
+\cs_generate_variant:Nn \__pgfgo_players_mark_other:nn {ne}
+
 \def\pgfgonewplayers#1{\clist_map_function:nN {#1} \__pgfgo_players_new:n}
 
 %LAS CLAVES Y VARIABLES DEL JUGADOR #1 (tests/check_docs.py LEE players/#1 COMO players/<player>).
@@ -222,13 +239,13 @@
 	%PIEDRA
 	\dim_new:c {l_pgfgo_players_ #1 _stone_radius_dim}
 	\fp_new:c {l_pgfgo_players_ #1 _stone_scale_fp}
+	%EL ESTILO DE SUS PRISIONEROS (VER \__pgfgo_stone_prisoner_style:n EN pgf-go-stones.sty).
+	\tl_new:c {l_pgfgo_players_ #1 _stone_prisoner_tl}
 
 	\keys_define:nn { pgfgo / players / #1 / stone } {
-		prisoner						.code:n = {
-			\keys_set:nn { pgfgo / players / #1 / stone / fill } {opacity = 0.5}
-			\keys_set:nn { pgfgo / players / #1 / stone } {##1}
-		},
-		line 								.code:n = {\keys_set:nn { pgfgo / players / #1 / stone / line } {##1}},
+		prisoner						.tl_set:c = {l_pgfgo_players_ #1 _stone_prisoner_tl},
+		prisoner						.groups:n = { external },
+		line								.code:n = {\keys_set:nn { pgfgo / players / #1 / stone / line } {##1}},
 		line								.default:n = {true},
 		fill 								.code:n = {\keys_set:nn { pgfgo / players / #1 / stone / fill } {##1}},
 		fill								.default:n = {true},
@@ -419,9 +436,11 @@
 		%EL TAMANO DE LA MARCA, RESPECTO DEL DE SIEMPRE.
 		scale			.code:n = {\fp_set:cn {l_pgfgo_players_ #1 _mark_scale_fp} {##1}},
 		scale			.initial:n = {1},
-		custom		.code:n = {\keys_set:nn { pgfgo } {mark = { custom = { ##1 }}}},
-		%EL RESTO (FORMAS, JUGADOR, ...) VA A /pgfgo/mark; UNA CLAVE MAL ESCRITA DA ERROR.
-		unknown		.code:n = {\keys_set:ne {pgfgo / mark}{\l_keys_key_str}}
+		%EL RESTO (FORMAS, custom, JUGADOR, ...) VA A /pgfgo/mark.
+		unknown		.code:n = {
+			\__pgfgo_players_mark_other:ne {#1}
+				{\l_keys_key_str \tl_if_empty:nF {##1} {= {\exp_not:n {##1}}}}
+		}
 	}
 
 

@@ -88,6 +88,11 @@ All notable changes to `pgf-go` are listed here.
   environment `pgfgolayout` puts in one grid the `goban`s, `\sgfdiagrams` and
   `\sgfproblem` inside it. Without `columns` (`columns = auto`), the diagrams
   stay in the paragraph as before.
+- `layout/per page = <n>` starts a new page every `<n>` diagrams, and
+  `layout/per frame = <n>` (alone, 1) puts every `<n>` diagrams on the next
+  slide of a `beamer` frame, with `\only<+>`. Both work with
+  `\sgfdiagrams`, `\sgfproblem` and `pgfgolayout`, in the grid or in the
+  paragraph.
 - `\sgfdiagrams`: `from` draws the diagrams from a move on, with the same
   numbers as the whole series.
 - `\sgfproblem`: `statement = alone` puts the statement alone in its row,
@@ -255,6 +260,24 @@ All notable changes to `pgf-go` are listed here.
   `RE` or territory. Use `result = false` to leave it out.
 - A wrong option in `\marks` (or in `\territory` with `draw = marks`) gives
   one error for the whole command, instead of one error for each point.
+- `\moves` reads its list as a sequence, not as a set: the moves are
+  played in the order in which they are written, and a repeated intersection
+  is played again (a ko can be retaken in one `\moves`). A path goes from
+  its first point to the second (`B1 -| D3` is B1, C1, D1, D2, D3), and a
+  part of a row or a column goes in the order in which it is written
+  (`C:A 4` is C4, B4, A4). Rectangles, `*`, brackets and `;` give an error
+  in `\moves`, because they have no clear order.
+- `players/<player>/stone/prisoner` is the style of the prisoners of that
+  player, and only of them. Before, setting it in `\pgfgoset` turned every
+  stone of the player into a prisoner. The style of a prisoner is: fill
+  opacity 0.5, then `/pgfgo/prisoner`, then the player's style, then the
+  value of `prisoner` in the stone. `\stones[prisoner]` now also uses
+  `/pgfgo/prisoner`, like `\prisoners`.
+- `players/<player>/mark/custom` was removed: it changed the mark of the
+  three players. The shape of a mark (`custom`, `triangle`, ...) is not part
+  of the style of a player: it goes in the options of each mark
+  (`\marks[w, custom = ?]`) or in `/pgfgo/mark`; in
+  `\pgfgoset{players = ...}` it gives an error.
 - The package no longer defines the colors `tablero2`, `tablero3` and
   `tablero4`, which no profile used. Define them in the document if needed.
 
@@ -272,6 +295,9 @@ All notable changes to `pgf-go` are listed here.
 
 ### Tests
 
+- New cases for `\moves` as a sequence (`moves`, and a ko in one `\moves`
+  in `captures`), the prisoner style of one player (`stones`), `custom`
+  for one player (`marks`) and their errors (`errors`).
 - New cases for views in the text (`views`, and `views-captures` with
   captures, SGF and the score); `kernel-checks` tests named memories.
 - New cases for the rules of the keys and the new keys (`key-rules`) and for

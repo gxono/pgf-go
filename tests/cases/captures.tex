@@ -29,6 +29,12 @@
 	\moves*[w]{C3}\moves*{D3}\moves*[from = 3, w]{C3}
 \end{goban}
 
+\case{The same ko in one \textbackslash moves: the repeated C3 is played twice}
+\begin{goban}[5, captures]
+	\stones[b]{B3,C2,C4}\stones[w]{D2,D4,E3}
+	\moves*[w]{C3, D3, C3}
+\end{goban}
+
 \case{A move outside a partial board still captures (A1-C3 visible; D1 captures C1)}
 \begin{goban}[5, captures, partial = A1:C3, label = {at = all}]
 	\stones[w]{C1}\stones[b]{B1,C2}\moves*{D1}

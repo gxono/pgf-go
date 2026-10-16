@@ -284,7 +284,9 @@
 \bool_new:N \l__pgfgo_mark_ready_bool
 \cs_new_protected:Npn\__pgfgo_mark_setup:n #1 {
 	\keys_set_groups:nnn{ pgfgo / mark }{ player-id }{#1}
+	\bool_set_true:N \l_pgfgo_players_mark_options_bool
 	\keys_set_exclude_groups:enn{ pgfgo / players / \__pgfgo_players_current: / mark } { external } {#1}
+	\bool_set_false:N \l_pgfgo_players_mark_options_bool
 	\pgfgo_get_variables_from_current_player:
 }
 

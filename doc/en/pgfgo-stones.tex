@@ -370,7 +370,7 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 
 \begin{key}{/pgfgo/stone/prisoner=\meta{prisoner options} (default fill opacity = 0.5)}
 	
-	Characterizes a stone as a prisoner, typically with reduced opacity (0.5 by default) to indicate it has been captured. Other options can be added to customize its appearance.
+	Characterizes a stone as a prisoner, typically with reduced opacity (0.5 by default) to indicate it has been captured. Other options can be added to customize its appearance: they are applied after the prisoner style (|/pgfgo/prisoner| and |/pgfgo/players/white/stone/prisoner|).
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -398,7 +398,13 @@ Move commands allow representing sequences of plays, automatically alternating b
 
 \begin{command}{\moves\opt{*}\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
 	
-	Similar to |\move|, but applies the sequence to multiple intersections in a single line.
+	Similar to |\move|, but with several moves. The moves are a sequence: they are played in the order in which they are written, and an intersection can be repeated (for example, to retake a ko with |captures|). Each item of the list is an intersection (|C3|), a path (|A1 -- A3 -- C3|: each stretch goes from its first point to the second) or a part of a row or a column, in the order in which it is written (|C:A 4| is |C4 -- A4|; |C 5:1| is |C5 -- C1|). The other forms of |\stones| (rectangles, |*|, brackets, |;|) have no clear order and raise an error.
+
+	\begin{codeexample}[]
+		\begin{goban}[5]
+			\moves*{B1 -| D3, C:A 4, E5}
+		\end{goban}
+	\end{codeexample}
 \end{command}
 
 Within the same |goban|, numbering and turn carry over from one |\moves| to the next. Each new |goban| starts at move 1 with Black; to continue a game in another diagram, use |from| and |b| or |w|, or |resume|.
@@ -1351,6 +1357,24 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 	Scales each board to fill the width of its column; it replaces the |scale| of the board. The lines keep their width. In |\sgfdiagrams| and |\sgfproblem|, all the boards use the scale that fills the column with the first one, so the stones have the same size in all of them. Only with |columns|.
 \end{key}
 
+\begin{key}{/pgfgo/layout/per page = \meta{number} or |false| (initially 0)}
+	Every \meta{number} diagrams, starts a new page (with |\newpage|): with |per page = 1|, one diagram per page. In the grid, a half-filled row is drawn before the break; \meta{number} should be a multiple of |columns|. With |0| or |false|, there are no breaks. In |\sgfproblem| with |statement = alone|, the statement counts as one diagram.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 50, layout = {columns = 2, fit, per page = 4}]{game.sgf}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/layout/per frame = \meta{number} or |false| (default 1, initially 0)}
+	Inside a |beamer| |frame|, every \meta{number} diagrams go to the next slide: with |per frame| alone, one diagram per slide, each with its caption. The diagrams use |\only<+>|, so they add to the other overlays of the |frame|: after a |\pause|, the first diagram goes on the next slide. Outside |beamer|, the package warns and the key is not used. In |beamer|, if there is also |per page|, |per frame| wins.
+
+	\begin{codeexample}[code only]
+		\begin{frame}{The game}
+			\sgfdiagrams[step = 50, goban = {scale = 0.6}, layout = {per frame}]{game.sgf}
+		\end{frame}
+	\end{codeexample}
+\end{key}
+
 \begin{key}{/pgfgo/layout/align = \meta{center, left or right} (initially center)}
 	Where each diagram goes within its column, with its caption and its notes. The comments are always aligned to the left.
 
@@ -1399,7 +1423,7 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \begin{key}{/pgfgo/prisoner=\meta{stone options} (default fill opacity = 0.5)}
 	
-	Defines the characteristics of prisoner stones, with a default fill opacity of 0.5 to indicate their status. Other |\stone| options, such as color or size, can be applied.
+	Defines the characteristics of prisoner stones, with a default fill opacity of 0.5 to indicate their status. Other |\stone| options, such as color or size, can be applied. It applies to the prisoners of the three players; the style of each one (|/pgfgo/players/white/stone/prisoner|) comes after it.
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}

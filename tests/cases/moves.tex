@@ -29,4 +29,13 @@
 \case{\textbackslash move is an alias of \textbackslash moves}
 \begin{goban}[5]\move*{C3}\move*{D3}\end{goban}
 
+\case{A sequence keeps order and repeats: 1 at C3, 2 at D3, 3 at C3 again (drawn over 1)}
+\begin{goban}[5]\moves*{C3, D3, C3}\end{goban}
+
+\case{Paths go from the first point to the second: B1 -| D3 is 1-5 (B1 C1 D1 D2 D3), C:A 4 is 6-8 (C4 B4 A4), E 5:3 is 9-11}
+\begin{goban}[5]\moves*{B1 -| D3, C:A 4, E 5:3}\end{goban}
+
+\case{Gamma and chains: A1 |- B3 -- D3 is 1-6 (A1 A2 A3 B3 C3 D3)}
+\begin{goban}[5]\moves*{A1 |- B3 -- D3}\end{goban}
+
 \end{document}

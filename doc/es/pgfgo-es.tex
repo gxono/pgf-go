@@ -18,6 +18,7 @@
 %LOS KANJI DEL TEXTO (VER label/style).
 \font\pgfgokanji = {file:ipaexm.ttf} at 9pt
 \def\pgfgoname{\textsc{pgfgo}}
+\def\karu{K\={a}ru}
 
 \usepackage[spanish]{babel}
 
@@ -68,13 +69,24 @@
 
 	\clearpage 
 
+	\part{Introducción}
 	\input{pgfgo-motivacion}
+
+	\part{Tutoriales}\label{part:tutoriales}
 	\input{pgfgo-ejemplosiniciales}
-	\input{pgfgo-loelemental}
+
+	\part{Referencia}\label{part:referencia}
+	\input{pgfgo-configuracion}
+	\input{pgfgo-coordenadas}
 	\input{pgfgo-eltablero}
 	\input{pgfgo-laspiedras}
 	\input{pgfgo-lasmarcas}
-	\input{pgfgo-ejemplos}
+	\input{pgfgo-eljuego}
+	\input{pgfgo-memoria}
+	\input{pgfgo-sgf}
+	\input{pgfgo-jugadores}
 	\input{pgfgo-catalogo}
-	\input{pgfgo-definiciones}
+
+	\appendix
+	\input{pgfgo-novedades}
 \end{document}

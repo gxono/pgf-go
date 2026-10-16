@@ -1,0 +1,176 @@
+\section{Recordar tableros y vistas}
+\label{sec:memoria}
+
+	\subsection{Recordar un tablero}
+	\label{subsec:recordar}
+	Un |goban| con nombre guarda todo lo que dibuja (piedras, jugadas, marcas, flechas, líneas y territorio, también lo que viene de |\sgf|), junto con sus opciones. Otro |goban| puede empezar con ese tablero tal como quedó, con |resume|, y |\pgfgoview| lo muestra en el texto (p.~\pageref{subsec:vistas}).
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = B2:D4}}
+
+		\begin{goban}[name = tablero1]
+			\stones[b]{C2,D3}
+			\moves*[w]{B4}
+		\end{goban}
+
+		\begin{goban}[resume = tablero1]
+			\moves*{C3} % Sigue con la 2 (negras).
+		\end{goban}
+
+		\begin{goban}[resume = {tablero1, numbers}]
+			\moves*{C3}
+		\end{goban}
+	\end{codeexample}
+
+	\begin{key}{/pgfgo/goban/name=\meta{name}}
+		Guarda con ese nombre todo lo que se dibuje en este |goban|, junto con sus opciones. El nombre es libre (por ejemplo, |gob:tablero1|). Otro |goban| con el mismo nombre lo reemplaza.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/resume=\meta{name, options}}
+		Empieza el |goban| con el tablero que tiene ese nombre, como quedó al terminar (con las capturas resueltas: si ese |goban| usaba |captures|, este también). La numeración y el turno siguen desde ahí. Por defecto trae solo las piedras, sin números, marcas ni territorio; las opciones piden el resto. Las opciones del tablero (tamaño, |partial|, coordenadas) se dan en cada |goban|. Si no hay ningún |goban| con ese nombre, se produce un error.
+
+		Con |name| y |resume| en el mismo |goban| (en cualquier orden), el nuevo nombre guarda lo que trajo, tal como se dibujó, más lo suyo, y el tablero de |resume| no cambia: así se arman variantes. Con el mismo nombre en las dos, el |goban| sigue agregando a ese tablero.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = B2:D4}}
+
+			\begin{goban}[name = base]
+				\stones[b]{C2,D3}
+				\stones[w]{C3}
+			\end{goban}
+
+			\begin{goban}[name = variante1, resume = base]
+				\moves*[w]{D2}
+			\end{goban}
+
+			\begin{goban}[name = variante2, resume = base]
+				\moves*[w]{B3}
+			\end{goban}
+
+			\begin{goban}[resume = {variante1, numbers}]
+				\moves*{B4}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/resume/numbers=\meta{boolean} (default true, initially false)}
+		Trae también los números de las jugadas.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/resume/marks=\meta{boolean} (default true, initially false)}
+		Trae también las marcas, las flechas y las líneas.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/resume/territory=\meta{boolean} (default true, initially false)}
+		Trae también el territorio.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = B2:D4}}
+
+			\begin{goban}[name = guardado]
+				\stones[b]{C2:4}
+				\moves*[w]{D3}
+				\marks[triangle]{B3}
+				\territory[b]{B2, B4}
+			\end{goban}
+
+			\begin{goban}[resume = guardado]
+			\end{goban}
+
+			\begin{goban}[resume = {guardado, numbers, marks, territory}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	Para que |resume| no traiga una piedra, una jugada, una marca, una flecha o un territorio, se dibuja con la opción |forget| (|\stone[forget]{C3}|, |\marks[forget, circle]{A1}|, \ldots); con |label = forget|, una jugada viene sin su número aunque se pida |numbers|. Lo olvidado queda guardado: |\pgfgoview| lo muestra con |forgotten|.
+
+	\subsection{Vistas en el texto}
+	\label{subsec:vistas}
+	Un |goban| con nombre guarda todo lo que dibuja. Después, |\pgfgoview| muestra una parte de ese tablero, tal como quedó al terminar (con las capturas resueltas), en medio de un párrafo: una sola piedra o un recuadro.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, name = tablero1, captures]
+			\stones[b]{B3, C2, C4}
+			\stones[w]{D2, D4, E3}
+			\moves*[w]{C3, D3}
+		\end{goban}
+
+		La negra en D3 \pgfgoview{tablero1}{D3} captura la blanca de C3 \pgfgoview{tablero1}{C3}.
+		Así quedó el ko: \pgfgoview{tablero1}{B2:E4}.
+	\end{codeexample}
+
+	\begin{command}{\pgfgoview\opt{\oarg{options}}\marg{name}\marg{part}}
+		Dibuja la intersección o el rectángulo (escrito como en |partial|) del |goban| con ese nombre, como quedó al terminar. Por defecto se ve todo lo que dibujó el |goban| en esa parte (piedras, números de las jugadas, marcas, flechas y territorio) con el fondo y las coordenadas de ese |goban|, al tamaño del texto y centrado a la altura de las minúsculas. Las opciones son las de |/pgfgo/view|, que quitan las marcas, los números o el territorio, o agregan lo olvidado, y, además, cualquier opción de |goban|, que se aplica después de las del |goban| con nombre: así se quitan el fondo, las coordenadas, la cuadrícula o los puntos de estrella, o se cambia el estilo de las piedras, las marcas y el tablero (|players|, |stone|, |mark|, |grid|, |background|, \ldots).
+
+		La vista usa el estilo que tenía ese |goban| al dibujarse (el perfil, lo fijado con |\pgfgoset| y sus opciones), aunque después cambie. Encima van el perfil de las vistas (|view/profile|), |\pgfgoset{view = ...}| y las opciones de la vista.
+
+		Una vista no cambia nada de lo que guarda el último |goban|: |\pgfgoscore|, |\pgfgoprisoners| y |\pgfgomovenotes| siguen hablando de él, y lo que guarda cada |goban| con nombre queda igual.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, name = tablero2]
+				\stones[b]{B2, C3}
+				\moves*[w]{C2, D3}
+				\marks[b, triangle]{C3}
+			\end{goban}
+
+			\pgfgoview{tablero2}{B2:D3}
+			\pgfgoview[marks = false, numbers = false]{tablero2}{B2:D3}
+			\pgfgoview[label = false, grid = false]{tablero2}{B2:D3}
+			\pgfgoview[background = false]{tablero2}{B2:D3}
+		\end{codeexample}
+	\end{command}
+
+	\begin{key}{/pgfgo/view=\meta{options}}
+		Opciones para todas las vistas, con |\pgfgoset|. Las opciones de |goban| que no son de |/pgfgo/view| se agregan a la que traen las vistas: |scale = 0.8|.
+
+		\begin{codeexample}[]
+			\pgfgoset{view = {background = false, scale = 1}}
+			Sin fondo y más grande: \pgfgoview{tablero2}{C3}.
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/view/marks=\meta{boolean} (default true, initially true)}
+		Con |false|, no dibuja las marcas, las flechas ni las líneas.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/numbers=\meta{boolean} (default true, initially true)}
+		Con |false|, no dibuja los números de las jugadas.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/territory=\meta{boolean} (default true, initially true)}
+		Con |false|, no dibuja el territorio.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/forgotten=\meta{boolean} (default true, initially false)}
+		Dibuja también lo que se dibujó con |forget| (p.~\pageref{subsec:recordar}).
+
+		\begin{codeexample}[]
+			\begin{goban}[5, name = tablero3]
+				\stones[b]{B2, C3}
+				\stone[w, forget]{D3}
+			\end{goban}
+
+			\pgfgoview{tablero3}{B2:D3}
+			\pgfgoview[forgotten]{tablero3}{B2:D3}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/view/raise=\meta{dimension} (initially 0.5ex)}
+		A qué altura sobre la línea de base del texto queda el centro de la vista.
+
+		\begin{codeexample}[]
+			Texto \pgfgoview[raise = 0pt]{tablero2}{C3}
+			texto \pgfgoview{tablero2}{C3}
+			texto \pgfgoview[raise = 1.5ex]{tablero2}{C3}.
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/view/profile=\meta{name} (initially false)}
+		Un perfil para las vistas (p.~\pageref{subsec:perfiles}), por ejemplo |simple|. Va después del estilo del |goban| con nombre y antes de las demás opciones de la vista. Con |false|, la vista usa el estilo del |goban| tal cual.
+
+		\begin{codeexample}[]
+			\pgfgoview{tablero1}{B2:E4}
+			\pgfgoview[profile = simple]{tablero1}{B2:E4}
+			\pgfgoview[profile = wain]{tablero1}{B2:E4}
+		\end{codeexample}
+	\end{key}

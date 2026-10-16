@@ -1,0 +1,32 @@
+\section{Novedades}
+\label{sec:novedades}
+
+
+\begin{itemize}
+	\item \pgfgoversion:
+		\begin{itemize}
+			\item El cálculo (coordenadas, numeración de jugadas, memoria, etc.) se ha separado del dibujo. Lo hace un \emph{kernel}, que se elige con la opción |kernel| del paquete (pág.~\pageref{subsec:kernel}). Además del kernel escrito en L3, se ha añadido un kernel en Lua, que es el que se usa por defecto con Lua\LaTeX.
+			\item Con el kernel en Lua se han añadido las capturas (|captures|, pág.~\pageref{subsec:capturas}) y la lectura de partidas en SGF (|\sgf|, pág.~\pageref{subsec:sgf}). Con el paquete |animate|, |\sgfanimation| permite recorrer una partida con botones.
+			\item Se han añadido las notas «N en M» para las jugadas numeradas en puntos ya jugados (|notes| y |\pgfgomovenotes|, pág.~\pageref{subsec:notas}).
+			\item SGF: variantes (|variation|), marcas del archivo (|marks|), los datos de la partida (|\sgfinfo|), la numeración de |MN| y |restart|, y el tamaño del tablero tomado del archivo (|sgf size|).
+			\item SGF: colecciones de partidas (|game|), la vista (|VW|, |sgf view|), las figuras (|FG|) en |\sgfdiagrams|, las variantes como letras (|variations|), |PL| y los archivos en Latin-1.
+			\item SGF: el nombre de los nodos y las anotaciones (|TE|, |BM|, |GB|, etc.) se escriben con los comentarios. |\sgfcomment| escribe el comentario de una jugada, y |\sgfdiagrams| puede escribir los comentarios debajo de cada diagrama (|comments|).
+			\item Se han añadido flechas y líneas (|\arrow| y |\line|, pág.~\pageref{subsec:flechas}) y la marca |dim|. |\sgf| dibuja además |AR|, |LN|, |SL| y |DD|.
+			\item El tablero dibuja los puntos de estrella (|hoshi|, pág.~\pageref{subsec:hoshi}).
+			\item Se han añadido |\territory|, que marca el territorio (con un polígono, o solo con |auto| y el kernel en Lua), y |\pgfgoscore|, que cuenta los puntos.
+			\item |\sgfanimation| arma la animación por capas (|layers|): cada piedra se dibuja una sola vez, y el PDF de una partida larga ocupa mucho menos.
+			\item Con |captured marks = remove|, las marcas sobre una piedra capturada se van con ella.
+			\item Se han añadido |\pgfgoprisoners|, que cuenta los prisioneros de cada jugador, y |\sgfdiagrams|, que dibuja una partida como serie de diagramas, como en los libros.
+			\item Se ha añadido |\sgfproblem|, que dibuja un problema (tsumego): el enunciado y un diagrama por cada variante de la solución, con sus comentarios.
+			\item SGF: la numeración que pide |PM| (|numbers| y |restart = auto|), y la vista (|VW|) cuando cambia durante la partida (|sgf view move|; |\sgfdiagrams| y |\sgfanimation| la usan solos). |\sgfdiagrams| escribe el resultado y el puntaje debajo del último diagrama (|result|).
+			\item Las coordenadas del borde pueden ser letras, números o kanji en cada eje, contados desde cualquier lado (|columns|, |rows|, |style = japanese|, etc.).
+			\item SGF: se leen archivos en GBK, Big5, Shift\_JIS, EUC-JP y EUC-KR (|CA| o |sgf charset|).
+		\end{itemize}
+	\item 0.2025.03.13: Corrección de errores. Cada |goban| empieza en la jugada 1 con negras, |\mark| y |\marks| solo existen dentro de |goban|, y lo que cae fuera de un tablero parcial ya no se dibuja. La lista completa está en el archivo |CHANGELOG.md|.
+	\item 0.2025.03.10:
+		\begin{itemize}
+			\item Se han a\~nadido las \emph{keys} |inner| y |outer| para el \emph{rounded corner} del tablero.
+			\item Se han a\~nadido tres nuevos operadores de coordenadas: |*| para todas las intersecciones, |L| para toda la columna de coordenadas L y |N| para toda la fila de coordenadas N.
+		\end{itemize}
+	\item 0.2025.03.07: Primer lanzamiento.
+\end{itemize}
