@@ -376,11 +376,8 @@
 %DIBUJA EL TERRITORIO #2 DE #1 CON EL ESTILO ACTUAL, Y LO GUARDA CON remember territory.
 \cs_new_protected:Npn \__pgfgo_territory_draw:nn #1#2 {
 	\clist_if_empty:nF {#2} {
-		\bool_if:NT \l_pgfgo_goban_remember_territory_bool {
-			\pgfgo_kernel_remember_push:n {
-				\exp_not:N \pgfgo_territory_parsed:nnn {#1} {\l__pgfgo_territory_draw_tl} {\exp_not:n {#2}}
-			}
-		}
+		\pgfgo_remember:Nnn \l_pgfgo_goban_remember_territory_bool {territory}
+			{\exp_not:N \pgfgo_territory_parsed:nnn {#1} {\l__pgfgo_territory_draw_tl} {\exp_not:n {#2}}}
 		\pgfgo_territory_parsed:nVn {#1} \l__pgfgo_territory_draw_tl {#2}
 	}
 }

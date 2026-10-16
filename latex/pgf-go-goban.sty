@@ -34,11 +34,11 @@
 	\bool_new:N\l_pgfgo_goban_labels_pos_south_bool
 	\bool_new:N\l_pgfgo_goban_labels_pos_west_bool
 	\tl_new:N \l_pgfgo_goban_label_font_tl
-	%ESTILO DE LAS COORDENADAS: letters, numbers O kanji EN CADA EJE, Y DESDE DONDE SE CUENTAN.
+	%ESTILO DE LAS COORDENADAS: letters, numbers O kanji EN CADA EJE, Y EN QUE SENTIDO SE CUENTAN.
 	\tl_new:N \l_pgfgo_goban_label_columns_tl
 	\tl_new:N \l_pgfgo_goban_label_rows_tl
-	\tl_new:N \l_pgfgo_goban_label_columns_from_tl
-	\tl_new:N \l_pgfgo_goban_label_rows_from_tl
+	\tl_new:N \l_pgfgo_goban_label_columns_direction_tl
+	\tl_new:N \l_pgfgo_goban_label_rows_direction_tl
 
 	%LAYERS
 	\pgfdeclarelayer{pgfgo_layer_goban_border}
@@ -50,31 +50,45 @@
 	\pgfdeclarelayer{pgfgo_layer_stone_mark}
 	\pgfdeclarelayer{pgfgo_layer_mark}
 
+	%EN UNA VISTA (\pgfgoview) LAS CLAVES DE LA MEMORIA NO HACEN NADA: LAS OPCIONES DEL goban CON NOMBRE SE
+	%VUELVEN A USAR, Y NO TIENEN QUE BORRAR NI CAMBIAR NINGUNA MEMORIA.
+	\tl_new:N \l_pgfgo_goban_view_tl
+	\cs_new_protected:Npn \__pgfgo_goban_memory_key:n #1 {\tl_if_empty:NT \l_pgfgo_goban_view_tl {#1}}
+
 	\keys_define:nn {pgfgo / goban}{
 		%EMPIEZA UNA MEMORIA NUEVA Y RECUERDA TODO LO QUE SE DIBUJE.
 		new~remember					.code:n			= {
-																			\pgfgo_kernel_remember_clear:
-																			\bool_set_true:N\l_pgfgo_goban_remember_new_bool
-																			\bool_set_true:N\l_pgfgo_goban_remember_add_bool
-																			\pgfgo_goban_remember_all:
+																			\__pgfgo_goban_memory_key:n {
+																				\pgfgo_kernel_remember_clear:n {}
+																				\bool_set_true:N\l_pgfgo_goban_remember_new_bool
+																				\bool_set_true:N\l_pgfgo_goban_remember_add_bool
+																				\pgfgo_goban_remember_all:
+																			}
 																		},
 
 		%AGREGA A LA MEMORIA EXISTENTE.
 		remember				.code:n			= {
-																			\bool_set_false:N\l_pgfgo_goban_remember_new_bool
-																			\bool_set_true:N\l_pgfgo_goban_remember_add_bool
-																			\pgfgo_goban_remember_all:
+																			\__pgfgo_goban_memory_key:n {
+																				\bool_set_false:N\l_pgfgo_goban_remember_new_bool
+																				\bool_set_true:N\l_pgfgo_goban_remember_add_bool
+																				\pgfgo_goban_remember_all:
+																			}
 																		},
 
 		%BORRA LA MEMORIA Y NO RECUERDA NADA (SALVO LO MARCADO CON remember).
 		forget								.code:n			= {
-																			\pgfgo_kernel_remember_clear:
-																			\bool_set_false:N\l_pgfgo_goban_remember_new_bool
-																			\bool_set_false:N\l_pgfgo_goban_remember_add_bool
-																			\pgfgo_goban_remember_nothing:
+																			\__pgfgo_goban_memory_key:n {
+																				\pgfgo_kernel_remember_clear:n {}
+																				\bool_set_false:N\l_pgfgo_goban_remember_new_bool
+																				\bool_set_false:N\l_pgfgo_goban_remember_add_bool
+																				\pgfgo_goban_remember_nothing:
+																			}
 																		},
 
-		resume						.code:n			= {\bool_set_true:N\l_pgfgo_goban_resume_bool},
+		resume						.code:n			= {\__pgfgo_goban_memory_key:n {\bool_set_true:N\l_pgfgo_goban_resume_bool}},
+
+		%GUARDA TODO LO QUE DIBUJA ESTE goban CON ESE NOMBRE, PARA \pgfgoview.
+		name							.code:n			= {\__pgfgo_goban_memory_key:n {\tl_set:Nn \l_pgfgo_goban_name_tl {#1}}},
 
 		%LAS PIEDRAS CAPTURADAS DESAPARECEN (remove) O QUEDAN COMO PRISIONEROS (fade). SOLO CON kernel = lua.
 		captures					.choices:nn = {true, remove, fade, false} {
@@ -382,34 +396,34 @@
 		rows				.choices:nn	= {letters, numbers, kanji}
 			{\tl_set_eq:NN \l_pgfgo_goban_label_rows_tl \l_keys_choice_tl},
 		rows				.initial:n	= {numbers},
-		columns~from	.choices:nn	= {left, right}
-			{\tl_set_eq:NN \l_pgfgo_goban_label_columns_from_tl \l_keys_choice_tl},
-		columns~from	.initial:n	= {left},
-		rows~from		.choices:nn	= {bottom, top}
-			{\tl_set_eq:NN \l_pgfgo_goban_label_rows_from_tl \l_keys_choice_tl},
-		rows~from		.initial:n	= {bottom},
+		columns~direction	.choices:nn	= {left~to~right, right~to~left}
+			{\tl_set_eq:NN \l_pgfgo_goban_label_columns_direction_tl \l_keys_choice_tl},
+		columns~direction	.initial:n	= {left~to~right},
+		rows~direction		.choices:nn	= {bottom~to~top, top~to~bottom}
+			{\tl_set_eq:NN \l_pgfgo_goban_label_rows_direction_tl \l_keys_choice_tl},
+		rows~direction		.initial:n	= {bottom~to~top},
 
 		%ESTILOS COMPLETOS. japanese: NUMEROS DESDE LA DERECHA ARRIBA Y KANJI DESDE ARRIBA AL COSTADO.
 		%chinese: IGUAL, PERO LOS NUMEROS DESDE LA IZQUIERDA.
 		style				.choice:,
 		style / western		.code:n	= {\keys_set:nn {pgfgo / goban / label}
-			{columns = letters, rows = numbers, columns~from = left, rows~from = bottom}},
+			{columns = letters, rows = numbers, columns~direction = left~to~right, rows~direction = bottom~to~top}},
 		style / japanese	.code:n	= {\keys_set:nn {pgfgo / goban / label}
-			{columns = numbers, rows = kanji, columns~from = right, rows~from = top}},
+			{columns = numbers, rows = kanji, columns~direction = right~to~left, rows~direction = top~to~bottom}},
 		style / chinese		.code:n	= {\keys_set:nn {pgfgo / goban / label}
-			{columns = numbers, rows = kanji, columns~from = left, rows~from = top}},
+			{columns = numbers, rows = kanji, columns~direction = left~to~right, rows~direction = top~to~bottom}},
 	}
 
 	%EL TEXTO DE LA COORDENADA DE LA COLUMNA O LA FILA #1.
 	\cs_new:Npn \__pgfgo_goban_column_label:n #1 {
 		\__pgfgo_goban_label_text:Vn \l_pgfgo_goban_label_columns_tl {
-			\str_if_eq:VnTF \l_pgfgo_goban_label_columns_from_tl {right}
+			\str_if_eq:VnTF \l_pgfgo_goban_label_columns_direction_tl {right~to~left}
 				{\l_pgfgo_goban_size_x_int - (#1) + 1} {#1}
 		}
 	}
 	\cs_new:Npn \__pgfgo_goban_row_label:n #1 {
 		\__pgfgo_goban_label_text:Vn \l_pgfgo_goban_label_rows_tl {
-			\str_if_eq:VnTF \l_pgfgo_goban_label_rows_from_tl {top}
+			\str_if_eq:VnTF \l_pgfgo_goban_label_rows_direction_tl {top~to~bottom}
 				{\l_pgfgo_goban_size_y_int - (#1) + 1} {#1}
 		}
 	}
@@ -786,6 +800,7 @@
 			pgfgo_layer_mark,
 			main
 		}
+		\dim_set:Nn \l__pgfgo_goban_view_raise_dim {\l_pgfgo_goban_view_raise_tl}
 		\tikzpicture
 		\pgfsetxvec{\pgfpoint{ \l_pgfgo_goban_grid_x_sep_dim}{0}}
 		\pgfsetyvec{\pgfpoint{0}{ \l_pgfgo_goban_grid_y_sep_dim}}
@@ -819,8 +834,10 @@
 		\endpgfscope
 		\endpgfonlayer
 
-		\bool_if:NT \l_pgfgo_goban_resume_bool {\pgfgo_kernel_remember_replay:}
+		\bool_if:NT \l_pgfgo_goban_resume_bool {\pgfgo_kernel_remember_replay:n {}}
+		\tl_if_empty:NF \l_pgfgo_goban_view_tl {\pgfgo_kernel_remember_replay:V \l_pgfgo_goban_view_tl}
 	}
+	\cs_generate_variant:Nn \pgfgo_kernel_remember_replay:n {V}
 	\cs_generate_variant:Nn \__pgfgo_goban_begin:nn {VV}
 
 	%EL FONDO (#1 Y #2: EL TAMANO COMPLETO), CON SU SOMBRA, SU IMAGEN Y SU BORDE.
@@ -1077,6 +1094,12 @@
 		\pgfgo_territory_end:
 		\tl_if_empty:NF \l_pgfgo_goban_bbox_tl
 			{\exp_after:wN \__pgfgo_goban_set_bbox:nnnn \l_pgfgo_goban_bbox_tl}
+		%UNA VISTA QUEDA CON SU CENTRO A raise SOBRE LA LINEA DE BASE DEL TEXTO.
+		\tl_if_empty:NF \l_pgfgo_goban_view_tl {
+			\pgfsetbaseline {
+				\dim_eval:n {(\dim_use:c {pgf@picminy} + \dim_use:c {pgf@picmaxy}) / 2 - \l__pgfgo_goban_view_raise_dim}
+			}
+		}
 		\tl_gset:Ne \g_pgfgo_goban_bbox_tl {
 			{\dim_use:c {pgf@picminx}} {\dim_use:c {pgf@picminy}}
 			{\dim_use:c {pgf@picmaxx}} {\dim_use:c {pgf@picmaxy}}
@@ -1113,9 +1136,120 @@
 		\pgfgo_kernel_if_feature:nT {captures} {\pgfgo_kernel_board_clear:}
 		\keys_set:nn {pgfgo / goban} {#1}
 		\pgfgo_kernel_board_init:
+		\tl_if_empty:NF \l_pgfgo_goban_name_tl {\__pgfgo_goban_name:n {#1}}
 		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_begin:}
 
 		\__pgfgo_goban_begin:VV \l_pgfgo_goban_size_x_int \l_pgfgo_goban_size_y_int
 		}{\__pgfgo_goban_end:}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%------------------------------------------VISTAS-----------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	%LAS OPCIONES DE CADA goban CON NOMBRE. SU MEMORIA EMPIEZA VACIA O, CON resume, CON LO RECORDADO.
+	\prop_new:N \g__pgfgo_goban_names_prop
+	\cs_new_protected:Npn \__pgfgo_goban_name:n #1 {
+		\pgfgo_kernel_remember_clear:V \l_pgfgo_goban_name_tl
+		\bool_if:NT \l_pgfgo_goban_resume_bool {\pgfgo_kernel_remember_append:Vn \l_pgfgo_goban_name_tl {}}
+		\prop_gput:NVn \g__pgfgo_goban_names_prop \l_pgfgo_goban_name_tl {#1}
+	}
+	\cs_generate_variant:Nn \pgfgo_kernel_remember_clear:n {V}
+	\cs_generate_variant:Nn \pgfgo_kernel_remember_append:nn {Vn}
+
+	%/pgfgo/view: QUE SE DEJA DE DIBUJAR (marks, numbers, territory = false), A QUE ALTURA (raise) Y LAS OPCIONES DE goban
+	%DE LAS VISTAS, QUE VAN DESPUES DE LAS DEL goban CON NOMBRE.
+	\bool_new:N \l__pgfgo_view_marks_bool
+	\bool_new:N \l__pgfgo_view_numbers_bool
+	\bool_new:N \l__pgfgo_view_territory_bool
+	\tl_new:N \l_pgfgo_goban_view_raise_tl
+	\dim_new:N \l__pgfgo_goban_view_raise_dim
+	\tl_new:N \l__pgfgo_view_goban_tl
+	\keys_define:nn {pgfgo / view} {
+		marks							.bool_set:N	= \l__pgfgo_view_marks_bool,
+		marks							.default:n	= {true},
+		marks							.initial:n	= {true},
+		numbers						.bool_set:N	= \l__pgfgo_view_numbers_bool,
+		numbers						.default:n	= {true},
+		numbers						.initial:n	= {true},
+		territory					.bool_set:N	= \l__pgfgo_view_territory_bool,
+		territory					.default:n	= {true},
+		territory					.initial:n	= {true},
+		raise							.tl_set:N		= \l_pgfgo_goban_view_raise_tl,
+		raise							.initial:n	= {0.5ex},
+		unknown						.code:n			= {
+																			\tl_put_right:Ne \l__pgfgo_view_goban_tl
+																				{, \l_keys_key_str \tl_if_empty:nF {#1} {= {\exp_not:n {#1}}}}
+																		},
+	}
+	\keys_set:nn {pgfgo / view} {scale = 0.8}
+
+	%LA PARTE DEL TABLERO DE LA VISTA: UN PUNTO (B3) O UN RECTANGULO, COMO EN partial.
+	\str_new:N \l__pgfgo_view_range_str
+	\cs_new_protected:Npn \__pgfgo_view_range:n #1 {
+		\str_set:Nn \l__pgfgo_view_range_str {#1}
+		\str_if_in:NnF \l__pgfgo_view_range_str {:} {
+			\str_if_in:NnF \l__pgfgo_view_range_str {,} {
+				\str_if_in:NnF \l__pgfgo_view_range_str {to} {
+					\str_set:Ne \l__pgfgo_view_range_str
+						{\l__pgfgo_view_range_str \c_colon_str \l__pgfgo_view_range_str}
+				}
+			}
+		}
+	}
+
+	%LO QUE GUARDA EL ULTIMO goban (PUNTOS, TERRITORIO, NOTAS, TAMANO Y, CON CAPTURAS, EL TABLERO DEL
+	%KERNEL): UNA VISTA NO LO CAMBIA, PARA QUE \pgfgoscore, \pgfgonotes, ... SIGAN HABLANDO DE ESE goban.
+	\prop_new:N \l__pgfgo_view_points_prop
+	\prop_new:N \l__pgfgo_view_territory_prop
+	\seq_new:N \l__pgfgo_view_notes_seq
+	\tl_new:N \l__pgfgo_view_bbox_tl
+	\cs_new_protected:Npn \__pgfgo_view_save: {
+		\prop_set_eq:NN \l__pgfgo_view_points_prop \g_pgfgo_points_prop
+		\prop_set_eq:NN \l__pgfgo_view_territory_prop \g_pgfgo_territory_prop
+		\seq_set_eq:NN \l__pgfgo_view_notes_seq \g_pgfgo_move_notes_seq
+		\tl_set_eq:NN \l__pgfgo_view_bbox_tl \g_pgfgo_goban_bbox_tl
+		\pgfgo_kernel_if_feature:nT {captures} {\pgfgo_kernel_board_save:n {pgfgo-view}}
+	}
+	\cs_new_protected:Npn \__pgfgo_view_restore: {
+		\prop_gset_eq:NN \g_pgfgo_points_prop \l__pgfgo_view_points_prop
+		\prop_gset_eq:NN \g_pgfgo_territory_prop \l__pgfgo_view_territory_prop
+		\seq_gset_eq:NN \g_pgfgo_move_notes_seq \l__pgfgo_view_notes_seq
+		\tl_gset_eq:NN \g_pgfgo_goban_bbox_tl \l__pgfgo_view_bbox_tl
+		\pgfgo_kernel_if_feature:nT {captures} {\pgfgo_kernel_board_restore:n {pgfgo-view}}
+	}
+
+	\msg_new:nnn {pgfgo} {unknown-view} {There~is~no~goban~with~name~=~'#1'.}
+
+	%\pgfgoview[OPCIONES]{NOMBRE}{PARTE}: EL goban CON ESE NOMBRE COMO QUEDO AL TERMINAR (CON LAS CAPTURAS),
+	%SOLO EN ESA PARTE, PARA USAR EN EL TEXTO.
+	\cs_new_protected:Npn \pgfgo_view:nnn #1#2#3 {
+		\prop_get:NnNTF \g__pgfgo_goban_names_prop {#2} \l__pgfgo_view_options_tl {
+			\group_begin:
+				\keys_set:nn {pgfgo / view} {#1}
+				\bool_set:Nn \l_pgfgo_remember_hide_mark_bool {! \l__pgfgo_view_marks_bool}
+				\bool_set:Nn \l_pgfgo_remember_hide_numbers_bool {! \l__pgfgo_view_numbers_bool}
+				\bool_set:Nn \l_pgfgo_remember_hide_territory_bool {! \l__pgfgo_view_territory_bool}
+				\tl_set:Nn \l_pgfgo_goban_view_tl {#2}
+				\tl_clear:N \l_pgfgo_goban_name_tl
+				\bool_set_false:N \l_pgfgo_goban_resume_bool
+				\pgfgo_goban_remember_nothing:
+				\__pgfgo_view_range:n {#3}
+				\__pgfgo_view_save:
+				\use:e {
+					\exp_not:N \begin {goban} [
+						\exp_not:V \l__pgfgo_view_options_tl
+						\exp_not:V \l__pgfgo_view_goban_tl,
+						partial = {\l__pgfgo_view_range_str}
+					]
+				}
+				\end{goban}
+				\__pgfgo_view_restore:
+			\group_end:
+		}{
+			\msg_error:nnn {pgfgo} {unknown-view} {#2}
+		}
+	}
+	\tl_new:N \l__pgfgo_view_options_tl
+	\NewDocumentCommand \pgfgoview {O{} m m} {\pgfgo_view:nnn {#1} {#2} {#3}}
 
 \ExplSyntaxOff

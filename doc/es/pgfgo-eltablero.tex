@@ -877,15 +877,15 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Lo mismo para las filas (a los costados). Los kanji de las filas se alinean del lado del tablero, para que los de dos caracteres no lo pisen.
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/label/columns from = \meta{left o right} (initially left)}
-		Desde qué lado se cuentan las columnas.
+	\begin{key}{/pgfgo/goban/label/columns direction = \meta{left to right o right to left} (initially left to right)}
+		En qué sentido se cuentan las columnas.
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/label/rows from = \meta{bottom o top} (initially bottom)}
-		Desde qué lado se cuentan las filas. Estas cuatro opciones cambian solo lo que se escribe en el borde: las coordenadas de los comandos (|C3|) siguen siendo las mismas. En un tablero parcial se cuenta desde el borde del tablero completo.
+	\begin{key}{/pgfgo/goban/label/rows direction = \meta{bottom to top o top to bottom} (initially bottom to top)}
+		En qué sentido se cuentan las filas. Estas cuatro opciones cambian solo lo que se escribe en el borde: las coordenadas de los comandos (|C3|) siguen siendo las mismas. En un tablero parcial se cuenta desde el borde del tablero completo.
 
 		\begin{codeexample}[]
-			\begin{goban}[5, label = {at = {north, west}, columns = numbers, rows from = top}]
+			\begin{goban}[5, label = {at = {north, west}, columns = numbers, rows direction = top to bottom}]
 				\stones[b]{C4}
 			\end{goban}
 		\end{codeexample}
@@ -1315,5 +1315,68 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\begin{stylekey}{/pgfgo/goban/resume}
 		Dibuja lo que hay en la memoria al comienzo del |goban|.
 	\end{stylekey}
+
+	\subsection{Vistas en el texto}
+	\label{subsec:vistas}
+	Un |goban| con nombre guarda todo lo que dibuja. Después, |\pgfgoview| muestra una parte de ese tablero, tal como quedó al terminar (con las capturas resueltas), en medio de un párrafo: una sola piedra o un recuadro.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, name = tablero1, captures]
+			\stones[b]{B3, C2, C4}
+			\stones[w]{D2, D4, E3}
+			\moves*[w]{C3, D3}
+		\end{goban}
+
+		La negra en D3 \pgfgoview{tablero1}{D3} captura la blanca de C3 \pgfgoview{tablero1}{C3}.
+		Así quedó el ko: \pgfgoview{tablero1}{B2:E4}.
+	\end{codeexample}
+
+	\begin{key}{/pgfgo/goban/name=\meta{name}}
+		Guarda con ese nombre todo lo que se dibuje en este |goban| (piedras, jugadas, marcas, flechas, líneas y territorio, también lo que viene de |\sgf| y, con |resume|, lo recordado), junto con sus opciones. El nombre es libre (por ejemplo, |gob:tablero1|). Esta memoria no tiene que ver con la de |remember| y |resume|: las dos pueden usarse en el mismo |goban|. Otro |goban| con el mismo nombre la reemplaza.
+	\end{key}
+
+	\begin{command}{\pgfgoview\opt{\oarg{options}}\marg{name}\marg{part}}
+		Dibuja la intersección o el rectángulo (escrito como en |partial|) del |goban| con ese nombre, como quedó al terminar. Por defecto se ve todo lo que dibujó el |goban| en esa parte (piedras, números de las jugadas, marcas, flechas y territorio) con el fondo y las coordenadas de ese |goban|, al tamaño del texto y centrado a la altura de las minúsculas. Las opciones son las de |/pgfgo/view|, que quitan las marcas, los números o el territorio, y, además, cualquier opción de |goban|, que se aplica después de las del |goban| con nombre: así se quitan el fondo, las coordenadas, la cuadrícula o los puntos de estrella.
+
+		Una vista no cambia nada de lo que guarda el último |goban|: |\pgfgoscore|, |\pgfgoprisoners| y |\pgfgomovenotes| siguen hablando de él, y la memoria de |remember| queda igual.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, name = tablero2]
+				\stones[b]{B2, C3}
+				\moves*[w]{C2, D3}
+				\marks[b, triangle]{C3}
+			\end{goban}
+
+			\pgfgoview{tablero2}{B2:D3}
+			\pgfgoview[marks = false, numbers = false]{tablero2}{B2:D3}
+			\pgfgoview[label = false, grid = false]{tablero2}{B2:D3}
+			\pgfgoview[background = false]{tablero2}{B2:D3}
+		\end{codeexample}
+	\end{command}
+
+	\begin{key}{/pgfgo/view=\meta{options}}
+		Opciones para todas las vistas, con |\pgfgoset|. Las opciones de |goban| que no son de |/pgfgo/view| se agregan a la que traen las vistas: |scale = 0.8|.
+
+		\begin{codeexample}[]
+			\pgfgoset{view = {background = false, scale = 1}}
+			Sin fondo y más grande: \pgfgoview{tablero2}{C3}.
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/view/marks=\meta{boolean} (default true, initially true)}
+		Con |false|, no dibuja las marcas, las flechas ni las líneas.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/numbers=\meta{boolean} (default true, initially true)}
+		Con |false|, no dibuja los números de las jugadas.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/territory=\meta{boolean} (default true, initially true)}
+		Con |false|, no dibuja el territorio.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/raise=\meta{dimension} (initially 0.5ex)}
+		A qué altura sobre la línea de base del texto queda el centro de la vista.
+	\end{key}
 
 \end{environment}

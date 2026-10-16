@@ -122,9 +122,13 @@
 %LA ULTIMA IMAGEN CARGADA, EN UNA CAJA.
 \cs_new_protected:Npn \pgfgo_image_use: {\hbox:n {\__pgfgo_image_put:}}
 
-%DIBUJA LA ULTIMA IMAGEN CARGADA, CENTRADA EN #1 (UN PUNTO DE PGF).
+%DIBUJA LA ULTIMA IMAGEN CARGADA, CENTRADA EN #1 (UN PUNTO DE PGF). \pgftext AGRANDA EL TAMANO DEL
+%CAMINO ACTUAL (GLOBAL), Y EL PROXIMO \pgfusepath LO SUMA A LA CAJA DEL DIBUJO: UNA IMAGEN RECORTADA
+%(LAS BALDOSAS DEL FONDO) LA AGRANDARIA. \pgfinterruptpath LO GUARDA Y LO DEVUELVE.
 \cs_new_protected:Npn \pgfgo_image_draw:n #1 {
-	\pgftext [at = {#1}] {\pgfgo_image_use:}
+	\pgfinterruptpath
+		\pgftext [at = {#1}] {\pgfgo_image_use:}
+	\endpgfinterruptpath
 }
 \cs_new_protected:Npn \pgfgo_image_draw: {\pgfgo_image_draw:n {\pgfpointorigin}}
 

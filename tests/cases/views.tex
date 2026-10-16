@@ -1,0 +1,48 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{A named goban (name with a colon) and the memory of remember are separate}
+\begin{goban}[9, name = gob:a, new remember]
+	\stones[b]{C3, D4, E5}\stones[w]{D3, E4}
+	\moves*{F6, G7}
+	\marks[b, triangle]{C3}
+	\marks[circle]{A1}
+	\arrow{B2}{C3}
+	\territory[black]{A9, B9}
+\end{goban}
+
+\case{One point in the text: D4 \pgfgoview{gob:a}{D4}, E4 \pgfgoview{gob:a}{E4}, A1 (corner, empty) \pgfgoview{gob:a}{A1}, B2 \pgfgoview{gob:a}{B2}}
+Text before \pgfgoview{gob:a}{C3}\pgfgoview{gob:a}{D3} and after; a long line to see that the
+views do not change the space between lines: x\pgfgoview{gob:a}{E5}x \pgfgoview{gob:a}{F6} \pgfgoview{gob:a}{G7}.
+
+\case{A rectangle: everything by default, then without marks / numbers / territory}
+\pgfgoview{gob:a}{A1:G7} \pgfgoview[marks = false]{gob:a}{A1:D4} \pgfgoview[numbers = false]{gob:a}{E5:G7}
+\pgfgoview[territory = false, hoshi = false]{gob:a}{A8 to B9}
+
+\case{goban options in a view: no background, no labels, no grid, scale}
+\pgfgoview[background = false, label = false]{gob:a}{C3:E5} \pgfgoview[grid = false]{gob:a}{C3:E5}
+\pgfgoview[scale = 1.5, raise = 0pt]{gob:a}{D4}
+
+\case{Defaults for all views with \textbackslash pgfgoset\{view\}}
+{\pgfgoset{view = {marks = false, background = false}}\pgfgoview{gob:a}{B2:D4}}
+\pgfgoview{gob:a}{B2:D4}
+
+\case{resume brings back the memory of remember (and name keeps it)}
+\begin{goban}[9, resume, name = b, partial = A1:E5]\stone[w]{B4}\end{goban}
+\pgfgoview{b}{C3:D4} \pgfgoview{b}{B4}
+
+\case{The options of the named goban (size, labels, players) are used again; label = false removes the labels}
+\begin{goban}[5, name = small, label, players = {white = {stone = {fill = {color = yellow}}}}]\stones[w]{C3}\stones[b]{E5}\end{goban}
+\pgfgoview{small}{C3} \pgfgoview{small}{D4:E5} \pgfgoview[label = false]{small}{D4:E5}
+
+\case{A view does not change the memory of remember (resume: C3, D4, E5, D3, E4, F6, G7 and the marks)}
+\begin{goban}[9, resume]\end{goban}
+
+\end{document}

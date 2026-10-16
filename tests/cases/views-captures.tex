@@ -1,0 +1,33 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{A capture: the view shows the final board (black 2 at D3 captures white 1 at C3)}
+\begin{goban}[5, captures, name = ko]
+	\stones[b]{B3, C2, C4}\stones[w]{D2, D4, E3}
+	\moves*[w]{C3, D3}
+\end{goban}
+\pgfgoview{ko}{C3} \pgfgoview{ko}{B2:E4} \pgfgoview[numbers = false, label = false]{ko}{B2:E4}
+Prisoners of black after the views: \pgfgoprisoners{black}.
+
+\case{A game from an SGF file, with its marks}
+\begin{goban}[9, name = game]\sgf{game.sgf}\end{goban}
+\pgfgoview{game}{C5:C7} \pgfgoview[numbers = false, marks = false]{game}{A4:E8}
+
+\case{Territory and score: a view does not change the score of the last goban}
+\begin{goban}[5, name = score]
+	\stones[b]{B1, B2, B3, B4, B5}\stones[w]{D1, D2, D3, D4, D5}
+	\territory{auto}
+\end{goban}
+Before: black \pgfgoscore{black}, white \pgfgoscore{white}.
+\pgfgoview{score}{A1:C3} \pgfgoview[territory = false]{score}{A1:C3}
+
+After: black \pgfgoscore{black}, white \pgfgoscore{white}.
+
+\end{document}

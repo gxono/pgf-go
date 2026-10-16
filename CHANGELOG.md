@@ -6,6 +6,16 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- Views in the text: `goban/name = <name>` stores everything that `goban`
+  draws, and `\pgfgoview[<options>]{<name>}{<part>}` draws a point
+  (`D4`) or a rectangle (`B2:E5`) of that board as it was at the end,
+  with the captures done, in the middle of a paragraph. Everything that
+  board drew there is shown (marks, move numbers, territory), with its
+  background and coordinates; `view/marks`, `view/numbers` and
+  `view/territory` `= false` remove them, `view/raise` sets the height, and
+  any `goban` option (`background = false`, `label = false`, `grid = false`,
+  `scale`, ...) can be given too, or for all views with
+  `\pgfgoset{view = {...}}`.
 - Shines of your own: `stone/shine` takes
   `image = {file, width, rotate, false}`, an image with transparency centered
   on the stone instead of the drawn shine. The shine is drawn on top of any
@@ -121,9 +131,9 @@ All notable changes to `pgf-go` are listed here.
   komi of the file (`KM`). Keys `result`, `result title`, `black name` and
   `white name`.
 - Coordinate styles on the border: `goban/label/columns` and `goban/label/rows`
-  (`letters`, `numbers` or `kanji`), `columns from` (`left`, `right`),
-  `rows from` (`bottom`, `top`), and `style` (`western`, `japanese`,
-  `chinese`). Kanji need a font that has them.
+  (`letters`, `numbers` or `kanji`), `columns direction` (`left to right`,
+  `right to left`), `rows direction` (`bottom to top`, `top to bottom`), and
+  `style` (`western`, `japanese`, `chinese`). Kanji need a font that has them.
 - SGF files in GBK (and GB2312), Big5, Shift_JIS, EUC-JP and EUC-KR are
   converted to UTF-8, following `CA` or the new key `sgf charset` (for files
   that do not say their charset). The tables are in `pgf-go-charsets.lua`,
@@ -139,6 +149,10 @@ All notable changes to `pgf-go` are listed here.
 - Compute kernel: `\pgfgo_kernel_sgf_view:nn` and `\pgfgo_kernel_sgf_tree:n`;
   `\pgfgo_kernel_sgf_read:nn` also leaves the print mode and the komi;
   `\pgfgo_kernel_region:n` (both kernels) traces the outlines of a territory.
+- Compute kernel: the memory has one list per name
+  (`\pgfgo_kernel_remember_push:nn`, `clear:n`, `replay:n`, and
+  `\pgfgo_kernel_remember_append:nn` to copy one into another); the list of
+  `remember` and `resume` is the one with the empty name.
 
 ### Fixed
 
@@ -152,6 +166,9 @@ All notable changes to `pgf-go` are listed here.
 - SGF file names can have the special characters of TeX written with a
   backslash (`\sgf{a\&b.sgf}`; also `\#`, `\%`, `\$`, `\{` and `\}`).
 - `\sgfanimation` works in documents whose name has spaces, commas or `=`.
+- A background of tiles (`background/fill/image = {fit = tile}`) no longer
+  makes the board take more room: the tiles that are cut off on the edges
+  left a blank margin above and to the right.
 
 ### Behaviour changes
 
@@ -160,6 +177,9 @@ All notable changes to `pgf-go` are listed here.
   `partial = {from = B2 to D4}`; `stone/shine` instead of `drop shine`;
   `goban/label/color` instead of `text color`;
   `goban/background/fill/image/anchor` instead of `from`;
+  `goban/label/columns direction = right to left` and
+  `rows direction = top to bottom` instead of `columns from = right` and
+  `rows from = top`;
   `\pgfgocopyplayers` instead of `\pgfgochooseplayers`;
   `\sgf[step = 100, restart]` instead of `\sgf[restart = 100]`, and
   `restart = false` instead of `restart = 0` (also in `\sgfanimation`);
@@ -208,6 +228,8 @@ All notable changes to `pgf-go` are listed here.
 
 ### Tests
 
+- New cases for views in the text (`views`, and `views-captures` with
+  captures, SGF and the score); `kernel-checks` tests named memories.
 - New cases for the rules of the keys and the new keys (`key-rules`) and for
   the new keys of the SGF commands (`sgf-keys`); `images` draws a shine image
   over stones turned at random.
