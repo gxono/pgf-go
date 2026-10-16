@@ -1362,7 +1362,9 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{codeexample}
 
 	\begin{command}{\pgfgoview\opt{\oarg{options}}\marg{name}\marg{part}}
-		Dibuja la intersección o el rectángulo (escrito como en |partial|) del |goban| con ese nombre, como quedó al terminar. Por defecto se ve todo lo que dibujó el |goban| en esa parte (piedras, números de las jugadas, marcas, flechas y territorio) con el fondo y las coordenadas de ese |goban|, al tamaño del texto y centrado a la altura de las minúsculas. Las opciones son las de |/pgfgo/view|, que quitan las marcas, los números o el territorio, o agregan lo olvidado, y, además, cualquier opción de |goban|, que se aplica después de las del |goban| con nombre: así se quitan el fondo, las coordenadas, la cuadrícula o los puntos de estrella.
+		Dibuja la intersección o el rectángulo (escrito como en |partial|) del |goban| con ese nombre, como quedó al terminar. Por defecto se ve todo lo que dibujó el |goban| en esa parte (piedras, números de las jugadas, marcas, flechas y territorio) con el fondo y las coordenadas de ese |goban|, al tamaño del texto y centrado a la altura de las minúsculas. Las opciones son las de |/pgfgo/view|, que quitan las marcas, los números o el territorio, o agregan lo olvidado, y, además, cualquier opción de |goban|, que se aplica después de las del |goban| con nombre: así se quitan el fondo, las coordenadas, la cuadrícula o los puntos de estrella, o se cambia el estilo de las piedras, las marcas y el tablero (|players|, |stone|, |mark|, |grid|, |background|, \ldots).
+
+		La vista usa el estilo que tenía ese |goban| al dibujarse (el perfil, lo fijado con |\pgfgoset| y sus opciones), aunque después cambie. Encima van |\pgfgoset{view = ...}| y las opciones de la vista.
 
 		Una vista no cambia nada de lo que guarda el último |goban|: |\pgfgoscore|, |\pgfgoprisoners| y |\pgfgomovenotes| siguen hablando de él, y lo que guarda cada |goban| con nombre queda igual.
 

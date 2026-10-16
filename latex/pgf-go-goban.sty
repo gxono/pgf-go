@@ -1124,11 +1124,14 @@
 	%MEMORIA EMPIEZA VACIA O, CON resume, CON EL CODIGO QUE VUELVE A DIBUJAR LO QUE TRAE.
 	\prop_new:N \g__pgfgo_goban_names_prop
 	\prop_new:N \g__pgfgo_goban_names_captures_prop
+	\prop_new:N \g__pgfgo_goban_names_style_prop
 	\cs_new_protected:Npn \__pgfgo_goban_name:n #1 {
 		\pgfgo_kernel_remember_clear:V \l_pgfgo_goban_name_tl
 		\tl_if_empty:NF \l__pgfgo_goban_resume_memory_tl
 			{\pgfgo_kernel_remember_push:Vn \l_pgfgo_goban_name_tl {\__pgfgo_goban_resume_code:}}
 		\prop_gput:NVn \g__pgfgo_goban_names_prop \l_pgfgo_goban_name_tl {#1}
+		\pgfgo_style_save:N \l__pgfgo_view_style_tl
+		\prop_gput:NVV \g__pgfgo_goban_names_style_prop \l_pgfgo_goban_name_tl \l__pgfgo_view_style_tl
 		\prop_gput:NVe \g__pgfgo_goban_names_captures_prop \l_pgfgo_goban_name_tl {
 			\bool_if:NT \l_pgfgo_goban_captures_bool
 				{captures = \bool_if:NTF \l_pgfgo_goban_captures_fade_bool {fade} {remove}}
@@ -1136,6 +1139,42 @@
 	}
 	\cs_generate_variant:Nn \pgfgo_kernel_remember_clear:n {V}
 	\cs_generate_variant:Nn \pgfgo_kernel_remember_append:nn {VV}
+
+	%EL ESTILO DE UN goban CON NOMBRE (PERFILES, \pgfgoset, Y SUS OPCIONES): EL CODIGO QUE VUELVE A PONER LOS
+	%VALORES DE LAS VARIABLES DEL ESTILO (\g_pgfgo_style_vars_seq, VER pgf-go.sty) Y LAS FUNCIONES DEL ESTILO
+	%(FORMATO DE LOS NUMEROS Y DE LAS SECUENCIAS, FORMA DE LA MARCA), QUE SE COPIAN CON OTRO NOMBRE.
+	\tl_new:N \l__pgfgo_view_style_tl
+	\int_new:N \g__pgfgo_style_int
+	\cs_new:Npn \__pgfgo_style_player_functions:n #1
+		{pgfgo_players_ #1 _move_label_format:n, pgfgo_players_ #1 _mark_sequence_format:n,}
+	\clist_const:Ne \c__pgfgo_style_functions_clist {
+		\clist_map_function:nN {neutral, black, white} \__pgfgo_style_player_functions:n
+		pgfgo_mark_current:
+	}
+	\cs_new_protected:Npn \pgfgo_style_save:N #1 {
+		\int_gincr:N \g__pgfgo_style_int
+		\clist_map_inline:Nn \c__pgfgo_style_functions_clist
+			{\cs_gset_eq:cc {pgfgo~style~\int_use:N \g__pgfgo_style_int ~ ##1} {##1}}
+		\tl_set:Ne #1 {
+			\seq_map_function:NN \g_pgfgo_style_vars_seq \__pgfgo_style_value:n
+			\clist_map_function:NN \c__pgfgo_style_functions_clist \__pgfgo_style_function:n
+		}
+	}
+	\cs_new:Npn \__pgfgo_style_value:n #1 {\__pgfgo_style_value:nN #1}
+	\cs_new:Npn \__pgfgo_style_value:nN #1#2 {
+		\str_case:nnF {#1} {
+			{bool}	{\exp_not:N \bool_set_eq:NN \exp_not:N #2 \bool_if:NTF #2 {\exp_not:N \c_true_bool} {\exp_not:N \c_false_bool}}
+			{int}		{\exp_not:N \int_set:Nn \exp_not:N #2 {\int_use:N #2}}
+			{dim}		{\exp_not:N \dim_set:Nn \exp_not:N #2 {\dim_use:N #2}}
+			{skip}	{\exp_not:N \skip_set:Nn \exp_not:N #2 {\skip_use:N #2}}
+			{fp}		{\exp_not:N \fp_set:Nn \exp_not:N #2 {\fp_to_tl:N #2}}
+		}{
+			\exp_not:N \tl_set:Nn \exp_not:N #2 {\exp_not:V #2}
+		}
+	}
+	\cs_new:Npn \__pgfgo_style_function:n #1 {
+		\exp_not:N \cs_set_eq:cc {#1} {pgfgo~style~\int_use:N \g__pgfgo_style_int ~ #1}
+	}
 	\cs_generate_variant:Nn \pgfgo_kernel_remember_push:nn {Vn}
 
 	%resume = {<nombre>, numbers, marks, territory}: EL NOMBRE Y QUE MAS TRAE, ADEMAS DE LAS PIEDRAS.
@@ -1262,6 +1301,9 @@
 	\cs_new_protected:Npn \pgfgo_view:nnn #1#2#3 {
 		\prop_get:NnNTF \g__pgfgo_goban_names_prop {#2} \l__pgfgo_view_options_tl {
 			\group_begin:
+				%EL ESTILO DEL goban CON NOMBRE; \pgfgoset{view} Y LAS OPCIONES DE LA VISTA VAN ENCIMA.
+				\prop_get:NnN \g__pgfgo_goban_names_style_prop {#2} \l__pgfgo_view_style_tl
+				\tl_use:N \l__pgfgo_view_style_tl
 				\keys_set:nn {pgfgo / view} {#1}
 				\bool_set:Nn \l_pgfgo_remember_hide_mark_bool {! \l__pgfgo_view_marks_bool}
 				\bool_set:Nn \l_pgfgo_remember_hide_numbers_bool {! \l__pgfgo_view_numbers_bool}

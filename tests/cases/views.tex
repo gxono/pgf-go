@@ -45,4 +45,11 @@ views do not change the space between lines: x\pgfgoview{gob:a}{E5}x \pgfgoview{
 \case{A view does not change the memory (resume: C3, D4, E5, D3, E4, F6, G7 and the marks)}
 \begin{goban}[9, resume = {gob:a, marks}]\end{goban}
 
+\case{A view keeps the style of the named goban (profile, \textbackslash pgfgoset): wain and roman numbers; a default goban inside wain; view options and \textbackslash pgfgoset\{view\} go on top}
+{\pgfgouseprofile{wain}\pgfgoset{move = {label = {format = roman}}}%
+\begin{goban}[5, name = styled]\stones[b]{C3}\moves*[w]{D3}\marks[b, triangle]{C3}\end{goban}}
+\pgfgoview{styled}{B2:D4} {\pgfgouseprofile{wain}\pgfgoview{gob:a}{C3:E5}}
+\pgfgoview[players = {white = {stone = {fill = {color = yellow}}}}]{styled}{B2:D4}
+{\pgfgoset{view = {players = {black = {stone = {fill = {color = green}}}}}}\pgfgoview{styled}{B2:D4}}
+
 \end{document}
