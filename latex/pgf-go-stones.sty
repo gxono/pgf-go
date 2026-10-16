@@ -155,26 +155,42 @@
 	\endpgfscope
 }
 
-%EL GIRO DE LA IMAGEN. CON random, UN ANGULO QUE DEPENDE SOLO DE LA POSICION: LA PIEDRA DE UN PUNTO
-%QUEDA SIEMPRE IGUAL (EN TODOS LOS DIAGRAMAS Y EN TODOS LOS CUADROS DE UNA ANIMACION).
+%EL GIRO DE LA IMAGEN. CON random (= 0:360) O UN RANGO <MIN>:<MAX>, UN ANGULO DEL RANGO QUE DEPENDE SOLO
+%DE LA POSICION: LA PIEDRA DE UN PUNTO QUEDA SIEMPRE IGUAL (EN TODOS LOS DIAGRAMAS Y EN TODOS LOS CUADROS
+%DE UNA ANIMACION). EL VALOR SE PASA A CADENA: EL : PUEDE LLEGAR ACTIVO (babel francais).
 \fp_new:N \l__pgfgo_stone_image_angle_fp
+\str_new:N \l__pgfgo_stone_image_rotate_str
+\seq_new:N \l__pgfgo_stone_image_rotate_seq
 \cs_new_protected:Npn \__pgfgo_stone_image_angle: {
-	\str_if_eq:VnTF \l_pgfgo_players_stone_image_rotate_tl {random}
+	\str_set:NV \l__pgfgo_stone_image_rotate_str \l_pgfgo_players_stone_image_rotate_tl
+	\str_if_eq:VnTF \l__pgfgo_stone_image_rotate_str {random}
+		{\__pgfgo_stone_image_angle_range:nn {0} {360}}
 		{
-			\fp_set:Nn \l__pgfgo_stone_image_angle_fp {
-				sin(\l_pgfgo_parsed_x_coordinate_tl * 12.9898 + \l_pgfgo_parsed_y_coordinate_tl * 78.233) * 43758.5453
-			}
-			\fp_set:Nn \l__pgfgo_stone_image_angle_fp {
-				(\l__pgfgo_stone_image_angle_fp - trunc(\l__pgfgo_stone_image_angle_fp)) * 360
-			}
-		}
-		{
-			\tl_if_blank:VTF \l_pgfgo_players_stone_image_rotate_tl
-				{\fp_zero:N \l__pgfgo_stone_image_angle_fp}
-				{\fp_set:Nn \l__pgfgo_stone_image_angle_fp {\l_pgfgo_players_stone_image_rotate_tl}}
+			\str_if_in:NnTF \l__pgfgo_stone_image_rotate_str {:}
+				{
+					\seq_set_split:NVV \l__pgfgo_stone_image_rotate_seq \c_colon_str \l__pgfgo_stone_image_rotate_str
+					\__pgfgo_stone_image_angle_range:ee
+						{\seq_item:Nn \l__pgfgo_stone_image_rotate_seq {1}}
+						{\seq_item:Nn \l__pgfgo_stone_image_rotate_seq {2}}
+				}
+				{
+					\tl_if_blank:VTF \l_pgfgo_players_stone_image_rotate_tl
+						{\fp_zero:N \l__pgfgo_stone_image_angle_fp}
+						{\fp_set:Nn \l__pgfgo_stone_image_angle_fp {\l__pgfgo_stone_image_rotate_str}}
+				}
 		}
 }
+\cs_new_protected:Npn \__pgfgo_stone_image_angle_range:nn #1#2 {
+	\fp_set:Nn \l__pgfgo_stone_image_angle_fp {
+		sin(\l_pgfgo_parsed_x_coordinate_tl * 12.9898 + \l_pgfgo_parsed_y_coordinate_tl * 78.233) * 43758.5453
+	}
+	\fp_set:Nn \l__pgfgo_stone_image_angle_fp {
+		(#1) + (\l__pgfgo_stone_image_angle_fp - floor(\l__pgfgo_stone_image_angle_fp)) * ((#2) - (#1))
+	}
+}
+\cs_generate_variant:Nn \__pgfgo_stone_image_angle_range:nn {ee}
 \cs_generate_variant:Nn \str_if_eq:nnTF {Vn}
+\cs_generate_variant:Nn \seq_set_split:Nnn {NVV}
 
 %CON VARIOS ARCHIVOS, LA IMAGEN SE ELIGE POR LA POSICION: CADA PUNTO MUESTRA SIEMPRE LA MISMA.
 \tl_new:N \l__pgfgo_stone_image_file_tl

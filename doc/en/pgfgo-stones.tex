@@ -270,13 +270,22 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 	The width of the image; the height keeps the proportions. By default it is the diameter of the stone: $2 \times$ |radius| $\times$ |scale|.
 \end{key}
 
-\begin{key}{/pgfgo/stone/image/rotate = \meta{angle} or |random| (initially 0)}
+\begin{key}{/pgfgo/stone/image/rotate = \meta{angle}, |random| or \meta{min}|:|\meta{max} (initially 0)}
 	Rotates the image by \meta{angle} degrees, counterclockwise. With |random|, each stone gets a different angle, chosen by its position: a stone on a given point always looks the same, in every diagram and in every frame of an animation. This keeps the grain of a single image from looking repeated. The shadow turns with the image, but still falls to the same side.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = {from = B2 to D4}]
 			\stones[w, image = {file = stone-white.png,
 				rotate = random}]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
+
+	With a range \meta{min}|:|\meta{max}, the angle is chosen as with |random|, but between \meta{min} and \meta{max} degrees (|random| is the same as |0:360|). This is useful for images that cannot be turned all the way, such as a stone lit from one side.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\stones[w, image = {file = stone-white.png,
+				rotate = -20:20}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}

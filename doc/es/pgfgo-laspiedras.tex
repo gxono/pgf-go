@@ -274,13 +274,22 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	El ancho de la imagen; el alto mantiene la proporción. Por defecto es el diámetro de la piedra: $2 \times$ |radius| $\times$ |scale|.
 \end{key}
 
-\begin{key}{/pgfgo/stone/image/rotate = \meta{ángulo} o |random| (initially 0)}
+\begin{key}{/pgfgo/stone/image/rotate = \meta{ángulo}, |random| o \meta{mínimo}|:|\meta{máximo} (initially 0)}
 	Gira la imagen \meta{ángulo} grados, en sentido antihorario. Con |random|, cada piedra se gira un ángulo distinto, elegido por su posición: una piedra en un punto queda siempre igual, en todos los diagramas y en todos los cuadros de una animación. Sirve para que las vetas de una misma imagen no se vean repetidas. La sombra gira con la imagen, pero sigue cayendo hacia el mismo lado.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = {from = B2 to D4}]
 			\stones[w, image = {file = stone-white.png,
 				rotate = random}]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
+
+	Con un rango \meta{mínimo}|:|\meta{máximo}, el ángulo se elige igual que con |random|, pero entre \meta{mínimo} y \meta{máximo} grados (|random| es lo mismo que |0:360|). Sirve para imágenes que no se pueden girar del todo, como una piedra con luz de un lado.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\stones[w, image = {file = stone-white.png,
+				rotate = -20:20}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}

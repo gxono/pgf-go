@@ -6,8 +6,8 @@
 \usepackage[spanish, english]{babel}
 \newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
 \pagestyle{empty}
-\pgfgodefinelanguage{eo}{diagram = Diagramo, black to play = Nigro ludas}
-\pgfgolanguagealias{esperanto}{eo}
+\pgfgodefinelanguage{la}{diagram = Figura, black to play = Nigri ludunt}
+\pgfgolanguagealias{latin}{la}
 \begin{document}
 
 % results.sgf: one game for each form of RE: B+R, W+3.5, B+Time, W+F, B+, 0, Void, ?, Black won.
@@ -33,15 +33,16 @@
 \row{result}\row{black}\row{white}\row{draw}\row{void}\row{unknown result}
 \endgroup
 
-\case{lang = french (babel name) / esperanto (alias; result falls back to English) / xx (warning, English)}
+\case{lang = french (babel name) / latin (alias; result falls back to English) / esperanto (built in) / xx (warning, English)}
 {\pgfgoset{lang = french}\pgfgotext{result}} /
-{\pgfgoset{lang = esperanto}\pgfgotext{diagram}, \pgfgotext{result}} /
+{\pgfgoset{lang = latin}\pgfgotext{diagram}, \pgfgotext{result}} /
+{\pgfgoset{lang = esperanto}\pgfgotext{diagram}, \pgfgotext{result}, \pgfgotext{at}} /
 {\pgfgoset{lang = xx}\pgfgotext{diagram}}
 
 \case{A text set with its key wins over lang, before or after it}
 {\pgfgoset{sgf problem = {black to play = Black moves}, lang = fr}
 \sgfproblem[solutions = false, goban = {scale = 0.4}]{problem.sgf}}
-{\pgfgoset{lang = esperanto}
+{\pgfgoset{lang = latin}
 \sgfproblem[solutions = false, goban = {scale = 0.4}]{problem.sgf}}
 
 \case{Spanish diagrams, notes and result}

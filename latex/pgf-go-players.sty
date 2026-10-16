@@ -295,7 +295,7 @@
 
 
 	%IMAGEN EN LUGAR DEL CIRCULO. CON VARIOS ARCHIVOS, CADA PUNTO USA SIEMPRE EL MISMO (VER pgf-go-stones.sty).
-	%SIN width, EL DIAMETRO DE LA PIEDRA. rotate: UN ANGULO, O random (UN ANGULO POR PUNTO, SIEMPRE EL MISMO).
+	%SIN width, EL DIAMETRO DE LA PIEDRA. rotate: UN ANGULO, random O <MIN>:<MAX> (UN ANGULO POR PUNTO, SIEMPRE EL MISMO).
 	\seq_new:c	{l_pgfgo_players_ #1 _stone_image_seq}
 	\tl_new:c		{l_pgfgo_players_ #1 _stone_image_width_tl}
 	\tl_new:c		{l_pgfgo_players_ #1 _stone_image_rotate_tl}
