@@ -988,8 +988,8 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 
 \sgfdiagrams[step = 5, title = Diagrama]{partida.sgf}
 
-\begin{key}{/pgfgo/sgf diagrams/step = \meta{number} (initially 50)}
-	Cantidad de jugadas de cada diagrama.
+\begin{key}{/pgfgo/sgf diagrams/step = \meta{number} o \meta{list of numbers} (initially 50)}
+	Cantidad de jugadas de cada diagrama. Con una lista, el primer diagrama tiene tantas jugadas como dice el primer número, el segundo como dice el segundo, y así; el último número se repite: con |step = {5, 10, 3}|, los diagramas tienen 5, 10, 3, 3, 3... jugadas.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/from = \meta{number} (initially 1)}
@@ -1008,8 +1008,26 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Como |/pgfgo/sgf/last mark|, en cada diagrama.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/restart = \meta{boolean} (default true, initially false)}
-	Cada diagrama numera desde 1, como algunos libros. Sin |restart|, la numeración sigue lo que pide el archivo con |PM|, como |/pgfgo/sgf/restart = auto|.
+\begin{key}{/pgfgo/sgf diagrams/restart = \meta{restart options} (default true, initially false)}
+	Desde el segundo diagrama, cada uno numera desde 1 (o desde |restart/from|), como algunos libros. El primer diagrama conserva los números de la partida. Sin |restart|, la numeración sigue lo que pide el archivo con |PM|, como |/pgfgo/sgf/restart = auto|.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = {2, 3}, restart = {from = 0}]{partida.sgf}
+	\end{codeexample}
+\end{key}
+
+\sgfdiagrams[step = {2, 3}, to = 8, restart = {from = 0}, title = Diagrama]{partida.sgf}
+
+\begin{key}{/pgfgo/sgf diagrams/restart/true}
+	Prende |restart|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/restart/false}
+	Apaga |restart|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/restart/from = \meta{number} (initially 1)}
+	El número de la primera jugada de cada diagrama, desde el segundo. También prende |restart|. Con |step = 99| y |restart = {from = 0}|, el primer diagrama va de 1 a 99, y en el segundo la jugada 100 se muestra como 0, la 101 como 1, y así.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/notes = \meta{boolean} (default true, initially true)}

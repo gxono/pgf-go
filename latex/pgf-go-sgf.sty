@@ -94,6 +94,10 @@
 \bool_new:N \l__pgfgo_sgf_numbered_bool
 %LO USA \sgfdiagrams: DESDE from, LAS PIEDRAS CAPTURADAS NO SE QUITAN DEL DIBUJO.
 \bool_new:N \l__pgfgo_sgf_keep_numbered_bool
+%LO USA \sgfdiagrams: SI NO ESTA VACIO, LA JUGADA from SE MUESTRA CON ESE NUMERO, Y LAS SIGUIENTES SIGUEN
+%DESDE AHI (SE SUMA \l__pgfgo_sgf_shift_int AL NUMERO).
+\tl_new:N \l__pgfgo_sgf_first_tl
+\int_new:N \l__pgfgo_sgf_shift_int
 %LAS ANIMACIONES SOLO COMPRUEBAN EL TAMANO EN EL PRIMER CUADRO.
 \bool_new:N \l__pgfgo_sgf_check_size_bool
 \bool_set_true:N \l__pgfgo_sgf_check_size_bool
@@ -214,10 +218,14 @@
 		\seq_map_break:
 	}{
 		\int_incr:N \l__pgfgo_sgf_number_int
+		\bool_lazy_and:nnT
+			{! \tl_if_empty_p:N \l__pgfgo_sgf_first_tl}
+			{\int_compare_p:nNn {\l__pgfgo_sgf_count_int} = {\l__pgfgo_sgf_from_int}}
+			{\int_set:Nn \l__pgfgo_sgf_shift_int {\l__pgfgo_sgf_first_tl - \l__pgfgo_sgf_number_int}}
 		\int_set:Nn \l__pgfgo_sgf_shown_int {
 			\int_compare:nNnTF {\l__pgfgo_sgf_restart_int} > {0}
 				{\int_mod:nn {\l__pgfgo_sgf_number_int - 1} {\l__pgfgo_sgf_restart_int} + 1}
-				{\l__pgfgo_sgf_number_int}
+				{\l__pgfgo_sgf_number_int + \l__pgfgo_sgf_shift_int}
 		}
 		\pgfgo_kernel_move_set_number:n {\l__pgfgo_sgf_shown_int}
 		\pgfgo_kernel_move_set_player:n {#1}
@@ -397,6 +405,7 @@
 	\int_new:c {g__pgfgo_sgf_#1_index_int}
 	\int_new:c {g__pgfgo_sgf_#1_from_int}
 	\int_new:c {g__pgfgo_sgf_#1_number_int}
+	\int_new:c {g__pgfgo_sgf_#1_shift_int}
 	\seq_new:c {g__pgfgo_sgf_#1_captured_seq}
 	\seq_new:c {g__pgfgo_sgf_#1_notes_seq}
 	\clist_map_inline:nn {numbered, pending, faded, marks, points, notes_number, notes_code}
@@ -446,7 +455,8 @@
 			\int_use:N \l_pgfgo_goban_size_x_int , \int_use:N \l_pgfgo_goban_size_y_int ,
 			\int_use:N \l_pgfgo_goban_from_x_int , \int_use:N \l_pgfgo_goban_to_x_int ,
 			\int_use:N \l_pgfgo_goban_from_y_int , \int_use:N \l_pgfgo_goban_to_y_int ,
-			\int_use:N \l__pgfgo_sgf_restart_int
+			\int_use:N \l__pgfgo_sgf_restart_int ,
+			\tl_use:N \l__pgfgo_sgf_first_tl
 		}
 		\bool_to_str:N \l_pgfgo_goban_captures_bool
 		\bool_to_str:N \l_pgfgo_captures_collect_bool
@@ -471,6 +481,7 @@
 			\int_gset:cn {g__pgfgo_sgf_#1_from_int}
 				{\int_min:nn {\l__pgfgo_sgf_from_int} {\l__pgfgo_sgf_count_int + 1}}
 			\int_gset_eq:cN {g__pgfgo_sgf_#1_number_int} \l__pgfgo_sgf_number_int
+			\int_gset_eq:cN {g__pgfgo_sgf_#1_shift_int} \l__pgfgo_sgf_shift_int
 			\seq_gset_eq:cN {g__pgfgo_sgf_#1_captured_seq} \l_pgfgo_kernel_captured_seq
 			\seq_gset_eq:cN {g__pgfgo_sgf_#1_notes_seq} \g_pgfgo_move_notes_seq
 			\prop_gset_eq:cN {g__pgfgo_sgf_#1_numbered_prop} \l__pgfgo_sgf_numbered_prop
@@ -515,6 +526,7 @@
 \cs_new_protected:Npn \__pgfgo_sgf_restore:n #1 {
 	\int_set_eq:Nc \l__pgfgo_sgf_count_int {g__pgfgo_sgf_#1_count_int}
 	\int_set_eq:Nc \l__pgfgo_sgf_number_int {g__pgfgo_sgf_#1_number_int}
+	\int_set_eq:Nc \l__pgfgo_sgf_shift_int {g__pgfgo_sgf_#1_shift_int}
 	\int_set_eq:Nc \l__pgfgo_sgf_start_int {g__pgfgo_sgf_#1_index_int}
 	\seq_set_eq:Nc \l_pgfgo_kernel_captured_seq {g__pgfgo_sgf_#1_captured_seq}
 	\seq_gset_eq:Nc \g_pgfgo_move_notes_seq {g__pgfgo_sgf_#1_notes_seq}
@@ -541,6 +553,7 @@
 \cs_new_protected:Npn \__pgfgo_sgf_play: {
 	\int_zero:N \l__pgfgo_sgf_count_int
 	\int_zero:N \l__pgfgo_sgf_number_int
+	\int_zero:N \l__pgfgo_sgf_shift_int
 	\tl_clear:N \l__pgfgo_sgf_slot_tl
 	%SIN goban/captures LAS PIEDRAS SE DIBUJAN AL JUGARLAS: NO HAY NADA QUE GUARDAR.
 	\bool_lazy_and:nnTF {\l__pgfgo_sgf_cache_bool} {\l_pgfgo_goban_captures_bool} {
@@ -1232,7 +1245,7 @@
 %(1-50, 51-100, ...). CADA UNO PARTE DE LA POSICION REAL (LAS JUGADAS ANTERIORES SIN NUMERO, CON LAS
 %CAPTURAS), Y DEBAJO LLEVA SU EPIGRAFE ("Diagram 2 (51-100)") Y SUS NOTAS "N at M". SE USA FUERA DE goban.
 
-\int_new:N \l__pgfgo_sgfdiag_step_int
+\clist_new:N \l__pgfgo_sgfdiag_step_clist
 \int_new:N \l__pgfgo_sgfdiag_from_int
 \int_new:N \l__pgfgo_sgfdiag_to_int
 \tl_new:N \l__pgfgo_sgfdiag_layout_tl
@@ -1241,6 +1254,7 @@
 \tl_new:N \l__pgfgo_sgfdiag_title_tl
 \tl_new:N \l__pgfgo_sgfdiag_font_tl
 \bool_new:N \l__pgfgo_sgfdiag_restart_bool
+\int_new:N \l__pgfgo_sgfdiag_restart_int
 \bool_new:N \l__pgfgo_sgfdiag_numbers_bool
 \tl_new:N \l__pgfgo_sgfdiag_last_tl
 \bool_new:N \l__pgfgo_sgfdiag_notes_bool
@@ -1260,7 +1274,8 @@
 \int_new:N \l__pgfgo_sgfdiag_last_int
 
 \keys_define:nn {pgfgo / sgf~diagrams} {
-	step						.int_set:N	= \l__pgfgo_sgfdiag_step_int,
+	%{5, 10, 3}: DIAGRAMAS DE 5, 10, 3, 3, 3... JUGADAS (EL ULTIMO TAMANO SE REPITE).
+	step						.clist_set:N	= \l__pgfgo_sgfdiag_step_clist,
 	step						.initial:n	= {50},
 	%LOS DIAGRAMAS SON LOS MISMOS (Y CON EL MISMO NUMERO) QUE SIN from: SOLO SE DIBUJAN LOS QUE TIENEN JUGADAS
 	%DESDE from, Y EL PRIMERO EMPIEZA EN from.
@@ -1281,8 +1296,8 @@
 	last~mark				.initial:n	= {false},
 	goban						.tl_set:N		= \l__pgfgo_sgfdiag_goban_tl,
 	variation				.tl_set:N		= \l__pgfgo_sgfdiag_variation_tl,
-	%CADA DIAGRAMA NUMERA DESDE 1.
-	restart					.bool_set:N	= \l__pgfgo_sgfdiag_restart_bool,
+	%DESDE EL SEGUNDO, CADA DIAGRAMA NUMERA DESDE restart/from (1).
+	restart					.code:n			= {\keys_set:nn {pgfgo / sgf~diagrams / restart} {#1}},
 	restart					.default:n	= {true},
 	notes						.bool_set:N	= \l__pgfgo_sgfdiag_notes_bool,
 	notes						.default:n	= {true},
@@ -1320,6 +1335,17 @@
 	%OPCIONES DE /pgfgo/layout SOLO PARA \sgfdiagrams (SE SUMAN A LAS DE TODO EL DOCUMENTO).
 	layout					.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfdiag_layout_tl {, #1}},
 }
+
+\keys_define:nn {pgfgo / sgf~diagrams / restart} {
+	true						.code:n			= {\bool_set_true:N \l__pgfgo_sgfdiag_restart_bool},
+	false						.code:n			= {\bool_set_false:N \l__pgfgo_sgfdiag_restart_bool},
+	from						.code:n			= {
+															\bool_set_true:N \l__pgfgo_sgfdiag_restart_bool
+															\int_set:Nn \l__pgfgo_sgfdiag_restart_int {#1}
+														},
+	from						.initial:n	= {1},
+}
+\bool_set_false:N \l__pgfgo_sgfdiag_restart_bool
 
 \keys_define:nn {pgfgo} {
 	sgf~diagrams		.code:n			= {\keys_set:nn {pgfgo / sgf~diagrams} {#1}}
@@ -1407,6 +1433,7 @@
 			\pgfgo_goban_remember_nothing:
 			%COMO EN LOS LIBROS, LAS CAPTURAS DEL TRAMO NUMERADO NO SE QUITAN (SE VEN EN EL DIAGRAMA SIGUIENTE).
 			\bool_set_true:N \l__pgfgo_sgf_keep_numbered_bool
+			\tl_set_eq:NN \l__pgfgo_sgf_first_tl \l__pgfgo_sgfdiag_first_tl
 			\use:e {
 				\exp_not:N \pgfgo_sgf:nn
 					{
@@ -1464,8 +1491,19 @@
 }
 
 %EL DIAGRAMA #1 (JUGADAS #2 A #3, CON EL NOMBRE #4), SI TIENE JUGADAS DESDE from: EMPIEZA EN from O DESPUES.
+%CON restart, SI NO EMPIEZA EN LA JUGADA 1, LA JUGADA #2 SE MUESTRA COMO restart/from (AUNQUE NO SE DIBUJE).
+\tl_new:N \l__pgfgo_sgfdiag_first_tl
 \cs_new_protected:Npn \__pgfgo_sgfdiag_range:nnnn #1#2#3#4 {
 	\int_compare:nNnF {#3} < {\l__pgfgo_sgfdiag_from_int} {
+		\bool_lazy_and:nnTF {\l__pgfgo_sgfdiag_restart_bool} {\int_compare_p:nNn {#2} > {1}}
+			{
+				\tl_set:Ne \l__pgfgo_sgfdiag_first_tl {
+					\int_eval:n {
+						\l__pgfgo_sgfdiag_restart_int + \int_max:nn {#2} {\l__pgfgo_sgfdiag_from_int} - (#2)
+					}
+				}
+			}
+			{\tl_clear:N \l__pgfgo_sgfdiag_first_tl}
 		\__pgfgo_sgfdiag_diagram:nnnn {#1} {\int_max:nn {#2} {\l__pgfgo_sgfdiag_from_int}} {#3} {#4}
 	}
 }
@@ -1571,14 +1609,29 @@
 	}
 }
 
-%UN DIAGRAMA CADA step JUGADAS.
+%UN DIAGRAMA CADA step JUGADAS: EL DIAGRAMA n TIENE TANTAS COMO EL ELEMENTO n DE step (O EL ULTIMO).
+\int_new:N \l__pgfgo_sgfdiag_start_int
+\int_new:N \l__pgfgo_sgfdiag_length_int
 \cs_new_protected:Npn \__pgfgo_sgfdiag_steps: {
-	\int_step_inline:nnnn {1} {\l__pgfgo_sgfdiag_step_int} {\l__pgfgo_sgfdiag_last_int} {
-		\__pgfgo_sgfdiag_range:nnnn
-			{(##1 - 1) / \l__pgfgo_sgfdiag_step_int + 1}
-			{##1}
-			{\int_min:nn {##1 + \l__pgfgo_sgfdiag_step_int - 1} {\l__pgfgo_sgfdiag_last_int}}
-			{0}
+	\clist_if_empty:NT \l__pgfgo_sgfdiag_step_clist {\clist_set:Nn \l__pgfgo_sgfdiag_step_clist {50}}
+	\int_zero:N \l__pgfgo_sgfdiag_count_int
+	\int_set:Nn \l__pgfgo_sgfdiag_start_int {1}
+	\int_until_do:nNnn {\l__pgfgo_sgfdiag_start_int} > {\l__pgfgo_sgfdiag_last_int} {
+		\int_incr:N \l__pgfgo_sgfdiag_count_int
+		\int_set:Nn \l__pgfgo_sgfdiag_length_int {
+			\int_max:nn {1} {
+				\clist_item:Nn \l__pgfgo_sgfdiag_step_clist
+					{\int_min:nn {\l__pgfgo_sgfdiag_count_int} {\clist_count:N \l__pgfgo_sgfdiag_step_clist}}
+			}
+		}
+		\use:e {
+			\exp_not:N \__pgfgo_sgfdiag_range:nnnn
+				{\int_use:N \l__pgfgo_sgfdiag_count_int}
+				{\int_use:N \l__pgfgo_sgfdiag_start_int}
+				{\int_min:nn {\l__pgfgo_sgfdiag_start_int + \l__pgfgo_sgfdiag_length_int - 1} {\l__pgfgo_sgfdiag_last_int}}
+				{0}
+		}
+		\int_add:Nn \l__pgfgo_sgfdiag_start_int {\l__pgfgo_sgfdiag_length_int}
 	}
 }
 
@@ -1592,8 +1645,7 @@
 		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfdiag_variation_tl
 		\__pgfgo_sgf_size:N \l__pgfgo_sgfdiag_size_tl
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_komi_tl \l_pgfgo_kernel_sgf_komi_tl
-		\tl_set:Ne \l__pgfgo_sgfdiag_restart_tl
-			{\bool_if:NTF \l__pgfgo_sgfdiag_restart_bool {\int_use:N \l__pgfgo_sgfdiag_step_int} {auto}}
+		\tl_set:Ne \l__pgfgo_sgfdiag_restart_tl {\bool_if:NTF \l__pgfgo_sgfdiag_restart_bool {0} {auto}}
 		\tl_set:Ne \l__pgfgo_sgfdiag_window_tl {
 			\bool_if:NT \l__pgfgo_sgfdiag_view_bool {sgf~view = {\exp_not:n {#2}}}
 		}
@@ -1604,8 +1656,6 @@
 				{\l__pgfgo_sgfdiag_total_int}
 				{\int_min:nn {\l__pgfgo_sgfdiag_to_int} {\l__pgfgo_sgfdiag_total_int}}
 		}
-		\int_compare:nNnT {\l__pgfgo_sgfdiag_step_int} < {1}
-			{\int_set:Nn \l__pgfgo_sgfdiag_step_int {1}}
 		\bool_lazy_and:nnTF {\l__pgfgo_sgfdiag_figures_bool} {! \seq_if_empty_p:N \l_pgfgo_kernel_sgf_figures_seq}
 			{\__pgfgo_sgfdiag_figures:}
 			{\__pgfgo_sgfdiag_steps:}

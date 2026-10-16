@@ -979,8 +979,8 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 
 \sgfdiagrams[step = 5]{game.sgf}
 
-\begin{key}{/pgfgo/sgf diagrams/step = \meta{number} (initially 50)}
-	Number of moves of each diagram.
+\begin{key}{/pgfgo/sgf diagrams/step = \meta{number} or \meta{list of numbers} (initially 50)}
+	Number of moves of each diagram. With a list, the first diagram has as many moves as the first number, the second one as the second number, and so on, and the last number is repeated: with |step = {5, 10, 3}|, the diagrams have 5, 10, 3, 3, 3... moves.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/from = \meta{number} (initially 1)}
@@ -999,8 +999,26 @@ The texts of the annotations are in the language of the document (p.~\pageref{su
 	Like |/pgfgo/sgf/last mark|, on each diagram.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/restart = \meta{boolean} (default true, initially false)}
-	Each diagram is numbered from 1, as some books do. Without |restart|, the numbering follows what the file asks for with |PM|, like |/pgfgo/sgf/restart = auto|.
+\begin{key}{/pgfgo/sgf diagrams/restart = \meta{restart options} (default true, initially false)}
+	From the second diagram on, each diagram is numbered from 1 (or from |restart/from|), as some books do. The first diagram keeps the numbers of the game. Without |restart|, the numbering follows what the file asks for with |PM|, like |/pgfgo/sgf/restart = auto|.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = {2, 3}, restart = {from = 0}]{game.sgf}
+	\end{codeexample}
+\end{key}
+
+\sgfdiagrams[step = {2, 3}, to = 8, restart = {from = 0}]{game.sgf}
+
+\begin{key}{/pgfgo/sgf diagrams/restart/true}
+	Turns |restart| on.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/restart/false}
+	Turns |restart| off.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/restart/from = \meta{number} (initially 1)}
+	The number of the first move of each diagram, from the second one on. It also turns |restart| on. With |step = 99| and |restart = {from = 0}|, the first diagram goes from 1 to 99, and in the second one move 100 is shown as 0, 101 as 1, and so on.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/notes = \meta{boolean} (default true, initially true)}
