@@ -42,6 +42,9 @@
 \case{Fragile content in custom marks}
 \begin{goban}[5]\marks[custom = \textbf{A}]{B2}\stone[w, mark = {custom = \emph{x}}]{D2}\end{goban}
 
+\case{custom for one player does not change the others: ? white (B2), ! black (C2), triangle neutral (D2)}
+\begin{goban}[5]\marks[w, custom = {?}]{B2}\marks[b, custom = !]{C2}\marks[triangle]{D2}\end{goban}
+
 \case{\textbackslash mark is an alias of \textbackslash marks inside goban}
 \begin{goban}[5]\mark[circle]{C3}\end{goban}
 

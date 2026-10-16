@@ -28,8 +28,11 @@
 	n						.code:n	= {\keys_set:nn{ pgfgo / stone }{neutral}},
 	n						.groups:n = { player-id },
 
-	%SOLO PARA SABER QUE NO CUENTA EN LAS CAPTURAS; EL ESTILO LO PONE pgfgo/players/<jugador>/stone/prisoner.
-	prisoner				.code:n	= {\bool_set_true:N \l__pgfgo_stone_prisoner_bool},
+	%NO CUENTA EN LAS CAPTURAS. #1: OPCIONES DE ESTA PIEDRA (VER \__pgfgo_stone_prisoner_style:n).
+	prisoner				.code:n	= {
+		\bool_set_true:N \l__pgfgo_stone_prisoner_bool
+		\tl_set:Nn \l__pgfgo_stone_prisoner_options_tl {#1}
+	},
 	prisoner				.groups:n = { captures-id },
 
 	mark								.code:n = {
@@ -325,14 +328,27 @@
 %UNA PIEDRA CAPTURADA CON captures = fade SE DIBUJA COMO UN PRISIONERO.
 \cs_set_protected:Npn\__pgfgo_stone_draw:nnn #1#2#3 {
 	\bool_if:NTF \l__pgfgo_captures_fade_bool
-		{\__pgfgo_stone_draw_aux:enn {\exp_not:n {#1}, prisoner, \exp_not:V \l_pgfgo_prisoner_options_tl} {#2} {#3}}
+		{\__pgfgo_stone_draw_aux:nnn {#1, prisoner} {#2} {#3}}
 		{\__pgfgo_stone_draw_aux:nnn {#1} {#2} {#3}}
 }
+
+%EL ESTILO DE UN PRISIONERO DEL JUGADOR #1, ANTES DE LAS OPCIONES DE LA PIEDRA: OPACIDAD DEL RELLENO 0.5,
+%/pgfgo/prisoner, pgfgo/players/#1/stone/prisoner Y EL VALOR DE prisoner EN LA PIEDRA.
+\cs_new_protected:Npn \__pgfgo_stone_prisoner_style:n #1 {
+	\keys_set:nn { pgfgo / players / #1 / stone / fill } {opacity = 0.5}
+	\keys_set:nV { pgfgo / players / #1 / stone } \l_pgfgo_prisoner_options_tl
+	\keys_set:nv { pgfgo / players / #1 / stone } {l_pgfgo_players_ #1 _stone_prisoner_tl}
+	\keys_set:nV { pgfgo / players / #1 / stone } \l__pgfgo_stone_prisoner_options_tl
+}
+\cs_generate_variant:Nn \__pgfgo_stone_prisoner_style:n {e}
 
 \cs_new_protected:Npn\__pgfgo_stone_draw_aux:nnn #1#2#3 {
 	\group_begin:
 	\keys_set:nn { pgfgo / stone }{neutral}
-	\keys_set_groups:nnn{ pgfgo / stone }{ player-id }{#1}
+	\bool_set_false:N \l__pgfgo_stone_prisoner_bool
+	\keys_set_groups:nnn{ pgfgo / stone }{ player-id, captures-id }{#1}
+	\bool_if:NT \l__pgfgo_stone_prisoner_bool
+		{\__pgfgo_stone_prisoner_style:e {\__pgfgo_players_current:}}
 	\keys_set_exclude_groups:enn { pgfgo / players / \__pgfgo_players_current: / stone } { external } {#1}
 	\pgfgo_get_variables_from_current_player:
 
@@ -367,6 +383,7 @@
 \bool_new:N \l_pgfgo_goban_captures_fade_bool
 \bool_new:N \l__pgfgo_captures_fade_bool
 \bool_new:N \l__pgfgo_stone_prisoner_bool
+\tl_new:N \l__pgfgo_stone_prisoner_options_tl
 %goban/captured marks = remove.
 \bool_new:N \l_pgfgo_goban_captured_marks_bool
 
@@ -642,16 +659,12 @@
 %----------------------------------------PRISIONEROS--------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%/pgfgo/prisoner GUARDA OPCIONES QUE SE APLICAN A TODOS LOS PRISIONEROS.
+%/pgfgo/prisoner GUARDA EL ESTILO DE TODOS LOS PRISIONEROS (VER \__pgfgo_stone_prisoner_style:n).
 \tl_new:N \l_pgfgo_prisoner_options_tl
 \keys_define:nn {pgfgo} {prisoner .tl_set:N = \l_pgfgo_prisoner_options_tl}
 
-%#1 (\stone O \stones) CON prisoner Y LAS OPCIONES DE /pgfgo/prisoner ANTES DE LAS OPCIONES #2.
-\cs_new_protected:Npn \__pgfgo_prisoner:Nnn #1#2#3 {
-	\use:e {\exp_not:N #1 [prisoner, \exp_not:V\l_pgfgo_prisoner_options_tl, \exp_not:n{#2}]{\exp_not:n{#3}}}
-}
-\NewDocumentCommand{\prisoners}{O{}m}{\__pgfgo_prisoner:Nnn \stones {#1} {#2}}
-\NewDocumentCommand{\prisoner}{O{}m}{\__pgfgo_prisoner:Nnn \stone {#1} {#2}}
+\NewDocumentCommand{\prisoners}{O{}m}{\stones[prisoner, #1]{#2}}
+\NewDocumentCommand{\prisoner}{O{}m}{\stone[prisoner, #1]{#2}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %-------------------------------------------MOVE------------------------------------------------%
@@ -778,9 +791,113 @@
 		{\exp_not:V\l_tmpa_clist}
 }
 
+%LAS JUGADAS DE \moves SON UNA SECUENCIA (CON ORDEN Y REPETICIONES), NO UN CONJUNTO COMO EN \stones. CADA
+%ELEMENTO DE LA clist ES UNA INTERSECCION (C3), UN CAMINO (A1 -| C3 -- E3: CADA TRAMO VA DEL PRIMER PUNTO AL
+%SEGUNDO, SIN REPETIR EL VERTICE QUE COMPARTEN) O UN TRAMO DE FILA O DE COLUMNA (A:F 3 ES A3 -- F3, C 5:1 ES
+%C5 -- C1). LO DEMAS (RECTANGULOS, *, CORCHETES, ;) NO TIENE UN ORDEN CLARO Y DA ERROR. LAS COORDENADAS SE
+%EXPANDEN CON e. DEJA LAS JUGADAS {x}{y} EN \l_pgfgo_kernel_points_seq.
+\msg_new:nnn {pgfgo} {moves-coordinate} {
+	'#1'~is~not~a~sequence~of~moves.~\iow_char:N\\moves~takes~intersections~(C3),~paths~(A1~-|~C3~--~E3)
+	~and~parts~of~a~row~or~a~column~(A:F~3,~C~5:1),~separated~by~commas.~Rectangles,~*,~brackets
+	~and~groups~that~subtract~(;)~have~no~order.
+}
+\regex_const:Nn \c__pgfgo_moves_row_regex {\A([A-Z]):([A-Z])\s*(\d{1,2})\Z}
+\regex_const:Nn \c__pgfgo_moves_column_regex {\A([A-Z])\s*(\d{1,2}):(\d{1,2})\Z}
+\regex_const:Nn \c__pgfgo_moves_path_regex {\A[A-Z]\d{1,2}(\s*(--|-\||\|-)\s*[A-Z]\d{1,2})*\Z}
+\regex_const:Nn \c__pgfgo_moves_point_regex {[A-Z]\d{1,2}}
+\regex_const:Nn \c__pgfgo_moves_operator_regex {--|-\||\|-}
+\clist_new:N \l__pgfgo_moves_items_clist
+\tl_new:N \l__pgfgo_moves_item_tl
+\tl_new:N \l__pgfgo_moves_operator_tl
+\seq_new:N \l__pgfgo_moves_vertices_seq
+\seq_new:N \l__pgfgo_moves_operators_seq
+\int_new:N \l__pgfgo_moves_x_int
+\int_new:N \l__pgfgo_moves_y_int
+\int_new:N \l__pgfgo_moves_to_x_int
+\int_new:N \l__pgfgo_moves_to_y_int
+
+\cs_new_protected:Npn \__pgfgo_moves_points:n #1 {
+	\seq_clear:N \l_pgfgo_kernel_points_seq
+	\clist_set:Ne \l__pgfgo_moves_items_clist {#1}
+	\clist_map_function:NN \l__pgfgo_moves_items_clist \__pgfgo_moves_item:n
+}
+\cs_generate_variant:Nn \clist_set:Nn {Ne}
+
+\cs_new_protected:Npn \__pgfgo_moves_item:n #1 {
+	\tl_set:Nn \l__pgfgo_moves_item_tl {#1}
+	\regex_replace_once:NnN \c__pgfgo_moves_row_regex {\1\3\ --\ \2\3} \l__pgfgo_moves_item_tl
+	\regex_replace_once:NnN \c__pgfgo_moves_column_regex {\1\2\ --\ \1\3} \l__pgfgo_moves_item_tl
+	\regex_match:NVTF \c__pgfgo_moves_path_regex \l__pgfgo_moves_item_tl
+		{\__pgfgo_moves_path:}
+		{\msg_error:nnn {pgfgo} {moves-coordinate} {#1}}
+}
+\prg_generate_conditional_variant:Nnn \regex_match:Nn {NV} {TF}
+
+%EL PRIMER VERTICE ES UNA JUGADA; DESPUES, CADA TRAMO AGREGA SUS PUNTOS SIN EL DE PARTIDA.
+\cs_new_protected:Npn \__pgfgo_moves_path: {
+	\regex_extract_all:NVN \c__pgfgo_moves_point_regex \l__pgfgo_moves_item_tl \l__pgfgo_moves_vertices_seq
+	\regex_extract_all:NVN \c__pgfgo_moves_operator_regex \l__pgfgo_moves_item_tl \l__pgfgo_moves_operators_seq
+	\seq_pop_left:NN \l__pgfgo_moves_vertices_seq \l__pgfgo_moves_item_tl
+	\__pgfgo_moves_vertex:V \l__pgfgo_moves_item_tl
+	\seq_put_right:NV \l_pgfgo_kernel_points_seq \l_pgfgo_kernel_point_tl
+	\int_set_eq:NN \l__pgfgo_moves_x_int \l__pgfgo_moves_to_x_int
+	\int_set_eq:NN \l__pgfgo_moves_y_int \l__pgfgo_moves_to_y_int
+	\seq_map_inline:Nn \l__pgfgo_moves_vertices_seq {
+		\seq_pop_left:NN \l__pgfgo_moves_operators_seq \l__pgfgo_moves_operator_tl
+		\__pgfgo_moves_vertex:n {##1}
+		\str_case:Vn \l__pgfgo_moves_operator_tl {
+			{-|} {
+				\__pgfgo_moves_walk:nn {\l__pgfgo_moves_to_x_int} {\l__pgfgo_moves_y_int}
+				\__pgfgo_moves_walk:nn {\l__pgfgo_moves_to_x_int} {\l__pgfgo_moves_to_y_int}
+			}
+			{|-} {
+				\__pgfgo_moves_walk:nn {\l__pgfgo_moves_x_int} {\l__pgfgo_moves_to_y_int}
+				\__pgfgo_moves_walk:nn {\l__pgfgo_moves_to_x_int} {\l__pgfgo_moves_to_y_int}
+			}
+			{--} {
+				\bool_lazy_or:nnTF
+					{\int_compare_p:nNn {\l__pgfgo_moves_x_int} = {\l__pgfgo_moves_to_x_int}}
+					{\int_compare_p:nNn {\l__pgfgo_moves_y_int} = {\l__pgfgo_moves_to_y_int}}
+					{\__pgfgo_moves_walk:nn {\l__pgfgo_moves_to_x_int} {\l__pgfgo_moves_to_y_int}}
+					{
+						\msg_warning:nne {pgfgo} {diagonal-line} {\l__pgfgo_moves_item_tl~--~##1}
+						\int_set_eq:NN \l__pgfgo_moves_x_int \l__pgfgo_moves_to_x_int
+						\int_set_eq:NN \l__pgfgo_moves_y_int \l__pgfgo_moves_to_y_int
+					}
+			}
+		}
+		\tl_set:Nn \l__pgfgo_moves_item_tl {##1}
+	}
+}
+\cs_generate_variant:Nn \str_case:nn {Vn}
+
+%LA INTERSECCION #1 EN \l_pgfgo_kernel_point_tl Y EN \l__pgfgo_moves_to_x_int Y \l__pgfgo_moves_to_y_int.
+\cs_new_protected:Npn \__pgfgo_moves_vertex:n #1 {
+	\pgfgo_kernel_point:nTF {#1} {
+		\int_set:Nn \l__pgfgo_moves_to_x_int {\exp_last_unbraced:NV \use_i:nn \l_pgfgo_kernel_point_tl}
+		\int_set:Nn \l__pgfgo_moves_to_y_int {\exp_last_unbraced:NV \use_ii:nn \l_pgfgo_kernel_point_tl}
+	} {}
+}
+\cs_generate_variant:Nn \__pgfgo_moves_vertex:n {V}
+
+%EN LINEA RECTA HASTA (#1,#2), UNA JUGADA POR PUNTO (SIN EL DE PARTIDA).
+\cs_new_protected:Npn \__pgfgo_moves_walk:nn #1#2 {
+	\int_set:Nn \l_tmpa_int {#1}
+	\int_set:Nn \l_tmpb_int {#2}
+	\bool_until_do:nn {
+		\int_compare_p:nNn {\l__pgfgo_moves_x_int} = {\l_tmpa_int} &&
+		\int_compare_p:nNn {\l__pgfgo_moves_y_int} = {\l_tmpb_int}
+	} {
+		\int_add:Nn \l__pgfgo_moves_x_int {\int_sign:n {\l_tmpa_int - \l__pgfgo_moves_x_int}}
+		\int_add:Nn \l__pgfgo_moves_y_int {\int_sign:n {\l_tmpb_int - \l__pgfgo_moves_y_int}}
+		\seq_put_right:Ne \l_pgfgo_kernel_points_seq
+			{{\int_use:N \l__pgfgo_moves_x_int}{\int_use:N \l__pgfgo_moves_y_int}}
+	}
+}
+
 \NewDocumentCommand{\moves}{sO{}m}{
 	\group_begin:
-	\pgfgo_kernel_points:n{#3} %Devuelve \l_pgfgo_kernel_points_seq
+	\__pgfgo_moves_points:n{#3} %Devuelve \l_pgfgo_kernel_points_seq
 
 	\keys_set_groups:nnn { pgfgo / move} {preset, player-id, first stone} {#2}
 	\keys_set_groups:nnn { pgfgo / players / neutral / move} { label } {#2}
