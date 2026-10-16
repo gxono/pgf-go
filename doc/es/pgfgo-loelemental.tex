@@ -27,10 +27,6 @@ La macro |\pgfgoset{...}| permite definir configuraciones generales para el paqu
 	Establece opciones generales para las marcas: la forma por defecto de |\marks| (|\pgfgoset{mark = {triangle}}|) y el estilo de las marcas de los tres jugadores (|line|, |fill|, |label|, |sequence| y |scale|). |\pgfgoset{mark = {line = {color = red}}}| es lo mismo que |\pgfgoset{players = {all = {mark = {line = {color = red}}}}}|.
 \end{key}
 
-\begin{key}{/pgfgo/use i = \meta{boolean} (default true)}
-	Permite decidir si se utiliza o no la etiqueta «I» en el tablero. Por defecto, está activada («true»), lo que significa que las coordenadas incluyen la letra «I». Si se desactiva («false»), el sistema omite esta letra y pasa directamente de «H» a «J», algo habitual en ciertas representaciones del juego de Go. Es lo mismo que |/pgfgo/goban/use i| (pág.~\pageref{subsec:usei}), que es el nombre que conviene usar.
-\end{key}
-
 \begin{key}{/pgfgo/sgf animation = \meta{sgf animation options}}
 	Opciones de todas las |\sgfanimation| del documento (pág.~\pageref{subsec:sgf}).
 \end{key}
@@ -230,7 +226,7 @@ Lo primero que intentar\'a hacer es dividir el argumento entre los |;| y constru
 \begin{codeexample}[width=0pt]
 	\pgfgouseprofile{pgfgosmooth}
 	
-	\begin{goban}[17, partial = {from = A1 to Q5}, label = {at = {north, west}}]
+	\begin{goban}[17, partial = A1:Q5, label = {at = {north, west}}]
 		\stones[b]{*;B,D,H,L,Q2,P,F2:4,J2rK5,N[1:2,4];B3}
 	\end{goban}
 \end{codeexample}
@@ -245,7 +241,7 @@ Lo primero que intentar\'a hacer es dividir el argumento entre los |;| y constru
 A\~nade al correspondiente grupo todas las intersecciones \textbf{visibles} del tablero. Es decir, si  es un tablero parcial, solo se a\~nadir\'an las corresopndientes a la regi\'on visible. Es importante aclarar esto por si se usa en combinaci\'on con |remember|. Su sintaxis es |*|.
 
 \begin{codeexample}[]
-	\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+	\pgfgoset{goban = {5, partial = B2:D4}}
 	
 	\begin{goban}[label = {at = {south, west}}]
 		\stones[b]{*}
@@ -258,7 +254,7 @@ A\~nade al correspondiente grupo todas las intersecciones \textbf{visibles} del 
 Las intersecciones se especifican indicando la letra seguida del número, sin espacios entre el componente alfabético y el numérico: |AN|
 
 \begin{codeexample}[]
-	\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+	\pgfgoset{goban = {5, partial = B2:D4}}
 	
 	\begin{goban}[label = {at = {south, west}}]
 		\stones[b]{C2, D3}
@@ -278,7 +274,7 @@ Las lineas son grupos de piedras verticales u horizontales delimitadas impl\'ici
 \end{itemize}
 
 \begin{codeexample}[width=6cm]
-	\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+	\pgfgoset{goban = {5, partial = B2:D4}}
 	
 	\begin{goban}
 		\stones[b]{B2,B3,B4}
@@ -306,7 +302,7 @@ Los segmentos son grupos de piedras verticales u horizontales explícitamente de
 \end{itemize}
 
 \begin{codeexample}[width=6cm]
-	\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+	\pgfgoset{goban = {5, partial = B2:D4}}
 	
 	\begin{goban}
 		\stones[b]{B2,B3,B4}
@@ -480,15 +476,15 @@ Pero también podemos imaginar que partimos de un rectángulo completo al que le
 De esto tratan los grupos aditivos y sustractivos. Un grupo aditivo añade intersecciones a la lista, mientras que uno sustractivo las elimina. Por defecto, los comandos siempre comienzan procesando grupos aditivos, lo que explica que dibujen piedras directamente. En \pgfgoname, podemos alternar entre ambos tipos usando |;|.
 
 \begin{codeexample}[width=6cm]
-	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+	\begin{goban}[label = {at = all}, partial = A1:E6]
 		\stones[b]{A1 R E6} % Grupo aditivo.
 	\end{goban}
 	
-	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+	\begin{goban}[label = {at = all}, partial = A1:E6]
 		\stones[b]{A1 R E6; A 1:2} % Grupo aditivo; sustractivo.
 	\end{goban}
 	
-	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+	\begin{goban}[label = {at = all}, partial = A1:E6]
 		\stones[b]{A1 R E6; A 1:2, C6 |- E3} % Grupo aditivo; sustractivo.
 	\end{goban}
 \end{codeexample}
@@ -508,15 +504,15 @@ Aquí, |B:D 5| elimina un segmento horizontal en la fila 5, y |C2| quita una pie
 Recordemos que los grupos aditivos y sustractivos pueden encadenarse, separándolos con |;|, lo que permite alternar entre añadir y quitar elementos en una sola línea tantas veces como se desee.
 
 \begin{codeexample}[width=6cm]
-	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+	\begin{goban}[label = {at = all}, partial = A1:E6]
 		\stones[b]{A1 R E6} % AD
 	\end{goban}
 	
-	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+	\begin{goban}[label = {at = all}, partial = A1:E6]
 		\stones[b]{A1 R E6; A1 R C4, E6} % AD, SU
 	\end{goban}
 	
-	\begin{goban}[label = {at = all}, partial = {from = A1 to E6}]
+	\begin{goban}[label = {at = all}, partial = A1:E6]
 		\stones[b]{A1 R E6; A1 R C4, E6; A 1:2} % AD, SU, AD
 	\end{goban}
 \end{codeexample}
@@ -613,7 +609,7 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 	
 	\pgfgouseprofile{example}
 	
-	\begin{goban}[partial = {from = A1 to C3}]
+	\begin{goban}[partial = A1:C3]
 		\moves{A1:3}
 		\stones[b]{B1,B3,C2}
 		\stones[w]{C1,C3}
@@ -633,7 +629,7 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 
 		\pgfgouseprofile{ejemplo2}
 
-		\begin{goban}[partial = {from = A1 to C3}]
+		\begin{goban}[partial = A1:C3]
 			\moves{A1:3}
 			\stones[b]{B1,B3,C2}
 			\stones[w]{C1,C3}
@@ -708,14 +704,14 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\begin{codeexample}[width=3cm]
 		\pgfgocopyplayer{neutral}{white}
 
-		\begin{goban}[partial = {from = A1 to C3}]
+		\begin{goban}[partial = A1:C3]
 			\stone{B2} % Neutral, pero con el aspecto de las blancas.
 			\stones[b]{A1,C3}
 		\end{goban}
 	\end{codeexample}
 \end{command}
 
-\begin{command}{\pgfgochooseplayers\marg{neutral source}\marg{black source}\marg{white source}}
+\begin{command}{\pgfgocopyplayers\marg{neutral source}\marg{black source}\marg{white source}}
 	Copia, en este orden, |neutral source| en el jugador neutral, |black source| en el negro y |white source| en el blanco (con |\pgfgocopyplayer|). Como las copias se hacen una tras otra, no sirve para intercambiar jugadores.
 \end{command}
 
@@ -734,7 +730,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -758,7 +754,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -779,7 +775,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -800,7 +796,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -826,7 +822,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/stone/fill/false}
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -846,7 +842,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \begin{key}{/pgfgo/players/white/stone/fill/color = \meta{color}}
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -867,7 +863,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -888,7 +884,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -908,7 +904,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Controla la escala de la piedra, lo que afecta también a las marcas.
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -936,7 +932,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Desactiva la sombra en la piedra.
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -956,7 +952,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Establece el ángulo de la sombra.
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -976,7 +972,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Establece el desplazamiento de la sombra respecto al centro.
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -996,7 +992,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Controla la opacidad de la sombra.
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -1017,7 +1013,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \end{key}
 
 \begin{key}{/pgfgo/players/white/stone/shine = \meta{stone shine options} (default true)}
-	Controla el brillo de las piedras, que se dibuja encima de la piedra, sea un círculo o una imagen. Su nombre viejo, |drop shine|, sigue funcionando.
+	Controla el brillo de las piedras, que se dibuja encima de la piedra, sea un círculo o una imagen.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/stone/shine/true}
@@ -1028,7 +1024,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	No dibuja el brillo.
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -1048,7 +1044,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Gira el brillo dibujado. Con |0|, la luz viene de arriba a la izquierda.
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -1068,7 +1064,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Controla la opacidad del brillo (también la del brillo con imagen).
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -1096,7 +1092,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 			image = {file = stone-white.png, rotate = random},
 			shine = {true, image = {file = shine.png}}}}}}
 
-		\begin{goban}[5, partial = {from = B2 to D4}]
+		\begin{goban}[5, partial = B2:D4]
 			\stones[w]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
@@ -1190,7 +1186,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Controla el color de línea de las marcas.
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -1212,7 +1208,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	Controla el grosor de línea de las marcas.
 	\begin{codeexample}[width=4cm]
 		\pgfgouseprofile{pgfgosmooth}
-		\pgfgoset{goban = {partial = {from = A1 to C3}}}
+		\pgfgoset{goban = {partial = A1:C3}}
 
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -1304,10 +1300,6 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/mark/sequence/true}
 	Activa la secuencia.
-\end{key}
-
-\begin{key}{/pgfgo/players/white/mark/sequence/use}
-	Lo mismo que |sequence/true|. Es un nombre viejo: conviene usar |true|.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/sequence/false}

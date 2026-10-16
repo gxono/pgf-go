@@ -15,7 +15,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	Since the board is the only macro that utilizes the TikZ layer, each intersection can be accessed using its alphanumeric coordinate (as in \pgfname) or numeric values in the \tikzname\ coordinate system. This allows combining Go’s intuitive syntax with TikZ’s graphical capabilities, which is especially useful for adding custom elements, such as arrows or marks, directly onto the board.
 	
 	\begin{codeexample}[width=5.85cm]
-		\begin{goban}[19, partial = {from = J1 to S9},
+		\begin{goban}[19, partial = J1:S9,
 			label = {at = {north, east}}]
 			\stones[b] {K8,R8,Q5,R5,O4,Q4,L3,O3,M2,N2}
 			\mark[black, circle] {K8}
@@ -33,15 +33,15 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\begin{codeexample}[]
 			\pgfgoset{goban = {13, label = {at = north}}}
 			
-			\begin{goban}[label = {at = west}, partial = {from = H1 to M3}]
+			\begin{goban}[label = {at = west}, partial = H1:M3]
 				\stone[b]{J2}
 			\end{goban}
 			
-			\begin{goban}[use i = false, partial = {from = H1 to N3}]
+			\begin{goban}[use i = false, partial = H1:N3]
 				\stone[b]{J2}
 			\end{goban}
 			
-			\begin{goban}[use i = false, label = {at = east}, partial = {from = H1 to N3}]
+			\begin{goban}[use i = false, label = {at = east}, partial = H1:N3]
 				\stone[white, mark = {custom = !}] {I2} % If it’s I, it shifts to J.
 			\end{goban}
 		\end{codeexample}
@@ -158,7 +158,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Allows changing the color of the grid lines.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[grid = {line = {color = blue}}, new remember]
 				\stones[b]{C2,D3}
@@ -175,7 +175,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Sets the opacity of the grid lines, from 0 (transparent) to 1 (opaque).
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[new remember]
 				\stones[b]{C2,D3}
@@ -192,7 +192,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Defines the thickness of the grid lines.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[new remember]
 				\stones[b]{C2,D3}
@@ -224,7 +224,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 				\stones[b]{C3}\stone[w]{D4}
 			\end{goban}
 
-			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false, partial = {from = C3 to G7}]
+			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false, partial = C3:G7]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -250,6 +250,10 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 			\begin{goban}[9, grid = {image = {file = cell.png, fit = tile, tiles = 4}}, hoshi = false]
 			\end{goban}
 		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/image/rotate =\meta{angle}, |random| or \meta{min}|:|\meta{max} (initially 0)}
+		Turns the image, like |background/fill/image/rotate|: in quarter turns and, with |random| or a range, each tile with its own.
 	\end{key}
 
 	\begin{stylekey}{/pgfgo/goban/grid/image/false}
@@ -352,7 +356,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Completely disables the board’s border, removing both the outline and fill. This is useful for minimalist diagrams or when the document’s background already provides sufficient contrast.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[new remember]
 				\stones[b]{C2,D3}
@@ -373,7 +377,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Determines whether the board’s background fill is active. If disabled, the area inside the border will be transparent, showing only the outline (if enabled).
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {line = {color = red}}, new remember]
 				\stones[b]{C2,D3}
@@ -390,7 +394,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Defines the fill color of the board.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {fill = {color = orange!40}}, new remember]
 				\stones[b]{C2,D3}
@@ -407,7 +411,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Controls the opacity of the fill, from 0 (transparent) to 1 (opaque).
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {fill = {color = orange!40}}, new remember]
 				\stones[b]{C2,D3}
@@ -429,7 +433,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 				\marks[circle]{E5, C3}
 			\end{goban}
 
-			\begin{goban}[9, background = {fill = {image = {file = wood.jpg}}, rounded corners = 6pt}, partial = {from = A1 to E5}]
+			\begin{goban}[9, background = {fill = {image = {file = wood.jpg}}, rounded corners = 6pt}, partial = A1:E5]
 				\marks[triangle]{C3}
 			\end{goban}
 		\end{codeexample}
@@ -440,19 +444,19 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image/fit =\meta{stretch, cover or tile} (initially cover)}
-		How the image fills the background of the whole board. |stretch| stretches it to fill the whole background, without keeping the proportions. |cover| scales it, keeping the proportions, until it covers the background, centered: what is left over is not shown. |tile| repeats it as tiles, from a corner, a side or the center of the whole board (see |from|).
+		How the image fills the background of the whole board. |stretch| stretches it to fill the whole background, without keeping the proportions. |cover| scales it, keeping the proportions, until it covers the background, centered: what is left over is not shown. |tile| repeats it as tiles, from a corner, a side or the center of the whole board (see |anchor|).
 
 		\begin{codeexample}[]
 			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}]
 			\end{goban}
 
-			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}, partial = {from = D4 to H8}]
+			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}, partial = D4:H8]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image/anchor =\meta{position} (initially south west)}
-		With |fit = tile|, where the tiles start (its old name, |from|, still works), on the background of the whole board. With a corner (|south west|, |south east|, |north west| or |north east|), that corner gets a whole tile. With a side (|north|, |south|, |east| or |west|), the first tile touches that side, centered along it. With |center|, a tile is in the center of the board.
+		With |fit = tile|, where the tiles start, on the background of the whole board. With a corner (|south west|, |south east|, |north west| or |north east|), that corner gets a whole tile. With a side (|north|, |south|, |east| or |west|), the first tile touches that side, centered along it. With |center|, a tile is in the center of the board.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, anchor = north east}}}]
@@ -476,6 +480,18 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		\end{codeexample}
 	\end{key}
 
+	\begin{key}{/pgfgo/goban/background/fill/image/rotate =\meta{angle}, |random| or \meta{min}|:|\meta{max} (initially 0)}
+		Turns the image in quarter turns: the angle is rounded to 0, 90, 180 or 270 degrees, so that the turned image still fills its place without gaps. With 90 or 270, the width and the height are swapped: with |cover| the image keeps its proportions, but a tile of width |width| that is not square is stretched. With |random| or a range, as in |stone/image/rotate| (p.~\pageref{subsec:stoneimages}), each tile has its own turn, always the same: the repetition shows less.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, background = {fill = {image = {file = wood.jpg, rotate = 90}}}]
+			\end{goban}
+
+			\begin{goban}[5, background = {fill = {image = {file = wood.jpg, fit = tile, width = 1cm, rotate = random}}}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
 	\begin{stylekey}{/pgfgo/goban/background/fill/image/false}
 		Removes the background image.
 	\end{stylekey}
@@ -488,7 +504,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Enables or disables the border line.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {line = {color = red}}, new remember]
 				\stones[b]{C2,D3}
@@ -505,7 +521,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Defines the color of the border line, allowing it to stand out from the background or grid lines.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {line = {color = red}}, new remember]
 				\stones[b]{C2,D3}
@@ -522,7 +538,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Adjusts the opacity of the border line.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {line = {color = red}}, new remember]
 				\stones[b]{C2,D3}
@@ -539,7 +555,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Controls the thickness of the border line.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[new remember]
 				\stones[b]{C2,D3}
@@ -556,7 +572,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Adjusts the rounding of the border corners, from 0pt (straight corners) to larger values for a smoother, more stylized effect.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			\pgfgoset{goban = {5, partial = A1:C3}}
 			
 			\begin{goban}[new remember]
 				\stones[b]{B1,C2}
@@ -573,7 +589,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Adjusts only the rounding of the outer corners of the border.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			\pgfgoset{goban = {5, partial = A1:C3}}
 			
 			\begin{goban}[background = {rounded corners = 0pt}, new remember]
 				\stones[b]{B1,C2}
@@ -590,7 +606,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Adjusts only the rounding of the inner corners of the board (only visible on partial boards).
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			\pgfgoset{goban = {5, partial = A1:C3}}
 			
 			\begin{goban}[background = {rounded corners = 0pt}, new remember]
 				\stones[b]{B1,C2}
@@ -607,7 +623,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Defines the separation between the grid and the border, based by default on the stone radius multiplied by 1.5. This adjustment ensures that stones near the border do not overlap with it.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {sep = 0.625em}, new remember]
 				\stones[b]{C2,D3}
@@ -622,7 +638,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\begin{key}{/pgfgo/goban/background/drop shadow=\meta{options} (default true)}
 		Draws a shadow under the board. Without a value, it turns it on.
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 
 			\begin{goban}[background = {drop shadow}, new remember]
 				\stones[b]{C2,D3}
@@ -641,7 +657,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\begin{key}{/pgfgo/goban/background/drop shadow/angle =\meta{float} (initially -45)}
 		Direction of the shadow, in degrees.
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 
 			\begin{goban}[background = {drop shadow}, new remember]
 				\stones[b]{C2,D3}
@@ -656,7 +672,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\begin{key}{/pgfgo/goban/background/drop shadow/offset =\meta{dimension} (initially 1.5pt)}
 		Distance between the board and its shadow.
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 
 			\begin{goban}[background = {drop shadow}, new remember]
 				\stones[b]{C2,D3}
@@ -678,7 +694,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\subsection{Partial Board}
 	
-	In many cases, it’s not necessary to represent a full board, but rather just a rectangular section—whether due to space constraints, to focus attention on a specific area, or to simplify diagram creation. The |goban| environment includes the \emph{key} |partial|, which allows defining this region using the sub-\emph{key} |from|. This specifies the opposite vertices of a rectangle, regardless of the order in which they are provided, making it easy to use. For example, |from = A1 to D3| is equivalent to |from = D3 to A1|.
+	In many cases, it’s not necessary to represent a full board, but rather just a rectangular section—whether due to space constraints, to focus attention on a specific area, or to simplify diagram creation. The |goban| environment includes the \emph{key} |partial|, which defines this region with two opposite vertices of a rectangle, regardless of the order in which they are given. For example, |partial = A1:D3| is equivalent to |partial = D3:A1|.
 	
 	\begin{figure}[H]
 		\centering
@@ -708,51 +724,40 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 			\node[anchor=north, xshift=15em] {
 				\tikz{
 					\node[inner sep=0] (Y) {
-						\begin{goban}[label = {at = {north, west}}, partial = {from = I9 to D6}]
+						\begin{goban}[label = {at = {north, west}}, partial = I9:D6]
 						\end{goban}
 					};	
 					\node[align = left, anchor=north, inner sep=0, yshift=-1em] at (Y.south){
-						{\color{blue}|partial = {from = D9 to I6}|}\\
-						{\color{blue}|partial = {from = I6 to D9}|}\\
-						{\color{red} |partial = {from = D6 to I9}|}\\
-						{\color{red} |partial = {from = I9 to D6}|}\\
+						{\color{blue}|partial = D9:I6|}\\
+						{\color{blue}|partial = I6:D9|}\\
+						{\color{red} |partial = D6:I9|}\\
+						{\color{red} |partial = I9:D6|}\\
 					};
 				}
 			};
 		\end{tikzpicture}
 	\end{figure}
 	
-	\begin{key}{/pgfgo/goban/partial=\meta{options}}
-		
-		Controls options for representing partial boards, allowing the delimitation of a specific region of the goban. The two corners can also be given alone, without |from|: |partial = B2:D4|, |partial = {B2, D4}| or |partial = {B2 to D4}| are the same as |partial = {from = B2 to D4}|.
-	\end{key}
-	
-	\begin{key}{/pgfgo/goban/partial/from=\meta{intersection |to| intersection}}
-		
-		Specifies the opposite vertices of the rectangle defining the partial board. These intersections can be any pair of points forming a diagonal of the desired area.
-		
+	\begin{key}{/pgfgo/goban/partial=\meta{intersection}|:|\meta{intersection} or |false|}
+		Shows only a part of the board: the rectangle that has those two intersections as opposite corners, in any order. It can also be written |partial = {B2, D4}| or |partial = {B2 to D4}|. With |false|, it shows the whole board again (for example, after a global |partial| set with |\pgfgoset|).
 	\end{key}
 	
 	\begin{codeexample}[]
 		\tikzset{flecha/.style = {-{latex[]}, line width = 1pt, red}}
 		
-		\begin{goban}[partial = {from = A1 to D3}]
+		\begin{goban}[partial = A1:D3]
 			\draw[flecha] (1,1)--(4,3); % From A1 to D3
 		\end{goban}
 		
-		\begin{goban}[partial = {from = A9 to I6}]
+		\begin{goban}[partial = A9:I6]
 			\draw[flecha] (1,9)--(9,6); % From A9 to I6
 		\end{goban}
 		
-		\begin{goban}[partial = {from = E2 to B4}]
+		\begin{goban}[partial = E2:B4]
 			\draw[flecha] (5,2)--(2,4); % From E2 to B4
 		\end{goban}
 	\end{codeexample}
 	
-	\begin{key}{/pgfgo/goban/partial/false}
-		Shows the whole board again (for example, after a global |partial| set with |\pgfgoset|).
-	\end{key}
-
 	\subsection{Board Labels}
 	
 	Labels are the alphanumeric indicators (letters and numbers) that appear on the sides of the board to identify intersections.
@@ -821,10 +826,10 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 			\begin{goban}[12, label = {at = {all}}]
 			\end{goban}
 			
-			\begin{goban}[partial = {from = A6 to I9}, label = {at = north}]
+			\begin{goban}[partial = A6:I9, label = {at = north}]
 			\end{goban}
 			
-			\begin{goban}[partial = {from = B2 to E4}, label = {at = {north, east}}]
+			\begin{goban}[partial = B2:E4, label = {at = {north, east}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -859,7 +864,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	
 	\begin{key}{/pgfgo/goban/label/color = \meta{color} (initially black)}
 		
-		Defines the text color of the labels. Its old name, |text color|, still works.
+		Defines the text color of the labels.
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/columns = \meta{letters, numbers or kanji} (initially letters)}
@@ -919,7 +924,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Turns captures on. When a move leaves an opposing group without liberties, that group is removed from the board. If it leaves its own group without liberties (a suicide), that group is removed. Stones placed with |\stone| and |\stones| also count; neutral stones and prisoners do not. A move outside a partial board also captures. A move on an occupied point produces a warning, because it is not possible in a game. With |kernel = expl3|, this \emph{key} raises an error.
 
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			\pgfgoset{goban = {5, partial = A1:C3}}
 
 			\begin{goban}
 				\moves*{B1,A1,A2}
@@ -943,7 +948,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Captured stones stay on the board, drawn as prisoners (with the style of |\prisoner| and |/pgfgo/prisoner|).
 
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to E3}}}
+			\pgfgoset{goban = {5, partial = A1:E3}}
 
 			\begin{goban}[captures = fade]
 				\stones[w]{C1,D1}
@@ -963,7 +968,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Decides what happens to the marks on a stone when it is captured. It only works with |captures|. Marks on empty points do not change.
 
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}, captures}}
+			\pgfgoset{goban = {5, partial = A1:C3, captures}}
 
 			\begin{goban}
 				\stones[w]{A1}\stones[b]{B1}
@@ -993,7 +998,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		Writes how many prisoners the player (|black| or |b|, |white| or |w|) has in the last |goban| with |captures|: the opponent’s stones that their moves captured.
 
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			\pgfgoset{goban = {5, partial = A1:C3}}
 
 			\begin{goban}[captures]
 				\moves*{B1,A1,A2}
@@ -1247,7 +1252,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		A numbered move on a point where there already was a numbered move of the same |goban| is not drawn: the point still shows the first one, even if it was captured, and "N at M" is noted. Only numbered moves (|\moves*|) that are visible on the board count. It works with both kernels.
 
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A2 to E4}}}
+			\pgfgoset{goban = {5, partial = A2:E4}}
 
 			\begin{goban}[notes]
 				\stones[b]{B3,C2,C4}
@@ -1281,7 +1286,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	The "remember" system stores what is drawn in a |goban| (stones, moves and marks, with their options) to draw it again in another one with |resume|. Moves keep their number and color, and the numbering continues from there. Only what is drawn is stored: the board options (size, |partial|, labels) are given in each |goban|.
 
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 
 		\begin{goban}[new remember]
 			\stones[b]{C2,D3}
@@ -1299,10 +1304,6 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{stylekey}{/pgfgo/goban/remember}
 		Adds what is drawn in this |goban| to the memory, without erasing what was there.
-	\end{stylekey}
-
-	\begin{stylekey}{/pgfgo/goban/add to remember}
-		The same as |remember|. It is an old name: better use |remember|.
 	\end{stylekey}
 
 	\begin{stylekey}{/pgfgo/goban/forget}

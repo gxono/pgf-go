@@ -31,10 +31,10 @@
 	\end{goban}
 \end{codeexample}
 
-\karu\ feels that everything is going well, but he notices that his board includes an |I| instead of omitting it and going directly to |J|. By default, in \pgfgoname, "I" exists and is used both as a coordinate and in the side labels, although it is possible to remove it. There are two ways to do this: setting the global \emph{key} |use i| to |false| (|\pgfgoset{use i = false}|), which would prevent \karu\ from worrying about this throughout the rest of the article, or applying it directly to the board with the same \emph{key} and value.
+\karu\ feels that everything is going well, but he notices that his board includes an |I| instead of omitting it and going directly to |J|. By default, in \pgfgoname, "I" exists and is used both as a coordinate and in the side labels, although it is possible to remove it. There are two ways to do this: setting |goban/use i| to |false| for every board (|\pgfgoset{goban = {use i = false}}|), which would prevent \karu\ from worrying about this throughout the rest of the article, or applying it directly to the board with the same \emph{key} and value.
 
 \begin{codeexample}[width=4.8cm]
-	\pgfgoset{use i = false}
+	\pgfgoset{goban = {use i = false}}
 	
 	\begin{goban}[label = {at = {above, left}}]
 	\end{goban}
@@ -149,7 +149,7 @@ Sometimes we want to focus on a particular region of the board. For this reason,
 
 \begin{figure}[H]
 	\centering
-	\begin{goban}[partial = {from = B2 to E4}, background = false]
+	\begin{goban}[partial = B2:E4, background = false]
 		\stones[b] {C2,B3,C4}
 		\stones[w] {D4,E3,D2}
 		\stone[w, mark = {circle, line = {color = red}}] {C3}
@@ -169,7 +169,7 @@ To draw this board, we start by placing the stones.
 With the \emph{key} |partial|, we can set the range of the board through its \emph{key} |from|. It takes a value of the form |LN to LN|, where each |LN| is one of a pair of opposite vertices of the rectangle.
 
 \begin{codeexample}[]
-	\begin{goban}[partial = {from = B2 to E4}]
+	\begin{goban}[partial = B2:E4]
 		\stones[b] {C2,B3,C4}
 		\stones[w] {D4,E3,D2,C3}
 	\end{goban}
@@ -178,7 +178,7 @@ With the \emph{key} |partial|, we can set the range of the board through its \em
 To remove the line of the board, we use the \emph{key} |line| of the |background| of the |goban|.
 
 \begin{codeexample}[]
-	\begin{goban}[partial = {from = B2 to E4}, background = {line = false}]
+	\begin{goban}[partial = B2:E4, background = {line = false}]
 		\stones[b] {C2,B3,C4}
 		\stones[w] {D4,E3,D2,C3}
 	\end{goban}
@@ -196,7 +196,7 @@ This macro is quite broad and is documented on its own page. For now, we need to
 \end{itemize}
 
 \begin{codeexample}[]
-	\begin{goban}[partial = {from = B2 to E4}, background = {line = false}]
+	\begin{goban}[partial = B2:E4, background = {line = false}]
 		\stones[b] {C2,B3,C4}
 		\stones[w] {D4,E3,D2}
 		\mark[custom = {!}] {D3}
@@ -207,7 +207,7 @@ This macro is quite broad and is documented on its own page. For now, we need to
 We can change the line color of a mark with the \emph{key} |mark/line/color|.
 
 \begin{codeexample}[]
-	\begin{goban}[partial = {from = B2 to E4}, background = {line = false}]
+	\begin{goban}[partial = B2:E4, background = {line = false}]
 		\stones[b] {C2,B3,C4}
 		\stones[w] {D4,E3,D2}
 		\mark[custom = {!}] {D3}

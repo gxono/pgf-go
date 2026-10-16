@@ -16,16 +16,16 @@
 \case{Labels: all sides, font size 6pt, bold font, text colour}
 \begin{goban}[5, label = {at = all}]\end{goban}
 \begin{goban}[5, label = {at = {south, west}, font size = 6pt}]\end{goban}
-\begin{goban}[5, label = {at = {south, west}, font = \bfseries, text color = red}]\end{goban}
+\begin{goban}[5, label = {at = {south, west}, font = \bfseries, color = red}]\end{goban}
 
 \case{Labels without I}
 \begin{goban}[9, use i = false, label = {at = {south}}]\end{goban}
 
 \case{Partial boards hide what is outside the window (only C3 visible)}
-\begin{goban}[5, partial = {from = B2 to D4}]\stones[b]{A1,E5}\stones[w]{C3}\marks[circle]{A5}\moves*{A2,C2}\end{goban}
+\begin{goban}[5, partial = B2:D4]\stones[b]{A1,E5}\stones[w]{C3}\marks[circle]{A5}\moves*{A2,C2}\end{goban}
 
 \case{A partial window larger than the board is clipped}
-\begin{goban}[3, partial = {from = B2 to D4}]\stones[b]{*}\end{goban}
+\begin{goban}[3, partial = B2:D4]\stones[b]{*}\end{goban}
 
 \case{Grid and background: false, then true again after a global false}
 \begin{goban}[5, grid = false]\stone{C3}\end{goban}

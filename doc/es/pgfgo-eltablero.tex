@@ -15,7 +15,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	Dado que el tablero es la única macro que utiliza la capa de TikZ, cada intersección puede ser accedida mediante su coordenada alfanumérica (como en \pgfname) o mediante valores numéricos en el sistema de coordenadas de \tikzname. Esto permite combinar la sintaxis intuitiva del Go con las capacidades gráficas de TikZ, lo que resulta especialmente útil para añadir elementos personalizados, como flechas o marcas, directamente sobre el tablero.
 	
 	\begin{codeexample}[width=5.85cm]
-		\begin{goban}[19, partial = {from = J1 to S9},
+		\begin{goban}[19, partial = J1:S9,
 			label = {at = {north, east}}]
 			\stones[b] {K8,R8,Q5,R5,O4,Q4,L3,O3,M2,N2}
 			\mark[black, circle] {K8}
@@ -33,15 +33,15 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {13, label = {at = north}}}
 			
-			\begin{goban}[label = {at = west}, partial = {from = H1 to M3}]
+			\begin{goban}[label = {at = west}, partial = H1:M3]
 				\stone[b]{J2}
 			\end{goban}
 			
-			\begin{goban}[use i = false, partial = {from = H1 to N3}]
+			\begin{goban}[use i = false, partial = H1:N3]
 				\stone[b]{J2}
 			\end{goban}
 			
-			\begin{goban}[use i = false, label = {at = east}, partial = {from = H1 to N3}]
+			\begin{goban}[use i = false, label = {at = east}, partial = H1:N3]
 				\stone[white, mark = {custom = !}] {I2} % Si es I, entonces pasa a J.
 			\end{goban}
 		\end{codeexample}
@@ -158,7 +158,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Permite cambiar el color de las líneas de la cuadrícula.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[grid = {line = {color = blue}}, new remember]
 				\stones[b]{C2,D3}
@@ -175,7 +175,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Establece la opacidad de las líneas de la cuadrícula, desde 0 (transparente) hasta 1 (opaco).
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[new remember]
 				\stones[b]{C2,D3}
@@ -192,7 +192,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Define el grosor de las líneas de la cuadrícula.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[new remember]
 				\stones[b]{C2,D3}
@@ -224,7 +224,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 				\stones[b]{C3}\stone[w]{D4}
 			\end{goban}
 
-			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false, partial = {from = C3 to G7}]
+			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false, partial = C3:G7]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -250,6 +250,10 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 			\begin{goban}[9, grid = {image = {file = cell.png, fit = tile, tiles = 4}}, hoshi = false]
 			\end{goban}
 		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/image/rotate =\meta{ángulo}, |random| o \meta{mínimo}|:|\meta{máximo} (initially 0)}
+		Gira la imagen, como |background/fill/image/rotate|: en cuartos de vuelta, y con |random| o un rango, cada baldosa con el suyo.
 	\end{key}
 
 	\begin{stylekey}{/pgfgo/goban/grid/image/false}
@@ -352,7 +356,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Desactiva completamente el borde del tablero, eliminando tanto el contorno como el relleno. Esto es útil para diagramas minimalistas o cuando el fondo del documento ya proporciona el contraste necesario.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[new remember]
 				\stones[b]{C2,D3}
@@ -373,7 +377,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Determina si el relleno del fondo del tablero está activo. Si se desactiva, el área dentro del borde será transparente, mostrando solo el contorno (si está habilitado).
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {line = {color = red}}, new remember]
 				\stones[b]{C2,D3}
@@ -390,7 +394,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Define el color de relleno del tablero.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {fill = {color = orange!40}}, new remember]
 				\stones[b]{C2,D3}
@@ -407,7 +411,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Controla la opacidad del relleno, desde 0 (transparente) hasta 1 (opaco).
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {fill = {color = orange!40}}, new remember]
 				\stones[b]{C2,D3}
@@ -429,7 +433,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 				\marks[circle]{E5, C3}
 			\end{goban}
 
-			\begin{goban}[9, background = {fill = {image = {file = wood.jpg}}, rounded corners = 6pt}, partial = {from = A1 to E5}]
+			\begin{goban}[9, background = {fill = {image = {file = wood.jpg}}, rounded corners = 6pt}, partial = A1:E5]
 				\marks[triangle]{C3}
 			\end{goban}
 		\end{codeexample}
@@ -440,19 +444,19 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image/fit =\meta{stretch, cover o tile} (initially cover)}
-		Cómo ocupa la imagen el fondo del tablero completo. |stretch| la estira hasta ocupar todo el fondo, sin mantener la proporción. |cover| la agranda o la achica, manteniendo la proporción, hasta cubrir el fondo, centrada: lo que sobra no se ve. |tile| la repite como baldosas, desde una esquina, un borde o el centro del tablero completo (ver |from|).
+		Cómo ocupa la imagen el fondo del tablero completo. |stretch| la estira hasta ocupar todo el fondo, sin mantener la proporción. |cover| la agranda o la achica, manteniendo la proporción, hasta cubrir el fondo, centrada: lo que sobra no se ve. |tile| la repite como baldosas, desde una esquina, un borde o el centro del tablero completo (ver |anchor|).
 
 		\begin{codeexample}[]
 			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}]
 			\end{goban}
 
-			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}, partial = {from = D4 to H8}]
+			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}, partial = D4:H8]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image/anchor =\meta{posición} (initially south west)}
-		Con |fit = tile|, desde dónde se ponen las baldosas (antes se llamaba |from|, que sigue funcionando), en el fondo del tablero completo. Con una esquina (|south west|, |south east|, |north west| o |north east|), en esa esquina queda una baldosa entera. Con un borde (|north|, |south|, |east| o |west|), la primera baldosa queda contra ese borde, centrada a lo largo de él. Con |center|, una baldosa queda en el centro del tablero.
+		Con |fit = tile|, desde dónde se ponen las baldosas, en el fondo del tablero completo. Con una esquina (|south west|, |south east|, |north west| o |north east|), en esa esquina queda una baldosa entera. Con un borde (|north|, |south|, |east| o |west|), la primera baldosa queda contra ese borde, centrada a lo largo de él. Con |center|, una baldosa queda en el centro del tablero.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, anchor = north east}}}]
@@ -476,6 +480,18 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 
+	\begin{key}{/pgfgo/goban/background/fill/image/rotate =\meta{ángulo}, |random| o \meta{mínimo}|:|\meta{máximo} (initially 0)}
+		Gira la imagen en cuartos de vuelta: el ángulo se redondea a 0, 90, 180 o 270 grados, para que la imagen girada siga ocupando su lugar sin dejar huecos. Con 90 o 270, el ancho y el alto se intercambian: con |cover| la imagen mantiene la proporción, pero una baldosa de ancho |width| que no es cuadrada queda estirada. Con |random| o un rango, como en |stone/image/rotate| (pág.~\pageref{subsec:piedrasimagen}), cada baldosa tiene su propio giro, siempre el mismo: así se nota menos la repetición.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, background = {fill = {image = {file = wood.jpg, rotate = 90}}}]
+			\end{goban}
+
+			\begin{goban}[5, background = {fill = {image = {file = wood.jpg, fit = tile, width = 1cm, rotate = random}}}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
 	\begin{stylekey}{/pgfgo/goban/background/fill/image/false}
 		Quita la imagen de fondo.
 	\end{stylekey}
@@ -488,7 +504,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Activa o desactiva la línea del borde.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {line = {color = red}}, new remember]
 				\stones[b]{C2,D3}
@@ -505,7 +521,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Define el color de la línea del borde, permitiendo distinguirlo del fondo o de las líneas de la cuadrícula.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {line = {color = red}}, new remember]
 				\stones[b]{C2,D3}
@@ -522,7 +538,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Ajusta la opacidad de la línea del borde.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {line = {color = red}}, new remember]
 				\stones[b]{C2,D3}
@@ -539,7 +555,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Controla el grosor de la línea del borde.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[new remember]
 				\stones[b]{C2,D3}
@@ -556,7 +572,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Ajusta el redondeo de las esquinas del borde, desde 0pt (esquinas rectas) hasta valores mayores para un efecto más suave y estilizado. 
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			\pgfgoset{goban = {5, partial = A1:C3}}
 			
 			\begin{goban}[new remember]
 				\stones[b]{B1,C2}
@@ -574,7 +590,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Ajusta solamente el redondeo de las esquinas exteriores del borde. 
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			\pgfgoset{goban = {5, partial = A1:C3}}
 			
 			\begin{goban}[background = {rounded corners = 0pt}, new remember]
 				\stones[b]{B1,C2}
@@ -592,7 +608,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Ajusta solamente el redondeo de las esquinas interiores del tablero (solo visibles en tableros parciales). 
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			\pgfgoset{goban = {5, partial = A1:C3}}
 			
 			\begin{goban}[background = {rounded corners = 0pt}, new remember]
 				\stones[b]{B1,C2}
@@ -609,7 +625,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Define la separación entre la cuadrícula y el borde, basada por defecto en el radio de las piedras multiplicado por 1.5. Este ajuste asegura que las piedras cercanas al borde no se superpongan con él.
 		
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 			
 			\begin{goban}[background = {sep = 0.625em}, new remember]
 				\stones[b]{C2,D3}
@@ -624,7 +640,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\begin{key}{/pgfgo/goban/background/drop shadow=\meta{options} (default true)}
 		Dibuja una sombra debajo del tablero. Sin valor, la activa.
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 
 			\begin{goban}[background = {drop shadow}, new remember]
 				\stones[b]{C2,D3}
@@ -643,7 +659,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\begin{key}{/pgfgo/goban/background/drop shadow/angle =\meta{float} (initially -45)}
 		Dirección de la sombra, en grados.
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 
 			\begin{goban}[background = {drop shadow}, new remember]
 				\stones[b]{C2,D3}
@@ -658,7 +674,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\begin{key}{/pgfgo/goban/background/drop shadow/offset =\meta{dimension} (initially 1.5pt)}
 		Distancia entre el tablero y su sombra.
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+			\pgfgoset{goban = {5, partial = B2:D4}}
 
 			\begin{goban}[background = {drop shadow}, new remember]
 				\stones[b]{C2,D3}
@@ -680,7 +696,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\subsection{Tablero parcial}
 	
-	En muchas ocasiones, no es necesario representar un tablero completo, sino solo una sección rectangular, ya sea por limitaciones de espacio, para enfocar la atención en una zona específica o para simplificar la creación de diagramas. El entorno |goban| incluye la \emph{key} |partial|, que permite definir esta región mediante la sub-\emph{key} |from|. Esta indica los vértices opuestos de un rectángulo, sin importar el orden en que se especifiquen, lo que facilita su uso. Por ejemplo, |from = A1 to D3| es equivalente a |from = D3 to A1|.
+	En muchas ocasiones, no es necesario representar un tablero completo, sino solo una sección rectangular, ya sea por limitaciones de espacio, para enfocar la atención en una zona específica o para simplificar la creación de diagramas. El entorno |goban| incluye la \emph{key} |partial|, que define esta región con dos vértices opuestos de un rectángulo, sin importar el orden en que se especifiquen. Por ejemplo, |partial = A1:D3| es equivalente a |partial = D3:A1|.
 	
 	\begin{figure}[H]
 		\centering
@@ -710,51 +726,40 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 			\node[anchor=north, xshift=15em] {
 				\tikz{
 					\node[inner sep=0] (Y) {
-						\begin{goban}[label = {at = {north, west}}, partial = {from = I9 to D6}]
+						\begin{goban}[label = {at = {north, west}}, partial = I9:D6]
 						\end{goban}
 					};	
 					\node[align = left, anchor=north, inner sep=0, yshift=-1em] at (Y.south){
-						{\color{blue}|partial = {from = D9 to I6}|}\\
-						{\color{blue}|partial = {from = I6 to D9}|}\\
-						{\color{red} |partial = {from = D6 to I9}|}\\
-						{\color{red} |partial = {from = I9 to D6}|}\\
+						{\color{blue}|partial = D9:I6|}\\
+						{\color{blue}|partial = I6:D9|}\\
+						{\color{red} |partial = D6:I9|}\\
+						{\color{red} |partial = I9:D6|}\\
 					};
 				}
 			};
 		\end{tikzpicture}
 	\end{figure}
 	
-	\begin{key}{/pgfgo/goban/partial=\meta{options}}
-		
-		Controla las opciones para representar tableros parciales, permitiendo delimitar una región específica del goban. Las dos esquinas también pueden darse solas, sin |from|: |partial = B2:D4|, |partial = {B2, D4}| o |partial = {B2 to D4}| son lo mismo que |partial = {from = B2 to D4}|.
-	\end{key}
-	
-	\begin{key}{/pgfgo/goban/partial/from=\meta{intersection |to| intersection}}
-		
-		Especifica los vértices opuestos del rectángulo que define el tablero parcial. Estas intersecciones pueden ser cualquier par de puntos que formen una diagonal del área deseada.
-		
+	\begin{key}{/pgfgo/goban/partial=\meta{intersection}|:|\meta{intersection} o |false|}
+		Muestra solo una parte del tablero: el rectángulo que tiene esas dos intersecciones como esquinas opuestas, en cualquier orden. También puede escribirse |partial = {B2, D4}| o |partial = {B2 to D4}|. Con |false|, vuelve a mostrar el tablero completo (por ejemplo, después de un |partial| global hecho con |\pgfgoset|).
 	\end{key}
 	
 	\begin{codeexample}[]
 		\tikzset{flecha/.style = {-{latex[]}, line width = 1pt, red}}
 		
-		\begin{goban}[partial = {from = A1 to D3}]
+		\begin{goban}[partial = A1:D3]
 			\draw[flecha] (1,1)--(4,3); % Desde A1 hasta D3
 		\end{goban}
 		
-		\begin{goban}[partial = {from = A9 to I6}]
+		\begin{goban}[partial = A9:I6]
 			\draw[flecha] (1,9)--(9,6); % Desde A9 hasta I6
 		\end{goban}
 		
-		\begin{goban}[partial = {from = E2 to B4}]
+		\begin{goban}[partial = E2:B4]
 			\draw[flecha] (5,2)--(2,4); % Desde E2 hasta B4
 		\end{goban}
 	\end{codeexample}	
 	
-	\begin{key}{/pgfgo/goban/partial/false}
-		Vuelve a mostrar el tablero completo (por ejemplo, después de un |partial| global hecho con |\pgfgoset|).
-	\end{key}
-
 	\subsection{Etiquetas del tablero}
 	
 	Las etiquetas son los indicadores alfanuméricos (letras y números) que aparecen en los lados del tablero para identificar las intersecciones.
@@ -823,10 +828,10 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 			\begin{goban}[12, label = {at = {all}}]
 			\end{goban}
 			
-			\begin{goban}[partial = {from = A6 to I9}, label = {at = north}]
+			\begin{goban}[partial = A6:I9, label = {at = north}]
 			\end{goban}
 			
-			\begin{goban}[partial = {from = B2 to E4}, label = {at = {north, east}}]
+			\begin{goban}[partial = B2:E4, label = {at = {north, east}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -861,7 +866,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/label/color = \meta{color} (initially black)}
 		
-		Define el color del texto de las etiquetas. Antes se llamaba |text color|, nombre que sigue funcionando.
+		Define el color del texto de las etiquetas.
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/columns = \meta{letters, numbers o kanji} (initially letters)}
@@ -921,7 +926,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Activa las capturas. Cuando una jugada deja sin libertades a un grupo rival, ese grupo se retira del tablero. Si deja sin libertades a su propio grupo (un suicidio), se retira ese grupo. Las piedras colocadas con |\stone| y |\stones| también cuentan; las neutrales y los prisioneros, no. Una jugada fuera de un tablero parcial también captura. Una jugada en un punto ocupado produce una advertencia, porque en una partida no es posible. Con |kernel = expl3|, esta \emph{key} produce un error.
 
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			\pgfgoset{goban = {5, partial = A1:C3}}
 
 			\begin{goban}
 				\moves*{B1,A1,A2}
@@ -945,7 +950,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Las piedras capturadas quedan en el tablero, dibujadas como prisioneros (con el estilo de |\prisoner| y de |/pgfgo/prisoner|).
 
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to E3}}}
+			\pgfgoset{goban = {5, partial = A1:E3}}
 
 			\begin{goban}[captures = fade]
 				\stones[w]{C1,D1}
@@ -965,7 +970,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Decide qué pasa con las marcas que están sobre una piedra cuando la capturan. Solo tiene efecto con |captures|. Las marcas sobre puntos vacíos no cambian.
 
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}, captures}}
+			\pgfgoset{goban = {5, partial = A1:C3, captures}}
 
 			\begin{goban}
 				\stones[w]{A1}\stones[b]{B1}
@@ -995,7 +1000,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Escribe cuántos prisioneros tiene el jugador (|black| o |b|, |white| o |w|) en el último |goban| con |captures|: las piedras del rival que capturaron sus jugadas.
 
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A1 to C3}}}
+			\pgfgoset{goban = {5, partial = A1:C3}}
 
 			\begin{goban}[captures]
 				\moves*{B1,A1,A2}
@@ -1249,7 +1254,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Una jugada numerada en un punto donde ya hubo una jugada numerada del mismo |goban| no se dibuja: el punto sigue mostrando la primera, aunque haya sido capturada, y se anota «N at M». Solo cuentan las jugadas numeradas (|\moves*|) que se ven en el tablero. Funciona con los dos kernels.
 
 		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = {from = A2 to E4}}}
+			\pgfgoset{goban = {5, partial = A2:E4}}
 
 			\begin{goban}[notes]
 				\stones[b]{B3,C2,C4}
@@ -1283,7 +1288,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	El sistema de «recordar» guarda lo que se dibuja en un |goban| (piedras, jugadas y marcas, con sus opciones) para volver a dibujarlo en otro con |resume|. Las jugadas mantienen su número y su color, y la numeración sigue desde ahí. Solo se guarda lo que se dibuja: las opciones del tablero (tamaño, |partial|, etiquetas) se dan en cada |goban|.
 
 	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
+		\pgfgoset{goban = {5, partial = B2:D4}}
 
 		\begin{goban}[new remember]
 			\stones[b]{C2,D3}
@@ -1301,10 +1306,6 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{stylekey}{/pgfgo/goban/remember}
 		Agrega a la memoria lo que se dibuje en este |goban|, sin borrar lo anterior.
-	\end{stylekey}
-
-	\begin{stylekey}{/pgfgo/goban/add to remember}
-		Lo mismo que |remember|. Es un nombre viejo: conviene usar |remember|.
 	\end{stylekey}
 
 	\begin{stylekey}{/pgfgo/goban/forget}

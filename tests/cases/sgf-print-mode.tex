@@ -9,12 +9,12 @@
 % print-mode.sgf: 19x19, PM[2], 103 moves on isolated points (no captures).
 % no-numbers.sgf: 5x5, PM[0]: B C3, W D3, B C2.
 
-\case{PM[2]: from 99, moves 101--103 are shown as 1--3 / restart = 0: 101--103}
-\begin{goban}[sgf size = print-mode.sgf, scale = 0.6, partial = {from = G8 to P10}]
+\case{PM[2]: from 99, moves 101--103 are shown as 1--3 / restart = false: 101--103}
+\begin{goban}[sgf size = print-mode.sgf, scale = 0.6, partial = G8:P10]
 	\sgf[from = 99]{print-mode.sgf}
 \end{goban}
-\begin{goban}[sgf size = print-mode.sgf, scale = 0.6, partial = {from = G8 to P10}]
-	\sgf[from = 99, restart = 0]{print-mode.sgf}
+\begin{goban}[sgf size = print-mode.sgf, scale = 0.6, partial = G8:P10]
+	\sgf[from = 99, restart = false]{print-mode.sgf}
 \end{goban}
 
 \case{PM[0]: no numbers / numbers: numbered / numbers = false on a file without PM}

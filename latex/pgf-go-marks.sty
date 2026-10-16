@@ -42,14 +42,11 @@
 \__pgfgo_mark_simple_shape:nN {cross}						\pgfgo_mark_cross:
 \__pgfgo_mark_simple_shape:nN {filled~square}		\pgfgo_mark_filled_square:
 \__pgfgo_mark_simple_shape:nN {filled~circle}		\pgfgo_mark_filled_circle:
-%CLAVES: /pgfgo/mark/{t-circle, t-square, dim, tcircle, tsquare}
+%CLAVES: /pgfgo/mark/{t-circle, t-square, dim}
 \__pgfgo_mark_t_shape:nN {t-circle}		\pgfgo_mark_t_circle:
 \__pgfgo_mark_t_shape:nN {t-square}		\pgfgo_mark_t_square:
 %ATENUA EL PUNTO (DD EN SGF): UN CUADRADO DEL COLOR DEL FONDO, TRANSLUCIDO, SOBRE LA PIEDRA Y LA CUADRICULA.
 \__pgfgo_mark_t_shape:nN {dim}				\pgfgo_mark_dim:
-%ALIAS SIN GUION (USADOS EN EL CATALOGO DEL MANUAL)
-\__pgfgo_mark_t_shape:nN {tcircle}		\pgfgo_mark_t_circle:
-\__pgfgo_mark_t_shape:nN {tsquare}		\pgfgo_mark_t_square:
 
 \keys_define:nn { pgfgo / mark }{
 	forget						.code:n	=	{\bool_set_false:N\l_pgfgo_goban_remember_mark_bool},
@@ -431,29 +428,21 @@
 %DEFINE UNA MARCA QUE SE USA COMO LAS DEMAS (\marks[<nombre>], players/<jugador>/mark, territory/mark).
 %EL CODIGO SE DIBUJA CENTRADO EN EL PUNTO, CON EL RADIO DE LA PIEDRA COMO UNIDAD DE LAS COORDENADAS SIN
 %UNIDAD, Y CON LOS COLORES pgfgomarkline Y pgfgomarkfill (mark/line Y mark/fill DEL JUGADOR).
-%LA FORMA VIEJA \pgfgodefinemark{<nombre>}[image = <archivo>, width = <dim>] SIGUE ANDANDO.
 \tl_new:N \l__pgfgo_mark_define_image_tl
 \tl_new:N \l__pgfgo_mark_define_width_tl
 \keys_define:nn {pgfgo / define mark} {
-	%image = <archivo> (FORMA VIEJA) O image = {file = <archivo>, width = <dim>}.
-	image		.code:n		= {
-		\tl_if_in:nnTF {#1} {=}
-			{\keys_set:nn {pgfgo / define mark / image} {#1}}
-			{\tl_set:Nn \l__pgfgo_mark_define_image_tl {#1}}
-	},
-	width		.tl_set:N	= \l__pgfgo_mark_define_width_tl,
+	image		.code:n		= {\keys_set:nn {pgfgo / define mark / image} {#1}},
 }
 \keys_define:nn {pgfgo / define mark / image} {
 	file		.tl_set:N	= \l__pgfgo_mark_define_image_tl,
 	width		.tl_set:N	= \l__pgfgo_mark_define_width_tl,
 }
 
-\NewDocumentCommand \pgfgodefinemark {omo} {
+\NewDocumentCommand \pgfgodefinemark {om} {
 	\group_begin:
 		\tl_clear:N \l__pgfgo_mark_define_image_tl
 		\tl_clear:N \l__pgfgo_mark_define_width_tl
 		\IfValueT {#1} {\keys_set:nn {pgfgo / define mark} {#1}}
-		\IfValueT {#3} {\keys_set:nn {pgfgo / define mark} {#3}}
 		\tl_if_empty:NTF \l__pgfgo_mark_define_image_tl
 			{\group_end: \__pgfgo_mark_define_code:nn {#2}}
 			{

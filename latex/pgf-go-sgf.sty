@@ -59,7 +59,7 @@
 %Y EL TURNO QUEDAN LISTOS PARA SEGUIR LA PARTIDA CON \moves.
 
 %from Y to SON POSICIONES DE JUGADA EN EL ARCHIVO (1, 2, 3...). EL NUMERO QUE SE MUESTRA PUEDE SER OTRO:
-%MN LO CAMBIA, Y restart = n LO REINICIA CADA n JUGADAS (LA n + 1 SE MUESTRA COMO 1). restart = auto Y
+%MN LO CAMBIA, Y restart LO REINICIA EN CADA TRAMO DE step JUGADAS (VER MAS ABAJO). restart = auto Y
 %numbers = auto HACEN LO QUE DICE PM: CON PM[2] SE REINICIA CADA 100, Y CON PM[0] NO SE NUMERA.
 \int_new:N \l__pgfgo_sgf_from_int
 \int_new:N \l__pgfgo_sgf_to_int
@@ -77,11 +77,11 @@
 }
 \tl_new:N \l__pgfgo_sgf_variation_tl
 \bool_new:N \l__pgfgo_sgf_marks_bool
-\tl_new:N \l__pgfgo_sgf_restart_tl
 \tl_new:N \l__pgfgo_sgf_numbers_tl
 \tl_new:N \l__pgfgo_sgf_variations_tl
 \tl_new:N \l__pgfgo_sgf_file_tl
-%restart Y numbers YA RESUELTOS (CON auto, SEGUN PM).
+%restart Y numbers YA RESUELTOS (CON auto, SEGUN PM). restart: 0, NO SE REINICIA; 1, EN CADA TRAMO DE step;
+%2, CADA 100 (PM[2]).
 \int_new:N \l__pgfgo_sgf_restart_int
 \bool_new:N \l__pgfgo_sgf_numbers_bool
 %POSICION DE LA JUGADA EN EL ARCHIVO, NUMERO SIN REINICIAR (SIGUE A MN) Y NUMERO QUE SE MUESTRA.
@@ -108,6 +108,36 @@
 \tl_new:N \l__pgfgo_sgf_mark_tl
 \bool_new:N \l__pgfgo_sgf_remove_warned_bool
 
+%LA NUMERACION DE \sgf, \sgfanimation Y \sgfdiagrams. LAS JUGADAS VAN EN TRAMOS DE step (UNA LISTA REPITE
+%EL ULTIMO TAMANO; EN \sgfdiagrams, CADA TRAMO ES UN DIAGRAMA). restart: true, DESDE EL SEGUNDO TRAMO CADA
+%UNO NUMERA DESDE from; false, LOS NUMEROS DE LA PARTIDA; auto, LO QUE PIDE PM (CON PM[2], CADA 100).
+%from TAMBIEN PRENDE restart. #1: EL ARBOL DE CLAVES, #2: EL PREFIJO DE LAS VARIABLES, #3: step INICIAL.
+%CLAVES: /pgfgo/{sgf, sgf animation, sgf diagrams}/{step, restart}
+%CLAVES: /pgfgo/{sgf, sgf animation, sgf diagrams}/restart/{true, false, auto, from}
+\cs_new_protected:Npn \__pgfgo_sgf_numbering_keys:nnn #1#2#3 {
+	\clist_new:c {l__pgfgo_ #2 _step_clist}
+	\tl_new:c {l__pgfgo_ #2 _restart_tl}
+	\int_new:c {l__pgfgo_ #2 _restart_from_int}
+	\keys_define:nn {#1} {
+		step				.clist_set:c	= {l__pgfgo_ #2 _step_clist},
+		step				.initial:n		= {#3},
+		restart			.code:n				= {\keys_set:nn {#1 / restart} {##1}},
+		restart			.default:n		= {true},
+	}
+	\keys_define:nn {#1 / restart} {
+		true				.code:n				= {\tl_set:cn {l__pgfgo_ #2 _restart_tl} {true}},
+		false				.code:n				= {\tl_set:cn {l__pgfgo_ #2 _restart_tl} {false}},
+		auto				.code:n				= {\tl_set:cn {l__pgfgo_ #2 _restart_tl} {auto}},
+		from				.code:n				= {
+															\tl_set:cn {l__pgfgo_ #2 _restart_tl} {true}
+															\int_set:cn {l__pgfgo_ #2 _restart_from_int} {##1}
+														},
+	}
+	\tl_set:cn {l__pgfgo_ #2 _restart_tl} {auto}
+	\int_set:cn {l__pgfgo_ #2 _restart_from_int} {1}
+}
+\__pgfgo_sgf_numbering_keys:nnn {pgfgo / sgf} {sgf} {100}
+
 \keys_define:nn {pgfgo / sgf} {
 	from				.int_set:N	= \l__pgfgo_sgf_from_int,
 	from				.initial:n	= {1},
@@ -126,8 +156,6 @@
 	marks				.bool_set:N	= \l__pgfgo_sgf_marks_bool,
 	marks				.default:n	= {true},
 	marks				.initial:n	= {true},
-	restart			.tl_set:N		= \l__pgfgo_sgf_restart_tl,
-	restart			.initial:n	= {auto},
 	numbers			.choices:nn	= {true, false, auto}
 		{\tl_set_eq:NN \l__pgfgo_sgf_numbers_tl \l_keys_choice_tl},
 	numbers			.default:n	= {true},
@@ -222,9 +250,17 @@
 			{! \tl_if_empty_p:N \l__pgfgo_sgf_first_tl}
 			{\int_compare_p:nNn {\l__pgfgo_sgf_count_int} = {\l__pgfgo_sgf_from_int}}
 			{\int_set:Nn \l__pgfgo_sgf_shift_int {\l__pgfgo_sgf_first_tl - \l__pgfgo_sgf_number_int}}
+		\int_compare:nNnT {\l__pgfgo_sgf_restart_int} = {1} {\__pgfgo_sgf_block:n {\l__pgfgo_sgf_number_int}}
 		\int_set:Nn \l__pgfgo_sgf_shown_int {
-			\int_compare:nNnTF {\l__pgfgo_sgf_restart_int} > {0}
-				{\int_mod:nn {\l__pgfgo_sgf_number_int - 1} {\l__pgfgo_sgf_restart_int} + 1}
+			\int_case:nnF {\l__pgfgo_sgf_restart_int}
+				{
+					{1} {
+						\int_compare:nNnTF {\l__pgfgo_sgf_block_int} = {1}
+							{\l__pgfgo_sgf_number_int}
+							{\l__pgfgo_sgf_restart_from_int + \l__pgfgo_sgf_number_int - \l__pgfgo_sgf_block_int}
+					}
+					{2} {\int_mod:nn {\l__pgfgo_sgf_number_int - 1} {100} + 1}
+				}
 				{\l__pgfgo_sgf_number_int + \l__pgfgo_sgf_shift_int}
 		}
 		\pgfgo_kernel_move_set_number:n {\l__pgfgo_sgf_shown_int}
@@ -335,15 +371,49 @@
 
 %restart Y numbers SEGUN LA OPCION Y, CON auto, SEGUN PM.
 \cs_new_protected:Npn \__pgfgo_sgf_numbering: {
-	\int_set:Nn \l__pgfgo_sgf_restart_int {
-		\str_if_eq:VnTF \l__pgfgo_sgf_restart_tl {auto}
-			{\int_compare:nNnTF {\l_pgfgo_kernel_sgf_print_int} = {2} {100} {0}}
-			{\l__pgfgo_sgf_restart_tl}
+	\int_zero:N \l__pgfgo_sgf_restart_int
+	\str_if_eq:VnT \l__pgfgo_sgf_restart_tl {true} {\int_set:Nn \l__pgfgo_sgf_restart_int {1}}
+	\str_if_eq:VnT \l__pgfgo_sgf_restart_tl {auto} {
+		\int_compare:nNnT {\l_pgfgo_kernel_sgf_print_int} = {2} {\int_set:Nn \l__pgfgo_sgf_restart_int {2}}
 	}
+	\clist_if_empty:NT \l__pgfgo_sgf_step_clist {\clist_set:Nn \l__pgfgo_sgf_step_clist {100}}
 	\bool_set:Nn \l__pgfgo_sgf_numbers_bool {
 		\str_if_eq_p:Vn \l__pgfgo_sgf_numbers_tl {true} ||
 		(\str_if_eq_p:Vn \l__pgfgo_sgf_numbers_tl {auto} &&
 			! \int_compare_p:nNn {\l_pgfgo_kernel_sgf_print_int} = {0})
+	}
+}
+
+%EN \l__pgfgo_sgf_block_int, LA PRIMERA JUGADA DEL TRAMO DE step EN QUE CAE EL NUMERO #1. LOS TRAMOS QUE
+%REPITEN EL ULTIMO TAMANO DE LA LISTA SE SALTAN DE UNA VEZ.
+\int_new:N \l__pgfgo_sgf_block_int
+\int_new:N \l__pgfgo_sgf_block_size_int
+\int_new:N \l__pgfgo_sgf_block_index_int
+\cs_new_protected:Npn \__pgfgo_sgf_block:n #1 {
+	\int_set:Nn \l__pgfgo_sgf_block_int {1}
+	\int_set:Nn \l__pgfgo_sgf_block_index_int {1}
+	\__pgfgo_sgf_block_loop:n {#1}
+}
+\cs_new_protected:Npn \__pgfgo_sgf_block_loop:n #1 {
+	\int_set:Nn \l__pgfgo_sgf_block_size_int {
+		\int_max:nn {1} {
+			\clist_item:Nn \l__pgfgo_sgf_step_clist
+				{\int_min:nn {\l__pgfgo_sgf_block_index_int} {\clist_count:N \l__pgfgo_sgf_step_clist}}
+		}
+	}
+	\int_compare:nNnT {#1} > {\l__pgfgo_sgf_block_int + \l__pgfgo_sgf_block_size_int - 1} {
+		\int_compare:nNnTF {\l__pgfgo_sgf_block_index_int} < {\clist_count:N \l__pgfgo_sgf_step_clist}
+			{
+				\int_add:Nn \l__pgfgo_sgf_block_int {\l__pgfgo_sgf_block_size_int}
+				\int_incr:N \l__pgfgo_sgf_block_index_int
+				\__pgfgo_sgf_block_loop:n {#1}
+			}
+			{
+				\int_add:Nn \l__pgfgo_sgf_block_int {
+					\int_div_truncate:nn {#1 - \l__pgfgo_sgf_block_int} {\l__pgfgo_sgf_block_size_int}
+						* \l__pgfgo_sgf_block_size_int
+				}
+			}
 	}
 }
 
@@ -456,6 +526,8 @@
 			\int_use:N \l_pgfgo_goban_from_x_int , \int_use:N \l_pgfgo_goban_to_x_int ,
 			\int_use:N \l_pgfgo_goban_from_y_int , \int_use:N \l_pgfgo_goban_to_y_int ,
 			\int_use:N \l__pgfgo_sgf_restart_int ,
+			\int_use:N \l__pgfgo_sgf_restart_from_int ,
+			\clist_use:Nn \l__pgfgo_sgf_step_clist {;} ,
 			\tl_use:N \l__pgfgo_sgf_first_tl
 		}
 		\bool_to_str:N \l_pgfgo_goban_captures_bool
@@ -805,7 +877,6 @@
 \tl_new:N \l__pgfgo_sgfanim_comment_font_tl
 \tl_new:N \l__pgfgo_sgfanim_variation_tl
 \bool_new:N \l__pgfgo_sgfanim_marks_bool
-\tl_new:N \l__pgfgo_sgfanim_restart_tl
 \bool_new:N \l__pgfgo_sgfanim_view_bool
 \bool_new:N \l__pgfgo_sgfanim_layers_bool
 \tl_new:N \l__pgfgo_sgfanim_file_tl
@@ -834,19 +905,13 @@
 																{\tl_set:Nn \l__pgfgo_sgfanim_last_tl {#1}}
 														},
 	last~mark				.initial:n	= {circle},
-	comments				.bool_set:N	= \l__pgfgo_sgfanim_comments_bool,
+	comments				.code:n			= {\keys_set:nn {pgfgo / sgf~animation / comments} {#1}},
 	comments				.default:n	= {true},
-	comment~height	.dim_set:N	= \l__pgfgo_sgfanim_comment_height_dim,
-	comment~height	.initial:n	= {4em},
-	comment~font		.tl_set:N		= \l__pgfgo_sgfanim_comment_font_tl,
-	comment~font		.initial:n	= {\small},
 	%COMO EN \sgf.
 	variation				.tl_set:N		= \l__pgfgo_sgfanim_variation_tl,
 	marks						.bool_set:N	= \l__pgfgo_sgfanim_marks_bool,
 	marks						.default:n	= {true},
 	marks						.initial:n	= {true},
-	restart					.tl_set:N		= \l__pgfgo_sgfanim_restart_tl,
-	restart					.initial:n	= {auto},
 	%LAS ANOTACIONES (TE, BM, GB, ...) Y EL NOMBRE DEL NODO, CON EL COMENTARIO.
 	annotations			.bool_set:N	= \l__pgfgo_sgfanim_annotations_bool,
 	annotations			.default:n	= {true},
@@ -859,6 +924,19 @@
 	layers					.bool_set:N	= \l__pgfgo_sgfanim_layers_bool,
 	layers					.default:n	= {true},
 	layers					.initial:n	= {true},
+}
+
+%COMO EN \sgf.
+\__pgfgo_sgf_numbering_keys:nnn {pgfgo / sgf~animation} {sgfanim} {100}
+
+%LOS COMENTARIOS DE CADA CUADRO, DEBAJO DEL TABLERO, EN UNA CAJA DE ALTO height.
+\keys_define:nn {pgfgo / sgf~animation / comments} {
+	true						.code:n			= {\bool_set_true:N \l__pgfgo_sgfanim_comments_bool},
+	false						.code:n			= {\bool_set_false:N \l__pgfgo_sgfanim_comments_bool},
+	height					.dim_set:N	= \l__pgfgo_sgfanim_comment_height_dim,
+	height					.initial:n	= {4em},
+	font						.tl_set:N		= \l__pgfgo_sgfanim_comment_font_tl,
+	font						.initial:n	= {\small},
 }
 
 \keys_define:nn {pgfgo} {
@@ -959,7 +1037,11 @@
 				from = \bool_if:NTF \l__pgfgo_sgfanim_numbers_bool {1} {\int_eval:n {#1 + 1}},
 				variation = {\exp_not:V \l__pgfgo_sgfanim_variation_tl},
 				marks = \bool_if:NTF \l__pgfgo_sgfanim_marks_bool {true} {false},
-				restart = {\exp_not:V \l__pgfgo_sgfanim_restart_tl},
+				step = {\exp_not:V \l__pgfgo_sgfanim_step_clist},
+				restart = {
+					from = \int_use:N \l__pgfgo_sgfanim_restart_from_int,
+					\exp_not:V \l__pgfgo_sgfanim_restart_tl
+				},
 				numbers = true,
 				last~mark = false
 			}
@@ -1245,7 +1327,6 @@
 %(1-50, 51-100, ...). CADA UNO PARTE DE LA POSICION REAL (LAS JUGADAS ANTERIORES SIN NUMERO, CON LAS
 %CAPTURAS), Y DEBAJO LLEVA SU EPIGRAFE ("Diagram 2 (51-100)") Y SUS NOTAS "N at M". SE USA FUERA DE goban.
 
-\clist_new:N \l__pgfgo_sgfdiag_step_clist
 \int_new:N \l__pgfgo_sgfdiag_from_int
 \int_new:N \l__pgfgo_sgfdiag_to_int
 \tl_new:N \l__pgfgo_sgfdiag_layout_tl
@@ -1253,8 +1334,6 @@
 \tl_new:N \l__pgfgo_sgfdiag_variation_tl
 \tl_new:N \l__pgfgo_sgfdiag_title_tl
 \tl_new:N \l__pgfgo_sgfdiag_font_tl
-\bool_new:N \l__pgfgo_sgfdiag_restart_bool
-\int_new:N \l__pgfgo_sgfdiag_restart_int
 \bool_new:N \l__pgfgo_sgfdiag_numbers_bool
 \tl_new:N \l__pgfgo_sgfdiag_last_tl
 \bool_new:N \l__pgfgo_sgfdiag_notes_bool
@@ -1274,9 +1353,6 @@
 \int_new:N \l__pgfgo_sgfdiag_last_int
 
 \keys_define:nn {pgfgo / sgf~diagrams} {
-	%{5, 10, 3}: DIAGRAMAS DE 5, 10, 3, 3, 3... JUGADAS (EL ULTIMO TAMANO SE REPITE).
-	step						.clist_set:N	= \l__pgfgo_sgfdiag_step_clist,
-	step						.initial:n	= {50},
 	%LOS DIAGRAMAS SON LOS MISMOS (Y CON EL MISMO NUMERO) QUE SIN from: SOLO SE DIBUJAN LOS QUE TIENEN JUGADAS
 	%DESDE from, Y EL PRIMERO EMPIEZA EN from.
 	from						.int_set:N	= \l__pgfgo_sgfdiag_from_int,
@@ -1296,16 +1372,12 @@
 	last~mark				.initial:n	= {false},
 	goban						.tl_set:N		= \l__pgfgo_sgfdiag_goban_tl,
 	variation				.tl_set:N		= \l__pgfgo_sgfdiag_variation_tl,
-	%DESDE EL SEGUNDO, CADA DIAGRAMA NUMERA DESDE restart/from (1).
-	restart					.code:n			= {\keys_set:nn {pgfgo / sgf~diagrams / restart} {#1}},
-	restart					.default:n	= {true},
 	notes						.bool_set:N	= \l__pgfgo_sgfdiag_notes_bool,
 	notes						.default:n	= {true},
 	notes						.initial:n	= {true},
 	title						.tl_set:N		= \l__pgfgo_sgfdiag_title_tl,
 	title						.initial:n	= {\pgfgo_text:n {diagram}},
-	caption~font		.tl_set:N		= \l__pgfgo_sgfdiag_font_tl,
-	caption~font		.initial:n	= {\small},
+	caption					.code:n			= {\keys_set:nn {pgfgo / sgf~diagrams / caption} {#1}},
 	%LOS COMENTARIOS DE LAS JUGADAS DEL DIAGRAMA, DEBAJO DE SUS NOTAS.
 	comments				.bool_set:N	= \l__pgfgo_sgfdiag_comments_bool,
 	comments				.default:n	= {true},
@@ -1320,14 +1392,8 @@
 	annotations			.bool_set:N	= \l__pgfgo_sgfdiag_annotations_bool,
 	annotations			.default:n	= {true},
 	%EL RESULTADO Y EL PUNTAJE DEBAJO DEL ULTIMO DIAGRAMA.
-	result					.bool_set:N	= \l__pgfgo_sgfdiag_result_bool,
+	result					.code:n			= {\keys_set:nn {pgfgo / sgf~diagrams / result} {#1}},
 	result					.default:n	= {true},
-	result					.initial:n	= {true},
-	result~title		.tl_set:N		= \l__pgfgo_sgfdiag_result_title_tl,
-	result~title		.initial:n	= {\pgfgo_text:n {result}},
-	%text: EL RESULTADO EN PALABRAS ("Black wins by resignation"); raw: COMO ESTA EN EL ARCHIVO ("B+R").
-	result~format		.choices:nn	= {text, raw} {\tl_set_eq:NN \l__pgfgo_sgfdiag_result_format_tl \l_keys_choice_tl},
-	result~format		.initial:n	= {text},
 	black~name			.tl_set:N		= \l__pgfgo_sgfdiag_black_tl,
 	black~name			.initial:n	= {\pgfgo_text:n {black}},
 	white~name			.tl_set:N		= \l__pgfgo_sgfdiag_white_tl,
@@ -1336,16 +1402,25 @@
 	layout					.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfdiag_layout_tl {, #1}},
 }
 
-\keys_define:nn {pgfgo / sgf~diagrams / restart} {
-	true						.code:n			= {\bool_set_true:N \l__pgfgo_sgfdiag_restart_bool},
-	false						.code:n			= {\bool_set_false:N \l__pgfgo_sgfdiag_restart_bool},
-	from						.code:n			= {
-															\bool_set_true:N \l__pgfgo_sgfdiag_restart_bool
-															\int_set:Nn \l__pgfgo_sgfdiag_restart_int {#1}
-														},
-	from						.initial:n	= {1},
+%{5, 10, 3}: DIAGRAMAS DE 5, 10, 3, 3, 3... JUGADAS. CON restart, DESDE EL SEGUNDO, CADA DIAGRAMA NUMERA
+%DESDE restart/from.
+\__pgfgo_sgf_numbering_keys:nnn {pgfgo / sgf~diagrams} {sgfdiag} {50}
+
+\keys_define:nn {pgfgo / sgf~diagrams / caption} {
+	font						.tl_set:N		= \l__pgfgo_sgfdiag_font_tl,
+	font						.initial:n	= {\small},
 }
-\bool_set_false:N \l__pgfgo_sgfdiag_restart_bool
+
+\keys_define:nn {pgfgo / sgf~diagrams / result} {
+	true						.code:n			= {\bool_set_true:N \l__pgfgo_sgfdiag_result_bool},
+	false						.code:n			= {\bool_set_false:N \l__pgfgo_sgfdiag_result_bool},
+	title						.tl_set:N		= \l__pgfgo_sgfdiag_result_title_tl,
+	title						.initial:n	= {\pgfgo_text:n {result}},
+	%text: EL RESULTADO EN PALABRAS ("Black wins by resignation"); raw: COMO ESTA EN EL ARCHIVO ("B+R").
+	format					.choices:nn	= {text, raw} {\tl_set_eq:NN \l__pgfgo_sgfdiag_result_format_tl \l_keys_choice_tl},
+	format					.initial:n	= {text},
+}
+\bool_set_true:N \l__pgfgo_sgfdiag_result_bool
 
 \keys_define:nn {pgfgo} {
 	sgf~diagrams		.code:n			= {\keys_set:nn {pgfgo / sgf~diagrams} {#1}}
@@ -1354,11 +1429,11 @@
 %UN DIAGRAMA (DE \sgfdiagrams O DE \sgfproblem) SE ARMA EN \l__pgfgo_sgfdiag_cell_box: EL goban CON LAS
 %JUGADAS #1 A #2 (NUMERADAS DESDE #1) DE LA LINEA \l__pgfgo_sgfdiag_variation_tl, Y DEBAJO EL EPIGRAFE #3 Y
 %LO QUE DIGA #4 (SE EJECUTA DESPUES DEL goban). LAS OPCIONES DEL goban QUE ELIGEN LA PARTE VISIBLE ESTAN EN
-%\l__pgfgo_sgfdiag_window_tl, Y restart EN \l__pgfgo_sgfdiag_restart_tl. EN LA GRILLA (VER pgf-go-layout.sty)
+%\l__pgfgo_sgfdiag_window_tl, Y restart EN \l__pgfgo_sgfdiag_sgf_restart_tl. EN LA GRILLA (VER pgf-go-layout.sty)
 %EL DIAGRAMA TIENE EL ANCHO DE LA CELDA, Y CON fit TODOS LOS TABLEROS USAN LA ESCALA QUE LLENA LA CELDA CON
 %EL PRIMERO (\l__pgfgo_sgfdiag_scale_tl). \l__pgfgo_sgfdiag_align_tl ES LA ALINEACION DE LO QUE VA DEBAJO.
 \tl_new:N \l__pgfgo_sgfdiag_window_tl
-\tl_new:N \l__pgfgo_sgfdiag_restart_tl
+\tl_new:N \l__pgfgo_sgfdiag_sgf_restart_tl
 \tl_new:N \l__pgfgo_sgfdiag_scale_tl
 \tl_new:N \l__pgfgo_sgfdiag_align_tl
 \dim_new:N \l__pgfgo_sgfdiag_width_dim
@@ -1440,7 +1515,7 @@
 						from = \int_eval:n {#1},
 						to = \int_eval:n {#2},
 						variation = {\exp_not:V \l__pgfgo_sgfdiag_variation_tl},
-						restart = {\exp_not:V \l__pgfgo_sgfdiag_restart_tl},
+						restart = {\exp_not:V \l__pgfgo_sgfdiag_sgf_restart_tl},
 						numbers = \bool_if:NTF \l__pgfgo_sgfdiag_numbers_bool {true} {false},
 						last~mark = {\tl_if_empty:NTF \l__pgfgo_sgfdiag_last_tl {false} {\exp_not:V \l__pgfgo_sgfdiag_last_tl}}
 					}
@@ -1495,11 +1570,11 @@
 \tl_new:N \l__pgfgo_sgfdiag_first_tl
 \cs_new_protected:Npn \__pgfgo_sgfdiag_range:nnnn #1#2#3#4 {
 	\int_compare:nNnF {#3} < {\l__pgfgo_sgfdiag_from_int} {
-		\bool_lazy_and:nnTF {\l__pgfgo_sgfdiag_restart_bool} {\int_compare_p:nNn {#2} > {1}}
+		\bool_lazy_and:nnTF {\str_if_eq_p:Vn \l__pgfgo_sgfdiag_restart_tl {true}} {\int_compare_p:nNn {#2} > {1}}
 			{
 				\tl_set:Ne \l__pgfgo_sgfdiag_first_tl {
 					\int_eval:n {
-						\l__pgfgo_sgfdiag_restart_int + \int_max:nn {#2} {\l__pgfgo_sgfdiag_from_int} - (#2)
+						\l__pgfgo_sgfdiag_restart_from_int + \int_max:nn {#2} {\l__pgfgo_sgfdiag_from_int} - (#2)
 					}
 				}
 			}
@@ -1645,7 +1720,9 @@
 		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfdiag_variation_tl
 		\__pgfgo_sgf_size:N \l__pgfgo_sgfdiag_size_tl
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_komi_tl \l_pgfgo_kernel_sgf_komi_tl
-		\tl_set:Ne \l__pgfgo_sgfdiag_restart_tl {\bool_if:NTF \l__pgfgo_sgfdiag_restart_bool {0} {auto}}
+		%CON true, CADA DIAGRAMA SE NUMERA CON \l__pgfgo_sgfdiag_first_tl: \sgf NO REINICIA.
+		\tl_set:Ne \l__pgfgo_sgfdiag_sgf_restart_tl
+			{\str_if_eq:VnTF \l__pgfgo_sgfdiag_restart_tl {auto} {auto} {false}}
 		\tl_set:Ne \l__pgfgo_sgfdiag_window_tl {
 			\bool_if:NT \l__pgfgo_sgfdiag_view_bool {sgf~view = {\exp_not:n {#2}}}
 		}
@@ -1723,8 +1800,7 @@
 	white~to~play				.initial:n	= {\pgfgo_text:n {white~to~play}},
 	%COMO EN \sgfdiagrams (PERO CON LOS COMENTARIOS: ASI SE VE CUALES LINEAS SON CORRECTAS).
 	goban								.tl_set:N		= \l__pgfgo_sgfprob_goban_tl,
-	caption~font				.tl_set:N		= \l__pgfgo_sgfprob_font_tl,
-	caption~font				.initial:n	= {\small},
+	caption							.code:n			= {\keys_set:nn {pgfgo / sgf~problem / caption} {#1}},
 	notes								.bool_set:N	= \l__pgfgo_sgfprob_notes_bool,
 	notes								.default:n	= {true},
 	notes								.initial:n	= {true},
@@ -1744,6 +1820,10 @@
 	margin							.int_set:N	= \l__pgfgo_sgfprob_margin_int,
 	margin							.initial:n	= {1},
 	layout							.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfprob_layout_tl {, #1}},
+}
+\keys_define:nn {pgfgo / sgf~problem / caption} {
+	font								.tl_set:N		= \l__pgfgo_sgfprob_font_tl,
+	font								.initial:n	= {\small},
 }
 \keys_define:nn {pgfgo} {
 	sgf~problem					.code:n			= {\keys_set:nn {pgfgo / sgf~problem} {#1}}
@@ -1780,7 +1860,7 @@
 		{\int_compare_p:nNn {\l__pgfgo_sgfprob_y_to_int} = {\l_pgfgo_kernel_sgf_size_y_int}}
 	}{
 		\tl_set:Ne \l__pgfgo_sgfdiag_window_tl {
-			partial = {from =
+			partial = {
 				\pgfgo_kernel_column_name:n {\l__pgfgo_sgfprob_x_from_int} \int_use:N \l__pgfgo_sgfprob_y_from_int
 				~to~
 				\pgfgo_kernel_column_name:n {\l__pgfgo_sgfprob_x_to_int} \int_use:N \l__pgfgo_sgfprob_y_to_int
@@ -1842,7 +1922,7 @@
 		\keys_set:nn {pgfgo / sgf~problem} {#1}
 		\bool_set_eq:NN \l__pgfgo_sgf_annotations_bool \l__pgfgo_sgfprob_annotations_bool
 		\__pgfgo_sgfdiag_begin:Nn \l__pgfgo_sgfprob_layout_tl {#2}
-		\tl_set:Nn \l__pgfgo_sgfdiag_restart_tl {0}
+		\tl_set:Nn \l__pgfgo_sgfdiag_sgf_restart_tl {false}
 		%LOS DIAGRAMAS DE UN PROBLEMA SIEMPRE VAN NUMERADOS, SIN MARCA DE LA ULTIMA JUGADA.
 		\bool_set_true:N \l__pgfgo_sgfdiag_numbers_bool
 		\tl_clear:N \l__pgfgo_sgfdiag_last_tl

@@ -66,7 +66,7 @@
 \frames{last mark = {square}}{game.sgf}{5}
 
 \case{comments: root comment (frame 0), none (frame 2), "Main line." (frame 4)}
-\frames{comments, comment height = 2em}{game.sgf}{0, 2, 4}
+\frames{comments = {true, height = 2em}}{game.sgf}{0, 2, 4}
 
 \case{goban = {captures}: frames 6 and 7 of the manual's game (7 captures 2)}
 \frames{goban = {captures}}{../../doc/en/game.sgf}{6, 7}
@@ -81,10 +81,14 @@
 \case{setup.sgf with captures: frames 2, 3 (AB, AW and AE after move 3, with a comment) and 4}
 \frames{comments, goban = {captures}}{setup.sgf}{2, 3, 4}
 
-\case{variations.sgf: frame 1 (triangle on D4), frame 2 (square, circle, cross, labels A and B), frame 3 (no marks); variation = 2 frame 3 (triangle); restart = 3 with numbers}
+\case{variations.sgf: frame 1 (triangle on D4), frame 2 (square, circle, cross, labels A and B), frame 3 (no marks); variation = 2 frame 3 (triangle); step = 3, restart with numbers}
 \frames{}{variations.sgf}{1, 2, 3}
 \frames{variation = 2}{variations.sgf}{3}
-\frames{numbers, restart = 3}{variations.sgf}{5}
+\frames{numbers, step = 3, restart}{variations.sgf}{5}
 \samesize{comments, variation = 1.2}{variations.sgf}
+
+\case{comments = \{true, height = 2em, font = \string\itshape\} / comments = \{height = 6em\}: no comments}
+\frames{comments = {true, height = 2em, font = \itshape}}{game.sgf}{0, 2}
+\frames{comments = {height = 6em}}{game.sgf}{2}
 
 \end{document}

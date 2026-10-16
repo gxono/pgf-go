@@ -21,12 +21,12 @@
 \begin{goban}[5, forget]\stones[b]{C2,D3}\stone[w, remember]{B4}\end{goban}
 \begin{goban}[5, resume]\end{goban}
 
-\case{remember and add to remember append to the memory (resume: C3 and E5)}
+\case{remember appends to the memory (resume: C3 and E5)}
 \begin{goban}[5, new remember]\stone{C3}\end{goban}
 \begin{goban}[5, remember]\stone[w]{E5}\end{goban}
 \begin{goban}[5, resume]\end{goban}
 \begin{goban}[5, new remember]\stone{C3}\end{goban}
-\begin{goban}[5, add to remember]\stone[w]{E5}\end{goban}
+\begin{goban}[5, remember]\stone[w]{E5}\end{goban}
 \begin{goban}[5, resume]\end{goban}
 
 \case{Moves keep colour and number; label = forget; numbering continues after resume (4 white, 5 black)}
@@ -47,6 +47,6 @@
 
 \case{resume on a partial view of a remembered full board}
 \begin{goban}[9, new remember]\stones[b]{C3,G7}\stones[w]{D3,G6}\end{goban}
-\begin{goban}[9, resume, partial = {from = A1 to E5}]\end{goban}
+\begin{goban}[9, resume, partial = A1:E5]\end{goban}
 
 \end{document}

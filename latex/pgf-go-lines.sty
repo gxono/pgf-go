@@ -7,7 +7,7 @@
 %LAS SEPARA DE LAS PIEDRAS. TAMBIEN LAS USA \sgf (AR Y LN).
 
 %LAS DOS TIENEN EL MISMO ESTILO, CADA UNA EN SU ARBOL: /pgfgo/arrow Y /pgfgo/line. #1: arrow O line.
-%CLAVES: /pgfgo/{arrow, line}/{color, width, opacity, dash, shorten, halo, remember, forget}
+%CLAVES: /pgfgo/{arrow, line}/{color, width, opacity, dash, shorten, bend, halo, remember, forget}
 %CLAVES: /pgfgo/{arrow, line}/halo/{true, false, color, width}
 \cs_new_protected:Npn \__pgfgo_lines_new:n #1 {
 	\tl_new:c {l__pgfgo_ #1 _color_tl}
@@ -15,6 +15,7 @@
 	\tl_new:c {l__pgfgo_ #1 _opacity_tl}
 	\tl_new:c {l__pgfgo_ #1 _dash_tl}
 	\dim_new:c {l__pgfgo_ #1 _shorten_dim}
+	\fp_new:c {l__pgfgo_ #1 _bend_fp}
 	\bool_new:c {l__pgfgo_ #1 _halo_bool}
 	\tl_new:c {l__pgfgo_ #1 _halo_color_tl}
 	\dim_new:c {l__pgfgo_ #1 _halo_width_dim}
@@ -31,6 +32,9 @@
 		%ACORTA LOS DOS EXTREMOS (POR EJEMPLO, PARA NO TAPAR LAS PIEDRAS).
 		shorten			.dim_set:c	= {l__pgfgo_ #1 _shorten_dim},
 		shorten			.initial:n	= {0pt},
+		%UN ARCO: SALE GIRADA bend GRADOS A LA IZQUIERDA (NEGATIVO, A LA DERECHA), COMO bend left DE TikZ.
+		bend				.fp_set:c		= {l__pgfgo_ #1 _bend_fp},
+		bend				.initial:n	= {0},
 		halo				.code:n			= {\keys_set:nn {pgfgo / #1 / halo} {##1}},
 		halo				.default:n	= {true},
 		remember		.code:n			= {\bool_set_true:N \l_pgfgo_goban_remember_mark_bool},
@@ -68,10 +72,23 @@
 	line				.code:n			= {\keys_set:nn {pgfgo / line} {#1}},
 }
 
-%LA RECTA DE (#1,#2) A (#3,#4).
+%LA RECTA DE (#1,#2) A (#3,#4) O, CON bend, LA CURVA: COMO EN TikZ, LOS PUNTOS DE CONTROL ESTAN A 0.3915
+%DE LA DISTANCIA, EN LAS DIRECCIONES DE SALIDA Y DE LLEGADA (GIRADAS bend Y -bend).
+\fp_new:N \l__pgfgo_lines_bend_fp
 \cs_new_protected:Npn \__pgfgo_lines_path:nnnn #1#2#3#4 {
 	\pgfpathmoveto {\pgfpointxy{#1}{#2}}
-	\pgfpathlineto {\pgfpointxy{#3}{#4}}
+	\fp_compare:nNnTF {\l__pgfgo_lines_bend_fp} = {0}
+		{\pgfpathlineto {\pgfpointxy{#3}{#4}}}
+		{
+			\pgfpathcurveto
+				{\pgfpointxy
+					{\fp_eval:n {#1 + 0.3915 * ((#3 - #1) * cosd(\l__pgfgo_lines_bend_fp) - (#4 - #2) * sind(\l__pgfgo_lines_bend_fp))}}
+					{\fp_eval:n {#2 + 0.3915 * ((#3 - #1) * sind(\l__pgfgo_lines_bend_fp) + (#4 - #2) * cosd(\l__pgfgo_lines_bend_fp))}}}
+				{\pgfpointxy
+					{\fp_eval:n {#3 - 0.3915 * ((#3 - #1) * cosd(\l__pgfgo_lines_bend_fp) + (#4 - #2) * sind(\l__pgfgo_lines_bend_fp))}}
+					{\fp_eval:n {#4 - 0.3915 * ((#4 - #2) * cosd(\l__pgfgo_lines_bend_fp) - (#3 - #1) * sind(\l__pgfgo_lines_bend_fp))}}}
+				{\pgfpointxy{#3}{#4}}
+		}
 }
 
 %LA PUNTA DE arrows.meta CRECE CON EL GROSOR DE LA LINEA (SOBRE TODO A LO LARGO): EL HALO DE UNA FLECHA NO
@@ -112,6 +129,7 @@
 	\bool_lazy_and:nnF {\int_compare_p:nNn {#3} = {#5}} {\int_compare_p:nNn {#4} = {#6}} {
 		\group_begin:
 			\keys_set_exclude_groups:nnn {pgfgo / #1} {preset} {#2}
+			\fp_set_eq:Nc \l__pgfgo_lines_bend_fp {l__pgfgo_ #1 _bend_fp}
 			\pgfonlayer{pgfgo_layer_mark}
 			\pgfscope
 				\pgfpathrectanglecorners

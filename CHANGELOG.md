@@ -6,7 +6,7 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
-- Shines of your own: `stone/shine` (the new name of `drop shine`) takes
+- Shines of your own: `stone/shine` takes
   `image = {file, width, rotate, false}`, an image with transparency centered
   on the stone instead of the drawn shine. The shine is drawn on top of any
   stone, also of a stone image, and does not turn with `stone/image/rotate`:
@@ -29,24 +29,33 @@ All notable changes to `pgf-go` are listed here.
 - Opacity: `mark/line/opacity`, `mark/fill/opacity`, `move/label/opacity`,
   `stone/image/opacity` and `goban/hoshi/opacity`.
 - `stone/drop shadow/color`, `move/label/font` (initially `\bfseries`),
-  `mark/label/font size`, `goban/label/color` (the new name of
-  `text color`), and `goban/hoshi/image/width` and `rotate` (like
+  `mark/label/font size`, `goban/label/color`, and
+  `goban/hoshi/image/width` and `rotate` (like
   `stone/image/rotate`).
 - `\arrow` and `\line`: `dash` (`solid`, `dashed`, `dotted`), `shorten`
-  (both ends) and, for arrows, `tips = both`.
+  (both ends), `bend = <angle>` (an arc instead of a straight line, like
+  `bend left` in TikZ; a negative angle bends it to the right) and, for
+  arrows, `tips = both`.
+- `goban/grid/image/rotate` and `goban/background/fill/image/rotate`, like
+  `stone/image/rotate` but in quarter turns, so that the turned image still
+  fills its place: with `random` or a range, each tile has its own turn.
+- Nested keys for the options of the SGF commands, like `halo`:
+  `\sgfanimation[comments = {true, height = 6em, font = \itshape}]`,
+  `\sgfdiagrams[result = {title = .., format = raw}, caption = {font = ..}]`
+  and `\sgfproblem[caption = {font = ..}]`.
+- `\sgf` and `\sgfanimation` number the moves like `\sgfdiagrams`: `step`
+  (a number or a list) gives the size of the stretches, and
+  `restart = {true, false, auto, from = <n>}` restarts the numbering in each
+  stretch (`auto`, the initial value, follows `PM`).
 - `\sgfdiagrams`: `step` takes a list, and the last number is repeated
   (`step = {5, 10, 3}`: diagrams of 5, 10, 3, 3, 3... moves), and
   `restart = {from = <n>}` numbers each diagram from `<n>` (from the second
   one on: with `step = 99` and `restart = {from = 0}`, move 100 is shown as
   0). `restart` alone is `from = 1`. The first diagram now always keeps the
   numbers of the game, and `restart` works with figures (`FG`).
-- `partial` also takes the two corners alone: `partial = B2:D4`,
-  `partial = {B2, D4}` or `partial = {B2 to D4}`.
-- `goban/background/fill/image/anchor`, the new name of `from`.
 - `\pgfgodefineprofile[from = <profile>]{<name>}{goban = .., all = ..,
   neutral = .., black = .., white = ..}` defines a whole profile at once.
-- `\pgfgodefinemark[image = {file = <file>, width = <dimension>}]{<name>}`;
-  the old form still works.
+- `\pgfgodefinemark[image = {file = <file>, width = <dimension>}]{<name>}`.
 - `\sgf` and `\sgfdiagrams`: `last mark` marks the last move shown.
   `\sgfdiagrams`: `numbers = false`. `to = last` in `\sgf`, `\sgfanimation`
   and `\sgfdiagrams` (a negative number means the same).
@@ -133,8 +142,6 @@ All notable changes to `pgf-go` are listed here.
 
 ### Fixed
 
-- `goban/border`, the old name of `goban/background`, gave an error. It works
-  again, with a warning.
 - `annotations` of `\sgfdiagrams`, `\sgfanimation`, `\sgfproblem` and
   `\sgfcomment` changed all of them at once; now each command has its own.
 - The expl3 kernel expands the coordinates before reading them, as the Lua
@@ -148,6 +155,25 @@ All notable changes to `pgf-go` are listed here.
 
 ### Behaviour changes
 
+- **Keys and commands with new names; the old names were removed.**
+  `partial = B2:D4` (or `{B2, D4}`, `{B2 to D4}`) instead of
+  `partial = {from = B2 to D4}`; `stone/shine` instead of `drop shine`;
+  `goban/label/color` instead of `text color`;
+  `goban/background/fill/image/anchor` instead of `from`;
+  `\pgfgocopyplayers` instead of `\pgfgochooseplayers`;
+  `\sgf[step = 100, restart]` instead of `\sgf[restart = 100]`, and
+  `restart = false` instead of `restart = 0` (also in `\sgfanimation`);
+  `\sgfanimation[comments = {true, height = .., font = ..}]` instead of
+  `comment height` and `comment font`; `\sgfdiagrams[result = {title = ..,
+  format = ..}, caption = {font = ..}]` instead of `result title`,
+  `result format` and `caption font` (also `caption` in `\sgfproblem`);
+  `\pgfgoset{goban = {use i = false}}` instead of `\pgfgoset{use i = false}`;
+  `\pgfgodefinemark[image = {file = ..}]{<name>}` instead of
+  `\pgfgodefinemark{<name>}[image = ..]`.
+- Removed, because they repeated other keys: `goban/border` (use
+  `goban/background`), `goban/add to remember` (use `remember`),
+  `mark/sequence/use` (use `sequence` or `sequence = true`) and the mark
+  shapes `tcircle` and `tsquare` (use `t-circle` and `t-square`).
 - **`\stones` without `b`, `w` or `n` draws neutral stones**, like `\stone`
   and `\marks`. Before, it drew black stones. Write `\stones[b]{...}` for
   black stones.
@@ -158,15 +184,14 @@ All notable changes to `pgf-go` are listed here.
   them in gray, and `mark/fill/color` was only used with `true`. Now the fill
   is on by default and its initial color is gray, so the marks look as
   before. The profiles that said `fill = false` no longer say it.
-- `drop shine` is now `shine`; `drop shine` still works. With an image stone,
-  the shine is drawn on top if it is on (before, image stones had no shine).
-- The profiles use `goban/label/color` instead of `text color`.
+- With an image stone, the shine is drawn on top if it is on (before, image
+  stones had no shine).
 - Without a player, the style options of `\territory` (`mark`, `fill`, ...)
   now apply to the three players. Before, with `auto` they only changed the
   neutral points.
 - `\sgf` and `\sgfanimation` follow `PM` by default: files with `PM[2]`
   restart at 101, and files with `PM[0]` are drawn without numbers by `\sgf`.
-  Use `restart = 0` or `numbers` to get the old behaviour.
+  Use `restart = false` or `numbers` to get the old behaviour.
 - `\sgfdiagrams` writes the result below the last diagram when the file has
   `RE` or territory. Use `result = false` to leave it out.
 - A wrong option in `\marks` (or in `\territory` with `draw = marks`) gives
