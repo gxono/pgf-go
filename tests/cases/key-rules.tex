@@ -1,0 +1,92 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 1
+% expect-errors: 0
+%
+% The rules of the keys: what turns things on and off, the options of /pgfgo
+% in a goban, the style of the stones in \moves, and the keys added with them.
+% The warning is the one of the old key goban/border.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\graphicspath{{images/}}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+
+\pgfgodefineprofile[from = pgfgo]{rules}{
+	goban = {grid = {line = {color = red}}},
+	all = {stone = {radius = 4pt}},
+	black = {stone = {fill = {color = blue}}}}
+\pgfgodefinemark[image = {file = star.pdf, width = 9pt}]{picture}
+
+\begin{document}
+
+\case{A key alone turns it on, false turns it off, options alone do not turn it on: grid, grid/line, label (south and west), background, stone line and fill, drop shadow, shine}
+\begin{goban}[5, grid = false, grid]\stones[b]{C3}\end{goban}
+\begin{goban}[5, grid = {line = false}, hoshi = {at = {B2, D4}}]\stones[b]{C3}\end{goban}
+\begin{goban}[5, label]\end{goban}
+\begin{goban}[5, label = true, label = {color = red}]\end{goban}
+\begin{goban}[5, background = false, background = {fill = {color = blue!20}}]\end{goban}
+\begin{goban}[5, background = {fill = false}, background = {fill}]\end{goban}
+\begin{goban}[5]
+	\stones[b, line = false, line]{A1}\stones[w, fill = false, fill]{B1}
+	\stones[b, drop shadow = {offset = 2pt}]{C1}\stones[b, drop shadow, drop shadow = {offset = 2pt, color = red}]{D1}
+	\stones[b, shine = {angle = 45}]{A3}\stones[b, shine]{B3}\stones[w, drop shine = {true, color = red}]{C3}
+	\stones[b, shine = {true, opacity = 0.5}, scale = 1.6]{E3}
+\end{goban}
+
+\case{\textbackslash stone and \textbackslash stones without a player are neutral}
+\begin{goban}[5]\stones{A1, B1}\stone{C1}\prisoners{D1}\stones[b]{E1}\end{goban}
+
+\case{Territory: fill false (only the outline), line and vertices with options do not turn on}
+\begin{goban}[7]
+	\stones[b]{B1:7}\stones[w]{C1:7}
+	\territory[b, draw = region, fill = false, line]{A1, A7}
+	\territory[w, draw = region, line = {color = red}, vertices = {radius = 3pt}]{D1, G7}
+\end{goban}
+
+\case{Marks: fill false, fill opacity, line opacity, scale, label font size; the style of every player with \textbackslash pgfgoset\{mark = \ldots\}}
+\begin{goban}[5]
+	\marks[filled square, fill = false]{A1}\marks[filled square]{B1}\marks[filled circle, fill = {color = red, opacity = 0.4}]{C1}
+	\marks[circle, line = {opacity = 0.3, width = 2pt}]{D1}\marks[hatched lines, fill = false]{E1}
+	\stones[b]{A3}\marks[b, triangle, scale = 1.5]{A3}\marks[square, scale = 0.6]{B3}
+	\marks[sequence, label = {font size = 5pt}]{C3, D3}\marks[custom = {xy}, scale = 1.4]{E3}
+	\marks[picture]{A5}\marks[picture, scale = 0.6]{B5}
+\end{goban}
+{\pgfgoset{mark = {line = {color = red}, scale = 1.2}}
+\begin{goban}[5]\stones[b]{B2}\marks[circle]{B2, D2}\marks[triangle]{C4}\end{goban}}
+
+\case{Moves: the style of the stone and mark; label font and opacity}
+\begin{goban}[5]
+	\moves*[fill = {color = red}]{A1, B1}
+	\moves*[mark = circle, radius = 4pt]{C1}
+	\moves*[w, shine, label = {font = \itshape, opacity = 0.5}]{D1}
+	\moves[from = 9, b, line = {color = blue, width = 1.5pt}]{E1, E2}
+\end{goban}
+
+\case{The options of /pgfgo in a goban apply only to it; the old key border}
+\begin{goban}[5, stone = {radius = 3pt}, mark = {line = {color = blue}}, players = {white = {stone = {fill = {color = yellow}}}}]
+	\stones[b]{B2}\stones[w]{C2}\marks[circle]{D2}
+\end{goban}
+\begin{goban}[5]\stones[b]{B2}\stones[w]{C2}\marks[circle]{D2}\end{goban}
+\begin{goban}[5, border = {sep = 1.4em}]\end{goban}
+
+\case{partial with the corners alone; background image anchor; hoshi opacity}
+\begin{goban}[9, partial = C3:G7]\stones[b]{E5}\end{goban}
+\begin{goban}[9, partial = {C3, G7}]\stones[b]{E5}\end{goban}
+\begin{goban}[9, partial = {G7 to C3}]\stones[b]{E5}\end{goban}
+\begin{goban}[9, hoshi = {opacity = 0.3, radius = 3pt}]\end{goban}
+
+\case{Arrows and lines: dashed, dotted, shorten, tips at both ends}
+\begin{goban}[5]
+	\stones[b]{B2}\stones[w]{D4}
+	\arrow[shorten = 5pt]{B2}{D4}
+	\arrow[dash = dashed, tips = both]{A5}{E5}
+	\line[dash = dotted, width = 2pt]{A1}{E1}
+	\arrow[dash = dotted, halo = false, color = red]{A4}{A2}
+\end{goban}
+
+\case{A whole profile with \textbackslash pgfgodefineprofile}
+{\pgfgouseprofile{rules}
+\begin{goban}[5]\stones[b]{B2}\stones[w]{C2}\stone{D2}\end{goban}}
+
+\end{document}

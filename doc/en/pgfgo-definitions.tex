@@ -36,7 +36,7 @@ We declare all players and start by defining the appearance of the neutral one.
 			radius = 0.17cm,
 			scale = 1,
 			drop shadow = {true, opacity = 0.5, offset = 1pt, angle = -45},
-			drop shine = {true, angle = 45, color = wainshade}
+			shine = {true, angle = 45, color = wainshade}
 		},
 		move = {
 			label = {
@@ -49,7 +49,7 @@ We declare all players and start by defining the appearance of the neutral one.
 				color = black,
 				width = 1pt,
 			},
-			fill = {false},
+			fill = {true, color = gray},
 			label = {
 				color = black,
 				format = arabic
@@ -65,7 +65,7 @@ Some properties such as line thickness, opacity, and others should be preserved 
 	\pgfgodefineplayer[from = pgfgo-neutral]{pgfgo-white}{
 		stone = {
 			fill = {color = wainwhite},
-			drop shine = {color = white}
+			shine = {color = white}
 		},
 		move = {
 			label = {
@@ -74,7 +74,6 @@ Some properties such as line thickness, opacity, and others should be preserved 
 		},
 		mark = {
 			line 	= {color = black},
-			fill 	= {color = white},
 			label = {color = black}
 		}
 	}
@@ -117,13 +116,13 @@ Some properties such as line thickness, opacity, and others should be preserved 
 		stone = {
 			line = false,
 			radius = 0.19cm,
-			drop shine = {opacity = 0.5}}
+			shine = {opacity = 0.5}}
 	}
 \end{codeexample}
 
 \begin{codeexample}[code only]
 	\pgfgodefineplayer[from = pgfgo-black]{pgfgosmooth-black}{
-		stone = {line = false, drop shine = {opacity = 0.5}}
+		stone = {line = false, shine = {opacity = 0.5}}
 	}
 \end{codeexample}
 
@@ -173,7 +172,7 @@ Some properties such as line thickness, opacity, and others should be preserved 
 			radius = 0.17cm,
 			scale = 1,
 			drop shadow = {true, opacity = 0.5, offset = 1pt, angle = -45},
-			drop shine = {true, angle = 45, color = wainshade}
+			shine = {true, angle = 45, color = wainshade}
 		},
 		move = {
 			label = {
@@ -186,7 +185,6 @@ Some properties such as line thickness, opacity, and others should be preserved 
 				color = waingoban,
 				width = 1pt,
 			},
-			fill = {false},
 			label = {
 				color = waingoban,
 				format = arabic
@@ -264,7 +262,7 @@ Some properties such as line thickness, opacity, and others should be preserved 
 				color = pgfgo!10!black,
 				width = 1pt}},
 		label = {
-			text color = black
+			color = black
 		}
 	}
 \end{codeexample}
@@ -314,7 +312,7 @@ Some properties such as line thickness, opacity, and others should be preserved 
 				color = waingrid,
 				width = 1pt}
 			},
-		label = {text color = waingoban}
+		label = {color = waingoban}
 	}
 \end{codeexample}
 

@@ -30,6 +30,9 @@ BS = "\\"
 # Not documented on purpose.
 UNDOCUMENTED = {
     "/pgfgo/goban/border",                  # old name of goban/background
+    "/pgfgo/players/<player>/stone/drop shine",  # old name of stone/shine
+    "/pgfgo/goban/label/text color",        # old name of goban/label/color
+    "/pgfgo/goban/background/fill/image/from",  # old name of .../image/anchor
     "/pgfgo/mark/tcircle",                  # documented in /pgfgo/mark/t-circle
     "/pgfgo/mark/tsquare",                  # documented in /pgfgo/mark/t-square
     "pgfgonewplayers",                      # internal: creates the three players

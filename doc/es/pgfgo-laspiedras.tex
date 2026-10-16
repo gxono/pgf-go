@@ -10,7 +10,7 @@ Las piedras son los elementos fundamentales. En \pgfgoname, se proporcionan coma
 
 
 \begin{command}{\stones\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
-	Similar a |\stone|, pero permite colocar múltiples piedras con la sintaxis correspondiente (Ver Sintaxis de coordenadas). Si no se indica el jugador, las piedras son \emph{negras}.
+	Similar a |\stone|, pero permite colocar múltiples piedras con la sintaxis correspondiente (Ver Sintaxis de coordenadas). Si no se indica el jugador, las piedras también son \emph{neutrales}: para piedras negras hay que escribir |\stones[b]{...}|.
 \end{command}
 
 Las piedras, marcas y etiquetas que caen fuera de la región visible de un tablero parcial no se dibujan. Una coordenada que no existe en el tablero (por ejemplo, |E9| en un tablero de 5$\times$5) se ignora y produce una advertencia.
@@ -148,7 +148,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/black}
 	
-	Asigna a la piedra las características del primer jugador (negro por defecto), incluyendo color de relleno y borde. Es el jugador que usa |\stones| si no se especifica otro; |\stone|, en cambio, usa el jugador neutral.
+	Asigna a la piedra las características del primer jugador (negro por defecto), incluyendo color de relleno y borde. Sin |black| (o |b|), |\stone| y |\stones| dibujan piedras neutrales.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -195,7 +195,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 \end{key}
 
 \begin{key}{/pgfgo/stone/neutral}
-	La piedra es del jugador neutral. Es el jugador por defecto de |\stone|.
+	La piedra es del jugador neutral. Es el jugador por defecto de |\stone| y de |\stones|.
 \end{key}
 
 \begin{key}{/pgfgo/stone/n}
@@ -203,7 +203,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 \end{key}
 
 \begin{key}{/pgfgo/stone/drop shadow = \meta{options}}
-	Sombra de la piedra: |true|, |false|, |angle|, |offset| y |opacity|. Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}).
+	Sombra de la piedra: |true|, |false|, |angle|, |offset|, |opacity| y |color|. Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}).
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -215,22 +215,31 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/stone/drop shine = \meta{options}}
-	Brillo de la piedra: |true|, |false|, |angle|, |opacity| y |color|. Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}).
+\begin{key}{/pgfgo/stone/shine = \meta{options} (default true)}
+	Brillo de la piedra, dibujado encima: |true|, |false|, |angle|, |opacity|, |color| e |image|. Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}). Antes se llamaba |drop shine|, nombre que sigue funcionando.
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
 
 		\begin{goban}
-			\stones[b, drop shine = true]{C2,D3}
-			\stone[w, drop shine = {true, color = gray}]{B4}
+			\stones[b, shine]{C2,D3}
+			\stone[w, shine = {true, color = gray}]{B4}
+		\end{goban}
+	\end{codeexample}
+
+	Con |image|, el brillo es una imagen con transparencia (PNG o PDF), centrada en la piedra. Si la piedra también es una imagen, el brillo se dibuja encima y no gira con ella: las piedras pueden tener vetas giradas al azar (|rotate = random|) y la luz siempre del mismo lado.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\stones[w, image = {file = stone-white.png, rotate = random},
+				shine = {true, image = {file = shine.png}}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
 
 
-\begin{key}{/pgfgo/stone/image = \meta{options}}
-	Dibuja la piedra con una imagen (PNG, JPG o PDF) en lugar del círculo: no se dibujan el relleno, el borde ni el brillo, y la imagen no tiene por qué ser redonda. La sombra (|drop shadow|) se dibuja con la forma de la imagen; para eso la imagen tiene que tener transparencia (un PNG con canal alfa o un PDF): la sombra de un JPG es un rectángulo. Un prisionero con imagen se ve translúcido, como cualquier prisionero.
+\label{subsec:piedrasimagen}\begin{key}{/pgfgo/stone/image = \meta{options}}
+	Dibuja la piedra con una imagen (PNG, JPG o PDF) en lugar del círculo: no se dibujan el relleno ni el borde, y la imagen no tiene por qué ser redonda. Si el brillo (|shine|) está prendido, se dibuja encima de la imagen. La sombra (|drop shadow|) se dibuja con la forma de la imagen; para eso la imagen tiene que tener transparencia (un PNG con canal alfa o un PDF): la sombra de un JPG es un rectángulo. Un prisionero con imagen se ve translúcido, como cualquier prisionero.
 
 	Los archivos se buscan como con |\includegraphics| (por ejemplo, en las carpetas de |\graphicspath|). Cada archivo, con cada tamaño, se guarda una sola vez en el PDF, por más piedras que lo usen. La sombra con la forma de la imagen necesita pdf\LaTeX\ o Lua\LaTeX\ (con salida PDF); con otros motores la piedra se dibuja sin sombra y con un aviso.
 
@@ -292,6 +301,10 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 				rotate = -20:20}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/image/opacity = \meta{float} (initially 1)}
+	La opacidad de la imagen.
 \end{key}
 
 \begin{stylekey}{/pgfgo/stone/image/false}
@@ -389,6 +402,15 @@ Los comandos de movimientos permiten representar secuencias de jugadas alternand
 \end{command}
 
 Dentro de un mismo |goban|, la numeración y el turno continúan de un |\moves| al siguiente. Cada |goban| nuevo empieza en la jugada 1 con negras; para continuar una partida en otro diagrama, se usan |from| y |b| o |w|, o bien |resume|.
+
+Las opciones de |\moves| también aceptan las del estilo de la piedra (|fill|, |line|, |radius|, |shine|, |image|, etc.) y |mark|, como |\stones|. Por ejemplo, para marcar la última jugada:
+
+\begin{codeexample}[]
+	\begin{goban}[5, partial = {from = B2 to D4}]
+		\moves{C3, D3, C2}
+		\moves[mark = circle]{B3}
+	\end{goban}
+\end{codeexample}
 
 Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move = {...}}| que es equivalente a |\pgfgoset{players = {all = {move = {...}}}}|.
 
@@ -682,9 +704,9 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/sgf/to = \meta{number} (initially la última jugada)}
+\begin{key}{/pgfgo/sgf/to = \meta{number} o |last| (initially last)}
 
-	Número de la última jugada que se juega. Las siguientes no se dibujan.
+	Número de la última jugada que se juega. Las siguientes no se dibujan. Con |last| (o un número negativo), hasta la última.
 
 	\begin{codeexample}[width=5cm]
 		\begin{goban}[captures]
@@ -740,11 +762,21 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 \end{key}
 
 \begin{key}{/pgfgo/sgf/numbers = \meta{true, false o auto} (default true, initially auto)}
-	Con |false|, las jugadas se dibujan sin número. Con |auto|, hace lo que pide el archivo con |PM|: con |PM[0]|, no se numeran. |\sgfdiagrams| y |\sgfproblem| numeran siempre.
+	Con |false|, las jugadas se dibujan sin número. Con |auto|, hace lo que pide el archivo con |PM|: con |PM[0]|, no se numeran. |\sgfdiagrams| tiene su propia \emph{key} |numbers|, y |\sgfproblem| numera siempre.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variantes.sgf]
 			\sgf[numbers = false]{variantes.sgf}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/last mark = \meta{mark options} o |false| (initially false)}
+	Marca la última jugada que se muestra, con las opciones de una marca (|circle|, |triangle|, |custom = ...|, etc.). Un pase no se marca, y tampoco un punto que el archivo ya marca. La marca va encima del número: sirve sobre todo con |numbers = false|.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variantes.sgf]
+			\sgf[numbers = false, last mark = circle]{variantes.sgf}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -874,8 +906,8 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Primer cuadro.
 \end{key}
 
-\begin{key}{/pgfgo/sgf animation/to = \meta{number} (initially la última jugada)}
-	Último cuadro.
+\begin{key}{/pgfgo/sgf animation/to = \meta{number} o |last| (initially last)}
+	Último cuadro. Con |last| (o |-1|), el de la última jugada.
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/fps = \meta{number} (initially 1)}
@@ -964,8 +996,16 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Primera jugada. Los diagramas son los mismos que sin |from|, con el mismo número: solo se dibujan los que tienen jugadas desde |from|, y el primero empieza en |from|. Con |step = 50| y |from = 120|, el primero es «Diagrama 3 (120--150)».
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/to = \meta{number} (initially la última jugada)}
-	Última jugada.
+\begin{key}{/pgfgo/sgf diagrams/to = \meta{number} o |last| (initially last)}
+	Última jugada. Con |last| (o |-1|), la última de la partida.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/numbers = \meta{boolean} (default true, initially true)}
+	Con |false|, las jugadas de cada diagrama se dibujan sin número (las notas «N at M» siguen usando los números de la partida).
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/last mark = \meta{mark options} o |false| (initially false)}
+	Como |/pgfgo/sgf/last mark|, en cada diagrama.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/restart = \meta{boolean} (default true, initially false)}
@@ -1171,7 +1211,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 
 	\begin{codeexample}[code only]
 		\begin{pgfgolayout}[columns = 4, fit]
-			\begin{goban}[5]\stones{C3}\end{goban}
+			\begin{goban}[5]\stones[b]{C3}\end{goban}
 			\begin{goban}[5]\stones[w]{C3}\end{goban}
 			\sgfdiagrams[step = 5]{partida.sgf}
 		\end{pgfgolayout}
@@ -1179,7 +1219,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{environment}
 
 \begin{pgfgolayout}[columns = 4, fit]
-	\begin{goban}[5]\stones{C3}\end{goban}
+	\begin{goban}[5]\stones[b]{C3}\end{goban}
 	\begin{goban}[5]\stones[w]{C3}\end{goban}
 	\sgfdiagrams[step = 5]{partida.sgf}
 \end{pgfgolayout}

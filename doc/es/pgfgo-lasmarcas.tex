@@ -257,7 +257,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 	\begin{codeexample}[]
 		\begin{goban}[5]
-			\stones{B2, C3}\stone[w]{D4}
+			\stones[b]{B2, C3}\stone[w]{D4}
 			\marks[dim]{A1:5, B2}
 		\end{goban}
 	\end{codeexample}
@@ -290,12 +290,12 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 \end{key}
 
 
-\begin{command}{\pgfgodefinemark\marg{name}\marg{pgf code}}
+\label{subsec:marcaspropias}\begin{command}{\pgfgodefinemark\opt{\oarg{options}}\marg{name}\marg{pgf code}}
 	Define una marca nueva, llamada \meta{name}, que se usa como las demás: en |\marks|, en la opción |mark| de las piedras y de los jugadores, y en |\territory|. Se dibuja en las mismas capas que las otras marcas; sobre un punto vacío, tapa la cuadrícula con un círculo del color del fondo. Una marca con el nombre de otra la reemplaza.
 
-	El \meta{pgf code} se dibuja con el origen en el punto. Las coordenadas sin unidad (las de |\pgfpointxy| y las de Ti\emph{k}Z) se miden en radios de piedra: |(0,0) circle (1)| es del tamaño de la piedra. El color de las líneas es |mark/line/color| del jugador; el de relleno, |mark/fill/color| si |mark/fill| está activo (si no, gris); y el grosor de las líneas, |mark/line/width|. Esos dos colores también se llaman |pgfgomarkline| y |pgfgomarkfill|.
+	El \meta{pgf code} se dibuja con el origen en el punto. Las coordenadas sin unidad (las de |\pgfpointxy| y las de Ti\emph{k}Z) se miden en radios de piedra: |(0,0) circle (1)| es del tamaño de la piedra. El color de las líneas es |mark/line/color| del jugador; el de relleno, |mark/fill/color|; y el grosor de las líneas, |mark/line/width|. Esos dos colores también se llaman |pgfgomarkline| y |pgfgomarkfill|. Con |mark/scale|, la marca cambia de tamaño como las demás.
 
-	Con la forma |\pgfgodefinemark|\marg{name}\oarg{options}, la marca es una imagen: ver |image| y |width| abajo.
+	Con |\pgfgodefinemark[image = {file = |\meta{file}|, width = |\meta{dimension}|}]|\marg{name}, sin \meta{pgf code}, la marca es una imagen: ver |image| abajo. La forma vieja, |\pgfgodefinemark|\marg{name}|[image = |\meta{file}|, width = |\meta{dimension}|]|, sigue funcionando.
 
 	\begin{codeexample}[]
 		\pgfgodefinemark{rombo}{
@@ -306,7 +306,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 			\pgfpathclose
 			\pgfusepath{fill, stroke}}
 		\pgfgodefinemark{barra}{\draw (-0.5,-0.5) -- (0.5,0.5);}
-		\pgfgodefinemark{estrella}[image = star.pdf]
+		\pgfgodefinemark[image = {file = star.pdf}]{estrella}
 
 		\begin{goban}[5, partial = {from = B2 to D4}]
 			\stones[b]{C2,D3}
@@ -318,12 +318,33 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 	\end{codeexample}
 \end{command}
 
-\begin{key}{/pgfgo/define mark/image = \meta{file}}
-	La imagen (PNG, JPG o PDF) de una marca definida con |\pgfgodefinemark|\marg{name}\oarg{options}. Se dibuja centrada en el punto; los colores de las marcas no se aplican.
+\begin{key}{/pgfgo/define mark/image = \meta{options}}
+	La imagen (PNG, JPG o PDF) de una marca definida con |\pgfgodefinemark|. Se dibuja centrada en el punto; los colores de las marcas no se aplican. También puede escribirse |image = |\meta{file}.
 \end{key}
 
-\begin{key}{/pgfgo/define mark/width = \meta{dimension} (initially 1.2 radios de piedra)}
+\begin{key}{/pgfgo/define mark/image/file = \meta{file}}
+	El archivo de la imagen.
+\end{key}
+
+\begin{key}{/pgfgo/define mark/image/width = \meta{dimension} (initially 1.2 radios de piedra)}
 	El ancho de la imagen; el alto mantiene la proporción. Sin esta \emph{key}, la marca es del tamaño del círculo (|circle|), y cambia con el radio de las piedras.
+\end{key}
+
+\begin{key}{/pgfgo/define mark/width = \meta{dimension}}
+	Lo mismo que |image/width|, para la forma vieja.
+\end{key}
+
+
+\begin{key}{/pgfgo/mark/scale = \meta{float} (initially 1)}
+	El tamaño de la marca respecto del de siempre: las formas, las imágenes y el texto.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = {from = B2 to D4}]
+			\stones[b]{C2}
+			\marks[triangle, scale = 1.5]{C2, B3}
+			\marks[circle, scale = 0.6]{D4}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 
@@ -375,21 +396,21 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 
 
-\begin{key}{/pgfgo/mark/fill = \meta{options}}
+\begin{key}{/pgfgo/mark/fill = \meta{options} (default true)}
 	Controla el relleno de las marcas rellenas (|filled square|, |filled circle| y |hatched lines|).
 \end{key}
 
 \begin{key}{/pgfgo/mark/fill/true}
-	Las marcas rellenas usan |fill/color|. Sin |fill = true|, se rellenan de gris.
+	Las marcas rellenas se rellenan con |fill/color|. Es el valor inicial.
 \end{key}
 
 \begin{key}{/pgfgo/mark/fill/false}
-	Las marcas rellenas vuelven a rellenarse de gris. Es el valor inicial.
+	Las marcas rellenas no se rellenan, así que no se ven.
 \end{key}
 
 \begin{key}{/pgfgo/mark/fill/color = \meta{color}}
 	
-	Establece el color de relleno de una marca. Solo se usa con |fill = true|.
+	Establece el color de relleno de una marca (inicialmente, gris).
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = {from = B2 to D4}}}
@@ -616,7 +637,7 @@ Las flechas y las líneas unen dos intersecciones. Se dibujan encima de las pied
 
 	\begin{codeexample}[]
 		\begin{goban}[9]
-			\stones{C3, D3}\stone[w]{E5}
+			\stones[b]{C3, D3}\stone[w]{E5}
 			\arrow{B3}{F3}
 			\arrow[color = red, halo = false]{C7}{G9}
 		\end{goban}
@@ -628,7 +649,7 @@ Las flechas y las líneas unen dos intersecciones. Se dibujan encima de las pied
 
 	\begin{codeexample}[]
 		\begin{goban}[9]
-			\stones{C3, D4}\stone[w]{E5}
+			\stones[b]{C3, D4}\stone[w]{E5}
 			\line{C3}{G7}
 			\line[color = blue, width = 2pt]{A9}{J9}
 		\end{goban}
@@ -647,8 +668,29 @@ Las flechas y las líneas unen dos intersecciones. Se dibujan encima de las pied
 	Opacidad de la flecha.
 \end{key}
 
+\begin{key}{/pgfgo/arrow/dash=\meta{solid, dashed o dotted} (initially solid)}
+	El trazo: continuo, con guiones o con puntos. El halo y la punta son siempre continuos.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/shorten=\meta{dimension} (initially 0pt)}
+	Acorta los dos extremos, por ejemplo para que la flecha no tape las piedras.
+
+	\begin{codeexample}[]
+		\begin{goban}[5]
+			\stones[b]{B2}\stones[w]{D4}
+			\arrow[shorten = 5pt]{B2}{D4}
+			\arrow[dash = dashed, tips = both]{A5}{E5}
+			\line[dash = dotted]{A1}{E1}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
 \begin{key}{/pgfgo/arrow/tip=\meta{arrow tip} (initially Stealth)}
 	La punta de la flecha, una de las de la biblioteca |arrows.meta| de \tikzname, como |Latex| o |Triangle|.
+\end{key}
+
+\begin{key}{/pgfgo/arrow/tips=\meta{end o both} (initially end)}
+	Dónde va la punta: solo al final, o en los dos extremos.
 \end{key}
 
 \begin{key}{/pgfgo/arrow/halo=\meta{halo options} (default true)}
@@ -691,6 +733,14 @@ Las líneas tienen las mismas opciones, salvo |tip|:
 
 \begin{key}{/pgfgo/line/opacity=\meta{number} (initially 1)}
 	Como |/pgfgo/arrow/opacity|.
+\end{key}
+
+\begin{key}{/pgfgo/line/dash=\meta{solid, dashed o dotted} (initially solid)}
+	Como |/pgfgo/arrow/dash|.
+\end{key}
+
+\begin{key}{/pgfgo/line/shorten=\meta{dimension} (initially 0pt)}
+	Como |/pgfgo/arrow/shorten|.
 \end{key}
 
 \begin{key}{/pgfgo/line/halo=\meta{halo options} (default true)}

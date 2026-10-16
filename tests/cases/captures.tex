@@ -15,23 +15,23 @@
 
 \case{A group of setup stones (C1, D1) captured by move 1; prisoners and neutral stones do not count}
 \begin{goban}[5, captures]
-	\stones[w]{C1,D1}\stones{B1,C2,D2}\prisoner[w]{A3}\stone{A4}
+	\stones[w]{C1,D1}\stones[b]{B1,C2,D2}\prisoner[w]{A3}\stone{A4}
 	\moves*{E1}
 \end{goban}
 \begin{goban}[5, captures = fade]
-	\stones[w]{C1,D1}\stones{B1,C2,D2}
+	\stones[w]{C1,D1}\stones[b]{B1,C2,D2}
 	\moves*{E1}
 \end{goban}
 
 \case{Ko: 2 captures 1, 3 retakes at the point of 1 and captures 2}
 \begin{goban}[5, captures]
-	\stones{B3,C2,C4}\stones[w]{D2,D4,E3}
+	\stones[b]{B3,C2,C4}\stones[w]{D2,D4,E3}
 	\moves*[w]{C3}\moves*{D3}\moves*[from = 3, w]{C3}
 \end{goban}
 
 \case{A move outside a partial board still captures (A1-C3 visible; D1 captures C1)}
 \begin{goban}[5, captures, partial = {from = A1 to C3}, label = {at = all}]
-	\stones[w]{C1}\stones{B1,C2}\moves*{D1}
+	\stones[w]{C1}\stones[b]{B1,C2}\moves*{D1}
 \end{goban}
 
 \case{Move 3 is played on C3, which is not empty: one warning}
@@ -39,14 +39,14 @@
 
 \case{Notes with captures: 2 captures 1, 3 retakes on the point of 1 and captures 2; the board shows 1 and the notes are "3 at 1"}
 \begin{goban}[5, captures, notes]
-	\stones{B3,C2,C4}\stones[w]{D2,D4,E3}
+	\stones[b]{B3,C2,C4}\stones[w]{D2,D4,E3}
 	\moves*[w]{C3}\moves*{D3}\moves*[from = 3, w]{C3}
 \end{goban}
 Notes: [\pgfgomovenotes]. Prisoners: black \pgfgoprisoners{black}, white \pgfgoprisoners{w} (1 and 1).
 
 \case{Marks stay on captured points; resume replays the captures}
 \begin{goban}[5, new remember, captures]
-	\stones[w]{A1}\stones{B1}\moves*{A2}\marks[triangle]{A1}
+	\stones[w]{A1}\stones[b]{B1}\moves*{A2}\marks[triangle]{A1}
 \end{goban}
 \begin{goban}[5, resume, captures]\end{goban}
 

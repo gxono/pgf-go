@@ -45,7 +45,7 @@ Score: black \pgfgoscore{b} (11), white \pgfgoscore{white} (17).
 
 \case{Territory after captures: the captured stone (A1) leaves an empty point; score with captures}
 \begin{goban}[5, captures]
-	\stones[w]{A1, C1:5}\stones{A2, B2:5}
+	\stones[w]{A1, C1:5}\stones[b]{A2, B2:5}
 	\moves*{B1}
 	\territory{auto}
 \end{goban}
@@ -60,7 +60,7 @@ Score: black \pgfgoscore{black} (0).
 
 \case{new remember also remembers the territory: resume draws it again; with forget, the white territory (E) is not remembered}
 \begin{goban}[5, new remember]
-	\stones{B1:5}\territory[b]{A1,A5}
+	\stones[b]{B1:5}\territory[b]{A1,A5}
 	\stones[w]{D1:5}\territory[w, forget]{E1,E5}
 \end{goban}
 \begin{goban}[5, resume]\end{goban}

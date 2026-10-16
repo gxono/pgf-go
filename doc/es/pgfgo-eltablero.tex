@@ -17,7 +17,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\begin{codeexample}[width=5.85cm]
 		\begin{goban}[19, partial = {from = J1 to S9},
 			label = {at = {north, east}}]
-			\stones {K8,R8,Q5,R5,O4,Q4,L3,O3,M2,N2}
+			\stones[b] {K8,R8,Q5,R5,O4,Q4,L3,O3,M2,N2}
 			\mark[black, circle] {K8}
 			\stones[white] {K6,R4,R3,P3,N1,O2,Q2}
 			
@@ -26,7 +26,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{goban}
 	\end{codeexample}
 	
-	\begin{key}{/pgfgo/goban/use i=\meta{boolean} (default true, initially true)}
+	\label{subsec:usei}\begin{key}{/pgfgo/goban/use i=\meta{boolean} (default true, initially true)}
 		
 		Permite activar o desactivar el uso de la letra «I» en las coordenadas y etiquetas del tablero. Cuando está desactivada («false»), cualquier referencia a «I» se interpreta como «J».
 		
@@ -107,7 +107,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	La cuadrícula se refiere a las líneas centrales que forman las intersecciones del tablero.
 	
-	\begin{key}{/pgfgo/goban/grid=\meta{options}}
+	\begin{key}{/pgfgo/goban/grid=\meta{options} (default true)}
 		Controla el comportamiento y la apariencia de las líneas centrales del tablero. Este conjunto de opciones permite modificar su visibilidad, color, grosor y separación, ofreciendo un alto grado de personalización.
 	\end{key}
 	
@@ -135,9 +135,23 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		El primer tablero muestra la cuadrícula por defecto.
 	\end{stylekey}
 	
-	\begin{key}{/pgfgo/goban/grid/line=\meta{options}}
+	\begin{key}{/pgfgo/goban/grid/line=\meta{options} (default true)}
 		Permite controlar las líneas de la cuadrícula.
 	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/grid/line/true}
+		Dibuja las líneas. Es el valor inicial.
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/grid/line/false}
+		No dibuja las líneas, pero sí los puntos de estrella (a diferencia de |grid = false|).
+
+		\begin{codeexample}[]
+			\begin{goban}[9, grid = {line = false}, hoshi = {radius = 2pt}]
+				\stones[b]{C3, E5}
+			\end{goban}
+		\end{codeexample}
+	\end{stylekey}
 	
 	\begin{key}{/pgfgo/goban/grid/line/color =\meta{color} (initially black)}
 		
@@ -207,7 +221,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 		\begin{codeexample}[]
 			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false]
-				\stones{C3}\stone[w]{D4}
+				\stones[b]{C3}\stone[w]{D4}
 			\end{goban}
 
 			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false, partial = {from = C3 to G7}]
@@ -224,7 +238,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 		\begin{codeexample}[]
 			\begin{goban}[9, grid = {image = {file = cell.png, fit = tile}}, hoshi = false]
-				\stones{C3}\stone[w]{D4}
+				\stones[b]{C3}\stone[w]{D4}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -252,11 +266,11 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 		\begin{codeexample}[]
 			\begin{goban}[9]
-				\stones{C3, E5}
+				\stones[b]{C3, E5}
 			\end{goban}
 
 			\begin{goban}[9, hoshi = false]
-				\stones{C3, E5}
+				\stones[b]{C3, E5}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -282,6 +296,10 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 
+	\begin{key}{/pgfgo/goban/hoshi/opacity=\meta{float}}
+		Opacidad de los puntos (también de su imagen). Sin esta \emph{key}, toman la opacidad de la cuadrícula.
+	\end{key}
+
 	\begin{key}{/pgfgo/goban/hoshi/at=\meta{coordinates}}
 		Elige los puntos, con la misma sintaxis que |\stones|. Vacío, se usan los de siempre.
 
@@ -292,7 +310,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/hoshi/image=\meta{options}}
-		Dibuja una imagen en cada punto de estrella, en lugar del círculo, de ancho $2 \times$ |radius|.
+		Dibuja una imagen en cada punto de estrella, en lugar del círculo.
 
 		\begin{codeexample}[]
 			\begin{goban}[9, hoshi = {image = {file = hoshi.png}, radius = 3pt}]
@@ -304,6 +322,14 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		El archivo de la imagen.
 	\end{key}
 
+	\begin{key}{/pgfgo/goban/hoshi/image/width=\meta{dimension} (initially $2 \times$ |radius|)}
+		El ancho de la imagen; el alto mantiene la proporción.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/hoshi/image/rotate=\meta{ángulo}, |random| o \meta{mínimo}|:|\meta{máximo} (initially 0)}
+		Gira la imagen, como |stone/image/rotate| (pág.~\pageref{subsec:piedrasimagen}): con |random| o un rango, cada punto con un ángulo distinto, siempre el mismo.
+	\end{key}
+
 	\begin{stylekey}{/pgfgo/goban/hoshi/image/false}
 		Quita la imagen: vuelven los círculos.
 	\end{stylekey}
@@ -312,7 +338,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	El borde del tablero es el contorno que enmarca la cuadrícula y las piedras, proporcionando un límite visual claro. Por defecto, está activo, tiene un fondo blanco y un contorno negro.
 	
-	\begin{key}{/pgfgo/goban/background=\meta{options}}
+	\begin{key}{/pgfgo/goban/background=\meta{options} (default true)}
 		Controla las propiedades del borde del tablero, como su visibilidad, color, grosor y forma, permitiendo una personalización detallada.
 	\end{key}
 	
@@ -338,7 +364,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{stylekey}
 	
-	\begin{key}{/pgfgo/goban/background/fill=\meta{options}}
+	\begin{key}{/pgfgo/goban/background/fill=\meta{options} (default true)}
 		Controla las opciones relacionadas con el relleno del fondo del tablero.
 	\end{key}
 	
@@ -399,7 +425,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 		\begin{codeexample}[]
 			\begin{goban}[9, background = {fill = {image = {file = wood.jpg}}}]
-				\stones{C3}\stone[w]{D4}
+				\stones[b]{C3}\stone[w]{D4}
 				\marks[circle]{E5, C3}
 			\end{goban}
 
@@ -425,14 +451,14 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/fill/image/from =\meta{posición} (initially south west)}
-		Con |fit = tile|, desde dónde se ponen las baldosas, en el fondo del tablero completo. Con una esquina (|south west|, |south east|, |north west| o |north east|), en esa esquina queda una baldosa entera. Con un borde (|north|, |south|, |east| o |west|), la primera baldosa queda contra ese borde, centrada a lo largo de él. Con |center|, una baldosa queda en el centro del tablero.
+	\begin{key}{/pgfgo/goban/background/fill/image/anchor =\meta{posición} (initially south west)}
+		Con |fit = tile|, desde dónde se ponen las baldosas (antes se llamaba |from|, que sigue funcionando), en el fondo del tablero completo. Con una esquina (|south west|, |south east|, |north west| o |north east|), en esa esquina queda una baldosa entera. Con un borde (|north|, |south|, |east| o |west|), la primera baldosa queda contra ese borde, centrada a lo largo de él. Con |center|, una baldosa queda en el centro del tablero.
 
 		\begin{codeexample}[]
-			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, from = north east}}}]
+			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, anchor = north east}}}]
 			\end{goban}
 
-			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, from = north}}}]
+			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, anchor = north}}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -442,7 +468,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image/tiles =\meta{columnas}|x|\meta{filas}}
-		Con |fit = tile|, en lugar de baldosas de ancho |width| desde |from|, divide el fondo del tablero completo en esa malla y pone la imagen en cada celda, estirada a su tamaño. Un solo número vale para las dos direcciones.
+		Con |fit = tile|, en lugar de baldosas de ancho |width| desde |anchor|, divide el fondo del tablero completo en esa malla y pone la imagen en cada celda, estirada a su tamaño. Un solo número vale para las dos direcciones.
 
 		\begin{codeexample}[]
 			\begin{goban}[9, background = {fill = {image = {file = cell.png, fit = tile, tiles = 3x3}}}]
@@ -454,7 +480,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Quita la imagen de fondo.
 	\end{stylekey}
 
-	\begin{key}{/pgfgo/goban/background/line=\meta{options}}
+	\begin{key}{/pgfgo/goban/background/line=\meta{options} (default true)}
 		Controla las opciones de la línea de contorno del fondo.
 	\end{key}
 	
@@ -700,7 +726,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/partial=\meta{options}}
 		
-		Controla las opciones para representar tableros parciales, permitiendo delimitar una región específica del goban.
+		Controla las opciones para representar tableros parciales, permitiendo delimitar una región específica del goban. Las dos esquinas también pueden darse solas, sin |from|: |partial = B2:D4|, |partial = {B2, D4}| o |partial = {B2 to D4}| son lo mismo que |partial = {from = B2 to D4}|.
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/partial/from=\meta{intersection |to| intersection}}
@@ -733,10 +759,20 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	Las etiquetas son los indicadores alfanuméricos (letras y números) que aparecen en los lados del tablero para identificar las intersecciones.
 	
-	\begin{key}{/pgfgo/goban/label=\meta{options}}
+	\begin{key}{/pgfgo/goban/label=\meta{options} (default true)}
 		Controla las propiedades de las etiquetas, como su ubicación y formato.
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/label/true}
+		Pone las letras abajo y los números a la izquierda: |A1| se lee desde la esquina inferior izquierda. Es lo mismo que |label = {at = {south, west}}|; para los cuatro lados, |label = {at = all}|.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, label]
+				\stones[b]{A1}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
 	\begin{key}{/pgfgo/goban/label/false}
 		Desactiva todas las etiquetas.
 	\end{key}
@@ -823,9 +859,9 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Controla la distancia entre las etiquetas y el borde del tablero.
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/label/text color = \meta{color} (initially black)}
+	\begin{key}{/pgfgo/goban/label/color = \meta{color} (initially black)}
 		
-		Define el color del texto de las etiquetas.
+		Define el color del texto de las etiquetas. Antes se llamaba |text color|, nombre que sigue funcionando.
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/columns = \meta{letters, numbers o kanji} (initially letters)}
@@ -845,7 +881,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {north, west}, columns = numbers, rows from = top}]
-				\stones{C4}
+				\stones[b]{C4}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -870,7 +906,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\font\kanji = {file:ipaexm.ttf} at 8pt
 			\begin{goban}[9, label = {at = {north, east}, style = japanese, font = \kanji}]
-				\stones{G7}
+				\stones[b]{G7}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -932,13 +968,13 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 			\pgfgoset{goban = {5, partial = {from = A1 to C3}, captures}}
 
 			\begin{goban}
-				\stones[w]{A1}\stones{B1}
+				\stones[w]{A1}\stones[b]{B1}
 				\marks[triangle]{A1}
 				\moves*{A2}
 			\end{goban}
 
 			\begin{goban}[captured marks = remove]
-				\stones[w]{A1}\stones{B1}
+				\stones[w]{A1}\stones[b]{B1}
 				\marks[triangle]{A1}
 				\moves*{A2} % el triángulo se va con la piedra blanca.
 			\end{goban}
@@ -1081,8 +1117,16 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Marca de cada punto, con |draw = marks|. Es |t-circle| para las negras y |t-square| para las blancas y los puntos neutrales.
 	\end{key}
 
-	\begin{key}{/pgfgo/players/black/territory/fill=\meta{fill options}}
+	\begin{key}{/pgfgo/players/black/territory/fill=\meta{fill options} (default true)}
 		Relleno, con |draw = fill| y |draw = region|.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/true}
+		Dibuja el relleno. Es el valor inicial.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/false}
+		No dibuja el relleno: con |draw = region| quedan solo el contorno o los vértices.
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/fill/color=\meta{color} (initially black)}
@@ -1094,7 +1138,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/line=\meta{line options} (default true)}
-		Contorno de la región, con |draw = region|. Darla, con opciones o sin ellas, dibuja el contorno.
+		Contorno de la región, con |draw = region|. Sola o con |true|, dibuja el contorno; las opciones solas no lo prenden.
 
 		\begin{codeexample}[width=4.75cm]
 			\begin{goban}[label = {at = {above, left}}]
@@ -1106,7 +1150,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 				\territory[b, draw = region, line,
 					vertices]{auto}
 				\territory[w, draw = region,
-					line = {color = red}]{auto}
+					line = {true, color = red}]{auto}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -1136,7 +1180,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/vertices=\meta{options} (default true)}
-		Puntos en los vértices del contorno, con |draw = region|, como los puntos de estrella. Se dibujan en la misma capa que el contorno. Darla, con opciones o sin ellas, los dibuja.
+		Puntos en los vértices del contorno, con |draw = region|, como los puntos de estrella. Se dibujan en la misma capa que el contorno. Sola o con |true|, los dibuja; las opciones solas no los prenden.
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/vertices/true}
@@ -1208,7 +1252,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 			\pgfgoset{goban = {5, partial = {from = A2 to E4}}}
 
 			\begin{goban}[notes]
-				\stones{B3,C2,C4}
+				\stones[b]{B3,C2,C4}
 				\stones[w]{D2,D4,E3}
 				\moves*[w]{C3}
 				\moves*{D3}
@@ -1260,7 +1304,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{stylekey}
 
 	\begin{stylekey}{/pgfgo/goban/add to remember}
-		Lo mismo que |remember|.
+		Lo mismo que |remember|. Es un nombre viejo: conviene usar |remember|.
 	\end{stylekey}
 
 	\begin{stylekey}{/pgfgo/goban/forget}

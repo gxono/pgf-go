@@ -43,16 +43,16 @@ white: \pgfgoregion{w}{polygons} (0), neutral: \pgfgoregion{n}{area} (0).
 
 \case{Line styles: below the stones / red, without fill / vertices without line; the last style of each color wins}
 \begin{goban}
-	\stones{C3 R G7}
-	\territory[b, draw = region, line = {above = false, width = 3pt}]{B2,B8,H8,H2}
+	\stones[b]{C3 R G7}
+	\territory[b, draw = region, line = {true, above = false, width = 3pt}]{B2,B8,H8,H2}
 \end{goban}
 \begin{goban}
-	\stones{D4 R F6}
-	\territory[b, draw = region, fill = {opacity = 0}, line = {color = red}]{B2,B8,H8,H2}
+	\stones[b]{D4 R F6}
+	\territory[b, draw = region, fill = {opacity = 0}, line = {true, color = red}]{B2,B8,H8,H2}
 \end{goban}
 \begin{goban}
 	\territory[w, draw = region, line]{A1,E1,E5,A5}
-	\territory[w, draw = region, vertices = {radius = 3pt, color = blue}]{H8}
+	\territory[w, draw = region, vertices = {true, radius = 3pt, color = blue}]{H8}
 \end{goban}
 
 \case{Partial board (A1-E5): the region is clipped, the line ends like the grid / marks on the vertices}
@@ -67,7 +67,7 @@ white: \pgfgoregion{w}{polygons} (0), neutral: \pgfgoregion{n}{area} (0).
 \case{Players style; neutral is filled point by point; remember and resume}
 {\pgfgoset{players = {black = {territory = {fill = {color = blue}, line}}}, territory = {draw = region}}%
 \begin{goban}[5, new remember]
-	\stones{B1:5}\stones[w]{D1:5}
+	\stones[b]{B1:5}\stones[w]{D1:5}
 	\territory[b]{A1,A5}
 	\territory[n]{C1,C5}
 	\territory[w, forget]{E1,E5}

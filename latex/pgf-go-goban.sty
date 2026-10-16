@@ -50,6 +50,9 @@
 	\pgfdeclarelayer{pgfgo_layer_stone_mark}
 	\pgfdeclarelayer{pgfgo_layer_mark}
 
+	\msg_new:nnn {pgfgo} {deprecated-key}
+		{The~key~'#1'~is~deprecated.~Use~'#2'~instead.}
+
 	\keys_define:nn {pgfgo / goban}{
 		%EMPIEZA UNA MEMORIA NUEVA Y RECUERDA TODO LO QUE SE DIBUJE.
 		new~remember					.code:n			= {
@@ -105,18 +108,32 @@
 		notes							.default:n	= {true},
 
 		grid							.code:n 		= {\keys_set:nx{pgfgo / goban / grid}		{#1}},
+		grid							.default:n	= {true},
 
 		hoshi							.code:n 		= {\keys_set:nn{pgfgo / goban / hoshi}		{#1}},
 		hoshi							.default:n	= {true},
 
-		border						.code:n 		= {\keys_set:nx{pgfgo / goban / border} {#1}}, %DEPRECATED
+		%NOMBRE VIEJO DE background.
+		border						.code:n 		= {
+																			\msg_warning:nnnn {pgfgo} {deprecated-key} {goban/border} {goban/background}
+																			\keys_set:nn {pgfgo / goban / background} {#1}
+																		},
 
 		background						.code:n 		= {\keys_set:nx{pgfgo / goban / background} {#1}},
+		background						.default:n	= {true},
 
 		label							.code:n 		= {\keys_set:nn{pgfgo / goban / label} {#1}},
+		label							.default:n	= {true},
 
+		%CON CLAVES (from, false) O CON LAS ESQUINAS: partial = B2:D4, {B2, D4} O {B2 to D4}.
 		partial						.code:n 		= {	\bool_set_true:N\l_pgfgo_goban_partial_bool
-																			\keys_set:nx{pgfgo / goban / partial} {#1}},
+																			\str_if_in:nnTF {#1} {=}
+																				{\keys_set:nx{pgfgo / goban / partial} {#1}}
+																				{
+																					\str_if_eq:nnTF {#1} {false}
+																						{\keys_set:nn{pgfgo / goban / partial} {false}}
+																						{\__pgfgo_goban_partial_corners:n {#1}}
+																				}},
 
 		scale							.tl_set:N		= \l_pgfgo_goban_scale_tl,
 		scale							.initial:n	= {1},
@@ -150,8 +167,19 @@
 
 		use~i					.default:n	= {true},
 
-		unknown						.code:n			= {\pgfgo_kernel_board_size:V\l_keys_key_str},%INTERNTA PARSEAR EL SIZE
+		%UNA CLAVE DE /pgfgo (stone, players, mark, notes, ...) VALE SOLO PARA ESTE goban; SI NO, ES EL TAMANO.
+		unknown						.code:n			= {
+																			\keys_if_exist:nVTF {pgfgo} \l_keys_key_str
+																				{
+																					\use:e {
+																						\exp_not:N \keys_set:nn {pgfgo}
+																							{\l_keys_key_str \tl_if_empty:nF {#1} {= {\exp_not:n {#1}}}}
+																					}
+																				}
+																				{\pgfgo_kernel_board_size:V\l_keys_key_str}
+																		},
 		}
+	\prg_generate_conditional_variant:Nnn \keys_if_exist:nn {nV} {TF}
 
 	\cs_generate_variant:Nn \pgfgo_kernel_board_size:n {V}
 
@@ -160,6 +188,7 @@
 		true							.code:n			= {\bool_set_true:N \l_pgfgo_goban_grid_bool},
 
 		line							.code:n			= {\keys_set:nn {pgfgo / goban / grid / line} {#1}},
+		line							.default:n	= {true},
 
 		x~sep							.dim_set:N	= \l_pgfgo_goban_grid_x_sep_dim,
 
@@ -186,10 +215,11 @@
 		false							.code:n			= {\tl_clear:N \l_pgfgo_goban_grid_image_tl},
 	}
 
-	%PUNTOS DE ESTRELLA. SIN color, EL DE LA CUADRICULA. at ELIGE LOS PUNTOS (VACIO: LOS DE SIEMPRE).
+	%PUNTOS DE ESTRELLA. SIN color NI opacity, LOS DE LA CUADRICULA. at ELIGE LOS PUNTOS (VACIO: LOS DE SIEMPRE).
 	\bool_new:N \l_pgfgo_goban_hoshi_bool
 	\dim_new:N \l_pgfgo_goban_hoshi_radius_dim
 	\tl_new:N \l_pgfgo_goban_hoshi_color_tl
+	\tl_new:N \l_pgfgo_goban_hoshi_opacity_tl
 	\tl_new:N \l_pgfgo_goban_hoshi_at_tl
 	\keys_define:nn {pgfgo / goban / hoshi}{
 		true							.code:n			= {\bool_set_true:N \l_pgfgo_goban_hoshi_bool},
@@ -197,18 +227,30 @@
 		radius						.dim_set:N	= \l_pgfgo_goban_hoshi_radius_dim,
 		radius						.initial:n	= {1.5pt},
 		color							.tl_set:N		= \l_pgfgo_goban_hoshi_color_tl,
+		opacity						.tl_set:N		= \l_pgfgo_goban_hoshi_opacity_tl,
 		at								.tl_set:N		= \l_pgfgo_goban_hoshi_at_tl,
 		image							.code:n			= {\keys_set:nn {pgfgo / goban / hoshi / image} {#1}},
 	}
-	%UNA IMAGEN EN CADA PUNTO, DE ANCHO 2 radius, EN LUGAR DEL CIRCULO.
+	%UNA IMAGEN EN CADA PUNTO EN LUGAR DEL CIRCULO. SIN width, DE ANCHO 2 radius. rotate: COMO EN
+	%stone/image (UN ANGULO, random O <MIN>:<MAX>, SIEMPRE EL MISMO EN CADA PUNTO).
 	\tl_new:N \l_pgfgo_goban_hoshi_image_tl
+	\tl_new:N \l_pgfgo_goban_hoshi_image_width_tl
+	\tl_new:N \l_pgfgo_goban_hoshi_image_rotate_tl
 	\keys_define:nn {pgfgo / goban / hoshi / image}{
 		file							.tl_set:N		= \l_pgfgo_goban_hoshi_image_tl,
+		width							.tl_set:N		= \l_pgfgo_goban_hoshi_image_width_tl,
+		rotate						.tl_set:N		= \l_pgfgo_goban_hoshi_image_rotate_tl,
 		false							.code:n			= {\tl_clear:N \l_pgfgo_goban_hoshi_image_tl},
 	}
 	\bool_set_true:N \l_pgfgo_goban_hoshi_bool
 
+	%false: SIN LAS LINEAS (LOS HOSHI Y LA IMAGEN DE LA CUADRICULA QUEDAN).
+	\bool_new:N \l_pgfgo_goban_grid_line_bool
+	\bool_set_true:N \l_pgfgo_goban_grid_line_bool
 	\keys_define:nn {pgfgo / goban / grid / line} {
+		true				.code:n			= {\bool_set_true:N \l_pgfgo_goban_grid_line_bool},
+		false				.code:n			= {\bool_set_false:N \l_pgfgo_goban_grid_line_bool},
+
 		color				.tl_set:N		= \l_pgfgo_goban_grid_color_tl,
 		color				.initial:n	= {black},
 
@@ -227,8 +269,10 @@
 		sep											.initial:n	= {0.825em},
 
 		line										.code:n 	= {\keys_set:nn {pgfgo / goban / background / line} {#1}},
+		line										.default:n	= {true},
 
 		fill										.code:n 	= {\keys_set:nn {pgfgo / goban / background / fill} {#1}},
+		fill										.default:n	= {true},
 
 		rounded~corners					.code:n 	= {\keys_set:nn {pgfgo / goban / background / rounded~corners} {#1}},
 
@@ -313,16 +357,22 @@
 		{\tl_set_eq:NN \l_pgfgo_goban_background_image_fit_tl \l_keys_choice_tl},
 	fit					.initial:n	= {cover},
 	width				.tl_set:N		= \l_pgfgo_goban_background_image_width_tl,
-	from				.choices:nn	= {south~west, south, south~east, west, center, east, north~west, north, north~east}
+	anchor			.choices:nn	= {south~west, south, south~east, west, center, east, north~west, north, north~east}
 		{\tl_set_eq:NN \l_pgfgo_goban_background_image_from_tl \l_keys_choice_tl},
-	from				.initial:n	= {south~west},
+	anchor			.initial:n	= {south~west},
+	%NOMBRE VIEJO DE anchor.
+	from				.code:n			= {\keys_set:nn {pgfgo / goban / background / fill / image} {anchor = {#1}}},
 	tiles				.tl_set:N		= \l_pgfgo_goban_background_image_tiles_tl,
 	false				.code:n			= {\tl_clear:N \l_pgfgo_goban_background_image_tl},
 }
 
 	\keys_define:nn {pgfgo / goban / label} {
 		false				.code:n 		= {\keys_set:nn {pgfgo / goban / label / at} {none}},
+		%LETRAS ABAJO Y NUMEROS A LA IZQUIERDA: "A1" SE LEE DESDE LA ESQUINA INFERIOR IZQUIERDA.
+		true				.code:n 		= {\keys_set:nn {pgfgo / goban / label / at} {none, south, west}},
 
+		color				.tl_set:N 	= \l_pgfgo_goban_labels_color_tl,
+		%NOMBRE VIEJO DE color.
 		text~color	.tl_set:N 	= \l_pgfgo_goban_labels_color_tl,
 
 		sep					.dim_set:N 	= \l_pgfgo_goban_labels_sep_dim,
@@ -444,8 +494,35 @@
 	\keys_define:nn {pgfgo / goban / partial}{
 		from				.code:n 	= {\pgfgo_kernel_board_window:n{#1}},
 		false							.bool_set:N = \l_pgfgo_goban_partial_bool,
-		false							.default:n = {false}
+		false							.default:n = {false},
 	}
+	%LAS ESQUINAS #1: <ESQUINA>:<ESQUINA>, <ESQUINA>, <ESQUINA> O <ESQUINA> to <ESQUINA>. EL VALOR SE PASA A
+	%CADENA: EL : PUEDE LLEGAR ACTIVO (babel francais).
+	\msg_new:nnn {pgfgo} {partial-corners}
+		{'#1'~is~not~a~part~of~the~board.~Write~two~corners,~as~in~'partial~=~B2:D4'.}
+	\str_new:N \l__pgfgo_goban_partial_str
+	\seq_new:N \l__pgfgo_goban_partial_seq
+	\cs_new_protected:Npn \__pgfgo_goban_partial_corners:n #1 {
+		\str_set:Nn \l__pgfgo_goban_partial_str {#1}
+		\str_if_in:NnTF \l__pgfgo_goban_partial_str {:}
+			{\seq_set_split:NVV \l__pgfgo_goban_partial_seq \c_colon_str \l__pgfgo_goban_partial_str}
+			{\seq_set_split:NnV \l__pgfgo_goban_partial_seq {,} \l__pgfgo_goban_partial_str}
+		\int_compare:nNnTF {\seq_count:N \l__pgfgo_goban_partial_seq} = {2}
+			{
+				\pgfgo_kernel_board_window:e {
+					\seq_item:Nn \l__pgfgo_goban_partial_seq {1} \c_space_tl to \c_space_tl
+					\seq_item:Nn \l__pgfgo_goban_partial_seq {2}
+				}
+			}
+			{
+				\str_if_in:NnTF \l__pgfgo_goban_partial_str {to}
+					{\pgfgo_kernel_board_window:V \l__pgfgo_goban_partial_str}
+					{\msg_error:nnV {pgfgo} {partial-corners} \l__pgfgo_goban_partial_str}
+			}
+	}
+	\cs_generate_variant:Nn \pgfgo_kernel_board_window:n {V, e}
+	\cs_generate_variant:Nn \msg_error:nnn {nnV}
+	\cs_generate_variant:Nn \seq_set_split:Nnn {NnV}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %----------------------------------------goban-----------------------------------------------%
@@ -677,7 +754,7 @@
 		}
 		\bool_if:NT \l_pgfgo_goban_grid_bool {
 			\tl_if_empty:NTF \l_pgfgo_goban_grid_image_tl
-				{\__pgfgo_goban_grid_lines:nn {#1} {#2}}
+				{\bool_if:NT \l_pgfgo_goban_grid_line_bool {\__pgfgo_goban_grid_lines:nn {#1} {#2}}}
 				{\__pgfgo_goban_grid_image:nn {#1} {#2}}
 			\bool_if:NT \l_pgfgo_goban_hoshi_bool {\__pgfgo_goban_hoshi:}
 		}
@@ -782,7 +859,8 @@
 			{\pgfgo_kernel_hoshi:}
 			{\pgfgo_kernel_points:V \l_pgfgo_goban_hoshi_at_tl}
 		\pgfscope
-		\pgfsetfillopacity{\l_pgfgo_goban_grid_opacity_tl}
+		\pgfsetfillopacity{\tl_if_empty:NTF \l_pgfgo_goban_hoshi_opacity_tl
+			{\l_pgfgo_goban_grid_opacity_tl} {\l_pgfgo_goban_hoshi_opacity_tl}}
 		\tl_if_empty:NTF \l_pgfgo_goban_hoshi_image_tl {
 			\pgfsetfillcolor{\tl_if_empty:NTF \l_pgfgo_goban_hoshi_color_tl
 				{\l_pgfgo_goban_grid_color_tl} {\l_pgfgo_goban_hoshi_color_tl}}
@@ -792,12 +870,27 @@
 			}
 			\pgfusepath{fill}
 		}{
-			\pgfgo_image_load:Ve \l_pgfgo_goban_hoshi_image_tl
-				{width = \dim_eval:n {2 \l_pgfgo_goban_hoshi_radius_dim}}
+			\pgfgo_image_load:Ve \l_pgfgo_goban_hoshi_image_tl {
+				width = \tl_if_empty:NTF \l_pgfgo_goban_hoshi_image_width_tl
+					{\dim_eval:n {2 \l_pgfgo_goban_hoshi_radius_dim}}
+					{\dim_eval:n {\l_pgfgo_goban_hoshi_image_width_tl}}
+			}
 			\seq_map_inline:Nn \l_pgfgo_kernel_points_seq
-				{\__pgfgo_goban_if_visible:nnT ##1 {\pgfgo_image_draw:n {\pgfpointxy ##1}}}
+				{\__pgfgo_goban_if_visible:nnT ##1 {\__pgfgo_goban_hoshi_image:nn ##1}}
 		}
 		\endpgfscope
+	}
+	\cs_new_protected:Npn \__pgfgo_goban_hoshi_image:nn #1#2 {
+		\tl_if_blank:VTF \l_pgfgo_goban_hoshi_image_rotate_tl
+			{\pgfgo_image_draw:n {\pgfpointxy {#1} {#2}}}
+			{
+				\pgfgo_image_angle:Nnn \l_pgfgo_goban_hoshi_image_rotate_tl {#1} {#2}
+				\pgfscope
+					\pgftransformshift {\pgfpointxy {#1} {#2}}
+					\pgftransformrotate {\fp_use:N \l_pgfgo_image_angle_fp}
+					\pgfgo_image_draw:
+				\endpgfscope
+			}
 	}
 	\cs_generate_variant:Nn \pgfgo_kernel_points:n {V}
 

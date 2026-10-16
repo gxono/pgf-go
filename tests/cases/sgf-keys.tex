@@ -1,0 +1,36 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+%
+% The keys of the SGF commands added with the review of the keys: to = last,
+% last mark, numbers in \sgfdiagrams, an annotations option for each command,
+% and sgf comment and sgf info in \pgfgoset.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% game.sgf: 9x9; B E5, W G7, B pass, W C3, B G5.
+% annotated.sgf: annotations and comments.
+
+\case{\textbackslash sgf: to = last and to = -1 play the whole game; last mark on the last move (with and without numbers); last mark = false}
+\begin{goban}\sgf[to = last]{game.sgf}\end{goban}
+\begin{goban}\sgf[to = -1, numbers = false, last mark = circle]{game.sgf}\end{goban}
+\begin{goban}\sgf[to = 4, last mark = {triangle, line = {color = red}}]{game.sgf}\end{goban}
+\begin{goban}\sgf[to = 4, last mark = false]{game.sgf}\end{goban}
+
+\case{\textbackslash pgfgoset\{sgf = \{last mark = \ldots\}\} does not reach the diagrams; \textbackslash sgfdiagrams without numbers and with a last mark, to = last}
+{\pgfgoset{sgf = {last mark = square}}
+\sgfdiagrams[step = 3, numbers = false, last mark = circle, to = last]{game.sgf}}
+
+\case{annotations = false for \textbackslash sgfdiagrams only: \textbackslash sgfcomment keeps them}
+{\pgfgoset{sgf diagrams = {annotations = false}}
+\sgfcomment{annotated.sgf}{1}\par
+\pgfgoset{sgf comment = {annotations = false}}
+\sgfcomment{annotated.sgf}{1}\par
+\pgfgoset{sgf info = {game = 1}}
+\sgfinfo{game.sgf}{SZ}}
+
+\end{document}

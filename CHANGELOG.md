@@ -6,6 +6,45 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- Shines of your own: `stone/shine` (the new name of `drop shine`) takes
+  `image = {file, width, rotate, false}`, an image with transparency centered
+  on the stone instead of the drawn shine. The shine is drawn on top of any
+  stone, also of a stone image, and does not turn with `stone/image/rotate`:
+  stones with their grain turned at random keep the light on the same side.
+  The drawn shine now grows with the radius and the scale of the stone.
+- One rule for every key that turns something on or off: the key alone (or
+  with `true`) turns it on, `false` turns it off, and options alone do not
+  turn it on. New `true`/`false` keys where they were missing:
+  `goban/label = true` (letters below and numbers on the left),
+  `goban/grid/line = false` (no lines, but the star points stay) and
+  `players/<player>/territory/fill = false`.
+- The options of a `goban` accept those of `\pgfgoset` (`stone`, `move`,
+  `mark`, `players`, `notes`, ...), only for that board:
+  `\begin{goban}[9, stone = {radius = 4pt}]`.
+- `\pgfgoset{mark = {...}}` also sets the style of the marks of the three
+  players (`line`, `fill`, `label`, `sequence`, `scale`).
+- `\moves` accepts the options of the style of the stone (`fill`, `line`,
+  `radius`, `shine`, `image`, ...) and `mark`, like `\stones`.
+- `mark/scale` changes the size of the marks (shapes, images and text).
+- Opacity: `mark/line/opacity`, `mark/fill/opacity`, `move/label/opacity`,
+  `stone/image/opacity` and `goban/hoshi/opacity`.
+- `stone/drop shadow/color`, `move/label/font` (initially `\bfseries`),
+  `mark/label/font size`, `goban/label/color` (the new name of
+  `text color`), and `goban/hoshi/image/width` and `rotate` (like
+  `stone/image/rotate`).
+- `\arrow` and `\line`: `dash` (`solid`, `dashed`, `dotted`), `shorten`
+  (both ends) and, for arrows, `tips = both`.
+- `partial` also takes the two corners alone: `partial = B2:D4`,
+  `partial = {B2, D4}` or `partial = {B2 to D4}`.
+- `goban/background/fill/image/anchor`, the new name of `from`.
+- `\pgfgodefineprofile[from = <profile>]{<name>}{goban = .., all = ..,
+  neutral = .., black = .., white = ..}` defines a whole profile at once.
+- `\pgfgodefinemark[image = {file = <file>, width = <dimension>}]{<name>}`;
+  the old form still works.
+- `\sgf` and `\sgfdiagrams`: `last mark` marks the last move shown.
+  `\sgfdiagrams`: `numbers = false`. `to = last` in `\sgf`, `\sgfanimation`
+  and `\sgfdiagrams` (a negative number means the same).
+- `\pgfgoset{sgf comment = {...}}` and `\pgfgoset{sgf info = {...}}`.
 - Layout of the diagrams: `layout = {columns = <n>}` puts the diagrams of
   `\sgfdiagrams` and `\sgfproblem` in a grid of columns of the same width
   (one row per line, so the page can break between rows; the boards of a row
@@ -88,6 +127,10 @@ All notable changes to `pgf-go` are listed here.
 
 ### Fixed
 
+- `goban/border`, the old name of `goban/background`, gave an error. It works
+  again, with a warning.
+- `annotations` of `\sgfdiagrams`, `\sgfanimation`, `\sgfproblem` and
+  `\sgfcomment` changed all of them at once; now each command has its own.
 - The expl3 kernel expands the coordinates before reading them, as the Lua
   kernel already did.
 - The halo of `\arrow` (and of `AR` in `\sgf`) now surrounds the tip evenly.
@@ -99,6 +142,19 @@ All notable changes to `pgf-go` are listed here.
 
 ### Behaviour changes
 
+- **`\stones` without `b`, `w` or `n` draws neutral stones**, like `\stone`
+  and `\marks`. Before, it drew black stones. Write `\stones[b]{...}` for
+  black stones.
+- **Options alone no longer turn on `territory/line` and
+  `territory/vertices`.** Write `line = {true, color = red}`, or `line`
+  alone.
+- `mark/fill = false` leaves the filled marks without fill. Before, it filled
+  them in gray, and `mark/fill/color` was only used with `true`. Now the fill
+  is on by default and its initial color is gray, so the marks look as
+  before. The profiles that said `fill = false` no longer say it.
+- `drop shine` is now `shine`; `drop shine` still works. With an image stone,
+  the shine is drawn on top if it is on (before, image stones had no shine).
+- The profiles use `goban/label/color` instead of `text color`.
 - Without a player, the style options of `\territory` (`mark`, `fill`, ...)
   now apply to the three players. Before, with `auto` they only changed the
   neutral points.
@@ -121,6 +177,9 @@ All notable changes to `pgf-go` are listed here.
 
 ### Tests
 
+- New cases for the rules of the keys and the new keys (`key-rules`) and for
+  the new keys of the SGF commands (`sgf-keys`); `images` draws a shine image
+  over stones turned at random.
 - New cases for problems, print modes, views during the game, results,
   coordinate styles and charsets.
 - The examples can ask for two runs (`% passes: 2`).
