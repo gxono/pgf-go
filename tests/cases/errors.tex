@@ -1,6 +1,6 @@
 % engines: lualatex
 % expect-warnings: 0
-% expect-errors: 6
+% expect-errors: 8
 % render: no
 \documentclass{article}
 \usepackage{../../latex/pgf-go}
@@ -15,5 +15,7 @@
 \begin{goban}[19x]\end{goban}                   % invalid size
 \pgfgousegoban{does-not-exist}                  % unknown profile
 \sgfanimation{game.sgf}                          % animate is not loaded
+\begin{goban}[5, resume = nobody]\end{goban}    % no goban with that name
+\begin{goban}[5, resume]\end{goban}             % resume needs a name
 
 \end{document}

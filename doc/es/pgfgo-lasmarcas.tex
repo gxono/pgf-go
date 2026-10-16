@@ -615,11 +615,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 \end{key}
 
 \begin{key}{/pgfgo/mark/forget}
-	Esta marca no se guarda en la memoria del tablero, aunque el |goban| use |remember|.
-\end{key}
-
-\begin{key}{/pgfgo/mark/remember}
-	Esta marca se guarda en la memoria del tablero, aunque el |goban| use |forget|.
+	|resume| no trae esta marca, aunque se pida |marks| (p.~\pageref{subsec:recordar}).
 \end{key}
 
 
@@ -721,12 +717,8 @@ Las flechas y las líneas unen dos intersecciones. Se dibujan encima de las pied
 	Ancho del halo a cada lado de la flecha.
 \end{key}
 
-\begin{key}{/pgfgo/arrow/remember}
-	Esta flecha se guarda en la memoria del tablero, aunque el |goban| use |forget|.
-\end{key}
-
 \begin{key}{/pgfgo/arrow/forget}
-	Esta flecha no se guarda en la memoria del tablero, aunque el |goban| use |remember|.
+	|resume| no trae esta flecha, aunque se pida |marks|.
 \end{key}
 
 Las líneas tienen las mismas opciones, salvo |tip|:
@@ -773,10 +765,6 @@ Las líneas tienen las mismas opciones, salvo |tip|:
 
 \begin{key}{/pgfgo/line/halo/width=\meta{dimension} (initially 0.8pt)}
 	Como |/pgfgo/arrow/halo/width|.
-\end{key}
-
-\begin{key}{/pgfgo/line/remember}
-	Como |/pgfgo/arrow/remember|.
 \end{key}
 
 \begin{key}{/pgfgo/line/forget}

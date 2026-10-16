@@ -160,12 +160,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[grid = {line = {color = blue}}, new remember]
+			\begin{goban}[grid = {line = {color = blue}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[grid = {line = {color = red}}, resume]
+			\begin{goban}[grid = {line = {color = red}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -177,12 +177,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[new remember]
+			\begin{goban}[name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[grid = {line = {opacity = 0.2}}, resume]
+			\begin{goban}[grid = {line = {opacity = 0.2}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -194,12 +194,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[new remember]
+			\begin{goban}[name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[grid = {line = {width = 1.5pt}}, resume]
+			\begin{goban}[grid = {line = {width = 1.5pt}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -358,12 +358,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[new remember]
+			\begin{goban}[name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[background = false, resume]
+			\begin{goban}[background = false, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{stylekey}
@@ -379,12 +379,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[background = {line = {color = red}}, new remember]
+			\begin{goban}[background = {line = {color = red}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[background = {line = false}, resume]
+			\begin{goban}[background = {line = false}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -396,12 +396,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[background = {fill = {color = orange!40}}, new remember]
+			\begin{goban}[background = {fill = {color = orange!40}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[background = {fill = {color = olive!30}}, resume]
+			\begin{goban}[background = {fill = {color = olive!30}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -413,12 +413,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[background = {fill = {color = orange!40}}, new remember]
+			\begin{goban}[background = {fill = {color = orange!40}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[background = {fill = {color = orange!40}, fill = {opacity = 0.5}}, resume]
+			\begin{goban}[background = {fill = {color = orange!40}, fill = {opacity = 0.5}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 		
@@ -506,12 +506,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[background = {line = {color = red}}, new remember]
+			\begin{goban}[background = {line = {color = red}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[background = {line = false}, resume]
+			\begin{goban}[background = {line = false}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -523,12 +523,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[background = {line = {color = red}}, new remember]
+			\begin{goban}[background = {line = {color = red}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[background = {line = {color = blue}}, resume]
+			\begin{goban}[background = {line = {color = blue}}, resume = a]
 			\end{goban}
 		\end{codeexample}		
 	\end{key}
@@ -540,12 +540,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[background = {line = {color = red}}, new remember]
+			\begin{goban}[background = {line = {color = red}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[background = {line = {color = red}, line = {opacity = 0.5}}, resume]
+			\begin{goban}[background = {line = {color = red}, line = {opacity = 0.5}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -557,12 +557,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[new remember]
+			\begin{goban}[name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[background = {line = {width = 1.5pt}}, resume]
+			\begin{goban}[background = {line = {width = 1.5pt}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -574,12 +574,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = A1:C3}}
 			
-			\begin{goban}[new remember]
+			\begin{goban}[name = a]
 				\stones[b]{B1,C2}
 				\stone[w]{A3}
 			\end{goban}
 			
-			\begin{goban}[background = {rounded corners = 10pt}, resume]
+			\begin{goban}[background = {rounded corners = 10pt}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -592,12 +592,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = A1:C3}}
 			
-			\begin{goban}[background = {rounded corners = 0pt}, new remember]
+			\begin{goban}[background = {rounded corners = 0pt}, name = a]
 				\stones[b]{B1,C2}
 				\stone[w]{A3}
 			\end{goban}
 			
-			\begin{goban}[background = {rounded corners = {outer = 10pt}}, resume]
+			\begin{goban}[background = {rounded corners = {outer = 10pt}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -610,12 +610,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = A1:C3}}
 			
-			\begin{goban}[background = {rounded corners = 0pt}, new remember]
+			\begin{goban}[background = {rounded corners = 0pt}, name = a]
 				\stones[b]{B1,C2}
 				\stone[w]{A3}
 			\end{goban}
 			
-			\begin{goban}[background = {rounded corners = {outer = 8pt, inner = 2pt}}, resume]
+			\begin{goban}[background = {rounded corners = {outer = 8pt, inner = 2pt}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -627,12 +627,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 			
-			\begin{goban}[background = {sep = 0.625em}, new remember]
+			\begin{goban}[background = {sep = 0.625em}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[background = {sep = 1.5em}, resume]
+			\begin{goban}[background = {sep = 1.5em}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -642,12 +642,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 
-			\begin{goban}[background = {drop shadow}, new remember]
+			\begin{goban}[background = {drop shadow}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 
-			\begin{goban}[background = {drop shadow = {color = blue, opacity = 0.3}}, resume]
+			\begin{goban}[background = {drop shadow = {color = blue, opacity = 0.3}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -661,12 +661,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 
-			\begin{goban}[background = {drop shadow}, new remember]
+			\begin{goban}[background = {drop shadow}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 
-			\begin{goban}[background = {drop shadow = {angle = 45}}, resume]
+			\begin{goban}[background = {drop shadow = {angle = 45}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -676,12 +676,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 
-			\begin{goban}[background = {drop shadow}, new remember]
+			\begin{goban}[background = {drop shadow}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 
-			\begin{goban}[background = {drop shadow = {offset = 4pt}}, resume]
+			\begin{goban}[background = {drop shadow = {offset = 4pt}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -1104,12 +1104,8 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Con |auto|, marca también los puntos neutrales.
 	\end{key}
 
-	\begin{key}{/pgfgo/territory/remember}
-		Este territorio se guarda en la memoria del tablero, aunque el |goban| use |forget|.
-	\end{key}
-
 	\begin{key}{/pgfgo/territory/forget}
-		Este territorio no se guarda en la memoria del tablero, aunque el |goban| use |remember|.
+		|resume| no trae este territorio, aunque se pida |territory| (p.~\pageref{subsec:recordar}).
 	\end{key}
 
 	Las demás opciones de |\territory| cambian el estilo del jugador solo para ese comando, como |mark| y |fill| en |\territory[w, mark = {cross}]{auto}|. Sin jugador, cambian el de los tres. El estilo de cada jugador se fija con |/pgfgo/players|:
@@ -1285,36 +1281,70 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 
 	\subsection{Recordar un tablero}
-	El sistema de «recordar» guarda lo que se dibuja en un |goban| (piedras, jugadas y marcas, con sus opciones) para volver a dibujarlo en otro con |resume|. Las jugadas mantienen su número y su color, y la numeración sigue desde ahí. Solo se guarda lo que se dibuja: las opciones del tablero (tamaño, |partial|, etiquetas) se dan en cada |goban|.
+	\label{subsec:recordar}
+	Un |goban| con nombre guarda todo lo que dibuja (piedras, jugadas, marcas, flechas, líneas y territorio, también lo que viene de |\sgf|), junto con sus opciones. Otro |goban| puede empezar con ese tablero tal como quedó, con |resume|, y |\pgfgoview| lo muestra en el texto (p.~\pageref{subsec:vistas}).
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
 
-		\begin{goban}[new remember]
+		\begin{goban}[name = tablero1]
 			\stones[b]{C2,D3}
 			\moves*[w]{B4}
 		\end{goban}
 
-		\begin{goban}[resume]
+		\begin{goban}[resume = tablero1]
 			\moves*{C3} % Sigue con la 2 (negras).
+		\end{goban}
+
+		\begin{goban}[resume = {tablero1, numbers}]
+			\moves*{C3}
 		\end{goban}
 	\end{codeexample}
 
-	\begin{stylekey}{/pgfgo/goban/new remember}
-		Vacía la memoria y guarda lo que se dibuje en este |goban|.
-	\end{stylekey}
+	\begin{key}{/pgfgo/goban/name=\meta{name}}
+		Guarda con ese nombre todo lo que se dibuje en este |goban|, junto con sus opciones. El nombre es libre (por ejemplo, |gob:tablero1|). Otro |goban| con el mismo nombre lo reemplaza.
+	\end{key}
 
-	\begin{stylekey}{/pgfgo/goban/remember}
-		Agrega a la memoria lo que se dibuje en este |goban|, sin borrar lo anterior.
-	\end{stylekey}
+	\begin{key}{/pgfgo/goban/resume=\meta{name, options}}
+		Empieza el |goban| con el tablero que tiene ese nombre, como quedó al terminar (con las capturas resueltas: si ese |goban| usaba |captures|, este también). La numeración y el turno siguen desde ahí. Por defecto trae solo las piedras, sin números, marcas ni territorio; las opciones piden el resto. Las opciones del tablero (tamaño, |partial|, coordenadas) se dan en cada |goban|. Si no hay ningún |goban| con ese nombre, se produce un error.
 
-	\begin{stylekey}{/pgfgo/goban/forget}
-		Vacía la memoria y no guarda nada de este |goban|, salvo lo que se dibuje con la opción |remember| (por ejemplo, |\stone[remember]{C3}|).
-	\end{stylekey}
+		Con |name| y |resume| en el mismo |goban| (en cualquier orden), el nuevo nombre guarda lo que trajo, tal como se dibujó, más lo suyo, y el tablero de |resume| no cambia: así se arman variantes. Con el mismo nombre en las dos, el |goban| sigue agregando a ese tablero.
 
-	\begin{stylekey}{/pgfgo/goban/resume}
-		Dibuja lo que hay en la memoria al comienzo del |goban|.
-	\end{stylekey}
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = B2:D4}}
+
+			\begin{goban}[name = base]
+				\stones[b]{C2,D3}
+				\stones[w]{C3}
+			\end{goban}
+
+			\begin{goban}[name = variante1, resume = base]
+				\moves*[w]{D2}
+			\end{goban}
+
+			\begin{goban}[name = variante2, resume = base]
+				\moves*[w]{B3}
+			\end{goban}
+
+			\begin{goban}[resume = {variante1, numbers}]
+				\moves*{B4}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/resume/numbers=\meta{boolean} (default true, initially false)}
+		Trae también los números de las jugadas.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/resume/marks=\meta{boolean} (default true, initially false)}
+		Trae también las marcas, las flechas y las líneas.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/resume/territory=\meta{boolean} (default true, initially false)}
+		Trae también el territorio.
+	\end{key}
+
+	Para que |resume| no traiga una piedra, una jugada, una marca, una flecha o un territorio, se dibuja con la opción |forget| (|\stone[forget]{C3}|, |\marks[forget, circle]{A1}|, \ldots); con |label = forget|, una jugada viene sin su número aunque se pida |numbers|. Lo olvidado queda guardado: |\pgfgoview| lo muestra con |forgotten|.
 
 	\subsection{Vistas en el texto}
 	\label{subsec:vistas}
@@ -1331,14 +1361,10 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Así quedó el ko: \pgfgoview{tablero1}{B2:E4}.
 	\end{codeexample}
 
-	\begin{key}{/pgfgo/goban/name=\meta{name}}
-		Guarda con ese nombre todo lo que se dibuje en este |goban| (piedras, jugadas, marcas, flechas, líneas y territorio, también lo que viene de |\sgf| y, con |resume|, lo recordado), junto con sus opciones. El nombre es libre (por ejemplo, |gob:tablero1|). Esta memoria no tiene que ver con la de |remember| y |resume|: las dos pueden usarse en el mismo |goban|. Otro |goban| con el mismo nombre la reemplaza.
-	\end{key}
-
 	\begin{command}{\pgfgoview\opt{\oarg{options}}\marg{name}\marg{part}}
-		Dibuja la intersección o el rectángulo (escrito como en |partial|) del |goban| con ese nombre, como quedó al terminar. Por defecto se ve todo lo que dibujó el |goban| en esa parte (piedras, números de las jugadas, marcas, flechas y territorio) con el fondo y las coordenadas de ese |goban|, al tamaño del texto y centrado a la altura de las minúsculas. Las opciones son las de |/pgfgo/view|, que quitan las marcas, los números o el territorio, y, además, cualquier opción de |goban|, que se aplica después de las del |goban| con nombre: así se quitan el fondo, las coordenadas, la cuadrícula o los puntos de estrella.
+		Dibuja la intersección o el rectángulo (escrito como en |partial|) del |goban| con ese nombre, como quedó al terminar. Por defecto se ve todo lo que dibujó el |goban| en esa parte (piedras, números de las jugadas, marcas, flechas y territorio) con el fondo y las coordenadas de ese |goban|, al tamaño del texto y centrado a la altura de las minúsculas. Las opciones son las de |/pgfgo/view|, que quitan las marcas, los números o el territorio, o agregan lo olvidado, y, además, cualquier opción de |goban|, que se aplica después de las del |goban| con nombre: así se quitan el fondo, las coordenadas, la cuadrícula o los puntos de estrella.
 
-		Una vista no cambia nada de lo que guarda el último |goban|: |\pgfgoscore|, |\pgfgoprisoners| y |\pgfgomovenotes| siguen hablando de él, y la memoria de |remember| queda igual.
+		Una vista no cambia nada de lo que guarda el último |goban|: |\pgfgoscore|, |\pgfgoprisoners| y |\pgfgomovenotes| siguen hablando de él, y lo que guarda cada |goban| con nombre queda igual.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, name = tablero2]
@@ -1373,6 +1399,20 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/view/territory=\meta{boolean} (default true, initially true)}
 		Con |false|, no dibuja el territorio.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/forgotten=\meta{boolean} (default true, initially false)}
+		Dibuja también lo que se dibujó con |forget| (p.~\pageref{subsec:recordar}).
+
+		\begin{codeexample}[]
+			\begin{goban}[5, name = tablero3]
+				\stones[b]{B2, C3}
+				\stone[w, forget]{D3}
+			\end{goban}
+
+			\pgfgoview{tablero3}{B2:D3}
+			\pgfgoview[forgotten]{tablero3}{B2:D3}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/view/raise=\meta{dimension} (initially 0.5ex)}

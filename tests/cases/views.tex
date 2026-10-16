@@ -8,8 +8,8 @@
 \pagestyle{empty}
 \begin{document}
 
-\case{A named goban (name with a colon) and the memory of remember are separate}
-\begin{goban}[9, name = gob:a, new remember]
+\case{A named goban (name with a colon)}
+\begin{goban}[9, name = gob:a]
 	\stones[b]{C3, D4, E5}\stones[w]{D3, E4}
 	\moves*{F6, G7}
 	\marks[b, triangle]{C3}
@@ -34,15 +34,15 @@ views do not change the space between lines: x\pgfgoview{gob:a}{E5}x \pgfgoview{
 {\pgfgoset{view = {marks = false, background = false}}\pgfgoview{gob:a}{B2:D4}}
 \pgfgoview{gob:a}{B2:D4}
 
-\case{resume brings back the memory of remember (and name keeps it)}
-\begin{goban}[9, resume, name = b, partial = A1:E5]\stone[w]{B4}\end{goban}
+\case{resume brings back everything that is asked for (and name keeps it)}
+\begin{goban}[9, resume = {gob:a, numbers, marks, territory}, name = b, partial = A1:E5]\stone[w]{B4}\end{goban}
 \pgfgoview{b}{C3:D4} \pgfgoview{b}{B4}
 
 \case{The options of the named goban (size, labels, players) are used again; label = false removes the labels}
 \begin{goban}[5, name = small, label, players = {white = {stone = {fill = {color = yellow}}}}]\stones[w]{C3}\stones[b]{E5}\end{goban}
 \pgfgoview{small}{C3} \pgfgoview{small}{D4:E5} \pgfgoview[label = false]{small}{D4:E5}
 
-\case{A view does not change the memory of remember (resume: C3, D4, E5, D3, E4, F6, G7 and the marks)}
-\begin{goban}[9, resume]\end{goban}
+\case{A view does not change the memory (resume: C3, D4, E5, D3, E4, F6, G7 and the marks)}
+\begin{goban}[9, resume = {gob:a, marks}]\end{goban}
 
 \end{document}

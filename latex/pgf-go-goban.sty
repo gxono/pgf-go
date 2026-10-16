@@ -56,39 +56,12 @@
 	\cs_new_protected:Npn \__pgfgo_goban_memory_key:n #1 {\tl_if_empty:NT \l_pgfgo_goban_view_tl {#1}}
 
 	\keys_define:nn {pgfgo / goban}{
-		%EMPIEZA UNA MEMORIA NUEVA Y RECUERDA TODO LO QUE SE DIBUJE.
-		new~remember					.code:n			= {
-																			\__pgfgo_goban_memory_key:n {
-																				\pgfgo_kernel_remember_clear:n {}
-																				\bool_set_true:N\l_pgfgo_goban_remember_new_bool
-																				\bool_set_true:N\l_pgfgo_goban_remember_add_bool
-																				\pgfgo_goban_remember_all:
-																			}
-																		},
-
-		%AGREGA A LA MEMORIA EXISTENTE.
-		remember				.code:n			= {
-																			\__pgfgo_goban_memory_key:n {
-																				\bool_set_false:N\l_pgfgo_goban_remember_new_bool
-																				\bool_set_true:N\l_pgfgo_goban_remember_add_bool
-																				\pgfgo_goban_remember_all:
-																			}
-																		},
-
-		%BORRA LA MEMORIA Y NO RECUERDA NADA (SALVO LO MARCADO CON remember).
-		forget								.code:n			= {
-																			\__pgfgo_goban_memory_key:n {
-																				\pgfgo_kernel_remember_clear:n {}
-																				\bool_set_false:N\l_pgfgo_goban_remember_new_bool
-																				\bool_set_false:N\l_pgfgo_goban_remember_add_bool
-																				\pgfgo_goban_remember_nothing:
-																			}
-																		},
-
-		resume						.code:n			= {\__pgfgo_goban_memory_key:n {\bool_set_true:N\l_pgfgo_goban_resume_bool}},
-
-		%GUARDA TODO LO QUE DIBUJA ESTE goban CON ESE NOMBRE, PARA \pgfgoview.
+		%GUARDA TODO LO QUE DIBUJA ESTE goban CON ESE NOMBRE, PARA resume Y \pgfgoview.
 		name							.code:n			= {\__pgfgo_goban_memory_key:n {\tl_set:Nn \l_pgfgo_goban_name_tl {#1}}},
+
+		%EMPIEZA CON EL goban QUE SE LLAMA ASI COMO QUEDO AL TERMINAR: resume = {<nombre>, numbers, marks, territory}.
+		resume						.code:n			= {\__pgfgo_goban_memory_key:n {\__pgfgo_goban_resume_key:n {#1}}},
+		resume						.value_required:n = true,
 
 		%LAS PIEDRAS CAPTURADAS DESAPARECEN (remove) O QUEDAN COMO PRISIONEROS (fade). SOLO CON kernel = lua.
 		captures					.choices:nn = {true, remove, fade, false} {
@@ -834,7 +807,7 @@
 		\endpgfscope
 		\endpgfonlayer
 
-		\bool_if:NT \l_pgfgo_goban_resume_bool {\pgfgo_kernel_remember_replay:n {}}
+		\tl_if_empty:NF \l__pgfgo_goban_resume_memory_tl {\use:e {\__pgfgo_goban_resume_code:}}
 		\tl_if_empty:NF \l_pgfgo_goban_view_tl {\pgfgo_kernel_remember_replay:V \l_pgfgo_goban_view_tl}
 	}
 	\cs_generate_variant:Nn \pgfgo_kernel_remember_replay:n {V}
@@ -1127,7 +1100,7 @@
 		\cs_set_eq:NN \arrow \__pgfgo_arrow_command
 		\cs_set_eq:NN \line \__pgfgo_line_command
 		\cs_set_eq:NN \sgf \__pgfgo_sgf_command
-		%CADA TABLERO EMPIEZA EN LA JUGADA 1 CON NEGRAS (resume RESTAURA LAS JUGADAS RECORDADAS).
+		%CADA TABLERO EMPIEZA EN LA JUGADA 1 CON NEGRAS (resume VUELVE A JUGAR LAS DEL OTRO goban).
 		\pgfgo_kernel_move_reset:
 		\pgfgo_notes_begin:
 		\pgfgo_points_begin:
@@ -1136,6 +1109,7 @@
 		\pgfgo_kernel_if_feature:nT {captures} {\pgfgo_kernel_board_clear:}
 		\keys_set:nn {pgfgo / goban} {#1}
 		\pgfgo_kernel_board_init:
+		\tl_if_empty:NF \l_pgfgo_goban_resume_tl {\__pgfgo_goban_resume:}
 		\tl_if_empty:NF \l_pgfgo_goban_name_tl {\__pgfgo_goban_name:n {#1}}
 		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_begin:}
 
@@ -1146,21 +1120,81 @@
 %------------------------------------------VISTAS-----------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	%LAS OPCIONES DE CADA goban CON NOMBRE. SU MEMORIA EMPIEZA VACIA O, CON resume, CON LO RECORDADO.
+	%LAS OPCIONES DE CADA goban CON NOMBRE Y, SI LAS USO, SUS CAPTURAS (resume LAS SIGUE USANDO). SU
+	%MEMORIA EMPIEZA VACIA O, CON resume, CON EL CODIGO QUE VUELVE A DIBUJAR LO QUE TRAE.
 	\prop_new:N \g__pgfgo_goban_names_prop
+	\prop_new:N \g__pgfgo_goban_names_captures_prop
 	\cs_new_protected:Npn \__pgfgo_goban_name:n #1 {
 		\pgfgo_kernel_remember_clear:V \l_pgfgo_goban_name_tl
-		\bool_if:NT \l_pgfgo_goban_resume_bool {\pgfgo_kernel_remember_append:Vn \l_pgfgo_goban_name_tl {}}
+		\tl_if_empty:NF \l__pgfgo_goban_resume_memory_tl
+			{\pgfgo_kernel_remember_push:Vn \l_pgfgo_goban_name_tl {\__pgfgo_goban_resume_code:}}
 		\prop_gput:NVn \g__pgfgo_goban_names_prop \l_pgfgo_goban_name_tl {#1}
+		\prop_gput:NVe \g__pgfgo_goban_names_captures_prop \l_pgfgo_goban_name_tl {
+			\bool_if:NT \l_pgfgo_goban_captures_bool
+				{captures = \bool_if:NTF \l_pgfgo_goban_captures_fade_bool {fade} {remove}}
+		}
 	}
 	\cs_generate_variant:Nn \pgfgo_kernel_remember_clear:n {V}
-	\cs_generate_variant:Nn \pgfgo_kernel_remember_append:nn {Vn}
+	\cs_generate_variant:Nn \pgfgo_kernel_remember_append:nn {VV}
+	\cs_generate_variant:Nn \pgfgo_kernel_remember_push:nn {Vn}
 
-	%/pgfgo/view: QUE SE DEJA DE DIBUJAR (marks, numbers, territory = false), A QUE ALTURA (raise) Y LAS OPCIONES DE goban
-	%DE LAS VISTAS, QUE VAN DESPUES DE LAS DEL goban CON NOMBRE.
+	%resume = {<nombre>, numbers, marks, territory}: EL NOMBRE Y QUE MAS TRAE, ADEMAS DE LAS PIEDRAS.
+	\tl_new:N \l_pgfgo_goban_resume_tl
+	\clist_new:N \l__pgfgo_goban_resume_clist
+	\bool_new:N \l__pgfgo_goban_resume_marks_bool
+	\bool_new:N \l__pgfgo_goban_resume_numbers_bool
+	\bool_new:N \l__pgfgo_goban_resume_territory_bool
+	\keys_define:nn {pgfgo / goban / resume} {
+		marks							.bool_set:N	= \l__pgfgo_goban_resume_marks_bool,
+		marks							.default:n	= {true},
+		numbers						.bool_set:N	= \l__pgfgo_goban_resume_numbers_bool,
+		numbers						.default:n	= {true},
+		territory					.bool_set:N	= \l__pgfgo_goban_resume_territory_bool,
+		territory					.default:n	= {true},
+	}
+	\cs_new_protected:Npn \__pgfgo_goban_resume_key:n #1 {
+		\clist_set:Nn \l__pgfgo_goban_resume_clist {#1}
+		\clist_pop:NN \l__pgfgo_goban_resume_clist \l_pgfgo_goban_resume_tl
+		\bool_set_false:N \l__pgfgo_goban_resume_marks_bool
+		\bool_set_false:N \l__pgfgo_goban_resume_numbers_bool
+		\bool_set_false:N \l__pgfgo_goban_resume_territory_bool
+		\keys_set:nV {pgfgo / goban / resume} \l__pgfgo_goban_resume_clist
+	}
+
+	%LO QUE TRAE resume SE COPIA A UNA MEMORIA NUEVA ANTES DE QUE name VACIE LA SUYA (name Y resume PUEDEN
+	%SER EL MISMO goban), Y NO CAMBIA AUNQUE OTRO goban VUELVA A USAR ESE NOMBRE.
+	\tl_new:N \l__pgfgo_goban_resume_memory_tl
+	\tl_new:N \l__pgfgo_goban_resume_captures_tl
+	\int_new:N \g__pgfgo_goban_resume_int
+	\cs_new_protected:Npn \__pgfgo_goban_resume: {
+		\prop_get:NVNTF \g__pgfgo_goban_names_captures_prop \l_pgfgo_goban_resume_tl \l__pgfgo_goban_resume_captures_tl {
+			\int_gincr:N \g__pgfgo_goban_resume_int
+			\tl_set:Ne \l__pgfgo_goban_resume_memory_tl {pgfgo/resume/\int_use:N \g__pgfgo_goban_resume_int}
+			\pgfgo_kernel_remember_clear:V \l__pgfgo_goban_resume_memory_tl
+			\pgfgo_kernel_remember_append:VV \l__pgfgo_goban_resume_memory_tl \l_pgfgo_goban_resume_tl
+			\bool_if:NF \l_pgfgo_goban_captures_bool
+				{\keys_set:nV {pgfgo / goban} \l__pgfgo_goban_resume_captures_tl}
+		}{
+			\msg_error:nnV {pgfgo} {unknown-view} \l_pgfgo_goban_resume_tl
+		}
+	}
+	%EL CODIGO QUE DIBUJA LO QUE TRAE resume. PARA UNA EXPANSION e.
+	\cs_new:Npn \__pgfgo_goban_resume_code: {
+		\exp_not:N \pgfgo_remember_resume:NNNn
+			\__pgfgo_goban_resume_bool:N \l__pgfgo_goban_resume_marks_bool
+			\__pgfgo_goban_resume_bool:N \l__pgfgo_goban_resume_territory_bool
+			\__pgfgo_goban_resume_bool:N \l__pgfgo_goban_resume_numbers_bool
+			{\exp_not:V \l__pgfgo_goban_resume_memory_tl}
+	}
+	\cs_new:Npn \__pgfgo_goban_resume_bool:N #1 {\bool_if:NTF #1 {\exp_not:N \c_true_bool} {\exp_not:N \c_false_bool}}
+
+	%/pgfgo/view: QUE SE DEJA DE DIBUJAR (marks, numbers, territory = false), SI SE DIBUJA LO OLVIDADO
+	%(forgotten), A QUE ALTURA (raise) Y LAS OPCIONES DE goban DE LAS VISTAS, QUE VAN DESPUES DE LAS DEL
+	%goban CON NOMBRE.
 	\bool_new:N \l__pgfgo_view_marks_bool
 	\bool_new:N \l__pgfgo_view_numbers_bool
 	\bool_new:N \l__pgfgo_view_territory_bool
+	\bool_new:N \l__pgfgo_view_forgotten_bool
 	\tl_new:N \l_pgfgo_goban_view_raise_tl
 	\dim_new:N \l__pgfgo_goban_view_raise_dim
 	\tl_new:N \l__pgfgo_view_goban_tl
@@ -1174,6 +1208,9 @@
 		territory					.bool_set:N	= \l__pgfgo_view_territory_bool,
 		territory					.default:n	= {true},
 		territory					.initial:n	= {true},
+		forgotten					.bool_set:N	= \l__pgfgo_view_forgotten_bool,
+		forgotten					.default:n	= {true},
+		forgotten					.initial:n	= {false},
 		raise							.tl_set:N		= \l_pgfgo_goban_view_raise_tl,
 		raise							.initial:n	= {0.5ex},
 		unknown						.code:n			= {
@@ -1229,10 +1266,10 @@
 				\bool_set:Nn \l_pgfgo_remember_hide_mark_bool {! \l__pgfgo_view_marks_bool}
 				\bool_set:Nn \l_pgfgo_remember_hide_numbers_bool {! \l__pgfgo_view_numbers_bool}
 				\bool_set:Nn \l_pgfgo_remember_hide_territory_bool {! \l__pgfgo_view_territory_bool}
+				\bool_set:Nn \l_pgfgo_remember_hide_forgotten_bool {! \l__pgfgo_view_forgotten_bool}
 				\tl_set:Nn \l_pgfgo_goban_view_tl {#2}
 				\tl_clear:N \l_pgfgo_goban_name_tl
-				\bool_set_false:N \l_pgfgo_goban_resume_bool
-				\pgfgo_goban_remember_nothing:
+				\tl_clear:N \l_pgfgo_goban_resume_tl
 				\__pgfgo_view_range:n {#3}
 				\__pgfgo_view_save:
 				\use:e {

@@ -45,9 +45,9 @@
 Notes: [\pgfgomovenotes]. Prisoners: black \pgfgoprisoners{black}, white \pgfgoprisoners{w} (1 and 1).
 
 \case{Marks stay on captured points; resume replays the captures}
-\begin{goban}[5, new remember, captures]
+\begin{goban}[5, name = capt, captures]
 	\stones[w]{A1}\stones[b]{B1}\moves*{A2}\marks[triangle]{A1}
 \end{goban}
-\begin{goban}[5, resume, captures]\end{goban}
+\begin{goban}[5, resume = {capt, numbers, marks}]\end{goban}
 
 \end{document}

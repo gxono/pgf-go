@@ -1492,7 +1492,7 @@ end
 -- MEMORIA
 ---------------------------------------------------------------------------------------------------
 
--- UNA LISTA POR NOMBRE ("" ES LA DE remember / resume). CADA ELEMENTO ES LA LISTA DE TOKENS QUE VUELVE A
+-- UNA LISTA POR NOMBRE (EL DE UN goban CON name O UNA COPIA DE resume). CADA ELEMENTO ES LA LISTA DE TOKENS QUE VUELVE A
 -- DIBUJARLO (SE GUARDAN TOKENS, NO TEXTO, PARA NO DEPENDER DE LOS CATCODES).
 local remembered = {}
 

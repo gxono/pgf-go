@@ -248,7 +248,6 @@
 		neutral							.groups:n = { external },
 		n										.groups:n = { external },
 		forget							.groups:n = { external },
-		remember						.groups:n = { external },
 		label								.groups:n = { external },
 		from								.groups:n = { external },
 	}
@@ -367,7 +366,6 @@
 		b						.groups:n = {external},
 		white				.groups:n = {external},
 		w						.groups:n = {external},
-		remember		.groups:n = {external},
 		forget			.groups:n = {external},
 		%EL ESTILO DE LA PIEDRA Y LA MARCA DE \moves (LOS PONE pgfgo/players/<jugador>/stone).
 		line				.groups:n = {external},
@@ -397,7 +395,6 @@
 		opacity							.code:n 		= {\tl_set:cn{l_pgfgo_players_ #1 _move_label_opacity_tl}{##1}},
 		opacity							.initial:n	= {1},
 		forget							.code:n			= {\bool_set_false:N \l_pgfgo_goban_remember_move_label_bool},
-		remember						.code:n 		= {\bool_set_true:N \l_pgfgo_goban_remember_move_label_bool},
 		format							.choices:nn	= {arabic, alph, Alph, roman, Roman}
 			{\cs_set_eq:cc {pgfgo_players_ #1 _move_label_format:n} {int_to_ \l_keys_choice_tl :n}},
 		format							.initial:n	= {arabic},

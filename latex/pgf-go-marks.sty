@@ -52,9 +52,6 @@
 	forget						.code:n	=	{\bool_set_false:N\l_pgfgo_goban_remember_mark_bool},
 	forget						.groups:n	=	{preset},
 
-	remember					.code:n	=	{\bool_set_true:N\l_pgfgo_goban_remember_mark_bool},
-	remember					.groups:n	=	{preset},
-
 	hatched~lines	.code:n			=	{
 		\bool_set_true:N\l_pgfgo_mark_hatched_lines_bool
 		\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_hatched_lines:

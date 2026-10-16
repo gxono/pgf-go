@@ -238,7 +238,7 @@ Lo primero que intentar\'a hacer es dividir el argumento entre los |;| y constru
 
 \sssseccion{Todas las piedras del tablero (\emph{?`Por qu\'e no?})}
 
-A\~nade al correspondiente grupo todas las intersecciones \textbf{visibles} del tablero. Es decir, si  es un tablero parcial, solo se a\~nadir\'an las corresopndientes a la regi\'on visible. Es importante aclarar esto por si se usa en combinaci\'on con |remember|. Su sintaxis es |*|.
+A\~nade al correspondiente grupo todas las intersecciones \textbf{visibles} del tablero. Es decir, si  es un tablero parcial, solo se a\~nadir\'an las corresopndientes a la regi\'on visible. Es importante aclarar esto por si se usa en combinaci\'on con |resume|. Su sintaxis es |*|.
 
 \begin{codeexample}[]
 	\pgfgoset{goban = {5, partial = B2:D4}}
@@ -1167,11 +1167,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/forget}
-	Los números de sus jugadas no se guardan en la memoria del tablero: |resume| vuelve a dibujar las piedras sin número.
-\end{key}
-
-\begin{key}{/pgfgo/players/white/move/label/remember}
-	Los números de sus jugadas se guardan en la memoria del tablero.
+	Los números de sus jugadas se olvidan, como con |/pgfgo/move/label/forget|: |resume| los trae sin número.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark = \meta{mark options}}

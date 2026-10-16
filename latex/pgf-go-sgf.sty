@@ -288,18 +288,13 @@
 		\l__pgfgo_sgf_numbers_bool && \l__pgfgo_sgf_numbered_bool &&
 		! \prop_if_in_p:NV \g__pgfgo_sgf_marked_prop \l__pgfgo_captures_key_tl
 	}
-	\bool_if:NT \l_pgfgo_goban_remember_move_bool {
-		\pgfgo_kernel_remember_push:nn {} {
+	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_move_bool {stone} {
+		\bool_if:NF \l_pgfgo_goban_remember_move_label_bool {\exp_not:N \pgfgo_remember_numbers:n}
+		{
 			\__pgfgo_sgf_move_code:nnnn
-				{\bool_if:nTF {\l__pgfgo_sgf_numbered_bool && \l_pgfgo_goban_remember_move_label_bool}
-					{\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}}
+				{\bool_if:NTF \l__pgfgo_sgf_numbered_bool {\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}}
 				{#1} {#2} {#3}
 		}
-	}
-	\pgfgo_remember_name:nn {stone} {
-		\__pgfgo_sgf_move_code:nnnn
-			{\bool_if:NTF \l__pgfgo_sgf_numbered_bool {\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}}
-			{#1} {#2} {#3}
 	}
 	\bool_if:NTF \l__pgfgo_sgf_numbered_bool
 		{\pgfgo_move:nnnn {\BooleanTrue} {} {#2} {#3}}
@@ -1010,8 +1005,6 @@
 					\exp_not:V \l__pgfgo_sgfanim_goban_tl
 				]
 		}
-			%CADA CUADRO ES UN TABLERO NUEVO: NO SE RECUERDA NADA.
-			\pgfgo_goban_remember_nothing:
 			#1
 		\end{goban}
 	}
@@ -1510,7 +1503,6 @@
 					\exp_not:V \l__pgfgo_sgfdiag_scale_tl
 				]
 		}
-			\pgfgo_goban_remember_nothing:
 			%COMO EN LOS LIBROS, LAS CAPTURAS DEL TRAMO NUMERADO NO SE QUITAN (SE VEN EN EL DIAGRAMA SIGUIENTE).
 			\bool_set_true:N \l__pgfgo_sgf_keep_numbered_bool
 			\tl_set_eq:NN \l__pgfgo_sgf_first_tl \l__pgfgo_sgfdiag_first_tl

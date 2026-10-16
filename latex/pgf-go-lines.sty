@@ -7,7 +7,7 @@
 %LAS SEPARA DE LAS PIEDRAS. TAMBIEN LAS USA \sgf (AR Y LN).
 
 %LAS DOS TIENEN EL MISMO ESTILO, CADA UNA EN SU ARBOL: /pgfgo/arrow Y /pgfgo/line. #1: arrow O line.
-%CLAVES: /pgfgo/{arrow, line}/{color, width, opacity, dash, shorten, bend, halo, remember, forget}
+%CLAVES: /pgfgo/{arrow, line}/{color, width, opacity, dash, shorten, bend, halo, forget}
 %CLAVES: /pgfgo/{arrow, line}/halo/{true, false, color, width}
 \cs_new_protected:Npn \__pgfgo_lines_new:n #1 {
 	\tl_new:c {l__pgfgo_ #1 _color_tl}
@@ -37,8 +37,6 @@
 		bend				.initial:n	= {0},
 		halo				.code:n			= {\keys_set:nn {pgfgo / #1 / halo} {##1}},
 		halo				.default:n	= {true},
-		remember		.code:n			= {\bool_set_true:N \l_pgfgo_goban_remember_mark_bool},
-		remember		.groups:n		= {preset},
 		forget			.code:n			= {\bool_set_false:N \l_pgfgo_goban_remember_mark_bool},
 		forget			.groups:n		= {preset},
 	}

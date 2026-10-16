@@ -98,8 +98,7 @@
 	%(EL NEUTRAL SE RELLENA COMO CON fill).
 	draw		.choices:nn	= {marks, fill, region} {\tl_set_eq:NN \l__pgfgo_territory_draw_tl \l_keys_choice_tl},
 	draw		.initial:n	= {marks},
-	%COMO EN LAS MARCAS: GUARDAR O NO ESTE TERRITORIO EN LA MEMORIA.
-	remember	.code:n		= {\bool_set_true:N \l_pgfgo_goban_remember_territory_bool},
+	%COMO EN LAS MARCAS: resume NO TRAE ESTE TERRITORIO.
 	forget	.code:n		= {\bool_set_false:N \l_pgfgo_goban_remember_territory_bool},
 	%CON auto, TAMBIEN LOS PUNTOS NEUTRALES (DAME Y SEKI).
 	dame		.bool_set:N	= \l__pgfgo_territory_dame_bool,
@@ -373,7 +372,7 @@
 		{\prop_item:Nn \l__pgfgo_territory_region_style_prop {radius}}
 }
 
-%DIBUJA EL TERRITORIO #2 DE #1 CON EL ESTILO ACTUAL, Y LO GUARDA CON remember territory.
+%DIBUJA EL TERRITORIO #2 DE #1 CON EL ESTILO ACTUAL, Y LO GUARDA EN LA MEMORIA.
 \cs_new_protected:Npn \__pgfgo_territory_draw:nn #1#2 {
 	\clist_if_empty:nF {#2} {
 		\pgfgo_remember:Nnn \l_pgfgo_goban_remember_territory_bool {territory}
