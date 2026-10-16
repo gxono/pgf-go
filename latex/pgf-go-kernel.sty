@@ -62,9 +62,8 @@
 %	\pgfgo_kernel_sequence_number:							EXPANDIBLE. NUMERO DE LA PROXIMA MARCA.
 %	\pgfgo_kernel_sequence_step:
 %
-%MEMORIA (remember / resume; name Y \pgfgoview)
-%	HAY UNA MEMORIA POR NOMBRE: LA DE remember / resume ES LA DE NOMBRE VACIO; LA DE UN goban CON name, LA DE
-%	ESE NOMBRE.
+%MEMORIA (name, resume Y \pgfgoview)
+%	HAY UNA MEMORIA POR NOMBRE: LA DE UN goban CON name, Y LAS COPIAS QUE HACE resume.
 %	\pgfgo_kernel_remember_push:nn {<nombre>} {<codigo>}
 %		AGREGA <codigo> A ESA MEMORIA. SE EXPANDE CON e (USAR \exp_not:n PARA LAS OPCIONES DEL USUARIO).
 %	\pgfgo_kernel_remember_clear:n {<nombre>}

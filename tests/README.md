@@ -64,7 +64,7 @@ not affect the manuals, create them locally with
   example `%CLAVES: /pgfgo/{arrow, line}/{color, width}`.
 
 - `cases/*.tex`: one document per area (stones, moves, marks, coordinates,
-  board, profiles, remember/resume). `keys.tex` uses every option with a
+  board, profiles, name/resume). `keys.tex` uses every option with a
   value that is not the default. Each case says what it should show.
   Some documents are only compiled, not rendered:
   - `warnings.tex` and `errors.tex` check that invalid input produces the

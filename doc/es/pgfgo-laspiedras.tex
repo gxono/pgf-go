@@ -331,35 +331,18 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 \end{key}
 
 \begin{key}{/pgfgo/stone/forget}
-	
-	Cuando el tablero usa un sistema de memoria (|new remember|, |resume|), esta opción indica que la piedra no debe recordarse, permitiendo excluirla de estados posteriores.
-	
+
+	|resume| no trae esta piedra (p.~\pageref{subsec:recordar}). Queda en la memoria del |goban| con nombre: |\pgfgoview| la muestra con |forgotten|.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
-		\begin{goban}[new remember]
+
+		\begin{goban}[name = a]
 			\stones[b]{C2,D3}
 			\stone[w, forget]{B4}
 		\end{goban}
-		
-		\begin{goban}[resume]
-		\end{goban}
-	\end{codeexample}
-\end{key}
 
-\begin{key}{/pgfgo/stone/remember}
-	
-	En un tablero con memoria activa, asegura que la piedra se recuerde incluso si el entorno general usa |forget|.
-	
-	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = B2:D4}}
-		
-		\begin{goban}[forget]
-			\stones[b]{C2,D3}
-			\stone[w, remember]{B4}
-		\end{goban}
-		
-		\begin{goban}[resume]
+		\begin{goban}[resume = a]
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -627,35 +610,27 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 \end{key}
 
 \begin{key}{/pgfgo/move/label/forget}
-	
-	Evita que las etiquetas de movimientos se guarden en la memoria del tablero cuando se usa |remember|, permitiendo que las piedras persistan sin sus números.
-	
+
+	Con |resume = {..., numbers}|, esta jugada viene sin su número (p.~\pageref{subsec:recordar}). Con |\pgfgoview|, el número solo se ve con |forgotten|.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
-		\begin{goban}[new remember]
-			\moves*[label = forget]{C2,B4,D3}
+
+		\begin{goban}[name = a]
+			\moves*{C2}
+			\moves*[label = forget]{B4}
+			\moves*{D3}
 		\end{goban}
-		
-		\begin{goban}[resume]
+
+		\begin{goban}[resume = {a, numbers}]
 			\moves*{C:D4}
 		\end{goban}
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/move/label/remember}
-	
-	Garantiza que las etiquetas se guarden en la memoria, incluso si el entorno usa |forget|, asegurando su continuidad en diagramas posteriores.
-\end{key}
-
 \begin{key}{/pgfgo/move/forget}
-	
-	Indica que los movimientos no se recuerden en la memoria del tablero, eliminándolos de estados futuros al usar |resume|.
-\end{key}
 
-\begin{key}{/pgfgo/move/remember}
-	
-	Asegura que los movimientos se recuerden, preservándolos para su reutilización con |resume|.
+	|resume| no trae estas jugadas, ni la piedra ni el número. La numeración sigue desde la última jugada que trae.
 \end{key}
 
 
@@ -673,7 +648,7 @@ En todos los comandos que leen archivos SGF, el nombre puede tener espacios, ace
 
 Las piedras que agregan (|AB|, |AW|) o quitan (|AE|) los nodos posteriores a la primera jugada se aplican junto con la jugada anterior. Quitar piedras necesita |captures|; sin |captures|, |\sgf| avisa una vez y no las quita.
 
-Al terminar, la numeración y el turno quedan listos para seguir la partida con |\moves|. |\sgf| funciona con |partial|, |captures|, |remember| y |resume|. Si la partida es para un tablero de otro tamaño, se produce una advertencia. Con |kernel = expl3|, |\sgf| produce un error.
+Al terminar, la numeración y el turno quedan listos para seguir la partida con |\moves|. |\sgf| funciona con |partial|, |captures|, |name| y |resume|. Si la partida es para un tablero de otro tamaño, se produce una advertencia. Con |kernel = expl3|, |\sgf| produce un error.
 
 En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 \begin{verbatim}

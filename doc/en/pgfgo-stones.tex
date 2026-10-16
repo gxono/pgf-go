@@ -327,35 +327,18 @@ It is possible to change an option for all players using |\pgfgoset{stone = {...
 \end{key}
 
 \begin{key}{/pgfgo/stone/forget}
-	
-	When the board uses a memory system (|new remember|, |resume|), this option indicates that the stone should not be remembered, allowing it to be excluded from subsequent states.
-	
+
+	|resume| does not bring this stone (p.~\pageref{subsec:remember}). It stays in the memory of the named |goban|: |\pgfgoview| shows it with |forgotten|.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
-		\begin{goban}[new remember]
+
+		\begin{goban}[name = a]
 			\stones[b]{C2,D3}
 			\stone[w, forget]{B4}
 		\end{goban}
-		
-		\begin{goban}[resume]
-		\end{goban}
-	\end{codeexample}
-\end{key}
 
-\begin{key}{/pgfgo/stone/remember}
-	
-	In a board with active memory, ensures that the stone is remembered even if the general environment uses |forget|.
-	
-	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = B2:D4}}
-		
-		\begin{goban}[forget]
-			\stones[b]{C2,D3}
-			\stone[w, remember]{B4}
-		\end{goban}
-		
-		\begin{goban}[resume]
+		\begin{goban}[resume = a]
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -619,35 +602,27 @@ It is possible to change options for all players using |\pgfgoset{move = {...}}|
 \end{key}
 
 \begin{key}{/pgfgo/move/label/forget}
-	
-	Prevents move labels from being stored in the board’s memory when using |remember|, allowing stones to persist without their numbers.
-	
+
+	With |resume = {..., numbers}|, this move comes without its number (p.~\pageref{subsec:remember}). With |\pgfgoview|, the number is only shown with |forgotten|.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
-		\begin{goban}[new remember]
-			\moves*[label = forget]{C2,B4,D3}
+
+		\begin{goban}[name = a]
+			\moves*{C2}
+			\moves*[label = forget]{B4}
+			\moves*{D3}
 		\end{goban}
-		
-		\begin{goban}[resume]
+
+		\begin{goban}[resume = {a, numbers}]
 			\moves*{C:D4}
 		\end{goban}
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/move/label/remember}
-	
-	Ensures that labels are stored in memory, even if the environment uses |forget|, maintaining their continuity in subsequent diagrams.
-\end{key}
-
 \begin{key}{/pgfgo/move/forget}
-	
-	Indicates that moves should not be remembered in the board’s memory, removing them from future states when using |resume|.
-\end{key}
 
-\begin{key}{/pgfgo/move/remember}
-	
-	Ensures that moves are remembered, preserving them for reuse with |resume|.
+	|resume| does not bring these moves, neither the stone nor the number. The numbering continues from the last move it brings.
 \end{key}
 
 \subsection{SGF Games}
@@ -664,7 +639,7 @@ In every command that reads SGF files, the name can have spaces, accents, parent
 
 The stones that the nodes after the first move add (|AB|, |AW|) or remove (|AE|) are applied together with the previous move. Removing stones needs |captures|; without |captures|, |\sgf| warns once and does not remove them.
 
-When it ends, the numbering and the turn are ready to continue the game with |\moves|. |\sgf| works with |partial|, |captures|, |remember| and |resume|. If the game is for a board of another size, a warning is produced. With |kernel = expl3|, |\sgf| raises an error.
+When it ends, the numbering and the turn are ready to continue the game with |\moves|. |\sgf| works with |partial|, |captures|, |name| and |resume|. If the game is for a board of another size, a warning is produced. With |kernel = expl3|, |\sgf| raises an error.
 
 In the examples, |game.sgf| contains a short 9$\times$9 game:
 \begin{verbatim}

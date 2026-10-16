@@ -47,7 +47,7 @@ your LaTeX document:
 
 You can find examples in the `doc/examples` directory:
 
-- `example-0` to `example-7`: stones, marks, sequences, moves, territory marks, profiles and `remember`/`resume`.
+- `example-0` to `example-7`: stones, marks, sequences, moves, territory marks, profiles and `name`/`resume`.
 - `example-8`: an SGF game with `\sgf`: marks of the file, variations as letters and a variation.
 - `example-9`: a commented game with `\sgfdiagrams`: comments, annotations, result and score.
 - `example-10`: an animated game in the PDF with `\sgfanimation` (needs `animate`).

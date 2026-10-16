@@ -32,11 +32,11 @@
 \begin{goban}[9]\sgf[to = 3]{markup.sgf}\end{goban}
 \begin{goban}[9]\sgf{markup.sgf}\end{goban}
 
-\case{marks = false: no markup / the dim mark by hand / new remember and resume}
+\case{marks = false: no markup / the dim mark by hand / name and resume}
 \begin{goban}[9]\sgf[to = 1, marks = false]{markup.sgf}\end{goban}
 \begin{goban}[9]\stones[b]{C3}\marks[dim]{A1:3, C3}\end{goban}
-\begin{goban}[5, new remember]\stones[b]{B2}\arrow{A1}{E5}\line[forget]{A5}{E1}\end{goban}
-\begin{goban}[5, resume]\end{goban}
+\begin{goban}[5, name = markup]\stones[b]{B2}\arrow{A1}{E5}\line[forget]{A5}{E1}\end{goban}
+\begin{goban}[5, resume = {markup, marks}]\end{goban}
 
 \case{bend: arrows and lines bent to the left and to the right, with shorten, halo, both tips and a dash; a bent arrow cut by a partial board}
 \begin{goban}[5]

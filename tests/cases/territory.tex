@@ -58,11 +58,11 @@ Score: black \pgfgoscore{black} (6: 5 points and 1 dead stone), white \pgfgoscor
 \begin{goban}[5]\sgf[marks = false]{score.sgf}\end{goban}
 Score: black \pgfgoscore{black} (0).
 
-\case{new remember also remembers the territory: resume draws it again; with forget, the white territory (E) is not remembered}
-\begin{goban}[5, new remember]
+\case{resume = \{..., territory\} draws the territory again; with forget, the white territory (E) is not brought back}
+\begin{goban}[5, name = terr]
 	\stones[b]{B1:5}\territory[b]{A1,A5}
 	\stones[w]{D1:5}\territory[w, forget]{E1,E5}
 \end{goban}
-\begin{goban}[5, resume]\end{goban}
+\begin{goban}[5, resume = {terr, territory}]\end{goban}
 
 \end{document}

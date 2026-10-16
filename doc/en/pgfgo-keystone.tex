@@ -240,7 +240,7 @@ The first thing it will try to do is split the argument at the |;| and build two
 
 \sssseccion{All the stones on the board (\emph{Why not?})}
 
-Adds all the \textbf{visible} intersections of the board to the corresponding group. That is, if it is a partial board, only those corresponding to the visible region will be added. It is important to clarify this in case it is used in combination with |remember|. Its syntax is |*|.
+Adds all the \textbf{visible} intersections of the board to the corresponding group. That is, if it is a partial board, only those corresponding to the visible region will be added. It is important to clarify this in case it is used in combination with |resume|. Its syntax is |*|.
 
 \begin{codeexample}[]
 	\pgfgoset{goban = {5, partial = B2:D4}}
@@ -1173,11 +1173,7 @@ To avoid writing the whole path, there are four commands:
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/forget}
-	The numbers of their moves are not stored in the board’s memory: |resume| draws the stones again without numbers.
-\end{key}
-
-\begin{key}{/pgfgo/players/white/move/label/remember}
-	The numbers of their moves are stored in the board’s memory.
+	The numbers of their moves are forgotten, as with |/pgfgo/move/label/forget|: |resume| brings them without number.
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark = \meta{mark options}}

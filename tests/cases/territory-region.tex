@@ -64,14 +64,14 @@ white: \pgfgoregion{w}{polygons} (0), neutral: \pgfgoregion{n}{area} (0).
 	\marks[triangle]{\pgfgoregion{b}{polygon 1}}
 \end{goban}
 
-\case{Players style; neutral is filled point by point; remember and resume}
+\case{Players style; neutral is filled point by point; name and resume}
 {\pgfgoset{players = {black = {territory = {fill = {color = blue}, line}}}, territory = {draw = region}}%
-\begin{goban}[5, new remember]
+\begin{goban}[5, name = region]
 	\stones[b]{B1:5}\stones[w]{D1:5}
 	\territory[b]{A1,A5}
 	\territory[n]{C1,C5}
 	\territory[w, forget]{E1,E5}
 \end{goban}
-\begin{goban}[5, resume]\end{goban}}
+\begin{goban}[5, resume = {region, territory}]\end{goban}}
 
 \end{document}

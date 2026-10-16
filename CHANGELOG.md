@@ -15,7 +15,8 @@ All notable changes to `pgf-go` are listed here.
   `view/territory` `= false` remove them, `view/raise` sets the height, and
   any `goban` option (`background = false`, `label = false`, `grid = false`,
   `scale`, ...) can be given too, or for all views with
-  `\pgfgoset{view = {...}}`.
+  `\pgfgoset{view = {...}}`. What was drawn with `forget` is only shown
+  with `view/forgotten`.
 - Shines of your own: `stone/shine` takes
   `image = {file, width, rotate, false}`, an image with transparency centered
   on the stone instead of the drawn shine. The shine is drawn on top of any
@@ -172,6 +173,20 @@ All notable changes to `pgf-go` are listed here.
 
 ### Behaviour changes
 
+- **One way to remember a board: `name` and `resume = <name>`.** A `goban`
+  with `name = <name>` stores everything it draws, and another one starts
+  with that board as it was at the end with `resume = <name>` (numbering and
+  turn continue). `resume` brings only the stones; ask for the rest with
+  `resume = {<name>, numbers, marks, territory}`. With `name` and `resume`
+  in the same `goban`, the new name stores what it brought plus its own, and
+  the old board does not change (variations); `name = a, resume = a` keeps
+  adding to `a`. `resume` with a name that does not exist is an error.
+  Removed: `goban/new remember`, `goban/remember`, `goban/forget` and
+  `resume` without a name, and the `remember` keys of `stone`, `move`,
+  `move/label`, `players/<player>/move/label`, `mark`, `arrow`, `line` and
+  `territory` (they only undid `goban/forget`). `forget` stays: what is drawn
+  with it is not brought by `resume`, and `move/label/forget` leaves the
+  number out even with `numbers`.
 - **Keys and commands with new names; the old names were removed.**
   `partial = B2:D4` (or `{B2, D4}`, `{B2 to D4}`) instead of
   `partial = {from = B2 to D4}`; `stone/shine` instead of `drop shine`;
@@ -191,7 +206,7 @@ All notable changes to `pgf-go` are listed here.
   `\pgfgodefinemark[image = {file = ..}]{<name>}` instead of
   `\pgfgodefinemark{<name>}[image = ..]`.
 - Removed, because they repeated other keys: `goban/border` (use
-  `goban/background`), `goban/add to remember` (use `remember`),
+  `goban/background`), `goban/add to remember` (use `name` and `resume`),
   `mark/sequence/use` (use `sequence` or `sequence = true`) and the mark
   shapes `tcircle` and `tsquare` (use `t-circle` and `t-square`).
 - **`\stones` without `b`, `w` or `n` draws neutral stones**, like `\stone`

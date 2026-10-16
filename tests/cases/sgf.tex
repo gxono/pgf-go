@@ -20,10 +20,10 @@
 \begin{goban}[9]\sgf{game.sgf}\moves*{E7}\end{goban}
 
 \case{Partial board, with captures and marks; resume}
-\begin{goban}[9, captures, new remember, partial = A1:E9, label = {at = all}]
+\begin{goban}[9, captures, name = game, partial = A1:E9, label = {at = all}]
 	\sgf{game.sgf}\marks[b, triangle]{C6}
 \end{goban}
-\begin{goban}[9, resume]\end{goban}
+\begin{goban}[9, resume = {game, numbers, marks}]\end{goban}
 
 \case{setup.sgf: AB, AW and AE after the first move. With captures, C3 is removed before black 4 plays there / up to move 3 / without captures AE cannot be applied: one warning}
 \begin{goban}[5, captures]\sgf{setup.sgf}\end{goban}
