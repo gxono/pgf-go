@@ -79,6 +79,10 @@
 %		PONE UNA PIEDRA SIN CAPTURAR NADA (\stones), O LA QUITA CON empty. FUERA DEL TABLERO NO HACE NADA.
 %	\pgfgo_kernel_board_if_occupied:nnTF {x}{y}
 %		VERDADERO SI HAY UNA PIEDRA EN (x,y).
+%	\pgfgo_kernel_board_save:n {<nombre>}
+%		GUARDA CON ESE NOMBRE UNA COPIA DEL TABLERO, LOS PRISIONEROS, EL NUMERO Y EL TURNO.
+%	\pgfgo_kernel_board_restore:n {<nombre>}
+%		VUELVE A LO GUARDADO CON ESE NOMBRE (LA COPIA SIGUE GUARDADA). UN NOMBRE SIN COPIA NO CAMBIA NADA.
 %	\pgfgo_kernel_prisoners:n {black | white}					EXPANDIBLE
 %		PRISIONEROS DEL JUGADOR DESDE \pgfgo_kernel_board_clear:: LAS PIEDRAS DEL OTRO COLOR QUE QUITARON LAS
 %		JUGADAS (NO CUENTAN LAS QUE QUITA board_put CON empty).
@@ -190,6 +194,8 @@
 	pgfgo_kernel_board_if_occupied:nnT,
 	pgfgo_kernel_board_if_occupied:nnF,
 	pgfgo_kernel_board_if_occupied:nnTF,
+	pgfgo_kernel_board_save:n,
+	pgfgo_kernel_board_restore:n,
 	pgfgo_kernel_prisoners:n
 }
 \clist_const:Nn \c__pgfgo_kernel_territory_clist {

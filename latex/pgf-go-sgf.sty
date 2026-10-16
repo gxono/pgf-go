@@ -135,6 +135,7 @@
 %PIEDRAS INICIALES. #1: black O white. #2: LISTA DE {x}{y}.
 \cs_new_protected:Npn \__pgfgo_sgf_stones:nn #1#2 {
 	\tl_if_blank:nF {#2} {
+		\bool_if:NT \l__pgfgo_sgf_cache_bool {\clist_map_inline:nn {#2} {\__pgfgo_sgf_cache_outside:nn ##1}}
 		\bool_if:NT \l_pgfgo_goban_remember_stone_bool
 			{\pgfgo_kernel_remember_push:n {\exp_not:N \pgfgo_stones_parsed:nn {#1} {\exp_not:n {#2}}}}
 		\pgfgo_stones_parsed:nn {#1} {#2}
@@ -180,8 +181,16 @@
 
 %UNA JUGADA DE #1 (black O white) EN (#2,#3). x E y VACIOS: PASE.
 \cs_new_protected:Npn \__pgfgo_sgf_move:nnn #1#2#3 {
+	\bool_if:NT \l__pgfgo_sgf_cache_bool {
+		\bool_lazy_and:nnT
+			{\int_compare_p:nNn {\l__pgfgo_sgf_count_int + 1} = {\l__pgfgo_sgf_from_int}}
+			{! \int_compare_p:nNn {\l__pgfgo_sgf_from_int} > {\l__pgfgo_sgf_to_int}}
+			{\__pgfgo_sgf_save:nn {a} {\l__pgfgo_sgf_index_int}}
+	}
 	\int_incr:N \l__pgfgo_sgf_count_int
 	\int_compare:nNnTF {\l__pgfgo_sgf_count_int} > {\l__pgfgo_sgf_to_int} {
+		\int_decr:N \l__pgfgo_sgf_count_int
+		\int_set_eq:NN \l__pgfgo_sgf_resume_int \l__pgfgo_sgf_index_int
 		\seq_map_break:
 	}{
 		\int_incr:N \l__pgfgo_sgf_number_int
@@ -210,6 +219,7 @@
 	\bool_set:Nn \l__pgfgo_captures_keep_bool
 		{\l__pgfgo_sgf_keep_numbered_bool && \l__pgfgo_sgf_numbered_bool}
 	\__pgfgo_captures_key:nn {#2} {#3}
+	\bool_if:NT \l__pgfgo_sgf_cache_bool {\__pgfgo_sgf_cache_point:nn {#2} {#3}}
 	\bool_set:Nn \l__pgfgo_sgf_numbered_bool {
 		\l__pgfgo_sgf_numbers_bool && \l__pgfgo_sgf_numbered_bool &&
 		! \prop_if_in_p:NV \g__pgfgo_sgf_marked_prop \l__pgfgo_captures_key_tl
@@ -339,6 +349,211 @@
 	}
 }
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%CON \l__pgfgo_sgf_cache_bool (\sgfanimation Y \sgfdiagrams, QUE DIBUJAN MUCHOS TABLEROS DE LA MISMA
+%PARTIDA) UN \sgf NO VUELVE A JUGAR LA PARTIDA DESDE EL PRINCIPIO: SIGUE DESDE LA POSICION QUE GUARDO
+%UN \sgf ANTERIOR. HAY DOS COPIAS: a, ANTES DE LA PRIMERA JUGADA NUMERADA (from), Y b, DESPUES DE LA
+%ULTIMA (to). CADA UNA TIENE LO QUE DEJARON LAS JUGADAS: EL TABLERO DEL KERNEL, LO QUE SE VA A DIBUJAR
+%(LAS PIEDRAS, LAS ATENUADAS Y LAS MARCAS), LOS PUNTOS DE \pgfgoscore, LAS NOTAS "N at M" Y EL NUMERO.
+%
+%UNA COPIA DE c JUGADAS SIRVE SI ES DEL MISMO ARCHIVO, CON LAS MISMAS OPCIONES Y EL MISMO TABLERO (EL
+%CONTEXTO), SI to NO ES MENOR QUE c, SI LAS JUGADAS 1 A c SON LAS MISMAS NUMERADAS (from IGUAL, O LOS DOS
+%MAYORES QUE c), Y SI NINGUNA DE ESAS JUGADAS NUMERADAS CAE EN UN PUNTO QUE MARCA EL ULTIMO NODO (LA
+%MARCA LE QUITA EL NUMERO). NO SE GUARDA NADA SI HUBO UN AVISO (PARA QUE CADA TABLERO AVISE IGUAL).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bool_new:N \l__pgfgo_sgf_cache_bool
+\tl_new:N \l__pgfgo_sgf_context_tl
+%EL EVENTO QUE SE JUEGA, Y EL PRIMERO QUE NO SE JUGO (DONDE SIGUE UNA COPIA).
+\int_new:N \l__pgfgo_sgf_index_int
+\int_new:N \l__pgfgo_sgf_resume_int
+\int_new:N \l__pgfgo_sgf_start_int
+%"x,y" DE LAS JUGADAS NUMERADAS (ANTES DE LAS MARCAS), Y SI UN PUNTO QUEDO FUERA DEL TABLERO.
+\prop_new:N \l__pgfgo_sgf_numbered_prop
+\bool_new:N \l__pgfgo_sgf_outside_bool
+\tl_new:N \l__pgfgo_sgf_slot_tl
+\clist_map_inline:nn {a, b} {
+	\tl_new:c {g__pgfgo_sgf_#1_context_tl}
+	\int_new:c {g__pgfgo_sgf_#1_count_int}
+	\int_new:c {g__pgfgo_sgf_#1_index_int}
+	\int_new:c {g__pgfgo_sgf_#1_from_int}
+	\int_new:c {g__pgfgo_sgf_#1_number_int}
+	\seq_new:c {g__pgfgo_sgf_#1_captured_seq}
+	\seq_new:c {g__pgfgo_sgf_#1_notes_seq}
+	\clist_map_inline:nn {numbered, pending, faded, marks, points, notes_number, notes_code}
+		{\prop_new:c {g__pgfgo_sgf_#1_##1_prop}}
+}
+
+%BORRA LAS COPIAS (AL EMPEZAR CADA \sgfanimation O \sgfdiagrams).
+\cs_new_protected:Npn \__pgfgo_sgf_cache_begin: {
+	\bool_set_true:N \l__pgfgo_sgf_cache_bool
+	\tl_gclear:c {g__pgfgo_sgf_a_context_tl}
+	\tl_gclear:c {g__pgfgo_sgf_b_context_tl}
+}
+
+%UN PUNTO FUERA DEL TABLERO DA UN AVISO.
+\cs_new_protected:Npn \__pgfgo_sgf_cache_outside:nn #1#2 {
+	\bool_lazy_and:nnF
+		{\int_compare_p:n {1 <= #1 <= \l_pgfgo_goban_size_x_int}}
+		{\int_compare_p:n {1 <= #2 <= \l_pgfgo_goban_size_y_int}}
+		{\bool_set_true:N \l__pgfgo_sgf_outside_bool}
+}
+
+%LA PIEDRA DE UNA JUGADA EN (#1,#2), CON \l__pgfgo_captures_key_tl Y \l__pgfgo_sgf_numbered_bool LISTOS.
+\cs_new_protected:Npn \__pgfgo_sgf_cache_point:nn #1#2 {
+	\__pgfgo_sgf_cache_outside:nn {#1} {#2}
+	\bool_if:nT {\l__pgfgo_sgf_numbers_bool && \l__pgfgo_sgf_numbered_bool}
+		{\prop_put:NVn \l__pgfgo_sgf_numbered_prop \l__pgfgo_captures_key_tl {}}
+}
+
+%VERDADERO SI ALGUNA JUGADA NUMERADA DE LA PROP #1 CAE EN UN PUNTO MARCADO.
+\prg_new_conditional:Npnn \__pgfgo_sgf_if_marked_conflict:N #1 {TF} {
+	\bool_set_false:N \l_tmpa_bool
+	\prop_map_inline:Nn \g__pgfgo_sgf_marked_prop {
+		\prop_if_in:NnT #1 {##1} {\bool_set_true:N \l_tmpa_bool \prop_map_break:}
+	}
+	\bool_if:NTF \l_tmpa_bool {\prg_return_true:} {\prg_return_false:}
+}
+\prg_generate_conditional_variant:Nnn \__pgfgo_sgf_if_marked_conflict:N {c} {TF}
+
+%EL CONTEXTO DEL \sgf QUE EMPIEZA (DESPUES DE LEER LA PARTIDA Y DE \__pgfgo_sgf_numbering:).
+\cs_new_protected:Npn \__pgfgo_sgf_context: {
+	\tl_set:Ne \l__pgfgo_sgf_context_tl {
+		{\exp_not:V \l__pgfgo_sgf_file_tl}
+		{\exp_not:V \l__pgfgo_sgf_variation_tl}
+		{\exp_not:V \l_pgfgo_kernel_sgf_charset_tl}
+		{
+			\int_use:N \l_pgfgo_kernel_sgf_game_int ,
+			\int_use:N \l_pgfgo_goban_size_x_int , \int_use:N \l_pgfgo_goban_size_y_int ,
+			\int_use:N \l_pgfgo_goban_from_x_int , \int_use:N \l_pgfgo_goban_to_x_int ,
+			\int_use:N \l_pgfgo_goban_from_y_int , \int_use:N \l_pgfgo_goban_to_y_int ,
+			\int_use:N \l__pgfgo_sgf_restart_int
+		}
+		\bool_to_str:N \l_pgfgo_goban_captures_bool
+		\bool_to_str:N \l_pgfgo_captures_collect_bool
+		\bool_to_str:N \l_pgfgo_goban_captures_fade_bool
+		\bool_to_str:N \l_pgfgo_goban_notes_bool
+		\bool_to_str:N \l__pgfgo_sgf_numbers_bool
+		\bool_to_str:N \l__pgfgo_sgf_keep_numbered_bool
+	}
+}
+
+%GUARDA LA COPIA #1 (a O b), QUE SIGUE EN EL EVENTO #2.
+\cs_new_protected:Npn \__pgfgo_sgf_save:nn #1#2 {
+	\bool_if:nF {
+		\g__pgfgo_captures_warned_bool || \l__pgfgo_sgf_remove_warned_bool || \l__pgfgo_sgf_outside_bool
+	}{
+		\__pgfgo_sgf_if_marked_conflict:NTF \l__pgfgo_sgf_numbered_prop {
+			\tl_gclear:c {g__pgfgo_sgf_#1_context_tl}
+		}{
+			\tl_gset_eq:cN {g__pgfgo_sgf_#1_context_tl} \l__pgfgo_sgf_context_tl
+			\int_gset_eq:cN {g__pgfgo_sgf_#1_count_int} \l__pgfgo_sgf_count_int
+			\int_gset:cn {g__pgfgo_sgf_#1_index_int} {#2}
+			\int_gset:cn {g__pgfgo_sgf_#1_from_int}
+				{\int_min:nn {\l__pgfgo_sgf_from_int} {\l__pgfgo_sgf_count_int + 1}}
+			\int_gset_eq:cN {g__pgfgo_sgf_#1_number_int} \l__pgfgo_sgf_number_int
+			\seq_gset_eq:cN {g__pgfgo_sgf_#1_captured_seq} \l_pgfgo_kernel_captured_seq
+			\seq_gset_eq:cN {g__pgfgo_sgf_#1_notes_seq} \g_pgfgo_move_notes_seq
+			\prop_gset_eq:cN {g__pgfgo_sgf_#1_numbered_prop} \l__pgfgo_sgf_numbered_prop
+			\prop_gset_eq:cN {g__pgfgo_sgf_#1_pending_prop} \g__pgfgo_captures_pending_prop
+			\prop_gset_eq:cN {g__pgfgo_sgf_#1_faded_prop} \g__pgfgo_captures_faded_prop
+			\prop_gset_eq:cN {g__pgfgo_sgf_#1_marks_prop} \g__pgfgo_captures_marks_prop
+			\prop_gset_eq:cN {g__pgfgo_sgf_#1_points_prop} \g_pgfgo_points_prop
+			\prop_gset_eq:cN {g__pgfgo_sgf_#1_notes_number_prop} \g__pgfgo_notes_number_prop
+			\prop_gset_eq:cN {g__pgfgo_sgf_#1_notes_code_prop} \g__pgfgo_notes_code_prop
+			\pgfgo_kernel_board_save:n {sgf-#1}
+		}
+	}
+}
+
+%DEJA EN \l__pgfgo_sgf_slot_tl LA COPIA QUE SIRVE (LA DE MAS JUGADAS), O NADA.
+\cs_new_protected:Npn \__pgfgo_sgf_choose: {
+	\tl_clear:N \l__pgfgo_sgf_slot_tl
+	\clist_map_inline:nn {a, b} {
+		\bool_lazy_all:nT {
+			{\tl_if_eq_p:Nc \l__pgfgo_sgf_context_tl {g__pgfgo_sgf_##1_context_tl}}
+			{! \int_compare_p:nNn {\int_use:c {g__pgfgo_sgf_##1_count_int}} > {\l__pgfgo_sgf_to_int}}
+			{
+				\int_compare_p:nNn {\int_use:c {g__pgfgo_sgf_##1_from_int}} =
+					{\int_min:nn {\l__pgfgo_sgf_from_int} {\int_use:c {g__pgfgo_sgf_##1_count_int} + 1}}
+			}
+			{
+				\bool_lazy_or_p:nn
+					{\tl_if_empty_p:N \l__pgfgo_sgf_slot_tl}
+					{
+						\int_compare_p:nNn {\int_use:c {g__pgfgo_sgf_##1_count_int}}
+							> {\int_use:c {g__pgfgo_sgf_ \l__pgfgo_sgf_slot_tl _count_int}}
+					}
+			}
+		}{
+			\__pgfgo_sgf_if_marked_conflict:cTF {g__pgfgo_sgf_##1_numbered_prop}
+				{} {\tl_set:Nn \l__pgfgo_sgf_slot_tl {##1}}
+		}
+	}
+}
+
+%VUELVE A LA COPIA #1.
+\cs_new_protected:Npn \__pgfgo_sgf_restore:n #1 {
+	\int_set_eq:Nc \l__pgfgo_sgf_count_int {g__pgfgo_sgf_#1_count_int}
+	\int_set_eq:Nc \l__pgfgo_sgf_number_int {g__pgfgo_sgf_#1_number_int}
+	\int_set_eq:Nc \l__pgfgo_sgf_start_int {g__pgfgo_sgf_#1_index_int}
+	\seq_set_eq:Nc \l_pgfgo_kernel_captured_seq {g__pgfgo_sgf_#1_captured_seq}
+	\seq_gset_eq:Nc \g_pgfgo_move_notes_seq {g__pgfgo_sgf_#1_notes_seq}
+	\prop_set_eq:Nc \l__pgfgo_sgf_numbered_prop {g__pgfgo_sgf_#1_numbered_prop}
+	\prop_gset_eq:Nc \g__pgfgo_captures_pending_prop {g__pgfgo_sgf_#1_pending_prop}
+	\prop_gset_eq:Nc \g__pgfgo_captures_faded_prop {g__pgfgo_sgf_#1_faded_prop}
+	\prop_gset_eq:Nc \g__pgfgo_captures_marks_prop {g__pgfgo_sgf_#1_marks_prop}
+	\prop_gset_eq:Nc \g_pgfgo_points_prop {g__pgfgo_sgf_#1_points_prop}
+	\prop_gset_eq:Nc \g__pgfgo_notes_number_prop {g__pgfgo_sgf_#1_notes_number_prop}
+	\prop_gset_eq:Nc \g__pgfgo_notes_code_prop {g__pgfgo_sgf_#1_notes_code_prop}
+	\pgfgo_kernel_board_restore:n {sgf-#1}
+}
+\cs_generate_variant:Nn \__pgfgo_sgf_restore:n {V}
+
+%LA ULTIMA JUGADA QUE SE MUESTRA, Y SUS MARCAS.
+\cs_new_protected:Npn \__pgfgo_sgf_last: {
+	\__pgfgo_sgf_count_moves:Nn \l__pgfgo_sgf_last_int {\l__pgfgo_sgf_to_int}
+	\int_set:Nn \l__pgfgo_sgf_last_int {\int_min:nn {\l__pgfgo_sgf_last_int} {\l__pgfgo_sgf_to_int}}
+	\__pgfgo_sgf_marked:
+}
+
+%LAS PIEDRAS INICIALES Y LAS JUGADAS, DESDE EL PRINCIPIO O (CON \l__pgfgo_sgf_cache_bool) DESDE UNA COPIA.
+%LAS MARCAS SE AVERIGUAN ANTES, PORQUE DECIDEN SI UNA COPIA SIRVE (NO DAN AVISOS).
+\cs_new_protected:Npn \__pgfgo_sgf_play: {
+	\int_zero:N \l__pgfgo_sgf_count_int
+	\int_zero:N \l__pgfgo_sgf_number_int
+	\tl_clear:N \l__pgfgo_sgf_slot_tl
+	%SIN goban/captures LAS PIEDRAS SE DIBUJAN AL JUGARLAS: NO HAY NADA QUE GUARDAR.
+	\bool_lazy_and:nnTF {\l__pgfgo_sgf_cache_bool} {\l_pgfgo_goban_captures_bool} {
+		\int_set:Nn \l__pgfgo_sgf_start_int {1}
+		\int_set:Nn \l__pgfgo_sgf_resume_int {\seq_count:N \l_pgfgo_kernel_sgf_moves_seq + 1}
+		\prop_clear:N \l__pgfgo_sgf_numbered_prop
+		\bool_set_false:N \l__pgfgo_sgf_outside_bool
+		\bool_gset_false:N \g__pgfgo_captures_warned_bool
+		\__pgfgo_sgf_context:
+		\__pgfgo_sgf_last:
+		\__pgfgo_sgf_choose:
+		\tl_if_empty:NTF \l__pgfgo_sgf_slot_tl {
+			\__pgfgo_sgf_setup_stones:nN {black} \l_pgfgo_kernel_sgf_black_seq
+			\__pgfgo_sgf_setup_stones:nN {white} \l_pgfgo_kernel_sgf_white_seq
+		}{
+			\__pgfgo_sgf_restore:V \l__pgfgo_sgf_slot_tl
+		}
+		\seq_map_indexed_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {
+			\int_compare:nNnF {##1} < {\l__pgfgo_sgf_start_int} {
+				\int_set:Nn \l__pgfgo_sgf_index_int {##1}
+				\__pgfgo_sgf_event:nnn ##2
+			}
+		}
+		\__pgfgo_sgf_save:nn {b} {\l__pgfgo_sgf_resume_int}
+	}{
+		\bool_set_false:N \l__pgfgo_sgf_cache_bool
+		\__pgfgo_sgf_setup_stones:nN {black} \l_pgfgo_kernel_sgf_black_seq
+		\__pgfgo_sgf_setup_stones:nN {white} \l_pgfgo_kernel_sgf_white_seq
+		\__pgfgo_sgf_last:
+		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgf_event:nnn ##1}
+	}
+}
+
 \cs_new_protected:Npn \pgfgo_sgf:nn #1#2 {
 	\group_begin:
 		\keys_set:nn {pgfgo / sgf} {#1}
@@ -346,15 +561,7 @@
 		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgf_variation_tl
 		\__pgfgo_sgf_numbering:
 		\bool_if:NT \l__pgfgo_sgf_check_size_bool {\__pgfgo_sgf_check_size:n {#2}}
-		\__pgfgo_sgf_setup_stones:nN {black} \l_pgfgo_kernel_sgf_black_seq
-		\__pgfgo_sgf_setup_stones:nN {white} \l_pgfgo_kernel_sgf_white_seq
-		\__pgfgo_sgf_count_moves:Nn \l__pgfgo_sgf_last_int {\l__pgfgo_sgf_to_int}
-		\int_set:Nn \l__pgfgo_sgf_last_int {\int_min:nn {\l__pgfgo_sgf_last_int} {\l__pgfgo_sgf_to_int}}
-		\__pgfgo_sgf_marked:
-		%LAS JUGADAS.
-		\int_zero:N \l__pgfgo_sgf_count_int
-		\int_zero:N \l__pgfgo_sgf_number_int
-		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgf_event:nnn ##1}
+		\__pgfgo_sgf_play:
 		%LAS MARCAS, LAS FLECHAS Y LAS VARIANTES DE LA ULTIMA JUGADA.
 		\seq_map_inline:Nn \l__pgfgo_sgf_marks_seq {\__pgfgo_sgf_mark:nnnnn ##1}
 		\bool_if:NT \l__pgfgo_sgf_marks_bool {
@@ -590,6 +797,8 @@
 %LEE LA PARTIDA Y FIJA LOS CUADROS. SEPARADO DE \pgfgo_sgfanimation:nn PARA PODER DIBUJAR CUADROS SUELTOS.
 \cs_new_protected:Npn \pgfgo_sgfanimation_setup:nn #1#2 {
 	\keys_set:nn {pgfgo / sgf~animation} {#1}
+	%CADA CUADRO SIGUE LA PARTIDA DESDE EL ANTERIOR (VER \__pgfgo_sgf_play:).
+	\__pgfgo_sgf_cache_begin:
 	\tl_set:Nn \l__pgfgo_sgfanim_file_tl {#2}
 	\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfanim_variation_tl
 	%LOS TABLEROS TIENEN EL TAMANO DE LA PARTIDA (goban = {...} PUEDE CAMBIARLO).
@@ -702,11 +911,23 @@
 %QUE APARECEN EN EL. TODAS TIENEN EL TAMANO DEL TABLERO.
 \int_new:N \g__pgfgo_sgfanim_layer_int
 \int_new:N \g__pgfgo_sgfanim_file_int
-\tl_new:N \l__pgfgo_sgfanim_sig_tl
 \tl_new:N \l__pgfgo_sgfanim_old_tl
-%"x,y" -> FIRMA DE LO QUE SE DIBUJA EN ESE PUNTO ({codigo}{atenuada}{marcas}), EN EL CUADRO ANTERIOR Y EN EL ACTUAL.
+%LAS PIEDRAS ("x,y" -> CODIGO) DEL CUADRO ANTERIOR Y DEL ACTUAL.
 \prop_new:N \l__pgfgo_sgfanim_prev_prop
 \prop_new:N \l__pgfgo_sgfanim_cur_prop
+%LA FIRMA DE LO QUE SE DIBUJA EN CADA PUNTO ({codigo}{atenuada}{marcas}) Y EL CUADRO AL QUE PERTENECE
+%("ANIMACION.CUADRO"), EN EL CUADRO ANTERIOR (old) Y EN EL ACTUAL (new): \l__pgfgo_sgfanim_old_sig_x,y_tl, ETC.
+\int_new:N \g__pgfgo_sgfanim_run_int
+\tl_new:N \l__pgfgo_sgfanim_stamp_tl
+\tl_new:N \l__pgfgo_sgfanim_last_stamp_tl
+\cs_new_protected:Npn \__pgfgo_sgfanim_point_vars:n #1 {
+	\tl_if_exist:cF {l__pgfgo_sgfanim_old_sig_ #1 _tl} {
+		\tl_new:c {l__pgfgo_sgfanim_old_sig_ #1 _tl}
+		\tl_new:c {l__pgfgo_sgfanim_old_stamp_ #1 _tl}
+		\tl_new:c {l__pgfgo_sgfanim_new_sig_ #1 _tl}
+		\tl_new:c {l__pgfgo_sgfanim_new_stamp_ #1 _tl}
+	}
+}
 %"x,y" -> LAMINA DE LA PIEDRA QUE SE VE AHORA, Y LAMINA -> CUADRO EN QUE APARECIO.
 \prop_new:N \l__pgfgo_sgfanim_active_prop
 \prop_new:N \l__pgfgo_sgfanim_start_prop
@@ -777,10 +998,16 @@
 			{\__pgfgo_sgfanim_collect: \__pgfgo_sgfanim_game:n {#1}}
 			{\pgfgo_sgf_comment:n {#1}}
 	\group_end:
-	%LO QUE QUEDO EN CADA PUNTO (LAS PROPIEDADES DE LAS CAPTURAS SON GLOBALES).
-	\prop_clear:N \l__pgfgo_sgfanim_cur_prop
-	\prop_map_inline:Nn \g__pgfgo_captures_pending_prop {
-		\prop_put:Nne \l__pgfgo_sgfanim_cur_prop {##1} {
+	%LO QUE QUEDO EN CADA PUNTO (LAS PROPIEDADES DE LAS CAPTURAS SON GLOBALES; LAS LAMINAS DE LAS PIEDRAS
+	%LAS VACIAN). LA FIRMA DE CADA PUNTO VA EN SU PROPIA VARIABLE, CON EL CUADRO AL QUE PERTENECE, PARA
+	%COMPARAR LOS DOS CUADROS SIN BUSCAR EN LISTAS LARGAS.
+	\tl_set:Ne \l__pgfgo_sgfanim_stamp_tl {\int_use:N \g__pgfgo_sgfanim_run_int . \int_eval:n {#1}}
+	\tl_set:Ne \l__pgfgo_sgfanim_last_stamp_tl {\int_use:N \g__pgfgo_sgfanim_run_int . \int_eval:n {#1 - 1}}
+	\prop_set_eq:NN \l__pgfgo_sgfanim_cur_prop \g__pgfgo_captures_pending_prop
+	\prop_map_inline:Nn \l__pgfgo_sgfanim_cur_prop {
+		\__pgfgo_sgfanim_point_vars:n {##1}
+		\tl_set_eq:cN {l__pgfgo_sgfanim_new_stamp_ ##1 _tl} \l__pgfgo_sgfanim_stamp_tl
+		\tl_set:ce {l__pgfgo_sgfanim_new_sig_ ##1 _tl} {
 			{\exp_not:n {##2}}
 			{\prop_if_in:NnTF \g__pgfgo_captures_faded_prop {##1} {1} {0}}
 			{\prop_item:Nn \g__pgfgo_captures_marks_prop {##1}}
@@ -788,19 +1015,25 @@
 	}
 	%LAS PIEDRAS QUE YA NO SE VEN IGUAL TERMINAN EN EL CUADRO ANTERIOR.
 	\prop_map_inline:Nn \l__pgfgo_sgfanim_prev_prop {
-		\prop_get:NnNTF \l__pgfgo_sgfanim_cur_prop {##1} \l__pgfgo_sgfanim_sig_tl
-			{\tl_if_eq:nVF {##2} \l__pgfgo_sgfanim_sig_tl {\__pgfgo_sgfanim_end_stone:nn {##1} {#1 - 1}}}
+		\bool_lazy_and:nnF
+			{\tl_if_eq_p:cN {l__pgfgo_sgfanim_new_stamp_ ##1 _tl} \l__pgfgo_sgfanim_stamp_tl}
+			{\tl_if_eq_p:cc {l__pgfgo_sgfanim_new_sig_ ##1 _tl} {l__pgfgo_sgfanim_old_sig_ ##1 _tl}}
 			{\__pgfgo_sgfanim_end_stone:nn {##1} {#1 - 1}}
 	}
 	%LAS QUE APARECEN O CAMBIAN, EMPIEZAN.
 	\group_begin:
 		\clist_set_eq:NN \l_pgfgo_goban_layers_clist \c__pgfgo_sgfanim_top_layers_clist
 		\prop_map_inline:Nn \l__pgfgo_sgfanim_cur_prop {
-			\prop_get:NnNTF \l__pgfgo_sgfanim_prev_prop {##1} \l__pgfgo_sgfanim_old_tl
-				{\tl_if_eq:nVF {##2} \l__pgfgo_sgfanim_old_tl {\__pgfgo_sgfanim_new_stone:nn {##1} {##2}}}
-				{\__pgfgo_sgfanim_new_stone:nn {##1} {##2}}
+			\bool_lazy_and:nnF
+				{\tl_if_eq_p:cN {l__pgfgo_sgfanim_old_stamp_ ##1 _tl} \l__pgfgo_sgfanim_last_stamp_tl}
+				{\tl_if_eq_p:cc {l__pgfgo_sgfanim_new_sig_ ##1 _tl} {l__pgfgo_sgfanim_old_sig_ ##1 _tl}}
+				{\exp_args:Nnv \__pgfgo_sgfanim_new_stone:nn {##1} {l__pgfgo_sgfanim_new_sig_ ##1 _tl}}
 		}
 	\group_end:
+	\prop_map_inline:Nn \l__pgfgo_sgfanim_cur_prop {
+		\tl_set_eq:cc {l__pgfgo_sgfanim_old_stamp_ ##1 _tl} {l__pgfgo_sgfanim_new_stamp_ ##1 _tl}
+		\tl_set_eq:cc {l__pgfgo_sgfanim_old_sig_ ##1 _tl} {l__pgfgo_sgfanim_new_sig_ ##1 _tl}
+	}
 	\prop_map_inline:Nn \g__pgfgo_sgfanim_new_prop {
 		\prop_put:Nnn \l__pgfgo_sgfanim_active_prop {##1} {##2}
 		\prop_put:Nnn \l__pgfgo_sgfanim_start_prop {##2} {#1}
@@ -811,6 +1044,7 @@
 
 %ARMA TODAS LAS LAMINAS (DESPUES DE \pgfgo_sgfanimation_setup:nn).
 \cs_new_protected:Npn \pgfgo_sgfanimation_layers: {
+	\int_gincr:N \g__pgfgo_sgfanim_run_int
 	\int_gzero:N \g__pgfgo_sgfanim_layer_int
 	\prop_clear:N \l__pgfgo_sgfanim_prev_prop
 	\prop_clear:N \l__pgfgo_sgfanim_active_prop
@@ -1269,6 +1503,8 @@
 \cs_new_protected:Npn \pgfgo_sgfdiagrams:nn #1#2 {
 	\group_begin:
 		\keys_set:nn {pgfgo / sgf~diagrams} {#1}
+		%CADA DIAGRAMA SIGUE LA PARTIDA DESDE EL ANTERIOR (VER \__pgfgo_sgf_play:).
+		\__pgfgo_sgf_cache_begin:
 		\__pgfgo_sgfdiag_begin:Nn \l__pgfgo_sgfdiag_layout_tl {#2}
 		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfdiag_variation_tl
 		\__pgfgo_sgf_size:N \l__pgfgo_sgfdiag_size_tl

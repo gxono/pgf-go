@@ -56,13 +56,6 @@
 	{\ProcessKeyOptions [pgfgo / package]}
 	{\RequirePackage{l3keys2e}\ProcessKeysOptions{pgfgo / package}}
 
-%VARIABLES DE LOS RECORRIDOS (MAP/STEP) QUE USAN LOS MODULOS.
-\tl_new:N \l__pgfgo_item_tl
-\tl_new:N \l__pgfgo_letter_tl
-\tl_new:N \l__pgfgo_number_tl
-\tl_new:N \l__pgfgo_element_tl
-\tl_new:N \l__pgfgo_subset_tl
-
 %VARIANTE QUE USAN LOS MODULOS (LOS l3kernel RECIENTES YA LA TIENEN).
 \prg_generate_conditional_variant:Nnn \regex_match:nn {nV} {T, F, TF}
 

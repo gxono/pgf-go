@@ -28,9 +28,7 @@
 
 %/pgfgo/players/<jugador>/territory: LA MARCA DE CADA PUNTO (draw = marks), EL RELLENO (draw = fill Y
 %draw = region) Y, CON draw = region, EL CONTORNO (line) Y SUS VERTICES (vertices).
-%LOS CAMINOS DE LAS CLAVES LLEVAN \l__pgfgo_item_tl, COMO EN pgf-go-players.sty.
 \cs_new_protected:Npn \__pgfgo_territory_new_player:n #1 {
-	\tl_set:Nn \l__pgfgo_item_tl {#1}
 	\tl_new:c {l_pgfgo_players_ #1 _territory_mark_tl}
 	\tl_new:c {l_pgfgo_players_ #1 _territory_fill_color_tl}
 	\tl_new:c {l_pgfgo_players_ #1 _territory_fill_opacity_tl}
@@ -42,7 +40,7 @@
 	\bool_new:c {l_pgfgo_players_ #1 _territory_vertices_bool}
 	\dim_new:c {l_pgfgo_players_ #1 _territory_vertices_radius_dim}
 	\tl_new:c {l_pgfgo_players_ #1 _territory_vertices_color_tl}
-	\keys_define:en {pgfgo / players / \l__pgfgo_item_tl / territory} {
+	\keys_define:nn {pgfgo / players / #1 / territory} {
 		mark		.tl_set:c	= {l_pgfgo_players_ #1 _territory_mark_tl},
 		fill		.code:n		= {\keys_set:nn {pgfgo / players / #1 / territory / fill} {##1}},
 		%COMO EMPIEZAN APAGADOS, DARLOS (CON O SIN OPCIONES) LOS PRENDE; false LOS APAGA.
@@ -57,11 +55,11 @@
 		},
 		vertices	.default:n	= {},
 	}
-	\keys_define:en {pgfgo / players / \l__pgfgo_item_tl / territory / fill} {
+	\keys_define:nn {pgfgo / players / #1 / territory / fill} {
 		color		.tl_set:c	= {l_pgfgo_players_ #1 _territory_fill_color_tl},
 		opacity	.tl_set:c	= {l_pgfgo_players_ #1 _territory_fill_opacity_tl},
 	}
-	\keys_define:en {pgfgo / players / \l__pgfgo_item_tl / territory / line} {
+	\keys_define:nn {pgfgo / players / #1 / territory / line} {
 		true		.code:n		= {\bool_set_true:c {l_pgfgo_players_ #1 _territory_line_bool}},
 		false		.code:n		= {\bool_set_false:c {l_pgfgo_players_ #1 _territory_line_bool}},
 		color		.tl_set:c	= {l_pgfgo_players_ #1 _territory_line_color_tl},
@@ -75,7 +73,7 @@
 		above		.initial:n	= {true},
 	}
 	%COMO goban/hoshi. SIN color, EL DEL CONTORNO.
-	\keys_define:en {pgfgo / players / \l__pgfgo_item_tl / territory / vertices} {
+	\keys_define:nn {pgfgo / players / #1 / territory / vertices} {
 		true		.code:n		= {\bool_set_true:c {l_pgfgo_players_ #1 _territory_vertices_bool}},
 		false		.code:n		= {\bool_set_false:c {l_pgfgo_players_ #1 _territory_vertices_bool}},
 		radius	.dim_set:c	= {l_pgfgo_players_ #1 _territory_vertices_radius_dim},
@@ -83,7 +81,6 @@
 		color		.tl_set:c	= {l_pgfgo_players_ #1 _territory_vertices_color_tl},
 	}
 }
-\cs_generate_variant:Nn \keys_define:nn {en}
 \clist_map_inline:nn {neutral, black, white} {\__pgfgo_territory_new_player:n {#1}}
 \keys_set:nn {pgfgo / players / black / territory}
 	{mark = t-circle, fill = {color = black, opacity = 0.35}, line = {color = black, false}}
@@ -92,19 +89,12 @@
 \keys_set:nn {pgfgo / players / neutral / territory}
 	{mark = t-square, fill = {color = gray, opacity = 0.35}, line = {color = gray, false}}
 
+%EL JUGADOR DE ESTE \territory (VACIO: NINGUNO).
+\cs_new_protected:Npn \__pgfgo_territory_set_player:n #1 {\tl_set:Nn \l__pgfgo_territory_player_tl {#1}}
+%CLAVES: /pgfgo/territory/{black, b, white, w, neutral, n}
+\pgfgo_players_define_id_keys:nN {pgfgo / territory} \__pgfgo_territory_set_player:n
+
 \keys_define:nn {pgfgo / territory} {
-	black		.code:n		= {\tl_set:Nn \l__pgfgo_territory_player_tl {black}},
-	black		.groups:n	= {player-id},
-	b				.code:n		= {\tl_set:Nn \l__pgfgo_territory_player_tl {black}},
-	b				.groups:n	= {player-id},
-	white		.code:n		= {\tl_set:Nn \l__pgfgo_territory_player_tl {white}},
-	white		.groups:n	= {player-id},
-	w				.code:n		= {\tl_set:Nn \l__pgfgo_territory_player_tl {white}},
-	w				.groups:n	= {player-id},
-	neutral	.code:n		= {\tl_set:Nn \l__pgfgo_territory_player_tl {neutral}},
-	neutral	.groups:n	= {player-id},
-	n				.code:n		= {\tl_set:Nn \l__pgfgo_territory_player_tl {neutral}},
-	n				.groups:n	= {player-id},
 	%marks: UNA MARCA POR PUNTO. fill: UN RELLENO, DEBAJO DE LAS PIEDRAS. region: UN POLIGONO POR COLOR
 	%(EL NEUTRAL SE RELLENA COMO CON fill).
 	draw		.choices:nn	= {marks, fill, region} {\tl_set_eq:NN \l__pgfgo_territory_draw_tl \l_keys_choice_tl},

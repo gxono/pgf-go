@@ -6,6 +6,14 @@ commands, and compares them with the key, stylekey, command and environment
 entries of each manual (doc/es and doc/en). It reports keys or commands that
 are not documented, and documented ones that do not exist.
 
+In the paths of \\keys_define, "players/#1" (or ##1) and \\l__pgfgo_item_tl
+stand for any player: they are read as "players/<player>". Keys defined by a
+helper or a loop (a path or a key name with any other #) are skipped; list
+them in a comment line of the .sty that starts with "%CLAVES:", with commas
+between the keys and {a, b} for alternatives:
+
+    %CLAVES: /pgfgo/{arrow, line}/{color, width}, /pgfgo/mark/circle
+
 Usage:
     python tests/check_docs.py
 
@@ -25,7 +33,6 @@ UNDOCUMENTED = {
     "/pgfgo/mark/tcircle",                  # documented in /pgfgo/mark/t-circle
     "/pgfgo/mark/tsquare",                  # documented in /pgfgo/mark/t-square
     "pgfgonewplayers",                      # internal: creates the three players
-    "/pgfgo/mark/#1",                       # the marks created by \pgfgodefinemark
 }
 
 # Documented paths that are other names for keys of the code. The manuals
@@ -68,25 +75,49 @@ def split_top(body):
 
 def clean_path(text):
     text = text.replace(BS + "l__pgfgo_item_tl", "<player>").replace("~", " ")
-    return re.sub(r"\s*/\s*", "/", text.strip())
+    text = re.sub(r"\s*/\s*", "/", text.strip())
+    return re.sub(r"(^|/)players/#+1(?=/|$)", r"\1players/<player>", text)
+
+
+def expand_braces(path):
+    """'a/{b, c}/d' -> ['a/b/d', 'a/c/d']."""
+    m = re.search(r"\{([^{}]*)\}", path)
+    if not m:
+        return [path]
+    return [p for alt in m.group(1).split(",")
+            for p in expand_braces(path[:m.start()] + alt.strip() + path[m.end():])]
+
+
+def marked_keys(text):
+    """The keys listed in the %CLAVES: comment lines."""
+    keys = set()
+    for line in re.findall(r"^[ \t]*%CLAVES:(.*)$", text, re.M):
+        for entry in split_top(line):
+            if entry.strip():
+                keys.update("/" + clean_path(p).strip("/") for p in expand_braces(entry.strip()))
+    return keys
 
 
 def code_keys():
     """Return the keys and the choices of .choices keys (path -> parent key)."""
     keys, choices = set(), {}
     for sty in sorted((ROOT / "latex").glob("*.sty")):
-        source = re.sub(r"(?<!\\)%.*", "", sty.read_text(encoding="utf-8"))
+        text = sty.read_text(encoding="utf-8")
+        keys |= marked_keys(text)
+        source = re.sub(r"(?<!\\)%.*", "", text)
         for m in re.finditer(re.escape(BS) + r"keys_define:(?:nn|ee|en|ne)\s*", source):
             i = source.index("{", m.end())
             module, i = braced(source, i)
             body, _ = braced(source, source.index("{", i))
             module = clean_path(module)
+            if "#" in module:
+                continue        # defined by a helper: see %CLAVES:
             for entry in split_top(body):
                 m2 = re.match(r"\s*(.+?)\s*\.([a-z_]+:[a-zA-Z]*)\s*(?:=\s*(.*))?$", entry, re.S)
                 if not m2:
                     continue
                 name, prop, value = clean_path(m2.group(1)), m2.group(2), m2.group(3) or ""
-                if name == "unknown" or prop in ("groups:n", "default:n", "initial:n"):
+                if name == "unknown" or "#" in name or prop in ("groups:n", "default:n", "initial:n"):
                     continue
                 path = "/" + module + "/" + name
                 keys.add(path)
@@ -103,6 +134,7 @@ def code_commands():
         commands.update(re.findall(r"(?:New|Declare)(?:Expandable)?DocumentCommand\s*\{?\s*\\([A-Za-z]+)", source))
         commands.update(re.findall(r"\\def\\(pgfgo[A-Za-z]+)", source))
         commands.update(re.findall(r"\\let\\(pgfgo[A-Za-z]+)", source))
+        commands.update(re.findall(r"\\cs_(?:new|g?set)_eq:N[Nc]\s*\\(pgfgo[A-Za-z]+)(?![A-Za-z_:@])", source))
         commands.update("env:" + e for e in re.findall(r"NewDocumentEnvironment\s*\{(\w+)\}", source))
         # \mark, \marks and \sgf exist inside goban; \move is \let to \moves.
         commands.update(re.findall(r"\\cs_set_eq:NN\s*\\([A-Za-z]+)\s*\\__pgfgo", source))

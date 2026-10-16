@@ -15,19 +15,41 @@
 %LA FORMA ELEGIDA: DIBUJA LA MARCA CENTRADA EN EL ORIGEN.
 \cs_new:Nn\pgfgo_mark_current:{}
 
-%EL JUGADOR DE LA MARCA.
-\cs_new_protected:Npn \__pgfgo_mark_player:n #1 {
-	\bool_set_false:N \l_pgfgo_players_black_bool
-	\bool_set_false:N \l_pgfgo_players_white_bool
-	\bool_set_false:N \l_pgfgo_players_neutral_bool
-	\bool_set_true:c {l_pgfgo_players_ #1 _bool}
-}
-
 %LAS FORMAS t- Y dim NO LLEVAN SOMBRA.
 \cs_new_protected:Npn \__pgfgo_mark_t_shape:N #1 {
 	\bool_set_true:N \l_pgfgo_mark_t_bool
 	\cs_set_eq:NN \pgfgo_mark_current: #1
 }
+
+%LA CLAVE DE FORMA #1 DE pgfgo/mark, QUE EJECUTA #2 (TAMBIEN LAS DE \pgfgodefinemark).
+\cs_new_protected:Npn \__pgfgo_mark_shape_key:nn #1#2 {
+	\keys_define:nn {pgfgo / mark} {
+		#1		.code:n		= {#2},
+		#1		.groups:n	= {shape},
+	}
+}
+\cs_new_protected:Npn \__pgfgo_mark_simple_shape:nN #1#2 {
+	\__pgfgo_mark_shape_key:nn {#1} {\cs_set_eq:NN \pgfgo_mark_current: #2}
+}
+\cs_new_protected:Npn \__pgfgo_mark_t_shape:nN #1#2 {
+	\__pgfgo_mark_shape_key:nn {#1} {\__pgfgo_mark_t_shape:N #2}
+}
+
+%CLAVES: /pgfgo/mark/{circle, triangle, square, cross, filled square, filled circle}
+\__pgfgo_mark_simple_shape:nN {circle}					\pgfgo_mark_circle:
+\__pgfgo_mark_simple_shape:nN {triangle}				\pgfgo_mark_triangle:
+\__pgfgo_mark_simple_shape:nN {square}					\pgfgo_mark_square:
+\__pgfgo_mark_simple_shape:nN {cross}						\pgfgo_mark_cross:
+\__pgfgo_mark_simple_shape:nN {filled~square}		\pgfgo_mark_filled_square:
+\__pgfgo_mark_simple_shape:nN {filled~circle}		\pgfgo_mark_filled_circle:
+%CLAVES: /pgfgo/mark/{t-circle, t-square, dim, tcircle, tsquare}
+\__pgfgo_mark_t_shape:nN {t-circle}		\pgfgo_mark_t_circle:
+\__pgfgo_mark_t_shape:nN {t-square}		\pgfgo_mark_t_square:
+%ATENUA EL PUNTO (DD EN SGF): UN CUADRADO DEL COLOR DEL FONDO, TRANSLUCIDO, SOBRE LA PIEDRA Y LA CUADRICULA.
+\__pgfgo_mark_t_shape:nN {dim}				\pgfgo_mark_dim:
+%ALIAS SIN GUION (USADOS EN EL CATALOGO DEL MANUAL)
+\__pgfgo_mark_t_shape:nN {tcircle}		\pgfgo_mark_t_circle:
+\__pgfgo_mark_t_shape:nN {tsquare}		\pgfgo_mark_t_square:
 
 \keys_define:nn { pgfgo / mark }{
 	forget						.code:n	=	{\bool_set_false:N\l_pgfgo_goban_remember_mark_bool},
@@ -35,40 +57,6 @@
 
 	remember					.code:n	=	{\bool_set_true:N\l_pgfgo_goban_remember_mark_bool},
 	remember					.groups:n	=	{preset},
-
-	circle				.code:n			=	{\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_circle:},
-	circle				.groups:n		=	{ shape },
-
-	triangle			.code:n			=	{\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_triangle:},
-	triangle			.groups:n		=	{ shape },
-
-	square				.code:n			=	{\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_square:},
-	square				.groups:n		=	{ shape },
-
-	cross					.code:n			=	{\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_cross:},
-	cross					.groups:n		=	{ shape },
-
-	filled~square	.code:n			=	{\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_filled_square:},
-	filled~square	.groups:n		=	{ shape },
-
-	filled~circle	.code:n			=	{\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_filled_circle:},
-	filled~circle	.groups:n		=	{ shape },
-
-	t-circle			.code:n			= {\__pgfgo_mark_t_shape:N \pgfgo_mark_t_circle:},
-	t-circle			.groups:n		=	{ shape },
-
-	t-square			.code:n			= {\__pgfgo_mark_t_shape:N \pgfgo_mark_t_square:},
-	t-square			.groups:n		=	{ shape },
-
-	%ATENUA EL PUNTO (DD EN SGF): UN CUADRADO DEL COLOR DEL FONDO, TRANSLUCIDO, SOBRE LA PIEDRA Y LA CUADRICULA.
-	dim						.code:n			= {\__pgfgo_mark_t_shape:N \pgfgo_mark_dim:},
-	dim						.groups:n		=	{ shape },
-
-	%ALIAS SIN GUION (USADOS EN EL CATALOGO DEL MANUAL)
-	tcircle				.code:n			= {\__pgfgo_mark_t_shape:N \pgfgo_mark_t_circle:},
-	tcircle				.groups:n		=	{ shape },
-	tsquare				.code:n			= {\__pgfgo_mark_t_shape:N \pgfgo_mark_t_square:},
-	tsquare				.groups:n		=	{ shape },
 
 	hatched~lines	.code:n			=	{
 		\bool_set_true:N\l_pgfgo_mark_hatched_lines_bool
@@ -84,22 +72,8 @@
 }
 
 %JUGADOR
-\keys_define:nn { pgfgo / mark }{
-	black				.code:n		=	{\__pgfgo_mark_player:n {black}},
-	black				.groups:n = { player-id },
-	b						.code:n		= {\__pgfgo_mark_player:n {black}},
-	b						.groups:n = { player-id },
-
-	white				.code:n		=	{\__pgfgo_mark_player:n {white}},
-	white				.groups:n = { player-id },
-	w						.code:n		= {\__pgfgo_mark_player:n {white}},
-	w						.groups:n = { player-id },
-
-	neutral			.code:n		=	{\__pgfgo_mark_player:n {neutral}},
-	neutral			.groups:n = { player-id },
-	n						.code:n		= {\__pgfgo_mark_player:n {neutral}},
-	n						.groups:n = { player-id },
-}
+%CLAVES: /pgfgo/mark/{black, b, white, w, neutral, n}
+\pgfgo_players_define_id_keys:nN {pgfgo / mark} \pgfgo_players_set_current:n
 
 
 
@@ -259,14 +233,16 @@
 
 %SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO. CON goban/captured marks = remove, UNA MARCA
 %SOBRE UNA PIEDRA SE GUARDA CON LA PIEDRA (VER pgf-go-stones.sty), PARA QUE DESAPAREZCA SI LA CAPTURAN.
-\cs_new_protected:Npn\pgfgo_mark:nnn #1#2#3 {
+%#4: EL CODIGO QUE LA DIBUJA AHORA.
+\cs_new_protected:Npn\__pgfgo_mark_at:nnnn #1#2#3#4 {
 	\pgfgo_kernel_if_visible:nnT {#2} {#3} {
 		\bool_lazy_and:nnTF {\l_pgfgo_goban_captures_bool} {\l_pgfgo_goban_captured_marks_bool}
-			{\pgfgo_kernel_board_if_occupied:nnTF {#2} {#3}
-				{\pgfgo_captures_mark:nnn {#1} {#2} {#3}}
-				{\__pgfgo_mark_draw:nnn {#1} {#2} {#3}}}
-			{\__pgfgo_mark_draw:nnn {#1} {#2} {#3}}
+			{\pgfgo_kernel_board_if_occupied:nnTF {#2} {#3} {\pgfgo_captures_mark:nnn {#1} {#2} {#3}} {#4}}
+			{#4}
 	}
+}
+\cs_new_protected:Npn\pgfgo_mark:nnn #1#2#3 {
+	\__pgfgo_mark_at:nnnn {#1} {#2} {#3} {\__pgfgo_mark_draw:nnn {#1} {#2} {#3}}
 }
 \cs_generate_variant:Nn\pgfgo_mark:nnn  {nee}
 \cs_new:Nn \pgfgo_mark:nn {\pgfgo_mark:nnn{#1}#2}
@@ -274,20 +250,18 @@
 
 %EL JUGADOR (POR DEFECTO, EL DE AHORA) Y SU ESTILO DE MARCA, CON LAS OPCIONES #1. LAS DEMAS CLAVES (LA
 %FORMA, custom) LAS PASA pgfgo/players/<jugador>/mark A pgfgo/mark.
+%DENTRO DE \pgfgo_marks_parsed:nn LAS OPCIONES YA ESTAN PUESTAS (\l__pgfgo_mark_ready_bool).
+\bool_new:N \l__pgfgo_mark_ready_bool
 \cs_new_protected:Npn\__pgfgo_mark_setup:n #1 {
 	\keys_set_groups:nnn{ pgfgo / mark }{ player-id }{#1}
-	\bool_if:NTF \l_pgfgo_players_black_bool
-		{\keys_set_exclude_groups:nnn{ pgfgo / players / black / mark } { external }{#1}}
-		{\bool_if:NTF \l_pgfgo_players_white_bool
-			{\keys_set_exclude_groups:nnn{ pgfgo / players / white / mark } { external } {#1}}
-			{\keys_set_exclude_groups:nnn{ pgfgo / players / neutral / mark } { external } {#1}}}
+	\keys_set_exclude_groups:enn{ pgfgo / players / \__pgfgo_players_current: / mark } { external } {#1}
 	\pgfgo_get_variables_from_current_player:
 }
 
 %UNA MARCA QUE SE DIBUJA DESPUES AVANZA LA SECUENCIA AHORA, COMO SI SE HUBIERA DIBUJADO.
 \cs_new_protected:Npn\pgfgo_mark_step:n #1 {
 	\group_begin:
-		\__pgfgo_mark_setup:n {#1}
+		\bool_if:NF \l__pgfgo_mark_ready_bool {\__pgfgo_mark_setup:n {#1}}
 		\bool_if:NT \l_pgfgo_players_mark_sequence_bool {\pgfgo_kernel_sequence_step:}
 	\group_end:
 }
@@ -303,11 +277,18 @@
 	} {\prg_return_false:}
 }
 
-\bool_new:N \l__pgfgo_mark_no_shadow_bool
+%DIBUJA LA MARCA DE OPCIONES #1 EN (#2,#3).
 \cs_new_protected:Npn\__pgfgo_mark_draw:nnn #1#2#3 {
 	\group_begin:
+		\__pgfgo_mark_setup:n {#1}
+		\__pgfgo_mark_draw:nn {#2} {#3}
+	\group_end:
+}
 
-	\__pgfgo_mark_setup:n {#1}
+%DIBUJA EN (#1,#2) LA MARCA DE LAS OPCIONES YA PUESTAS.
+\bool_new:N \l__pgfgo_mark_no_shadow_bool
+\cs_new_protected:Npn\__pgfgo_mark_draw:nn #1#2 {
+	\group_begin:
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%---------------------SHADOW-----------------------%
@@ -315,7 +296,7 @@
 
 	%EN LAS CAPAS DE UNA ANIMACION, LA SOMBRA QUEDARIA SOBRE LA PIEDRA: SOBRE UNA PIEDRA NO SE DIBUJA
 	%(DEBAJO DE UNA PIEDRA NO SE VE).
-	\__pgfgo_mark_if_on_stone:nnTF {#2} {#3}
+	\__pgfgo_mark_if_on_stone:nnTF {#1} {#2}
 		{\bool_set_true:N \l__pgfgo_mark_no_shadow_bool}
 		{\bool_set_eq:NN \l__pgfgo_mark_no_shadow_bool \l_pgfgo_mark_t_bool}
 	\bool_if:NF \l__pgfgo_mark_no_shadow_bool {
@@ -327,12 +308,12 @@
 		%CON IMAGEN DE FONDO, EL CIRCULO MUESTRA LA PARTE DE LA IMAGEN QUE LE CORRESPONDE.
 		\pgfgo_goban_if_background_image:TF {
 			\pgfscope
-			\pgfpathcircle{\pgfpointxy{#2}{#3}}{\l_pgfgo_players_stone_radius_dim * \l_pgfgo_mark_shadow_scale_tl}
+			\pgfpathcircle{\pgfpointxy{#1}{#2}}{\l_pgfgo_players_stone_radius_dim * \l_pgfgo_mark_shadow_scale_tl}
 			\pgfusepath{fill, clip}
 			\pgfgo_goban_background_image:
 			\endpgfscope
 		}{
-			\pgftransformshift{\pgfpointxy{#2}{#3}}
+			\pgftransformshift{\pgfpointxy{#1}{#2}}
 			\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * \l_pgfgo_mark_shadow_scale_tl}
 			\pgfusepath{fill}
 		}
@@ -343,9 +324,9 @@
 	%---------------------MARCA------------------------%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	\tl_set:Nn \l__pgfgo_mark_x_tl {#2}
-	\tl_set:Nn \l__pgfgo_mark_y_tl {#3}
-	\pgftransformshift{\pgfpointxy{#2}{#3}}
+	\tl_set:Nn \l__pgfgo_mark_x_tl {#1}
+	\tl_set:Nn \l__pgfgo_mark_y_tl {#2}
+	\pgftransformshift{\pgfpointxy{#1}{#2}}
 	\pgfonlayer{pgfgo_layer_mark}
 	\bool_if:NTF \l_pgfgo_players_mark_sequence_bool
 		{\pgfgo_mark_sequence:}
@@ -358,14 +339,20 @@
 
 %DIBUJA LAS MARCAS #2 (LISTA DE {x}{y}). SI #1 NO INDICA EL JUGADOR, LAS MARCAS SON NEUTRALES.
 %TAMBIEN SE USA PARA VOLVER A DIBUJAR LAS MARCAS RECORDADAS.
+%LAS OPCIONES SE PONEN UNA SOLA VEZ PARA TODAS LAS MARCAS.
 \cs_new_protected:Nn \pgfgo_marks_parsed:nn {
 	\group_begin:
-		\__pgfgo_mark_player:n {neutral}
-		%SOLO PARA EL NUMERO INICIAL DE LA SECUENCIA; EL RESTO LO APLICA CADA MARCA.
+		\pgfgo_players_set_current:n {neutral}
+		%SOLO PARA EL NUMERO INICIAL DE LA SECUENCIA; EL RESTO LO APLICA \__pgfgo_mark_setup:n.
 		\keys_set_groups:nnn{ pgfgo / players / neutral / mark } { sequence }{#1}
 		\pgfgo_kernel_sequence_reset:n {\l_pgfgo_neutral_mark_sequence_from_int}
-		\clist_map_inline:nn {#2} {\pgfgo_mark:nn{#1}{##1}}
+		\__pgfgo_mark_setup:n {#1}
+		\bool_set_true:N \l__pgfgo_mark_ready_bool
+		\clist_map_inline:nn {#2} {\__pgfgo_marks_point:nnn {#1} ##1}
 	\group_end:
+}
+\cs_new_protected:Npn \__pgfgo_marks_point:nnn #1#2#3 {
+	\__pgfgo_mark_at:nnnn {#1} {#2} {#3} {\__pgfgo_mark_draw:nn {#2} {#3}}
 }
 \cs_generate_variant:Nn \pgfgo_marks_parsed:nn {nV}
 
@@ -420,10 +407,7 @@
 }
 
 \cs_new_protected:Npn \__pgfgo_mark_define_key:n #1 {
-	\keys_define:nn {pgfgo / mark} {
-		#1		.code:n		= {\cs_set_eq:Nc \pgfgo_mark_current: {__pgfgo_mark_user_ #1 :}},
-		#1		.groups:n	= {shape},
-	}
+	\__pgfgo_mark_shape_key:nn {#1} {\cs_set_eq:Nc \pgfgo_mark_current: {__pgfgo_mark_user_ #1 :}}
 }
 
 \cs_new_protected:Npn \__pgfgo_mark_code:n #1 {

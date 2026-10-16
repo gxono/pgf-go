@@ -6,66 +6,42 @@
 %MARCAS, ENCIMA DE LAS PIEDRAS, RECORTADAS A LA PARTE VISIBLE. EL HALO (DEL COLOR DEL FONDO DEL TABLERO)
 %LAS SEPARA DE LAS PIEDRAS. TAMBIEN LAS USA \sgf (AR Y LN).
 
-%LAS DOS TIENEN EL MISMO ESTILO, CADA UNA EN SU ARBOL: /pgfgo/arrow Y /pgfgo/line.
-\tl_new:N \l__pgfgo_arrow_color_tl
-\dim_new:N \l__pgfgo_arrow_width_dim
-\tl_new:N \l__pgfgo_arrow_opacity_tl
-\bool_new:N \l__pgfgo_arrow_halo_bool
-\tl_new:N \l__pgfgo_arrow_halo_color_tl
-\dim_new:N \l__pgfgo_arrow_halo_width_dim
-\keys_define:nn {pgfgo / arrow} {
-	color				.tl_set:N		= \l__pgfgo_arrow_color_tl,
-	color				.initial:n	= {black},
-	width				.dim_set:N	= \l__pgfgo_arrow_width_dim,
-	width				.initial:n	= {1.2pt},
-	opacity			.tl_set:N		= \l__pgfgo_arrow_opacity_tl,
-	opacity			.initial:n	= {1},
-	halo				.code:n			= {\keys_set:nn {pgfgo / arrow / halo} {#1}},
-	halo				.default:n	= {true},
-	remember		.code:n			= {\bool_set_true:N \l_pgfgo_goban_remember_mark_bool},
-	remember		.groups:n		= {preset},
-	forget			.code:n			= {\bool_set_false:N \l_pgfgo_goban_remember_mark_bool},
-	forget			.groups:n		= {preset},
+%LAS DOS TIENEN EL MISMO ESTILO, CADA UNA EN SU ARBOL: /pgfgo/arrow Y /pgfgo/line. #1: arrow O line.
+%CLAVES: /pgfgo/{arrow, line}/{color, width, opacity, halo, remember, forget}
+%CLAVES: /pgfgo/{arrow, line}/halo/{true, false, color, width}
+\cs_new_protected:Npn \__pgfgo_lines_new:n #1 {
+	\tl_new:c {l__pgfgo_ #1 _color_tl}
+	\dim_new:c {l__pgfgo_ #1 _width_dim}
+	\tl_new:c {l__pgfgo_ #1 _opacity_tl}
+	\bool_new:c {l__pgfgo_ #1 _halo_bool}
+	\tl_new:c {l__pgfgo_ #1 _halo_color_tl}
+	\dim_new:c {l__pgfgo_ #1 _halo_width_dim}
+	\keys_define:nn {pgfgo / #1} {
+		color				.tl_set:c		= {l__pgfgo_ #1 _color_tl},
+		color				.initial:n	= {black},
+		width				.dim_set:c	= {l__pgfgo_ #1 _width_dim},
+		width				.initial:n	= {1.2pt},
+		opacity			.tl_set:c		= {l__pgfgo_ #1 _opacity_tl},
+		opacity			.initial:n	= {1},
+		halo				.code:n			= {\keys_set:nn {pgfgo / #1 / halo} {##1}},
+		halo				.default:n	= {true},
+		remember		.code:n			= {\bool_set_true:N \l_pgfgo_goban_remember_mark_bool},
+		remember		.groups:n		= {preset},
+		forget			.code:n			= {\bool_set_false:N \l_pgfgo_goban_remember_mark_bool},
+		forget			.groups:n		= {preset},
+	}
+	\keys_define:nn {pgfgo / #1 / halo} {
+		true				.code:n			= {\bool_set_true:c {l__pgfgo_ #1 _halo_bool}},
+		false				.code:n			= {\bool_set_false:c {l__pgfgo_ #1 _halo_bool}},
+		%SIN color, EL DEL FONDO DEL TABLERO.
+		color				.tl_set:c		= {l__pgfgo_ #1 _halo_color_tl},
+		width				.dim_set:c	= {l__pgfgo_ #1 _halo_width_dim},
+		width				.initial:n	= {0.8pt},
+	}
+	\bool_set_true:c {l__pgfgo_ #1 _halo_bool}
 }
-\keys_define:nn {pgfgo / arrow / halo} {
-	true				.code:n			= {\bool_set_true:N \l__pgfgo_arrow_halo_bool},
-	false				.code:n			= {\bool_set_false:N \l__pgfgo_arrow_halo_bool},
-	%SIN color, EL DEL FONDO DEL TABLERO.
-	color				.tl_set:N		= \l__pgfgo_arrow_halo_color_tl,
-	width				.dim_set:N	= \l__pgfgo_arrow_halo_width_dim,
-	width				.initial:n	= {0.8pt},
-}
-\bool_set_true:N \l__pgfgo_arrow_halo_bool
-
-\tl_new:N \l__pgfgo_line_color_tl
-\dim_new:N \l__pgfgo_line_width_dim
-\tl_new:N \l__pgfgo_line_opacity_tl
-\bool_new:N \l__pgfgo_line_halo_bool
-\tl_new:N \l__pgfgo_line_halo_color_tl
-\dim_new:N \l__pgfgo_line_halo_width_dim
-\keys_define:nn {pgfgo / line} {
-	color				.tl_set:N		= \l__pgfgo_line_color_tl,
-	color				.initial:n	= {black},
-	width				.dim_set:N	= \l__pgfgo_line_width_dim,
-	width				.initial:n	= {1.2pt},
-	opacity			.tl_set:N		= \l__pgfgo_line_opacity_tl,
-	opacity			.initial:n	= {1},
-	halo				.code:n			= {\keys_set:nn {pgfgo / line / halo} {#1}},
-	halo				.default:n	= {true},
-	remember		.code:n			= {\bool_set_true:N \l_pgfgo_goban_remember_mark_bool},
-	remember		.groups:n		= {preset},
-	forget			.code:n			= {\bool_set_false:N \l_pgfgo_goban_remember_mark_bool},
-	forget			.groups:n		= {preset},
-}
-\keys_define:nn {pgfgo / line / halo} {
-	true				.code:n			= {\bool_set_true:N \l__pgfgo_line_halo_bool},
-	false				.code:n			= {\bool_set_false:N \l__pgfgo_line_halo_bool},
-	%SIN color, EL DEL FONDO DEL TABLERO.
-	color				.tl_set:N		= \l__pgfgo_line_halo_color_tl,
-	width				.dim_set:N	= \l__pgfgo_line_halo_width_dim,
-	width				.initial:n	= {0.8pt},
-}
-\bool_set_true:N \l__pgfgo_line_halo_bool
+\__pgfgo_lines_new:n {arrow}
+\__pgfgo_lines_new:n {line}
 
 %LA PUNTA DE LAS FLECHAS (UNA PUNTA DE arrows.meta).
 \tl_new:N \l__pgfgo_arrow_tip_tl
