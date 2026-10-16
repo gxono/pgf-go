@@ -62,11 +62,15 @@
 %	\pgfgo_kernel_sequence_number:							EXPANDIBLE. NUMERO DE LA PROXIMA MARCA.
 %	\pgfgo_kernel_sequence_step:
 %
-%MEMORIA (remember / resume)
-%	\pgfgo_kernel_remember_push:n {<codigo>}
-%		AGREGA <codigo> A LA MEMORIA. SE EXPANDE CON e (USAR \exp_not:n PARA LAS OPCIONES DEL USUARIO).
-%	\pgfgo_kernel_remember_clear:
-%	\pgfgo_kernel_remember_replay:							EJECUTA EL CODIGO GUARDADO, EN ORDEN.
+%MEMORIA (remember / resume; name Y \pgfgoview)
+%	HAY UNA MEMORIA POR NOMBRE: LA DE remember / resume ES LA DE NOMBRE VACIO; LA DE UN goban CON name, LA DE
+%	ESE NOMBRE.
+%	\pgfgo_kernel_remember_push:nn {<nombre>} {<codigo>}
+%		AGREGA <codigo> A ESA MEMORIA. SE EXPANDE CON e (USAR \exp_not:n PARA LAS OPCIONES DEL USUARIO).
+%	\pgfgo_kernel_remember_clear:n {<nombre>}
+%	\pgfgo_kernel_remember_replay:n {<nombre>}				EJECUTA EL CODIGO GUARDADO, EN ORDEN.
+%	\pgfgo_kernel_remember_append:nn {<nombre>} {<otro>}
+%		AGREGA A LA MEMORIA <nombre> UNA COPIA DE LO QUE TIENE LA MEMORIA <otro>.
 %
 %CAPACIDADES
 %	EL KERNEL GUARDA EN \g_pgfgo_kernel_features_clist LO QUE SABE HACER ADEMAS DE LO ANTERIOR
@@ -182,9 +186,10 @@
 	pgfgo_kernel_sequence_reset:n,
 	pgfgo_kernel_sequence_number:,
 	pgfgo_kernel_sequence_step:,
-	pgfgo_kernel_remember_push:n,
-	pgfgo_kernel_remember_clear:,
-	pgfgo_kernel_remember_replay:
+	pgfgo_kernel_remember_push:nn,
+	pgfgo_kernel_remember_clear:n,
+	pgfgo_kernel_remember_replay:n,
+	pgfgo_kernel_remember_append:nn
 }
 
 %FUNCIONES DE CADA CAPACIDAD.

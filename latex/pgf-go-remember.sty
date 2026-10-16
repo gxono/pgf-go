@@ -27,4 +27,31 @@
 \cs_new_protected:Npn \pgfgo_goban_remember_all: {\__pgfgo_remember_set_all:N \bool_set_true:N}
 \cs_new_protected:Npn \pgfgo_goban_remember_nothing: {\__pgfgo_remember_set_all:N \bool_set_false:N}
 
+%EL NOMBRE DEL goban QUE SE ESTA DIBUJANDO (name): TODO LO QUE DIBUJA VA A LA MEMORIA DE ESE NOMBRE, QUE
+%USA \pgfgoview.
+\tl_new:N \l_pgfgo_goban_name_tl
+
+%GUARDA EL CODIGO #3 EN LA MEMORIA (SI #1 ES VERDADERO) Y EN LA DEL goban CON NOMBRE. #2 DICE QUE ES
+%(stone, mark O territory): \pgfgoview PUEDE NO DIBUJAR LAS MARCAS NI EL TERRITORIO.
+\cs_new_protected:Npn \pgfgo_remember:Nnn #1#2#3 {
+	\bool_if:NT #1 {\pgfgo_kernel_remember_push:nn {} {\__pgfgo_remember_kind:nn {#2} {#3}}}
+	\pgfgo_remember_name:nn {#2} {#3}
+}
+%SOLO EN LA MEMORIA DEL goban CON NOMBRE.
+\cs_new_protected:Npn \pgfgo_remember_name:nn #1#2 {
+	\tl_if_empty:NF \l_pgfgo_goban_name_tl {
+		\exp_args:NV \pgfgo_kernel_remember_push:nn \l_pgfgo_goban_name_tl {\__pgfgo_remember_kind:nn {#1} {#2}}
+	}
+}
+\cs_new:Npn \__pgfgo_remember_kind:nn #1#2 {
+	\str_if_eq:nnTF {#1} {stone} {#2} {\exp_not:N \pgfgo_remember_if:nn {#1} {#2}}
+}
+
+%AL VOLVER A DIBUJAR: \pgfgoview ESCONDE LAS MARCAS, EL TERRITORIO O LOS NUMEROS DE LAS JUGADAS SI SE LO
+%PIDEN (VER \__pgfgo_move_draw:nnnnnn).
+\bool_new:N \l_pgfgo_remember_hide_mark_bool
+\bool_new:N \l_pgfgo_remember_hide_territory_bool
+\bool_new:N \l_pgfgo_remember_hide_numbers_bool
+\cs_new_protected:Npn \pgfgo_remember_if:nn #1#2 {\bool_if:cF {l_pgfgo_remember_hide_ #1 _bool} {#2}}
+
 \ExplSyntaxOff

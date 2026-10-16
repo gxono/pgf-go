@@ -191,15 +191,24 @@
 
 % Memory: code is expanded when it is stored and replayed in order.
 \tl_gclear:N \g_tmpa_tl
-\pgfgo_kernel_remember_clear:
-\pgfgo_kernel_remember_push:n {\tl_gput_right:Nn \exp_not:N \g_tmpa_tl {a \pgfgo_kernel_sequence_number:}}
-\pgfgo_kernel_remember_push:n {\tl_gput_right:Nn \exp_not:N \g_tmpa_tl {\exp_not:n {b}}}
-\pgfgo_kernel_remember_replay:
-\pgfgo_kernel_remember_replay:
+\pgfgo_kernel_remember_clear:n {}
+\pgfgo_kernel_remember_push:nn {} {\tl_gput_right:Nn \exp_not:N \g_tmpa_tl {a \pgfgo_kernel_sequence_number:}}
+\pgfgo_kernel_remember_push:nn {} {\tl_gput_right:Nn \exp_not:N \g_tmpa_tl {\exp_not:n {b}}}
+\pgfgo_kernel_remember_replay:n {}
+\pgfgo_kernel_remember_replay:n {}
 \__test:nnn {replay} {\g_tmpa_tl} {a6ba6b}
-\pgfgo_kernel_remember_clear:
-\pgfgo_kernel_remember_replay:
-\__test:nnn {clear} {\g_tmpa_tl} {a6ba6b}
+% Named memories are separate; append copies one into another.
+\tl_gclear:N \g_tmpa_tl
+\pgfgo_kernel_remember_clear:n {x:1}
+\pgfgo_kernel_remember_push:nn {x:1} {\tl_gput_right:Nn \exp_not:N \g_tmpa_tl {c}}
+\pgfgo_kernel_remember_append:nn {x:1} {}
+\pgfgo_kernel_remember_replay:n {x:1}
+\pgfgo_kernel_remember_replay:n {unknown}
+\__test:nnn {named} {\g_tmpa_tl} {ca6b}
+\tl_gclear:N \g_tmpa_tl
+\pgfgo_kernel_remember_clear:n {}
+\pgfgo_kernel_remember_replay:n {}
+\__test:nnn {clear} {\g_tmpa_tl} {}
 
 % Captures: a saved board comes back with its stones, prisoners, number and turn.
 \pgfgo_kernel_if_feature:nT {captures} {

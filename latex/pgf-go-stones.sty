@@ -606,10 +606,8 @@
 	\pgfgo_kernel_point:nTF {#2} { %Devuelve \l_pgfgo_kernel_point_tl
 		%\stone SIN JUGADOR DIBUJA UNA PIEDRA NEUTRAL, COMO \stones.
 		%RECORDAR LAS PIEDRAS
-		\bool_if:NT \l_pgfgo_goban_remember_stone_bool {
-			\pgfgo_kernel_remember_push:n {
-				\exp_not:N\pgfgo_stone:nn{neutral, \exp_not:n{#1}}{\exp_not:V \l_pgfgo_kernel_point_tl}}
-		}
+		\pgfgo_remember:Nnn \l_pgfgo_goban_remember_stone_bool {stone}
+			{\exp_not:N\pgfgo_stone:nn{neutral, \exp_not:n{#1}}{\exp_not:V \l_pgfgo_kernel_point_tl}}
 
 		\pgfgo_stone:nV{neutral, #1}\l_pgfgo_kernel_point_tl
 	}{
@@ -633,10 +631,9 @@
 
 	\keys_set_groups:nnn{ pgfgo / stone }{ preset }{#1}
 	%RECORDAR LAS PIEDRAS
-	\bool_if:NT \l_pgfgo_goban_remember_stone_bool {
-		\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
-		\pgfgo_kernel_remember_push:n {\exp_not:N\pgfgo_stones_parsed:nn{\exp_not:n{#1}}{\exp_not:V\l_tmpa_clist}}
-	}
+	\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
+	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_stone_bool {stone}
+		{\exp_not:N\pgfgo_stones_parsed:nn{\exp_not:n{#1}}{\exp_not:V\l_tmpa_clist}}
 
 	%DIBUJAR LAS PIEDRAS
 	\seq_map_inline:Nn \l_pgfgo_kernel_points_seq {\pgfgo_stone:nnn {#1} ##1}
@@ -720,7 +717,7 @@
 	%----------------------LABEL-----------------------%
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	\IfBooleanT{#1}{
+	\bool_if:NF \l_pgfgo_remember_hide_numbers_bool {\IfBooleanT{#1}{
 		\tl_set:Ne \l__pgfgo_move_label_tl {\pgfgo_players_move_label_format:n{#5}}
 		\tl_if_empty:NTF \l_pgfgo_players_move_label_font_size_tl
 			{
@@ -743,7 +740,7 @@
 		}
 		\pgfusepath{stroke}
 		\endpgfscope
-	}
+	}}
 
 	\group_end:
 }
@@ -773,26 +770,35 @@
 
 
 
+%EL CODIGO QUE VUELVE A DIBUJAR LAS JUGADAS \l_tmpa_clist (#1: NUMERADAS, #2: OPCIONES). PARA UNA EXPANSION e.
+\cs_new:Npn \__pgfgo_moves_code:nn #1#2 {
+	\exp_not:N\pgfgo_move_parsed:nnn
+		{#1}
+		{
+			\exp_not:n{#2},
+			from = \pgfgo_kernel_move_number:,
+			\__pgfgo_move_color:
+		}
+		{\exp_not:V\l_tmpa_clist}
+}
+
 \NewDocumentCommand{\moves}{sO{}m}{
 	\group_begin:
 	\pgfgo_kernel_points:n{#3} %Devuelve \l_pgfgo_kernel_points_seq
 
 	\keys_set_groups:nnn { pgfgo / move} {preset, player-id, first stone} {#2}
 	\keys_set_groups:nnn { pgfgo / players / neutral / move} { label } {#2}
-	%RECORDAR LAS PIEDRAS (CON EL NUMERO Y EL COLOR DE LA PRIMERA JUGADA)
+	%RECORDAR LAS PIEDRAS (CON EL NUMERO Y EL COLOR DE LA PRIMERA JUGADA). EL goban CON NOMBRE GUARDA LOS
+	%NUMEROS COMO SE DIBUJAN.
+	\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
 	\bool_if:NT \l_pgfgo_goban_remember_move_bool {
-		\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
-		\pgfgo_kernel_remember_push:n {
-			\exp_not:N\pgfgo_move_parsed:nnn
+		\pgfgo_kernel_remember_push:nn {} {
+			\__pgfgo_moves_code:nn
 				{\bool_if:NTF \l_pgfgo_goban_remember_move_label_bool {\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}}
-				{
-					\exp_not:n{#2},
-					from = \pgfgo_kernel_move_number:,
-					\__pgfgo_move_color:
-				}
-				{\exp_not:V\l_tmpa_clist}
+				{#2}
 		}
 	}
+	\pgfgo_remember_name:nn {stone} {\__pgfgo_moves_code:nn {\exp_not:N #1} {#2}}
 
 	%-------------------------------------------------------------------------
 

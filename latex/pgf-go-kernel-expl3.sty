@@ -497,19 +497,33 @@
 %----------------------------------------MEMORIA------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%PILA GLOBAL CON LOS ELEMENTOS RECORDADOS. CADA ITEM ES CODIGO QUE VUELVE A DIBUJAR EL ELEMENTO.
-\seq_new:N \g__pgfgo_kernel_remember_seq
-
-\cs_new_protected:Npn \pgfgo_kernel_remember_push:n #1 {
-	\seq_gput_right:Ne \g__pgfgo_kernel_remember_seq {#1}
+%UNA PILA GLOBAL POR NOMBRE (\g__pgfgo_kernel_remember_<nombre>_seq), CREADA AL USARLA. CADA ITEM ES CODIGO
+%QUE VUELVE A DIBUJAR EL ELEMENTO.
+\cs_new:Npn \__pgfgo_kernel_remember_seq:n #1 {g__pgfgo_kernel_remember_ #1 _seq}
+\cs_new_protected:Npn \__pgfgo_kernel_remember_new:n #1 {
+	\seq_if_exist:cF {\__pgfgo_kernel_remember_seq:n {#1}} {\seq_new:c {\__pgfgo_kernel_remember_seq:n {#1}}}
 }
 
-\cs_new_protected:Npn \pgfgo_kernel_remember_clear: {
-	\seq_gclear:N \g__pgfgo_kernel_remember_seq
+\cs_new_protected:Npn \pgfgo_kernel_remember_push:nn #1#2 {
+	\__pgfgo_kernel_remember_new:n {#1}
+	\seq_gput_right:ce {\__pgfgo_kernel_remember_seq:n {#1}} {#2}
 }
 
-\cs_new_protected:Npn \pgfgo_kernel_remember_replay: {
-	\seq_map_inline:Nn \g__pgfgo_kernel_remember_seq {##1}
+\cs_new_protected:Npn \pgfgo_kernel_remember_clear:n #1 {
+	\__pgfgo_kernel_remember_new:n {#1}
+	\seq_gclear:c {\__pgfgo_kernel_remember_seq:n {#1}}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_remember_replay:n #1 {
+	\seq_if_exist:cT {\__pgfgo_kernel_remember_seq:n {#1}}
+		{\seq_map_inline:cn {\__pgfgo_kernel_remember_seq:n {#1}} {##1}}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_remember_append:nn #1#2 {
+	\__pgfgo_kernel_remember_new:n {#1}
+	\__pgfgo_kernel_remember_new:n {#2}
+	\seq_gconcat:ccc {\__pgfgo_kernel_remember_seq:n {#1}}
+		{\__pgfgo_kernel_remember_seq:n {#1}} {\__pgfgo_kernel_remember_seq:n {#2}}
 }
 
 \ExplSyntaxOff

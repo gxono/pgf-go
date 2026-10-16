@@ -875,15 +875,15 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 		The same for the rows (at the sides). The kanji of the rows are aligned on the side of the board, so that the two-character ones do not overlap it.
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/label/columns from = \meta{left or right} (initially left)}
+	\begin{key}{/pgfgo/goban/label/columns direction = \meta{left to right or right to left} (initially left to right)}
 		The side from which the columns are counted.
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/label/rows from = \meta{bottom or top} (initially bottom)}
+	\begin{key}{/pgfgo/goban/label/rows direction = \meta{bottom to top or top to bottom} (initially bottom to top)}
 		The side from which the rows are counted. These four options only change what is written on the border: the coordinates of the commands (|C3|) stay the same. On a partial board, they are counted from the edge of the whole board.
 
 		\begin{codeexample}[]
-			\begin{goban}[5, label = {at = {north, west}, columns = numbers, rows from = top}]
+			\begin{goban}[5, label = {at = {north, west}, columns = numbers, rows direction = top to bottom}]
 				\stones[b]{C4}
 			\end{goban}
 		\end{codeexample}
@@ -1313,5 +1313,68 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\begin{stylekey}{/pgfgo/goban/resume}
 		Draws what is in the memory at the beginning of the |goban|.
 	\end{stylekey}
+
+	\subsection{Views in the Text}
+	\label{subsec:views}
+	A |goban| with a name stores everything it draws. Later, |\pgfgoview| shows a part of that board, as it was at the end (with the captures done), in the middle of a paragraph: a single stone or a rectangle.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, name = board1, captures]
+			\stones[b]{B3, C2, C4}
+			\stones[w]{D2, D4, E3}
+			\moves*[w]{C3, D3}
+		\end{goban}
+
+		The black stone at D3 \pgfgoview{board1}{D3} captures the white one at C3 \pgfgoview{board1}{C3}.
+		This is the ko: \pgfgoview{board1}{B2:E4}.
+	\end{codeexample}
+
+	\begin{key}{/pgfgo/goban/name=\meta{name}}
+		Stores with that name everything drawn in this |goban| (stones, moves, marks, arrows, lines and territory, also what comes from |\sgf| and, with |resume|, what was remembered), together with its options. The name is free (for example, |gob:board1|). This memory has nothing to do with the one of |remember| and |resume|: both can be used in the same |goban|. Another |goban| with the same name replaces it.
+	\end{key}
+
+	\begin{command}{\pgfgoview\opt{\oarg{options}}\marg{name}\marg{part}}
+		Draws the intersection or the rectangle (written as in |partial|) of the |goban| with that name, as it was at the end. By default everything the |goban| drew in that part is shown (stones, move numbers, marks, arrows and territory) with the background and the coordinates of that |goban|, at the size of the text and centered at the height of the lowercase letters. The options are those of |/pgfgo/view|, which remove the marks, the numbers or the territory, and, also, any |goban| option, which is applied after those of the named |goban|: this removes the background, the coordinates, the grid or the star points.
+
+		A view changes nothing of what the last |goban| stores: |\pgfgoscore|, |\pgfgoprisoners| and |\pgfgomovenotes| still talk about it, and the memory of |remember| stays the same.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, name = board2]
+				\stones[b]{B2, C3}
+				\moves*[w]{C2, D3}
+				\marks[b, triangle]{C3}
+			\end{goban}
+
+			\pgfgoview{board2}{B2:D3}
+			\pgfgoview[marks = false, numbers = false]{board2}{B2:D3}
+			\pgfgoview[label = false, grid = false]{board2}{B2:D3}
+			\pgfgoview[background = false]{board2}{B2:D3}
+		\end{codeexample}
+	\end{command}
+
+	\begin{key}{/pgfgo/view=\meta{options}}
+		Options for all views, with |\pgfgoset|. The |goban| options that are not of |/pgfgo/view| are added to the one views come with: |scale = 0.8|.
+
+		\begin{codeexample}[]
+			\pgfgoset{view = {background = false, scale = 1}}
+			Without background and bigger: \pgfgoview{board2}{C3}.
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/view/marks=\meta{boolean} (default true, initially true)}
+		With |false|, the marks, arrows and lines are not drawn.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/numbers=\meta{boolean} (default true, initially true)}
+		With |false|, the numbers of the moves are not drawn.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/territory=\meta{boolean} (default true, initially true)}
+		With |false|, the territory is not drawn.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/raise=\meta{dimension} (initially 0.5ex)}
+		How high above the baseline of the text the center of the view is.
+	\end{key}
 
 \end{environment}

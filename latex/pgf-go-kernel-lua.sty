@@ -257,14 +257,22 @@
 %----------------------------------------MEMORIA------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%Lua GUARDA LOS TOKENS DEL GRUPO QUE SIGUE A \lua_now:n.
-\cs_new_protected:Npn \__pgfgo_kernel_lua_push:n #1 {\lua_now:n {pgfgo.remember_push()} {#1}}
-\cs_generate_variant:Nn \__pgfgo_kernel_lua_push:n {e}
+%Lua GUARDA LOS TOKENS DEL GRUPO QUE SIGUE A \lua_now:e.
+\cs_new_protected:Npn \__pgfgo_kernel_lua_push:nn #1#2 {\lua_now:e {pgfgo.remember_push("\lua_escape:e {#1}")} {#2}}
+\cs_generate_variant:Nn \__pgfgo_kernel_lua_push:nn {ne}
 
-\cs_new_protected:Npn \pgfgo_kernel_remember_push:n #1 {\__pgfgo_kernel_lua_push:e {#1}}
+\cs_new_protected:Npn \pgfgo_kernel_remember_push:nn #1#2 {\__pgfgo_kernel_lua_push:ne {#1} {#2}}
 
-\cs_new_protected:Npn \pgfgo_kernel_remember_clear: {\lua_now:n {pgfgo.remember_clear()}}
+\cs_new_protected:Npn \pgfgo_kernel_remember_clear:n #1 {
+	\lua_now:e {pgfgo.remember_clear("\lua_escape:e {#1}")}
+}
 
-\cs_new_protected:Npn \pgfgo_kernel_remember_replay: {\lua_now:n {pgfgo.remember_replay()}}
+\cs_new_protected:Npn \pgfgo_kernel_remember_replay:n #1 {
+	\lua_now:e {pgfgo.remember_replay("\lua_escape:e {#1}")}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_remember_append:nn #1#2 {
+	\lua_now:e {pgfgo.remember_append("\lua_escape:e {#1}", "\lua_escape:e {#2}")}
+}
 
 \ExplSyntaxOff

@@ -16,11 +16,11 @@
 	\stones[black]{C3}
 \end{goban}
 
-\case{columns = numbers, rows = letters (use i) / columns from = right, rows from = top / western}
+\case{columns = numbers, rows = letters (use i) / columns direction = right to left, rows direction = top to bottom / western}
 \begin{goban}[9x9, scale = 0.6, label = {at = all, columns = numbers, rows = letters}]
 	\stones[black]{C3}
 \end{goban}
-\begin{goban}[9x9, scale = 0.6, label = {at = all, columns from = right, rows from = top}]
+\begin{goban}[9x9, scale = 0.6, label = {at = all, columns direction = right to left, rows direction = top to bottom}]
 	\stones[black]{C3}
 \end{goban}
 \begin{goban}[9x9, scale = 0.6, label = {at = all, style = japanese, style = western}]
@@ -28,7 +28,7 @@
 \end{goban}
 
 \case{Kanji up to 21 (3x21 board), partial board counts from the full board}
-\begin{goban}[3x21, scale = 0.5, label = {at = west, rows = kanji, rows from = top, font = \kanjifont}]
+\begin{goban}[3x21, scale = 0.5, label = {at = west, rows = kanji, rows direction = top to bottom, font = \kanjifont}]
 \end{goban}
 \begin{goban}[19x19, scale = 0.6, partial = N13:T19, label = {at = all, style = japanese, font = \kanjifont}]
 	\stones[white]{Q16}

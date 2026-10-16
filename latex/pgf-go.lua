@@ -1492,27 +1492,41 @@ end
 -- MEMORIA
 ---------------------------------------------------------------------------------------------------
 
--- CADA ELEMENTO ES LA LISTA DE TOKENS QUE VUELVE A DIBUJARLO (SE GUARDAN TOKENS, NO TEXTO, PARA NO
--- DEPENDER DE LOS CATCODES).
+-- UNA LISTA POR NOMBRE ("" ES LA DE remember / resume). CADA ELEMENTO ES LA LISTA DE TOKENS QUE VUELVE A
+-- DIBUJARLO (SE GUARDAN TOKENS, NO TEXTO, PARA NO DEPENDER DE LOS CATCODES).
 local remembered = {}
 
+local function memory(name)
+	local list = remembered[name]
+	if not list then
+		list = {}
+		remembered[name] = list
+	end
+	return list
+end
+
 -- LEE EL GRUPO {...} QUE SIGUE.
-function pgfgo.remember_push()
-	insert(remembered, token.scan_toks())
+function pgfgo.remember_push(name)
+	insert(memory(name), token.scan_toks())
 end
 
-function pgfgo.remember_clear()
-	remembered = {}
+function pgfgo.remember_clear(name)
+	remembered[name] = {}
 end
 
-function pgfgo.remember_replay()
+function pgfgo.remember_replay(name)
 	local all = {}
-	for _, toks in ipairs(remembered) do
+	for _, toks in ipairs(memory(name)) do
 		for _, t in ipairs(toks) do insert(all, t) end
 	end
 	if #all > 0 then
 		token.put_next(all)
 	end
+end
+
+function pgfgo.remember_append(name, other)
+	local list = memory(name)
+	for _, toks in ipairs(memory(other)) do insert(list, toks) end
 end
 
 return pgfgo

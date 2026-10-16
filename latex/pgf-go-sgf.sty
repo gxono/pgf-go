@@ -188,8 +188,8 @@
 \cs_new_protected:Npn \__pgfgo_sgf_stones:nn #1#2 {
 	\tl_if_blank:nF {#2} {
 		\bool_if:NT \l__pgfgo_sgf_cache_bool {\clist_map_inline:nn {#2} {\__pgfgo_sgf_cache_outside:nn ##1}}
-		\bool_if:NT \l_pgfgo_goban_remember_stone_bool
-			{\pgfgo_kernel_remember_push:n {\exp_not:N \pgfgo_stones_parsed:nn {#1} {\exp_not:n {#2}}}}
+		\pgfgo_remember:Nnn \l_pgfgo_goban_remember_stone_bool {stone}
+			{\exp_not:N \pgfgo_stones_parsed:nn {#1} {\exp_not:n {#2}}}
 		\pgfgo_stones_parsed:nn {#1} {#2}
 	}
 }
@@ -220,8 +220,8 @@
 
 \cs_new_protected:Npn \__pgfgo_sgf_remove:nn #1#2 {
 	\bool_if:nTF {\l_pgfgo_goban_captures_bool && ! \l_pgfgo_captures_collect_bool} {
-		\bool_if:NT \l_pgfgo_goban_remember_stone_bool
-			{\pgfgo_kernel_remember_push:n {\exp_not:N \pgfgo_captures_remove:nn {#1} {#2}}}
+		\pgfgo_remember:Nnn \l_pgfgo_goban_remember_stone_bool {stone}
+			{\exp_not:N \pgfgo_captures_remove:nn {#1} {#2}}
 		\pgfgo_captures_remove:nn {#1} {#2}
 	}{
 		\bool_if:NF \l__pgfgo_sgf_remove_warned_bool {
@@ -289,19 +289,26 @@
 		! \prop_if_in_p:NV \g__pgfgo_sgf_marked_prop \l__pgfgo_captures_key_tl
 	}
 	\bool_if:NT \l_pgfgo_goban_remember_move_bool {
-		\pgfgo_kernel_remember_push:n {
-			\exp_not:N \pgfgo_move_parsed:nnn
-				{
-					\bool_if:nTF {\l__pgfgo_sgf_numbered_bool && \l_pgfgo_goban_remember_move_label_bool}
-						{\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}
-				}
-				{from = \int_use:N \l__pgfgo_sgf_shown_int, #1}
-				{{#2}{#3}}
+		\pgfgo_kernel_remember_push:nn {} {
+			\__pgfgo_sgf_move_code:nnnn
+				{\bool_if:nTF {\l__pgfgo_sgf_numbered_bool && \l_pgfgo_goban_remember_move_label_bool}
+					{\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}}
+				{#1} {#2} {#3}
 		}
+	}
+	\pgfgo_remember_name:nn {stone} {
+		\__pgfgo_sgf_move_code:nnnn
+			{\bool_if:NTF \l__pgfgo_sgf_numbered_bool {\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}}
+			{#1} {#2} {#3}
 	}
 	\bool_if:NTF \l__pgfgo_sgf_numbered_bool
 		{\pgfgo_move:nnnn {\BooleanTrue} {} {#2} {#3}}
 		{\pgfgo_move:nnnn {\BooleanFalse} {} {#2} {#3}}
+}
+
+%EL CODIGO QUE VUELVE A DIBUJAR LA JUGADA DE #2 EN (#3,#4) (#1: NUMERADA). PARA UNA EXPANSION e.
+\cs_new:Npn \__pgfgo_sgf_move_code:nnnn #1#2#3#4 {
+	\exp_not:N \pgfgo_move_parsed:nnn {#1} {from = \int_use:N \l__pgfgo_sgf_shown_int, #2} {{#3}{#4}}
 }
 
 %MARCAS DEL ARCHIVO (TR, SQ, CR, MA, LB; TB Y TW SON TERRITORIO): #1 FORMA, (#2,#3) PUNTO, #4 COLOR DE LA
@@ -324,10 +331,8 @@
 		\str_if_eq:eeT {\l__pgfgo_sgf_mark_tl} {\str_if_eq:nnTF {#1} {black} {white} {black}}
 			{\prop_gput:NVe \g_pgfgo_points_prop \l__pgfgo_captures_key_tl {dead- \l__pgfgo_sgf_mark_tl}}
 	}
-	\bool_if:NT \l_pgfgo_goban_remember_territory_bool {
-		\pgfgo_kernel_remember_push:n
-			{\exp_not:N \pgfgo_territory_parsed:nnn {#1} {\l__pgfgo_territory_draw_tl} {{#2}{#3}}}
-	}
+	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_territory_bool {territory}
+		{\exp_not:N \pgfgo_territory_parsed:nnn {#1} {\l__pgfgo_territory_draw_tl} {{#2}{#3}}}
 	\pgfgo_territory_parsed:nVn {#1} \l__pgfgo_territory_draw_tl {{#2}{#3}}
 }
 
@@ -343,8 +348,8 @@
 
 %DIBUJA (Y RECUERDA) LA MARCA DE OPCIONES #1 EN EL PUNTO #2 ({x}{y}).
 \cs_new_protected:Npn \__pgfgo_sgf_mark_put:nn #1#2 {
-	\bool_if:NT \l_pgfgo_goban_remember_mark_bool
-		{\pgfgo_kernel_remember_push:n {\exp_not:N \pgfgo_marks_parsed:nn {\exp_not:n {#1}} {#2}}}
+	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_mark_bool {mark}
+		{\exp_not:N \pgfgo_marks_parsed:nn {\exp_not:n {#1}} {#2}}
 	\pgfgo_marks_parsed:nn {#1} {#2}
 }
 \cs_generate_variant:Nn \__pgfgo_sgf_mark_put:nn {Vn}
@@ -356,8 +361,8 @@
 
 %FLECHAS Y LINEAS DEL ARCHIVO (AR, LN): #1 arrow O line, DE (#2,#3) A (#4,#5).
 \cs_new_protected:Npn \__pgfgo_sgf_line:nnnnn #1#2#3#4#5 {
-	\bool_if:NT \l_pgfgo_goban_remember_mark_bool
-		{\pgfgo_kernel_remember_push:n {\exp_not:N \pgfgo_line_parsed:nnnnnn {#1} {} {#2} {#3} {#4} {#5}}}
+	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_mark_bool {mark}
+		{\exp_not:N \pgfgo_line_parsed:nnnnnn {#1} {} {#2} {#3} {#4} {#5}}
 	\pgfgo_line_parsed:nnnnnn {#1} {} {#2} {#3} {#4} {#5}
 }
 

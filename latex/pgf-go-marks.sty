@@ -411,9 +411,8 @@
 		\pgfgo_kernel_points:n{#2} %Devuelve \l_pgfgo_kernel_points_seq
 		\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
 		%RECORDAR LAS MARCAS
-		\bool_if:NT \l_pgfgo_goban_remember_mark_bool {
-			\pgfgo_kernel_remember_push:n {\exp_not:N\pgfgo_marks_parsed:nn{\exp_not:n{#1}}{\exp_not:V\l_tmpa_clist}}
-		}
+		\pgfgo_remember:Nnn \l_pgfgo_goban_remember_mark_bool {mark}
+			{\exp_not:N\pgfgo_marks_parsed:nn{\exp_not:n{#1}}{\exp_not:V\l_tmpa_clist}}
 		\pgfgo_marks_parsed:nV {#1} \l_tmpa_clist
 	\group_end:
 }
