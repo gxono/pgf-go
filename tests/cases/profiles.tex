@@ -19,18 +19,33 @@
 
 \case{Built-in profiles: default, pgfgo, pgfgosmooth, wain}
 \newcommand\sample{\begin{goban}[5, label = {at = {south, west}}]\moves*{C3,D3}\stone{B2}\marks[b, triangle]{C3}\end{goban}}
-{\pgfgouseprofile{default}\sample}
-{\pgfgouseprofile{pgfgo}\sample}
-{\pgfgouseprofile{pgfgosmooth}\sample}
-{\pgfgouseprofile{wain}\sample}
+{\pgfgoset{profile = default}\sample}
+{\pgfgoset{profile = pgfgo}\sample}
+{\pgfgoset{profile = pgfgosmooth}\sample}
+{\pgfgoset{profile = wain}\sample}
 
 \case{testB has a red grid on a plain board (it does not inherit wain)}
-{\pgfgouseprofile{default}\pgfgousegoban{testB}\sample}
+{\pgfgoset{profile = default}\pgfgoset{goban profile = testB}\sample}
 
 \case{Custom players: blue black stones, yellow white stones, grey neutral}
-{\pgfgouseprofile{default}\pgfgouseplayers{test-neutral}{test-black}{test-white}\sample}
+{\pgfgoset{profile = default}\pgfgoset{players profile = test}\sample}
 
 \case{Changing options on the fly: \textbackslash pgfgoset\{stone = \ldots\} for all players}
-{\pgfgouseprofile{default}\pgfgoset{stone = {line = {color = red}}}\sample}
+{\pgfgoset{profile = default}\pgfgoset{stone = {line = {color = red}}}\sample}
+
+\case{profile resets the style: the shadow set before is lost (default); options after it are added (wain, red grid); in the options of a goban (pgfgo)}
+{\pgfgoset{stone = {drop shadow}}\pgfgoset{profile = default}\sample}
+{\pgfgoset{profile = wain, goban = {grid = {line = {color = red}}}}\sample}
+\begin{goban}[5, label = {at = {south, west}}, profile = pgfgo]\moves*{C3,D3}\stone{B2}\end{goban}
+
+\case{One player: a pgfgo board with wain black stones; all = the same player for the three}
+{\pgfgoset{goban profile = pgfgo, players = {black = {profile = wain-black}}}\sample}
+{\pgfgoset{players = {all = {profile = test-black}}}\sample}
+
+\case{simple}
+{\pgfgoset{profile = simple}\sample}
+
+\case{profile keeps size, partial, coordinates and scale (7x7, A1:D4, labels, 0.8) but not the red stones}
+\begin{goban}[7, partial = A1:D4, label, scale = 0.8, stone = {fill = {color = red}}, profile = wain]\moves*{B2,C3}\end{goban}
 
 \end{document}

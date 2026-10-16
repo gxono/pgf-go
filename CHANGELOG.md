@@ -20,6 +20,10 @@ All notable changes to `pgf-go` are listed here.
   drawn (profile, `\pgfgoset` and its options), even if it changes later;
   `\pgfgoset{view = {...}}` and the options of the view (`players`, `stone`,
   `mark`, ...) go on top.
+- Profiles for views: `view/profile = <name>` goes after the style of the
+  named board and before the other options of the view; initially `false`,
+  the style of the original board. New profile `simple` (no frame, thin
+  lines), in the catalog.
 - Shines of your own: `stone/shine` takes
   `image = {file, width, rotate, false}`, an image with transparency centered
   on the stone instead of the drawn shine. The shine is drawn on top of any
@@ -176,6 +180,20 @@ All notable changes to `pgf-go` are listed here.
 
 ### Behaviour changes
 
+- **Profiles are keys.** `profile = <name>` (the board `<name>` and the
+  players `<name>-neutral`, `<name>-black`, `<name>-white`),
+  `goban profile = <name>`, `players profile = <name>` and
+  `players/<player>/profile = <player name>` work in `\pgfgoset`, in the
+  options of a `goban` and in those of a view. Before applying a profile, the
+  board and the players go back to the initial style (that of `default`), so
+  a profile no longer inherits what it does not define (a shadow, an image,
+  ...); the size, `partial`, `scale`, the coordinates, `hoshi/at`, the
+  captures and the notes stay. Removed: `\pgfgouseprofile`,
+  `\pgfgousegoban`, `\pgfgouseplayers`, `\pgfgouseneutral`,
+  `\pgfgouseblack` and `\pgfgousewhite` (`\pgfgouseprofile{wain}` is now
+  `\pgfgoset{profile = wain}`). The profile `default` no longer sets
+  `size`, `partial`, `use i`, `scale` or `label = false`: they are initial
+  values.
 - **One way to remember a board: `name` and `resume = <name>`.** A `goban`
   with `name = <name>` stores everything it draws, and another one starts
   with that board as it was at the end with `resume = <name>` (numbering and

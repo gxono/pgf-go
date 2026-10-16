@@ -142,6 +142,8 @@
 		use~i					.bool_set:N = \l_pgfgo_use_i_bool,
 
 		use~i					.default:n	= {true},
+		use~i					.initial:n	= {true},
+
 
 		%UNA CLAVE DE /pgfgo (stone, players, mark, notes, ...) VALE SOLO PARA ESTE goban; SI NO, ES EL TAMANO.
 		unknown						.code:n			= {
@@ -1237,6 +1239,7 @@
 	\tl_new:N \l_pgfgo_goban_view_raise_tl
 	\dim_new:N \l__pgfgo_goban_view_raise_dim
 	\tl_new:N \l__pgfgo_view_goban_tl
+	\tl_new:N \l__pgfgo_view_profile_tl
 	\keys_define:nn {pgfgo / view} {
 		marks							.bool_set:N	= \l__pgfgo_view_marks_bool,
 		marks							.default:n	= {true},
@@ -1252,6 +1255,12 @@
 		forgotten					.initial:n	= {false},
 		raise							.tl_set:N		= \l_pgfgo_goban_view_raise_tl,
 		raise							.initial:n	= {0.5ex},
+		%EL PERFIL DE LAS VISTAS (false: EL ESTILO DEL ORIGINAL). VA ANTES DE LAS DEMAS OPCIONES DE LA VISTA.
+		profile						.code:n			= {
+																			\str_if_eq:nnTF {#1} {false}
+																				{\tl_clear:N \l__pgfgo_view_profile_tl}
+																				{\tl_set:Nn \l__pgfgo_view_profile_tl {#1}}
+																		},
 		unknown						.code:n			= {
 																			\tl_put_right:Ne \l__pgfgo_view_goban_tl
 																				{, \l_keys_key_str \tl_if_empty:nF {#1} {= {\exp_not:n {#1}}}}
@@ -1317,6 +1326,8 @@
 				\use:e {
 					\exp_not:N \begin {goban} [
 						\exp_not:V \l__pgfgo_view_options_tl
+						\tl_if_empty:NF \l__pgfgo_view_profile_tl
+							{, profile = {\exp_not:V \l__pgfgo_view_profile_tl}}
 						\exp_not:V \l__pgfgo_view_goban_tl,
 						partial = {\l__pgfgo_view_range_str}
 					]
