@@ -1,37 +1,18 @@
 \input{code-page}
-\documentclass[border=0.5cm]{standalone}
-\usepackage{../../latex/pgf-go}
+\documentclass[border=0.5cm, varwidth=15cm]{standalone}
+\usepackage[kernel = lua]{../../latex/pgf-go}
 
-
-
-\pgfgoset{profile = pgfgo}
+% games.sgf is a collection: several games in one file, one after the other. game chooses one of them;
+% each game keeps its own board size.
+\pgfgoset{profile = pgfgo, goban = {label = {at = {south, west}}}}
 
 
 \begin{document}
-	\setlength{\tabcolsep}{2pt}
-	
-	\begin{tabular}{cc}
-		\begin{goban}[partial = A9:E5]
-			\stone[b]{C7}
-			\marks[sequence]{C8, D7, C6, B7}
-		\end{goban} &
-		%
-		\begin{goban}[partial = E9:I5]
-			\stone[b]{G7}
-			\stone[w]{F7}
-			\marks[sequence]{G8, H7, G6}
-		\end{goban} \\
-		%
-		\begin{goban}[partial = A1:E5]
-			\stone[b]{C3}
-			\stones[w]{B3,C2}
-			\marks[sequence]{C4, D3}
-		\end{goban} &
-		%
-		\begin{goban}[partial = E1:I5]
-			\stone[b]{G3}
-			\stones[w]{F3,G2, H3}
-			\marks[sequence]{G4}
-		\end{goban}\\
-	\end{tabular}
+	\foreach \g in {1, 2} {
+		\subsection*{Game \g: \sgfinfo[game = \g]{games.sgf}{PB} -- \sgfinfo[game = \g]{games.sgf}{PW}}
+		Result: \sgfinfo[game = \g]{games.sgf}{RE}.
+
+		\medskip
+		\sgfdiagrams[game = \g, step = 20, to = 40, layout = {columns = 2, fit}]{games.sgf}
+	}
 \end{document}

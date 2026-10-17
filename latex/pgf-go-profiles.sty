@@ -543,3 +543,54 @@
 	},
 	all = {stone = {line = {width = 0.5pt}}}
 }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%SHELL (MADERA, PIZARRA Y CONCHA, CON IMAGENES; LOS ARCHIVOS ESTAN EN img)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pgfgodefineprofile[from = default]{shell}{
+	goban = {
+		background = {
+			line = false,
+			fill = {image = {file = pgfgo-board.jpg}}
+		}
+	},
+	all = {
+		stone = {
+			shadow = {
+				true,
+				angle = -45,
+				offset = 0.75pt,
+				scale = 1.2,
+				opacity = 0.6,
+				image = {file = pgfgo-shadow.png}
+			}
+		}
+	},
+	black = {stone = {image = {file = pgfgo-shell-black.png}}},
+	white = {
+		stone = {
+			image = {
+				file = {pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+					pgfgo-shell-white-4.png, pgfgo-shell-white-5.png},
+				rotate = -15:15
+			}
+		}
+	}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%YUNZI (MADERA Y PIEDRAS MATES, CON IMAGENES; LOS ARCHIVOS ESTAN EN img)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pgfgodefineprofile[from = shell]{yunzi}{
+	black = {stone = {image = {file = pgfgo-yunzi-black.png}}},
+	white = {
+		stone = {
+			image = {
+				file = {pgfgo-yunzi-white-1.png, pgfgo-yunzi-white-2.png},
+				rotate = 0
+			}
+		}
+	}
+}

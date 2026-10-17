@@ -2,16 +2,23 @@
 \documentclass[border=0.5cm]{standalone}
 \usepackage{../../latex/pgf-go}
 
+% The kanji need a font that has them, for example IPAex (in TeX Live and MiKTeX), with LuaLaTeX.
+\font\kanji = {file:ipaexm.ttf} at 8pt
+\pgfgoset{profile = wain, goban = {label = {at = {all}}}}
 
-\pgfgoset{profile = wain}
+\newcommand\position{
+	\stones[b]{C7, G3, D3}
+	\stones[w]{G7, C3}
+}
 
 
 \begin{document}
-	\begin{goban}[9, partial = A2:H9]
-		\stones[b]{A7,B6,C8,C7}
-		\stones[b, mark=triangle]{D6,D5,D4}
-		\stones[w]{C3,C4,C5,C6,D7,E7,E6}
-		\stone[w, mark = {custom = 1}]{E3}
-		\marks[circle, line = {color = red!80!black}] {D3,E4, E5}
-	\end{goban}
+	\begin{tabular}{cc}
+		\begin{goban}[9]\position\end{goban} &
+		\begin{goban}[9, label = {style = japanese, font = \kanji}]\position\end{goban} \\
+		western: letters and numbers & japanese: from the upper right \\[1ex]
+		\begin{goban}[9, label = {style = chinese, font = \kanji}]\position\end{goban} &
+		\begin{goban}[9, label = {columns = numbers, rows = letters, rows direction = top to bottom}]\position\end{goban} \\
+		chinese: from the upper left & numbers and letters, rows from the top
+	\end{tabular}
 \end{document}

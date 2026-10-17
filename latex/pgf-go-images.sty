@@ -77,21 +77,38 @@
 	\dim_set:Nn \l_pgfgo_image_height_dim {\box_ht:N \l__pgfgo_image_box + \box_dp:N \l__pgfgo_image_box}
 }
 
+%LAS IMAGENES DE LOS PERFILES (pgfgo-board.jpg, ...) ESTAN EN LA CARPETA img, AL LADO DE LA CARPETA DE
+%pgf-go.sty (POR EJ. \usepackage{../../latex/pgf-go}). UN ARCHIVO QUE NO SE ENCUENTRA (NI EN LA CARPETA DEL
+%DOCUMENTO NI EN EL PATH DE TEX) SE BUSCA AHI; SI TAMPOCO ESTA, QUEDA COMO ESTA (\includegraphics LO BUSCA
+%EN \graphicspath). INSTALADO, \c__pgfgo_path_tl ESTA VACIO Y LAS IMAGENES SE ENCUENTRAN EN EL PATH DE TEX.
+\tl_const:Ne \c__pgfgo_image_dir_tl {\tl_if_empty:NF \c__pgfgo_path_tl {\c__pgfgo_path_tl /../img/}}
+\tl_new:N \l__pgfgo_image_path_tl
+\cs_new_protected:Npn \__pgfgo_image_locate:n #1 {
+	\tl_set:Nn \l__pgfgo_image_path_tl {#1}
+	\tl_if_empty:NF \c__pgfgo_image_dir_tl {
+		\file_if_exist:nF {#1} {
+			\file_if_exist:nT {\c__pgfgo_image_dir_tl #1}
+				{\tl_set:Ne \l__pgfgo_image_path_tl {\exp_not:V \c__pgfgo_image_dir_tl \exp_not:n {#1}}}
+		}
+	}
+}
+
 %CARGA LA IMAGEN #1 CON LAS OPCIONES #2 DE \includegraphics (width, height). LA PRIMERA VEZ CREA EL Form.
 \cs_new_protected:Npn \pgfgo_image_load:nn #1#2 {
 	\tl_set:Ne \l__pgfgo_image_key_tl {\tl_to_str:n {#1} | \tl_to_str:n {#2}}
 	\prop_get:NVNTF \g__pgfgo_image_prop \l__pgfgo_image_key_tl \l__pgfgo_image_tl
 		{\exp_after:wN \__pgfgo_image_set:nnnnn \l__pgfgo_image_tl}
 		{
-			\hbox_set:Nn \l__pgfgo_image_box {\includegraphics [#2] {#1}}
+			\__pgfgo_image_locate:n {#1}
+			\hbox_set:Nn \l__pgfgo_image_box {\includegraphics [#2] {\l__pgfgo_image_path_tl}}
 			\__pgfgo_image_box_size:
 			\__pgfgo_image_save:
 			\prop_gput:NVe \g__pgfgo_image_prop \l__pgfgo_image_key_tl {
 				{\l_pgfgo_image_form_tl}
 				{\dim_use:N \l_pgfgo_image_width_dim} {\dim_use:N \l_pgfgo_image_height_dim}
-				{\exp_not:n {#1}} {\exp_not:n {#2}}
+				{\exp_not:V \l__pgfgo_image_path_tl} {\exp_not:n {#2}}
 			}
-			\tl_set:Nn \l__pgfgo_image_file_tl {#1}
+			\tl_set_eq:NN \l__pgfgo_image_file_tl \l__pgfgo_image_path_tl
 			\tl_set:Nn \l__pgfgo_image_options_tl {#2}
 		}
 }
@@ -107,7 +124,8 @@
 	\prop_get:NVNTF \g__pgfgo_image_natural_prop \l__pgfgo_image_key_tl \l__pgfgo_image_tl
 		{\exp_after:wN \__pgfgo_image_natural:nn \l__pgfgo_image_tl}
 		{
-			\hbox_set:Nn \l__pgfgo_image_box {\includegraphics [draft] {#1}}
+			\__pgfgo_image_locate:n {#1}
+			\hbox_set:Nn \l__pgfgo_image_box {\includegraphics [draft] {\l__pgfgo_image_path_tl}}
 			\__pgfgo_image_box_size:
 			\prop_gput:NVe \g__pgfgo_image_natural_prop \l__pgfgo_image_key_tl
 				{{\dim_use:N \l_pgfgo_image_width_dim} {\dim_use:N \l_pgfgo_image_height_dim}}

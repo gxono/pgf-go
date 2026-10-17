@@ -1,0 +1,34 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=12cm]{standalone}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+
+\pgfgoset{profile = pgfgo}
+
+
+\begin{document}
+	\section*{The ko}
+	\begin{pgfgolayout}[columns = 3, fit]
+		\begin{goban}[5, name = before]
+			\stones[b]{B3, C2, C4}
+			\stones[w]{C3, D2, D4, E3}
+		\end{goban}
+		\begin{goban}[5, name = capture, captures]
+			\stones[b]{B3, C2, C4}
+			\stones[w]{C3, D2, D4, E3}
+			\moves*{D3}
+		\end{goban}
+		\begin{goban}[5, name = retake, captures]
+			\stones[b]{B3, C2, C4}
+			\stones[w]{C3, D2, D4, E3}
+			\moves*{D3, A5, A4, C3}
+		\end{goban}
+	\end{pgfgolayout}
+
+	\medskip
+	Black plays 1 \pgfgoview{capture}{D3} and takes the white stone \pgfgoview{before}{C3}:
+	now the shape is \pgfgoview{capture}{B2:E4}. White cannot take back at once, because the
+	same position would come again. White plays a threat first, 2 \pgfgoview{retake}{A5},
+	Black answers with 3 \pgfgoview{retake}{A4}, and only then White retakes with 4
+	\pgfgoview{retake}{C3}: \pgfgoview{retake}{B2:E4}.
+\end{document}

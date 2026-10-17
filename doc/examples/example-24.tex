@@ -1,0 +1,38 @@
+\input{code-page}
+\documentclass[border=0.5cm]{standalone}
+\usepackage{../../latex/pgf-go}
+
+
+% A profile of your own: the board and the two players, starting from default.
+\pgfgodefineprofile[from = default]{night}{
+	goban = {
+		background = {fill = {color = black!85}, line = false},
+		grid = {line = {color = white!60}},
+		label = {color = gray}
+	},
+	neutral = {mark = {line = {color = white!80}, fill = {color = gray}}},
+	black = {stone = {fill = {color = blue!55!black}, line = {color = white!70}}},
+	white = {stone = {fill = {color = orange!85}, line = {color = orange!40!black}}}
+}
+
+% Marks of your own: pgf or TikZ code, measured in stone radii, in the colours of the marks.
+\pgfgodefinemark{diamond}{
+	\pgfpathmoveto{\pgfpointxy{0}{0.7}}
+	\pgfpathlineto{\pgfpointxy{0.7}{0}}
+	\pgfpathlineto{\pgfpointxy{0}{-0.7}}
+	\pgfpathlineto{\pgfpointxy{-0.7}{0}}
+	\pgfpathclose
+	\pgfusepath{fill, stroke}}
+\pgfgodefinemark{slash}{\draw (-0.5, -0.5) -- (0.5, 0.5);}
+
+
+\begin{document}
+	\pgfgoset{profile = night}
+	\begin{goban}[9, label = {at = {south, west}}]
+		\stones[b]{C3, D3, E4, C5}
+		\stones[w]{D4, D5, E5, F3}
+		\moves*[from = 1]{F4, G4, F5}
+		\marks[diamond]{C3, E5, G7}
+		\marks[slash]{D5, H3}
+	\end{goban}
+\end{document}
