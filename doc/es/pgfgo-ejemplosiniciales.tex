@@ -519,11 +519,11 @@ La partida es de $19\times19$: |sgf size| le da al tablero el tamaño que dice e
 	\end{goban}
 \end{codeexample}
 
-Para comentar un tramo, \karu\ numera solo las jugadas desde la 21 con |from|: las anteriores se dibujan sin número. Con |last mark|, la última jugada lleva además una marca.
+Para comentar un tramo, \karu\ numera solo las jugadas desde la 21 con |from|: las anteriores se dibujan sin número.
 
 \begin{codeexample}[]
 	\begin{goban}[sgf size = lee.sgf, captures, scale = 0.6]
-		\sgf[from = 21, to = 30, last mark = circle]{lee.sgf}
+		\sgf[from = 21, to = 30]{lee.sgf}
 	\end{goban}
 \end{codeexample}
 
@@ -676,7 +676,7 @@ Para la portada del cuaderno, \karu\ quiere un tablero que se parezca a uno de v
 	\centering
 	\pgfgodefineprofile[from = default]{madera}{
 		goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
-		all = {stone = {drop shadow = {true, offset = 0.75pt, angle = -45}}},
+		all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
 		black = {stone = {image = {file = ogs-vars/black.png}}},
 		white = {stone = {image = {file = {
 			ogs-vars/white1.png, ogs-vars/white2.png, ogs-vars/white3.png,
@@ -730,13 +730,13 @@ Las negras se ven bien, pero las blancas son todas iguales, y en un tablero de v
 	\end{goban}
 \end{codeexample}
 
-Para que las piedras parezcan apoyadas sobre la madera, falta una sombra. |drop shadow| la dibuja con la forma de la imagen (si la imagen tiene transparencia, como estos PNG). Como es la misma para los dos jugadores, va en |all|. Cada archivo se guarda una sola vez en el PDF, por más piedras que lo usen.
+Para que las piedras parezcan apoyadas sobre la madera, falta una sombra. |shadow| la dibuja con la forma de la imagen (si la imagen tiene transparencia, como estos PNG). Como es la misma para los dos jugadores, va en |all|. Cada archivo se guarda una sola vez en el PDF, por más piedras que lo usen.
 
 \begin{codeexample}[width=4.8cm]
 	\pgfgoset{
 		goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
 		players = {
-			all = {stone = {drop shadow = {true, offset = 0.75pt, angle = -45}}},
+			all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
 			black = {stone = {image = {file = ogs-vars/black.png}}},
 			white = {stone = {image = {file = {
 				ogs-vars/white1.png, ogs-vars/white2.png, ogs-vars/white3.png,
@@ -754,7 +754,7 @@ Con cinco imágenes, todavía puede verse alguna repetida. |rotate| gira cada pi
 	\pgfgoset{
 		goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
 		players = {
-			all = {stone = {drop shadow = {true, offset = 0.75pt, angle = -45}}},
+			all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
 			black = {stone = {image = {file = ogs-vars/black.png}}},
 			white = {stone = {image = {file = {
 				ogs-vars/white1.png, ogs-vars/white2.png, ogs-vars/white3.png,
@@ -772,7 +772,7 @@ Con cinco imágenes, todavía puede verse alguna repetida. |rotate| gira cada pi
 \begin{codeexample}[code only]
 	\pgfgodefineprofile[from = default]{madera}{
 		goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
-		all = {stone = {drop shadow = {true, offset = 0.75pt, angle = -45}}},
+		all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
 		black = {stone = {image = {file = ogs-vars/black.png}}},
 		white = {stone = {image = {file = {
 			ogs-vars/white1.png, ogs-vars/white2.png, ogs-vars/white3.png,
@@ -783,7 +783,7 @@ Con cinco imágenes, todavía puede verse alguna repetida. |rotate| gira cada pi
 
 \pgfgodefineprofile[from = default]{madera}{
 	goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
-	all = {stone = {drop shadow = {true, offset = 0.75pt, angle = -45}}},
+	all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
 	black = {stone = {image = {file = ogs-vars/black.png}}},
 	white = {stone = {image = {file = {
 		ogs-vars/white1.png, ogs-vars/white2.png, ogs-vars/white3.png,

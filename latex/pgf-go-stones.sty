@@ -118,23 +118,34 @@
 \dim_new:N \l__pgfgo_stone_shine_a_dim
 \dim_new:N \l__pgfgo_stone_shine_b_dim
 
-%EL BRILLO, ENCIMA DE LA PIEDRA: EL DIBUJADO O LA IMAGEN shine/image (DE ANCHO width, O EL DIAMETRO DE LA
-%PIEDRA, GIRADA rotate). NO GIRA CON LA IMAGEN DE LA PIEDRA.
+%LA IMAGEN DE shine/image O DE shadow/image, CENTRADA EN LA PIEDRA: EL ARCHIVO #1, DE ANCHO #2 (VACIO: EL
+%DIAMETRO DE LA PIEDRA), GIRADA #3. CON #4 (silhouette), SOLO SU FORMA, DEL COLOR DE RELLENO ACTUAL. LA
+%OPACIDAD Y EL COLOR LOS PONE QUIEN LLAMA, DENTRO DE UN \pgfscope (LA IMAGEN CARGADA QUEDA ADENTRO: NO
+%CAMBIA LA DE LA PIEDRA).
+\cs_new_protected:Npn \__pgfgo_stone_file:NNNN #1#2#3#4 {
+	\pgfgo_image_load:Ve #1 {
+		width = \tl_if_empty:NTF #2
+			{\fp_to_dim:n {2 * \l_pgfgo_players_stone_radius_dim * \l_pgfgo_players_stone_scale_fp}}
+			{\dim_eval:n {#2}}
+	}
+	\tl_if_blank:VF #3 {\pgftransformrotate{\fp_eval:n {#3}}}
+	\bool_if:NTF #4 {\pgfgo_image_shadow:} {\pgfgo_image_draw:}
+}
+
+%EL BRILLO, ENCIMA DE LA PIEDRA: EL DIBUJADO O LA IMAGEN shine/image. NO GIRA CON LA IMAGEN DE LA PIEDRA.
 \cs_new_protected:Npn \__pgfgo_stone_shine: {
 	\bool_if:NT \l_pgfgo_players_stone_shine_bool {
 		\tl_if_empty:NTF \l_pgfgo_players_stone_shine_image_tl
 			{\pgfgo_stones_shine_default:}
 			{
-				\pgfgo_image_load:Ve \l_pgfgo_players_stone_shine_image_tl {
-					width = \tl_if_empty:NTF \l_pgfgo_players_stone_shine_image_width_tl
-						{\fp_to_dim:n {2 * \l_pgfgo_players_stone_radius_dim * \l_pgfgo_players_stone_scale_fp}}
-						{\dim_eval:n {\l_pgfgo_players_stone_shine_image_width_tl}}
-				}
 				\pgfscope
 					\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_shine_opacity_fp}
-					\tl_if_blank:VF \l_pgfgo_players_stone_shine_image_rotate_tl
-						{\pgftransformrotate{\fp_eval:n {\l_pgfgo_players_stone_shine_image_rotate_tl}}}
-					\pgfgo_image_draw:
+					\pgfsetfillcolor{\l_pgfgo_players_stone_shine_color_tl}
+					\__pgfgo_stone_file:NNNN
+						\l_pgfgo_players_stone_shine_image_tl
+						\l_pgfgo_players_stone_shine_image_width_tl
+						\l_pgfgo_players_stone_shine_image_rotate_tl
+						\l_pgfgo_players_stone_shine_image_silhouette_bool
 				\endpgfscope
 			}
 	}
@@ -155,14 +166,25 @@
 }
 
 
-%SOMBRA DE LA PIEDRA: #1 DIBUJA SU FORMA (YA DESPLAZADA).
+%SOMBRA DE LA PIEDRA, CORRIDA Y AGRANDADA (scale): LA IMAGEN shadow/image O, SIN ELLA, LA SILUETA DE LA
+%PIEDRA QUE DIBUJA #1.
 \cs_new_protected:Npn \__pgfgo_stone_shadow:n #1 {
-	\bool_if:NT\l_pgfgo_players_stone_drop_shadow_bool{
+	\bool_if:NT\l_pgfgo_players_stone_shadow_bool{
 		\pgfscope
-		\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_drop_shadow_opacity_fp}
-		\pgfsetfillcolor{\l_pgfgo_players_stone_drop_shadow_color_tl}
-		\pgftransformshift{\pgfpointpolar{\fp_use:N\l_pgfgo_players_stone_drop_shadow_angle_fp}{\dim_use:N\l_pgfgo_players_stone_drop_shadow_offset_dim}}
-		#1
+		\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_shadow_opacity_fp}
+		\pgfsetfillcolor{\l_pgfgo_players_stone_shadow_color_tl}
+		\pgftransformshift{\pgfpointpolar{\fp_use:N\l_pgfgo_players_stone_shadow_angle_fp}{\dim_use:N\l_pgfgo_players_stone_shadow_offset_dim}}
+		\fp_compare:nNnF \l_pgfgo_players_stone_shadow_scale_fp = {1}
+			{\pgftransformscale{\fp_use:N\l_pgfgo_players_stone_shadow_scale_fp}}
+		\tl_if_empty:NTF \l_pgfgo_players_stone_shadow_image_tl
+			{#1}
+			{
+				\__pgfgo_stone_file:NNNN
+					\l_pgfgo_players_stone_shadow_image_tl
+					\l_pgfgo_players_stone_shadow_image_width_tl
+					\l_pgfgo_players_stone_shadow_image_rotate_tl
+					\l_pgfgo_players_stone_shadow_image_silhouette_bool
+			}
 		\endpgfscope
 	}
 }
@@ -230,11 +252,8 @@
 \cs_new_protected:Npn \__pgfgo_stone_image_load: {
 	\tl_set:Ne \l__pgfgo_stone_image_file_tl {
 		\seq_item:Nn \l_pgfgo_players_stone_image_seq {
-			\int_mod:nn
-				{\l_pgfgo_parsed_x_coordinate_tl * 73 + \l_pgfgo_parsed_y_coordinate_tl * 151
-					+ (\l_pgfgo_parsed_x_coordinate_tl) * (\l_pgfgo_parsed_y_coordinate_tl) * 37}
+			\pgfgo_image_pick:nnn {\l_pgfgo_parsed_x_coordinate_tl} {\l_pgfgo_parsed_y_coordinate_tl}
 				{\seq_count:N \l_pgfgo_players_stone_image_seq}
-			+ 1
 		}
 	}
 	\pgfgo_image_load:Ve \l__pgfgo_stone_image_file_tl {
@@ -505,6 +524,7 @@
 \prop_new:N \g__pgfgo_notes_code_prop
 \tl_new:N \l__pgfgo_notes_tl
 \tl_new:N \l_pgfgo_notes_at_tl
+\tl_new:N \l_pgfgo_notes_pass_tl
 \tl_new:N \l_pgfgo_notes_separator_tl
 \cs_generate_variant:Nn \prop_get:NnNTF {NV}
 \cs_generate_variant:Nn \prop_get:NnNT {NV}
@@ -546,6 +566,11 @@
 	}
 }
 
+%ANOTA QUE LA JUGADA ACTUAL ES UN PASE ({N}{}, QUE \pgfgomovenotes ESCRIBE "N: pass").
+\cs_new_protected:Npn \pgfgo_notes_pass: {
+	\seq_gput_right:Ne \g_pgfgo_move_notes_seq {{\pgfgo_kernel_move_number:} {}}
+}
+
 %CON CAPTURAS: VUELVE A DIBUJAR LA PRIMERA JUGADA NUMERADA DEL PUNTO.
 \cs_new_protected:Npn \__pgfgo_notes_show_first:nn #1#2 {
 	\__pgfgo_captures_key:nn {#1} {#2}
@@ -558,6 +583,8 @@
 \keys_define:nn {pgfgo / notes} {
 	at					.tl_set:N		= \l_pgfgo_notes_at_tl,
 	at					.initial:n	= {\pgfgo_text:n {at}},
+	pass				.tl_set:N		= \l_pgfgo_notes_pass_tl,
+	pass				.initial:n	= {\pgfgo_text:n {pass}},
 	separator		.tl_set:N		= \l_pgfgo_notes_separator_tl,
 	separator		.initial:n	= {,~},
 }
@@ -565,12 +592,19 @@
 	notes				.code:n			= {\keys_set:nn {pgfgo / notes} {#1}}
 }
 
+%UNA NOTA: "N at M", O "N: pass" SI M ESTA VACIO.
+\cs_new_protected:Npn \__pgfgo_notes_item:nn #1#2 {
+	\tl_if_empty:nTF {#2}
+		{\seq_put_right:Nn \l_tmpa_seq {#1 : \nobreakspace \l_pgfgo_notes_pass_tl}}
+		{\seq_put_right:Nn \l_tmpa_seq {#1 \nobreakspace \l_pgfgo_notes_at_tl \nobreakspace #2}}
+}
+
 \NewDocumentCommand \pgfgomovenotes {O{}} {
 	\group_begin:
 		\keys_set:nn {pgfgo / notes} {#1}
 		\seq_clear:N \l_tmpa_seq
 		\seq_map_inline:Nn \g_pgfgo_move_notes_seq {
-			\seq_put_right:Nn \l_tmpa_seq {\use_i:nn ##1 \nobreakspace \l_pgfgo_notes_at_tl \nobreakspace \use_ii:nn ##1}
+			\__pgfgo_notes_item:nn ##1
 		}
 		\seq_use:Nn \l_tmpa_seq {\l_pgfgo_notes_separator_tl}
 	\group_end:
@@ -797,9 +831,9 @@
 %C5 -- C1). LO DEMAS (RECTANGULOS, *, CORCHETES, ;) NO TIENE UN ORDEN CLARO Y DA ERROR. LAS COORDENADAS SE
 %EXPANDEN CON e. DEJA LAS JUGADAS {x}{y} EN \l_pgfgo_kernel_points_seq.
 \msg_new:nnn {pgfgo} {moves-coordinate} {
-	'#1'~is~not~a~sequence~of~moves.~\iow_char:N\\moves~takes~intersections~(C3),~paths~(A1~-|~C3~--~E3)
-	~and~parts~of~a~row~or~a~column~(A:F~3,~C~5:1),~separated~by~commas.~Rectangles,~*,~brackets
-	~and~groups~that~subtract~(;)~have~no~order.
+	'#1'~is~not~a~sequence~of~moves.~\iow_char:N\\moves~takes~intersections~(C3),~paths~(A1~-|~C3~--~E3)~
+	and~parts~of~a~row~or~a~column~(A:F~3,~C~5:1),~separated~by~commas.~Rectangles,~*,~brackets~
+	and~groups~that~subtract~(;)~have~no~order.
 }
 \regex_const:Nn \c__pgfgo_moves_row_regex {\A([A-Z]):([A-Z])\s*(\d{1,2})\Z}
 \regex_const:Nn \c__pgfgo_moves_column_regex {\A([A-Z])\s*(\d{1,2}):(\d{1,2})\Z}

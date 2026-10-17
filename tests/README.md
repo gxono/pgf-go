@@ -18,7 +18,7 @@ From the repository root:
 ```
 python tests/run_tests.py               # all tests (about 40 seconds)
 python tests/run_tests.py marks moves   # only documents whose name contains "marks" or "moves"
-python tests/run_tests.py --manuals     # also the Spanish and English manuals (about 1 minute more)
+python tests/run_tests.py --manuals     # also the manuals (about 1 minute more)
 python tests/run_tests.py --kernel expl3  # everything again with kernel = expl3 under lualatex
 ```
 
@@ -54,7 +54,8 @@ not affect the manuals, create them locally with
 ## What is tested
 
 - `docs/keys` (`check_docs.py`): every key and command defined in
-  `latex/*.sty` must be documented in both manuals, and every key and command
+  `latex/*.sty` must be documented in the manuals listed in `MANUALS` in
+  `check_docs.py` (for now only the Spanish one), and every key and command
   documented in a manual must exist. Keys that are not documented on purpose
   are listed in `UNDOCUMENTED` in `check_docs.py`. It can also be run alone:
   `python tests/check_docs.py`. It reads the keys written in `\keys_define`
@@ -84,7 +85,8 @@ not affect the manuals, create them locally with
   games. They use `kernel = lua`, so they only run with LuaLaTeX.
 - `doc/examples/example-*.tex`: the examples shipped with the package. They
   can use the `% passes:` header line.
-- With `--manuals`: `doc/es/pgfgo-es.tex` and `doc/en/pgfgo-en.tex`.
+- With `--manuals`: the manuals in `MANUALS` (for now only
+  `doc/es/pgfgo-es.tex`).
 
 ## Writing a test document
 

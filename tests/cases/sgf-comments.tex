@@ -51,4 +51,56 @@
 \case{Animation frames 1 and 2 with comments}
 \frames{comments = {true, height = 3em}}{annotated.sgf}{1, 2}
 
+% chat.sgf: KGS chat ("name [rank]: ...", and "name: ..." in the same comment)
+% at 0, 1 and 3; "Note: ..." alone at 2; OGS chat (after "-- chat --") at 4.
+
+\case{chat = false: 0 "Game start."; 1 "Black takes the center." (the lines "lonepeak:" and "Note:" go with the ranked chat); 2 "Note: kept, ..."; 3 nothing; 4 "White answers."; 5 "Only the reviewer." / chat = true: everything}
+\begin{itemize}
+	\item 0: \sgfcomment[chat = false]{chat.sgf}{0}
+	\item 1: \sgfcomment[chat = false]{chat.sgf}{1}
+	\item 2: \sgfcomment[chat = false]{chat.sgf}{2}
+	\item 3: [\sgfcomment[chat = false]{chat.sgf}{3}]
+	\item 4: \sgfcomment[chat = false]{chat.sgf}{4}
+	\item 5: \sgfcomment[chat = false]{chat.sgf}{5}
+	\item 1: \sgfcomment{chat.sgf}{1}
+	\item 4: \sgfcomment{chat.sgf}{4}
+\end{itemize}
+
+\case{comments = \{true, root, font = \textbackslash itshape, align = justify\}: "Root comment." first, unnumbered, in italics / root only in the diagram that starts at 1}
+\sgfdiagrams[step = 3, comments = {true, root, font = \itshape, align = justify}]{annotated.sgf}
+
+\case{comments = \{true, align = center\} with caption font \textbackslash footnotesize (the comments follow it) / comments = \{true, false\}: none}
+\sgfdiagrams[step = 3, comments = {true, align = center}, caption = {font = \footnotesize}]{annotated.sgf}
+\sgfdiagrams[step = 5, comments = {true, false}]{annotated.sgf}
+
+\case{comments = \{true, number = Move \#1.\textasciitilde, separator = \{ \textbackslash quad\}\}: one paragraph, "Move 1. ..."}
+\sgfdiagrams[step = 3, to = 3, comments = {true, number = {Move~#1.~}, separator = {\quad}}]{annotated.sgf}
+
+\case{restart: the comments use the numbers of the board (diagram 2: "1: No annotations here.", "2: ...")}
+\sgfdiagrams[step = 3, restart, comments, goban = {scale = 0.5}]{annotated.sgf}
+
+\case{position = right, outside the grid: each diagram on its line, the comments in the rest of the line, from the top of the board}
+\sgfdiagrams[step = 3, comments = {true, position = right}, goban = {scale = 0.5}]{annotated.sgf}
+
+\case{position = left, width = 4cm, sep = 2em, in a grid of 2 columns}
+\sgfdiagrams[step = 3, comments = {true, position = left, width = 4cm, sep = 2em}, goban = {scale = 0.5}, layout = {columns = 2}]{annotated.sgf}
+
+\case{position = right with fit in a grid of 2 columns: the board takes half of the cell}
+\sgfdiagrams[step = 3, comments = {true, position = right}, layout = {columns = 2, fit}]{annotated.sgf}
+
+\case{\textbackslash sgfproblem, comments = \{font = \textbackslash itshape, align = right\}, also in the statement}
+\sgfproblem[comments = {font = \itshape, align = right}, goban = {scale = 0.6}, layout = {columns = 4}]{problem.sgf}
+
+\case{\textbackslash sgfdiagrams with comments and chat = false: move 3 has no comment left}
+\sgfdiagrams[step = 5, comments, chat = false, goban = {scale = 0.5}]{chat.sgf}
+
+\case{position = after: no comments under the diagrams; after them, "Diagram 1 (1--3)" and its comments, "Diagram 2 (4--5)" and its comments, full width}
+\sgfdiagrams[step = 3, comments = {true, position = after}, goban = {scale = 0.4}]{annotated.sgf}
+
+\case{height = 2.2em: diagram 1 keeps what fits (about two lines), the rest goes after the diagrams with the caption}
+\sgfdiagrams[step = 3, comments = {true, height = 2.2em}, goban = {scale = 0.4}, layout = {columns = 3}]{annotated.sgf}
+
+\case{position = right, height = 1.2em}
+\sgfdiagrams[step = 3, to = 3, comments = {true, position = right, height = 1.2em}, goban = {scale = 0.4}]{annotated.sgf}
+
 \end{document}

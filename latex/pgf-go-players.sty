@@ -33,11 +33,16 @@
 	#1 {tl}		{l_pgfgo_players_}	{stone_fill_color_tl}
 	#1 {fp}		{l_pgfgo_players_}	{stone_fill_opacity_fp}
 
-	#1 {bool}	{l_pgfgo_players_}	{stone_drop_shadow_bool}
-	#1 {fp}		{l_pgfgo_players_}	{stone_drop_shadow_angle_fp}
-	#1 {dim}	{l_pgfgo_players_}	{stone_drop_shadow_offset_dim}
-	#1 {fp}		{l_pgfgo_players_}	{stone_drop_shadow_opacity_fp}
-	#1 {tl}		{l_pgfgo_players_}	{stone_drop_shadow_color_tl}
+	#1 {bool}	{l_pgfgo_players_}	{stone_shadow_bool}
+	#1 {fp}		{l_pgfgo_players_}	{stone_shadow_angle_fp}
+	#1 {dim}	{l_pgfgo_players_}	{stone_shadow_offset_dim}
+	#1 {fp}		{l_pgfgo_players_}	{stone_shadow_opacity_fp}
+	#1 {tl}		{l_pgfgo_players_}	{stone_shadow_color_tl}
+	#1 {fp}		{l_pgfgo_players_}	{stone_shadow_scale_fp}
+	#1 {tl}		{l_pgfgo_players_}	{stone_shadow_image_tl}
+	#1 {tl}		{l_pgfgo_players_}	{stone_shadow_image_width_tl}
+	#1 {tl}		{l_pgfgo_players_}	{stone_shadow_image_rotate_tl}
+	#1 {bool}	{l_pgfgo_players_}	{stone_shadow_image_silhouette_bool}
 
 	#1 {bool}	{l_pgfgo_players_}	{stone_shine_bool}
 	#1 {fp}		{l_pgfgo_players_}	{stone_shine_angle_fp}
@@ -46,6 +51,7 @@
 	#1 {tl}		{l_pgfgo_players_}	{stone_shine_image_tl}
 	#1 {tl}		{l_pgfgo_players_}	{stone_shine_image_width_tl}
 	#1 {tl}		{l_pgfgo_players_}	{stone_shine_image_rotate_tl}
+	#1 {bool}	{l_pgfgo_players_}	{stone_shine_image_silhouette_bool}
 
 	#1 {seq}	{l_pgfgo_players_}	{stone_image_seq}
 	#1 {tl}		{l_pgfgo_players_}	{stone_image_width_tl}
@@ -100,11 +106,16 @@
 \tl_new:N 	\l_pgfgo_players_stone_fill_color_tl
 \fp_new:N 	\l_pgfgo_players_stone_fill_opacity_fp
 
-\bool_new:N	\l_pgfgo_players_stone_drop_shadow_bool
-\fp_new:N		\l_pgfgo_players_stone_drop_shadow_angle_fp
-\dim_new:N	\l_pgfgo_players_stone_drop_shadow_offset_dim
-\fp_new:N		\l_pgfgo_players_stone_drop_shadow_opacity_fp
-\tl_new:N		\l_pgfgo_players_stone_drop_shadow_color_tl
+\bool_new:N	\l_pgfgo_players_stone_shadow_bool
+\fp_new:N		\l_pgfgo_players_stone_shadow_angle_fp
+\dim_new:N	\l_pgfgo_players_stone_shadow_offset_dim
+\fp_new:N		\l_pgfgo_players_stone_shadow_opacity_fp
+\tl_new:N		\l_pgfgo_players_stone_shadow_color_tl
+\fp_new:N		\l_pgfgo_players_stone_shadow_scale_fp
+\tl_new:N		\l_pgfgo_players_stone_shadow_image_tl
+\tl_new:N		\l_pgfgo_players_stone_shadow_image_width_tl
+\tl_new:N		\l_pgfgo_players_stone_shadow_image_rotate_tl
+\bool_new:N	\l_pgfgo_players_stone_shadow_image_silhouette_bool
 
 \bool_new:N	\l_pgfgo_players_stone_shine_bool
 \fp_new:N		\l_pgfgo_players_stone_shine_angle_fp
@@ -113,6 +124,7 @@
 \tl_new:N		\l_pgfgo_players_stone_shine_image_tl
 \tl_new:N		\l_pgfgo_players_stone_shine_image_width_tl
 \tl_new:N		\l_pgfgo_players_stone_shine_image_rotate_tl
+\bool_new:N	\l_pgfgo_players_stone_shine_image_silhouette_bool
 
 \seq_new:N	\l_pgfgo_players_stone_image_seq
 \tl_new:N		\l_pgfgo_players_stone_image_width_tl
@@ -253,8 +265,8 @@
 		radius							.initial:n = {5.5pt},
 		scale								.code:n = {\fp_set:cn{l_pgfgo_players_ #1 _stone_scale_fp}{##1}},
 		scale								.initial:n = {1},
-		drop~shadow					.code:n = {\keys_set:nn{ pgfgo / players / #1 / stone / drop~shadow }{##1}},
-		drop~shadow					.default:n = {true},
+		shadow							.code:n = {\keys_set:nn{ pgfgo / players / #1 / stone / shadow }{##1}},
+		shadow							.default:n = {true},
 		shine								.code:n = {\keys_set:nn{ pgfgo / players / #1 / stone / shine }{##1}},
 		shine								.default:n = {true},
 		image								.code:n = {\keys_set:nn{ pgfgo / players / #1 / stone / image }{##1}},
@@ -307,23 +319,43 @@
 
 
 
-	\bool_new:c				{l_pgfgo_players_ #1 _stone_drop_shadow_bool}
-	\fp_new:c					{l_pgfgo_players_ #1 _stone_drop_shadow_angle_fp}
-	\dim_new:c				{l_pgfgo_players_ #1 _stone_drop_shadow_offset_dim}
-	\fp_new:c					{l_pgfgo_players_ #1 _stone_drop_shadow_opacity_fp}
-	\tl_new:c					{l_pgfgo_players_ #1 _stone_drop_shadow_color_tl}
+	\bool_new:c				{l_pgfgo_players_ #1 _stone_shadow_bool}
+	\fp_new:c					{l_pgfgo_players_ #1 _stone_shadow_angle_fp}
+	\dim_new:c				{l_pgfgo_players_ #1 _stone_shadow_offset_dim}
+	\fp_new:c					{l_pgfgo_players_ #1 _stone_shadow_opacity_fp}
+	\tl_new:c					{l_pgfgo_players_ #1 _stone_shadow_color_tl}
+	\fp_new:c					{l_pgfgo_players_ #1 _stone_shadow_scale_fp}
+	\tl_new:c					{l_pgfgo_players_ #1 _stone_shadow_image_tl}
+	\tl_new:c					{l_pgfgo_players_ #1 _stone_shadow_image_width_tl}
+	\tl_new:c					{l_pgfgo_players_ #1 _stone_shadow_image_rotate_tl}
+	\bool_new:c				{l_pgfgo_players_ #1 _stone_shadow_image_silhouette_bool}
 
-	\keys_define:nn { pgfgo / players / #1 / stone / drop~shadow } {
-		true 				.code:n 		= {\bool_set_true:c 	{l_pgfgo_players_ #1 _stone_drop_shadow_bool}},
-		false 			.code:n 		= {\bool_set_false:c 	{l_pgfgo_players_ #1 _stone_drop_shadow_bool}},
-		angle				.code:n 		= {\fp_set:cn 				{l_pgfgo_players_ #1 _stone_drop_shadow_angle_fp}{##1}},
+	%LA SOMBRA, DEBAJO DE LA PIEDRA: SU SILUETA (EL CIRCULO O LA FORMA DE stone/image) O LA IMAGEN image,
+	%CORRIDA offset HACIA angle Y AGRANDADA scale.
+	\keys_define:nn { pgfgo / players / #1 / stone / shadow } {
+		true 				.code:n 		= {\bool_set_true:c 	{l_pgfgo_players_ #1 _stone_shadow_bool}},
+		false 			.code:n 		= {\bool_set_false:c 	{l_pgfgo_players_ #1 _stone_shadow_bool}},
+		angle				.code:n 		= {\fp_set:cn 				{l_pgfgo_players_ #1 _stone_shadow_angle_fp}{##1}},
 		angle				.initial:n 	= {0},
-		offset			.code:n 		= {\dim_set:cn 				{l_pgfgo_players_ #1 _stone_drop_shadow_offset_dim}{##1}},
-		offset			.initial:n	=	{0pt},
-		opacity			.code:n 		= {\fp_set:cn 				{l_pgfgo_players_ #1 _stone_drop_shadow_opacity_fp}{##1}},
+		offset			.code:n 		= {\dim_set:cn 				{l_pgfgo_players_ #1 _stone_shadow_offset_dim}{##1}},
+		offset			.initial:n	=	{1pt},
+		opacity			.code:n 		= {\fp_set:cn 				{l_pgfgo_players_ #1 _stone_shadow_opacity_fp}{##1}},
 		opacity			.initial:n	= {0.5},
-		color				.code:n 		= {\tl_set:cn 				{l_pgfgo_players_ #1 _stone_drop_shadow_color_tl}{##1}},
+		color				.code:n 		= {\tl_set:cn 				{l_pgfgo_players_ #1 _stone_shadow_color_tl}{##1}},
 		color				.initial:n	= {black},
+		scale				.code:n 		= {\fp_set:cn 				{l_pgfgo_players_ #1 _stone_shadow_scale_fp}{##1}},
+		scale				.initial:n	= {1},
+		image				.code:n			= {\keys_set:nn { pgfgo / players / #1 / stone / shadow / image } {##1}},
+	}
+
+	%SIN width, EL DIAMETRO DE LA PIEDRA. rotate: UN ANGULO, EL MISMO EN TODAS LAS PIEDRAS. CON silhouette,
+	%SOLO LA FORMA DE LA IMAGEN, DEL COLOR color.
+	\keys_define:nn { pgfgo / players / #1 / stone / shadow / image } {
+		file				.code:n			= {\tl_set:cn {l_pgfgo_players_ #1 _stone_shadow_image_tl}{##1}},
+		width				.code:n			= {\tl_set:cn {l_pgfgo_players_ #1 _stone_shadow_image_width_tl}{##1}},
+		rotate			.code:n			= {\tl_set:cn {l_pgfgo_players_ #1 _stone_shadow_image_rotate_tl}{##1}},
+		silhouette	.bool_set:c	= {l_pgfgo_players_ #1 _stone_shadow_image_silhouette_bool},
+		false				.code:n			= {\tl_clear:c {l_pgfgo_players_ #1 _stone_shadow_image_tl}},
 	}
 
 
@@ -336,6 +368,7 @@
 	\tl_new:c					{l_pgfgo_players_ #1 _stone_shine_image_tl}
 	\tl_new:c					{l_pgfgo_players_ #1 _stone_shine_image_width_tl}
 	\tl_new:c					{l_pgfgo_players_ #1 _stone_shine_image_rotate_tl}
+	\bool_new:c				{l_pgfgo_players_ #1 _stone_shine_image_silhouette_bool}
 
 	\keys_define:nn { pgfgo / players / #1 / stone / shine } {
 		true 				.code:n 		= {\bool_set_true:c 	{l_pgfgo_players_ #1 _stone_shine_bool}},
@@ -349,11 +382,13 @@
 		image				.code:n			= {\keys_set:nn { pgfgo / players / #1 / stone / shine / image } {##1}},
 	}
 
-	%SIN width, EL DIAMETRO DE LA PIEDRA. rotate: UN ANGULO, EL MISMO EN TODAS LAS PIEDRAS.
+	%SIN width, EL DIAMETRO DE LA PIEDRA. rotate: UN ANGULO, EL MISMO EN TODAS LAS PIEDRAS. CON silhouette,
+	%SOLO LA FORMA DE LA IMAGEN, DEL COLOR color.
 	\keys_define:nn { pgfgo / players / #1 / stone / shine / image } {
 		file				.code:n			= {\tl_set:cn {l_pgfgo_players_ #1 _stone_shine_image_tl}{##1}},
 		width				.code:n			= {\tl_set:cn {l_pgfgo_players_ #1 _stone_shine_image_width_tl}{##1}},
 		rotate			.code:n			= {\tl_set:cn {l_pgfgo_players_ #1 _stone_shine_image_rotate_tl}{##1}},
+		silhouette	.bool_set:c	= {l_pgfgo_players_ #1 _stone_shine_image_silhouette_bool},
 		false				.code:n			= {\tl_clear:c {l_pgfgo_players_ #1 _stone_shine_image_tl}},
 	}
 
@@ -391,9 +426,8 @@
 		fill				.groups:n = {external},
 		radius			.groups:n = {external},
 		scale				.groups:n = {external},
-		drop~shadow	.groups:n = {external},
+		shadow			.groups:n = {external},
 		shine				.groups:n = {external},
-		drop~shine	.groups:n = {external},
 		image				.groups:n = {external},
 		prisoner		.groups:n = {external},
 		mark				.groups:n = {external},

@@ -1,0 +1,5 @@
+(;GM[1]FF[4]SZ[9]AB[cc][dc]AW[cd][dd][ec]C[problem 1])
+(;GM[1]FF[4]SZ[9]PL[W]AB[gg][gh]AW[fg][fh]C[problem 2])
+(;GM[1]FF[4]SZ[9]AB[ba][bb][cb]AW[ca][db][dc][cc][bc][ac]C[problem 3]
+(;B[aa]TE[1]C[Correct.])
+(;B[da]BM[1]C[Wrong.];W[aa]))

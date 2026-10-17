@@ -3,7 +3,7 @@
 
 Reads the keys defined with \\keys_define in latex/*.sty and the user
 commands, and compares them with the key, stylekey, command and environment
-entries of each manual (doc/es and doc/en). It reports keys or commands that
+entries of each manual in MANUALS (for now only doc/es). It reports keys or commands that
 are not documented, and documented ones that do not exist.
 
 In the paths of \\keys_define, "players/#1" (or ##1) and \\l__pgfgo_item_tl
@@ -26,6 +26,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 BS = "\\"
+
+# The manuals that are checked (doc/<lang>). Only the Spanish one is kept up
+# to date for now; add "en" when the English manual is rewritten.
+MANUALS = ("es",)
 
 # Not documented on purpose.
 UNDOCUMENTED = {
@@ -171,7 +175,7 @@ def check():
     """Return a list of problems (empty if the manuals are complete)."""
     problems = []
     (keys, choices), commands = code_keys(), code_commands()
-    for lang in ("es", "en"):
+    for lang in MANUALS:
         doc_keys, covered, doc_commands = doc_entries(ROOT / "doc" / lang)
         # The values of a .choices key are covered by the key itself.
         covered |= {choice for choice, parent in choices.items() if parent in covered}

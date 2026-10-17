@@ -1,0 +1,11 @@
+(;GM[1]FF[4]CA[UTF-8]AP[CGoban:3]ST[2]
+RU[Chinese]SZ[19]KM[7.50]TM[7200]OT[3x60 byo-yomi]
+PW[AlphaGo]PB[Lee Sedol]BR[9d]DT[2016-03-09]EV[Google DeepMind Challenge Match]RO[Game 1]PC[Seoul, Korea]WT[Computer]BT[Human]SO[https://gogameguru.com/]AN[An Younggil 8p]
+C[Extracto auténtico de la partida 1 de Lee Sedol contra AlphaGo, con comentarios de An Younggil. Incluye solo el comienzo y algunas variantes; no es la partida completa.]
+RE[W+Resign]
+;B[qd]LB[qd:1]C[Lee Sedol jugó negras.]
+;W[dd];B[pq];W[dp];B[fc];W[cf]
+;B[ql]LB[fc:5][kc:A][lc:B][dd:2][cf:6][ql:7][dp:4][pq:3]C[Black started with two 3-4 points, and White established a two star formation with 2 and 4.]
+;W[od];B[ld]
+(;W[qc]LB[qc:10][ld:9][od:8][ql:A]C[White's approach at 8 was to be expected, and pincering with Black 9 was natural.];B[rc];W[pc])
+(;W[dc]C[Alternative variation.];B[ec];W[cd]))

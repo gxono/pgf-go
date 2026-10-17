@@ -191,8 +191,8 @@
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_variations_seq \l__pgfgo_kernel_sgf_variations_clist
 }
 
-\cs_new:Npn \pgfgo_kernel_sgf_comment:n #1 {
-	\lua_now:e {pgfgo.sgf_comment(\int_eval:n {#1})}
+\cs_new:Npn \pgfgo_kernel_sgf_comment:nn #1#2 {
+	\lua_now:e {pgfgo.sgf_comment(\int_eval:n {#1}, #2)}
 }
 
 \clist_new:N \l__pgfgo_kernel_sgf_marks_clist
@@ -224,6 +224,15 @@
 	\lua_now:e {pgfgo.sgf_label(\int_eval:n {#1})}
 }
 
+\cs_new_protected:Npn \pgfgo_kernel_sgf_glyphs:n #1 {
+	\lua_now:e {pgfgo.sgf_glyphs("\lua_escape:e {#1}")}
+}
+\cs_new:Npn \pgfgo_kernel_sgf_move_info:nnnn #1#2#3#4 {
+	\lua_now:e {
+		pgfgo.sgf_move_info("\__pgfgo_kernel_lua_file:n {#1}", "\lua_escape:e {#2}", \int_eval:n {#3},
+			"\lua_escape:e {#4}")
+	}
+}
 \cs_new:Npn \pgfgo_kernel_sgf_info:nn #1#2 {
 	\lua_now:e {pgfgo.sgf_info("\__pgfgo_kernel_lua_file:n {#1}", "\lua_escape:e {#2}")}
 }
@@ -237,6 +246,13 @@
 \cs_new_protected:Npn \pgfgo_kernel_sgf_tree:n #1 {
 	\lua_now:e {pgfgo.sgf_tree("\__pgfgo_kernel_lua_file:n {#1}")}
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_paths_seq \l__pgfgo_kernel_sgf_paths_clist
+}
+
+\clist_new:N \l__pgfgo_kernel_sgf_branches_clist
+\seq_new:N \l_pgfgo_kernel_sgf_branches_seq
+\cs_new_protected:Npn \pgfgo_kernel_sgf_branches:n #1 {
+	\lua_now:e {pgfgo.sgf_branches("\__pgfgo_kernel_lua_file:n {#1}")}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_branches_seq \l__pgfgo_kernel_sgf_branches_clist
 }
 
 

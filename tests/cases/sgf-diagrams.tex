@@ -1,5 +1,5 @@
 % engines: lualatex
-% expect-warnings: 0
+% expect-warnings: 1
 % expect-errors: 0
 \documentclass{article}
 \usepackage[margin=1cm]{geometry}
@@ -39,5 +39,30 @@
 
 \case{restart = \{from = 0\}, then restart = false: no restart (as the first diagram)}
 \sgfdiagrams[step = 2, restart = {from = 0}, restart = false]{game.sgf}
+
+\newcommand\notes[1][]{\par\noindent Notes: [\pgfgomovenotes[#1]]\par}
+\case{goban/notes with a pass: "3: pass" / from = 4: not noted / numbers = false: no notes / pass = pasa: "3: pasa"}
+\begin{goban}[9, notes]\sgf{game.sgf}\end{goban}
+\notes
+\begin{goban}[9, notes]\sgf[from = 4]{game.sgf}\end{goban}
+\notes
+\begin{goban}[9, notes]\sgf[numbers = false]{game.sgf}\end{goban}
+\notes
+\begin{goban}[9, notes]\sgf{game.sgf}\end{goban}
+\notes[pass = pasa]
+
+% var-tree.sgf: 9x9; 1 B E5, 2 W C7, then three lines: main 3 B G3, 4 W G7 "Main.",
+% 5 B C3; variation 2: 3 B G7 "Variation 2, commented.", 4 W G3, 5 B C3, with the
+% sub-variation 2.2: 4 W C3 "Sub-variation 2.2.", 5 B G3; variation 3: 3 B C3, 4 W G3.
+
+\case{variations (the commented ones, depth 1): after diagram 2, diagram 2a (variation 2, numbered from 1, "variation at 3")}
+\sgfdiagrams[step = 2, comments, variations, goban = {scale = 0.5}]{var-tree.sgf}
+
+\case{variations = \{all, depth = 2\}: 2a (2), 2b (2.2, from its move 4: "1: Sub-variation"), 2c (3)}
+\sgfdiagrams[step = 2, comments, variations = {all, depth = 2}, goban = {scale = 0.5}]{var-tree.sgf}
+
+\case{variations = \{3, 2.2.1\}: 2a (2.2), 2b (3), in the order of the tree / \{7\}: one warning, no variation}
+\sgfdiagrams[step = 2, variations = {3, 2.2.1}, goban = {scale = 0.5}]{var-tree.sgf}
+\sgfdiagrams[step = 5, variations = {7}, goban = {scale = 0.5}]{var-tree.sgf}
 
 \end{document}

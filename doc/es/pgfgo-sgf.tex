@@ -10,7 +10,7 @@ En todos los comandos que leen archivos SGF, el nombre puede tener espacios, ace
 
 \begin{command}{\sgf\opt{\oarg{options}}\marg{file}}
 
-	Dibuja en el |goban| la línea principal de la primera partida del archivo: las piedras iniciales (|AB| y |AW|) como con |\stones|, y las jugadas como con |\moves*|. Las variantes no se dibujan. Los pases cuentan para la numeración, pero no se dibujan. Solo existe dentro de |goban|.
+	Dibuja en el |goban| la línea principal de la primera partida del archivo: las piedras iniciales (|AB| y |AW|) como con |\stones|, y las jugadas como con |\moves*|. Las variantes no se dibujan. Los pases cuentan para la numeración, pero no se dibujan (con |goban/notes| se anotan, «N: pass»). Solo existe dentro de |goban|.
 \end{command}
 
 Las piedras que agregan (|AB|, |AW|) o quitan (|AE|) los nodos posteriores a la primera jugada se aplican junto con la jugada anterior. Quitar piedras necesita |captures|; sin |captures|, |\sgf| avisa una vez y no las quita.
@@ -76,7 +76,7 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 \end{key}
 
 \begin{key}{/pgfgo/sgf/marks = \meta{boolean} (default true, initially true)}
-	Dibuja las marcas del archivo (|TR|, |SQ|, |CR|, |MA|, |SL| y las etiquetas de |LB|), las flechas (|AR|) y las líneas (|LN|) del último nodo que se muestra, y atenúa los puntos de |DD| (que siguen atenuados hasta el próximo |DD|; pág.~\pageref{subsec:flechas}). Cada marca toma el color de la piedra que hay en ese punto, para que se vea, y reemplaza al número de la jugada. El territorio del archivo (|TB| y |TW|) se dibuja como el de |\territory| (pág.~\pageref{subsec:territorio}) y cuenta para |\pgfgoscore|.
+	Dibuja las marcas del archivo (|TR|, |SQ|, |CR|, |MA|, |SL| y las etiquetas de |LB|), las flechas (|AR|) y las líneas (|LN|) del último nodo que se muestra, y atenúa los puntos de |DD| (que siguen atenuados hasta el próximo |DD|; pág.~\pageref{subsec:flechas}). Cada marca toma el color de la piedra que hay en ese punto, para que se vea, y reemplaza al número de la jugada. Las etiquetas son la excepción: no tapan un número, así que sobre una piedra numerada no se dibujan. El territorio del archivo (|TB| y |TW|) se dibuja como el de |\territory| (pág.~\pageref{subsec:territorio}) y cuenta para |\pgfgoscore|.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variantes.sgf]
@@ -140,7 +140,7 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 \end{key}
 
 \begin{key}{/pgfgo/sgf/last mark = \meta{mark options} o |false| (initially false)}
-	Marca la última jugada que se muestra, con las opciones de una marca (|circle|, |triangle|, |custom = ...|, etc.). Un pase no se marca, y tampoco un punto que el archivo ya marca. La marca va encima del número: sirve sobre todo con |numbers = false|.
+	Marca la última jugada que se muestra, con las opciones de una marca (|circle|, |triangle|, |custom = ...|, etc.). Un pase no se marca, y tampoco un punto que el archivo ya marca ni una jugada con número (el número ya dice cuál es la última): sirve con |numbers = false|.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variantes.sgf]
@@ -166,11 +166,11 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 |\sgf| también lee |PL| (quién juega después: |\moves| sigue con ese color) y |CA| (la codificación del archivo; ver |sgf charset|).
 
 \begin{key}{/pgfgo/sgf charset = \meta{charset} (initially auto)}
-	Codificación de los archivos SGF que no están en UTF-8, para todos los comandos que leen archivos. Con |auto|, es la que dice el archivo con |CA| o, si no dice ninguna, Latin-1 (la de SGF por defecto). Se leen |Latin-1|, |GBK| (y |GB2312|), |Big5|, |Shift_JIS|, |EUC-JP| y |EUC-KR|; los nombres no distinguen mayúsculas ni signos (|shift-jis| y |EUC_KR| también valen). Un archivo que es UTF-8 válido se lee siempre como UTF-8, aunque |CA| diga otra cosa.
+	Codificación de los archivos SGF que no están en UTF-8, para todos los comandos que leen archivos. Con |auto|, es la que dice el archivo con |CA| o, si no dice ninguna, Latin-1 (la de SGF por defecto). Se leen |Latin-1|, |GBK| (y |GB2312|), |Big5|, |Shift_JIS|, |EUC-JP| y |EUC-KR|; los nombres no distinguen mayúsculas ni signos (|shift-jis| y |EUC_KR| también valen). Un archivo que es UTF-8 válido se lee siempre como UTF-8, aunque |CA| diga otra cosa; uno en UTF-16 (con la marca de orden de bytes al principio) también se lee.
 
-	Muchos archivos de servidores asiáticos no dicen su codificación; para leerlos, por ejemplo, |\pgfgoset{sgf charset = GBK}|. Con otra codificación se produce un aviso y el archivo se lee como Latin-1: hay que convertirlo antes a UTF-8, por ejemplo con |iconv -f KOI8-R -t UTF-8 partida.sgf > partida-utf8.sgf|.
+	Muchos archivos de servidores asiáticos no dicen su codificación; para leerlos, por ejemplo, |\pgfgoset{sgf charset = GBK}|. Si un archivo sin |CA| parece estar en una de esas codificaciones, se produce un aviso que lo recuerda. Con otra codificación se produce un aviso y el archivo se lee como Latin-1: hay que convertirlo antes a UTF-8, por ejemplo con |iconv -f KOI8-R -t UTF-8 partida.sgf > partida-utf8.sgf|.
 
-	Para escribir los comentarios en chino, japonés o coreano hace falta además el paquete de ese idioma: |ctex|, |luatexja| o |luatexko|. Los ejemplos 14, 18 y 19 de |doc/examples| muestran una partida comentada en cada uno.
+	Para escribir los comentarios en chino, japonés o coreano hace falta además el paquete de ese idioma: |ctex|, |luatexja| o |luatexko|. Los ejemplos 14, 18 y 19 de |doc/examples| muestran una partida comentada en cada uno. Sin él, LaTeX solo anota los caracteres que faltan en el |.log|; por eso, si la fuente con la que se escribe un comentario o un |\sgfinfo| no tiene algún carácter chino, japonés o coreano, se produce un aviso, una vez por fuente. Con esos paquetes (o |xeCJK|) no se mira: escriben esos caracteres con otra fuente.
 \end{key}
 
 \begin{key}{/pgfgo/sgf = \meta{sgf options}}
@@ -181,11 +181,46 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 \label{subsec:sgfdatos}
 
 \begin{command}{\sgfinfo\opt{\oarg{options}}\marg{file}\marg{property}}
-	Escribe una propiedad de la raíz de la partida, por ejemplo |PB| y |PW| (los jugadores), |RE| (el resultado), |KM| (el komi) o |DT| (la fecha). Si no está, no escribe nada. Se puede usar fuera de |goban|.
+	Escribe una propiedad de la raíz de la partida, por ejemplo |PB| y |PW| (los jugadores), |RE| (el resultado), |KM| (el komi) o |DT| (la fecha), o con |move| la de una jugada. Si no está, no escribe nada. Se puede usar fuera de |goban|.
 
 	\begin{codeexample}[]
 		\sgfinfo{variantes.sgf}{PB} (negras) contra \sgfinfo{variantes.sgf}{PW} (blancas), komi \sgfinfo{variantes.sgf}{KM}. Resultado: \sgfinfo{variantes.sgf}{RE}.
 	\end{codeexample}
+
+	El valor se escribe tal como está en el archivo (con los caracteres escapados ya resueltos y en la codificación de |CA|): |RE| queda como |B+R|, no en palabras. Las propiedades con datos de la partida, según el formato SGF, son:
+
+	\begin{center}
+		\small
+		\begin{tabular}{lp{6.5cm}l}
+			\emph{Propiedad} & \emph{Qué es} & \emph{Ejemplo} \\[2pt]
+			|PB|, |PW| & El nombre de Negras y el de Blancas. & |Lee Sedol| \\
+			|BR|, |WR| & El rango de Negras y el de Blancas. & |9p| \\
+			|BT|, |WT| & El equipo de Negras y el de Blancas. & \\
+			|RE| & El resultado: |B+| o |W+| y los puntos, |R| (abandono), |T| (tiempo) o |F| (falta); |0| o |Draw|, empate; |Void|, sin resultado; |?|, desconocido. & |W+3.5| \\
+			|KM| & El komi. & |6.5| \\
+			|HA| & El hándicap: cuántas piedras. & |2| \\
+			|DT| & La fecha, |AAAA-MM-DD| (o varias, separadas por comas). & |2016-03-09| \\
+			|EV| & El torneo o evento. & |Meijin| \\
+			|RO| & La ronda. & |3 (final)| \\
+			|PC| & El lugar. & |Tokio| \\
+			|GN| & El nombre de la partida. & \\
+			|GC| & Un comentario sobre la partida: los antecedentes, los jugadores. & \\
+			|ON| & La apertura (fuseki). & |chinese| \\
+			|RU| & Las reglas. & |Japanese| \\
+			|TM| & El tiempo de cada jugador, en segundos. & |7200| \\
+			|OT| & El tiempo extra (byo-yomi). & |5x30 byo-yomi| \\
+			|SO| & La fuente: un libro, una revista. & \\
+			|AN| & Quién comentó la partida. & \\
+			|US| & Quién escribió el archivo. & \\
+			|CP| & El copyright. & \\
+			|AP| & El programa que escribió el archivo y su versión. & |CGoban:3| \\
+			|SZ| & El tamaño del tablero (|19|, o |19:13| si no es cuadrado). & |19| \\
+			|CA| & La codificación del archivo. & |UTF-8| \\
+			|FF|, |GM| & La versión del formato y el juego (|1|: go). & |4| \\
+		\end{tabular}
+	\end{center}
+
+	Sirve cualquier otra propiedad de la raíz (o de la jugada, con |move|). Si tiene varios valores, se escriben separados por comas: |\sgfinfo{partida.sgf}{AB}| escribe las piedras negras puestas antes de empezar en coordenadas SGF, |dd, pp|. Los nombres largos de las versiones viejas del formato (|PlayerBlack|) se leen como su abreviatura: se piden con |PB|.
 \end{command}
 
 \begin{command}{\sgfcomment\opt{\oarg{options}}\marg{file}\marg{move}}
@@ -198,6 +233,14 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 
 \begin{key}{/pgfgo/sgf info/game = \meta{number} (initially 1)}
 	Como |/pgfgo/sgf/game|, para |\sgfinfo|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf info/move = \meta{number} (initially 0)}
+	La propiedad de esa jugada: la de su nodo y la de los nodos sin jugada que lo siguen. Con |0|, la de la raíz (y los nodos anteriores a la primera jugada). Sirve, por ejemplo, para el tiempo que le queda a cada jugador en las partidas de KGS y OGS, |BL| y |WL| (en segundos): |\sgfinfo[move = 120]{partida.sgf}{WL}|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf info/variation = \meta{números} (initially la línea principal)}
+	Con |move|, la línea de la jugada, como |/pgfgo/sgf/variation|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf comment/game = \meta{number} (initially 1)}
@@ -219,6 +262,10 @@ En los ejemplos, |partida.sgf| contiene una partida corta de 9$\times$9:
 		Con: \sgfcomment{partida.sgf}{7}
 		\quad Sin: \sgfcomment[annotations = false]{partida.sgf}{7}
 	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf comment/chat = \meta{boolean} (default true, initially true)}
+	Con |false|, quita del comentario el chat de los servidores: en OGS, todo lo que sigue a la línea «|-- chat --|» (lo de antes es el comentario del que revisa la partida); en KGS, las líneas «|nombre [rango]: ...|» y, si hay alguna, también las «|nombre: ...|» del mismo comentario (las de los que no tienen rango). Si no queda nada, la jugada no tiene comentario.
 \end{key}
 
 Los textos de las anotaciones están en el idioma del documento (pág.~\pageref{subsec:idiomas}), y pueden cambiarse para todo el documento con |\pgfgoset{sgf annotations = {...}}|, por ejemplo |bad move = Mala jugada|. Las anotaciones enfatizadas de |DM| y |UC| usan el mismo texto.
@@ -392,6 +439,10 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Con |comments|, escribe también el nombre y las anotaciones de cada jugada, como |\sgfcomment|.
 \end{key}
 
+\begin{key}{/pgfgo/sgf animation/chat = \meta{boolean} (default true, initially true)}
+	Con |comments|, como |/pgfgo/sgf comment/chat|: con |false|, sin el chat de KGS y OGS.
+\end{key}
+
 \begin{key}{/pgfgo/sgf animation/game = \meta{number} (initially 1)}
 	Como |/pgfgo/sgf/game|.
 \end{key}
@@ -470,7 +521,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/notes = \meta{boolean} (default true, initially true)}
-	Escribe debajo de cada diagrama sus notas «N en M».
+	Escribe debajo de cada diagrama sus notas: «N en M» y los pases, «N: pasa».
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/title = \meta{text} (initially Diagram o su traducción)}
@@ -505,8 +556,102 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Como |/pgfgo/sgf/variation|.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/comments = \meta{boolean} (default true, initially false)}
-	Escribe debajo de cada diagrama los comentarios de sus jugadas, como |\sgfcomment|, cada uno con el número de la jugada.
+\begin{key}{/pgfgo/sgf diagrams/variations = \meta{variations options} (default commented)}
+	Dibuja también las variantes de la partida, cada una en su diagrama, después del diagrama donde nace su primera jugada: «Diagrama 3a», «Diagrama 3b»... Las jugadas de cada variante se numeran desde 1, y el epígrafe dice qué jugada reemplaza la primera (|variation title|). Las anteriores se ven sin número, como estaban. Las opciones dicen cuáles se dibujan, y se suman: |variations = {commented, 5}|. Además de las de abajo, cualquier otra cosa es el camino de una variante, como en |variation| (|2|, |2.3.1|): esa se dibuja siempre, a cualquier profundidad. Los |1| del final no cambian la línea: |2.3.1| es la misma que |2.3|. Si el archivo no la tiene, se produce un aviso. Sus comentarios y notas se escriben como los de los demás diagramas. Solo con la línea principal (sin |variation|).
+
+	\begin{codeexample}[]
+		\sgfdiagrams[step = 2, to = 3, variations = all, goban = {scale = 0.5}]{variantes.sgf}
+	\end{codeexample}
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/variations/none}
+	Ninguna. Es el valor inicial, y borra lo anterior.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/variations/commented}
+	Las que tienen algún comentario (|C|) en sus jugadas propias. Es lo que hace |variations| a secas: en las partidas comentadas, las demás suelen ser exploraciones sin explicación.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/variations/all}
+	Todas.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf diagrams/variations/depth = \meta{number} (initially 1)}
+	Hasta qué profundidad dibujan |commented| y |all|: |1|, solo las que salen de la línea principal; |2|, también las variantes de esas, y así. Las de una variante van después de ella, y su epígrafe dice qué jugada de ella reemplazan.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/variation title = \meta{text} (initially «variation at» y el número, o su traducción)}
+	Lo que va entre paréntesis en el epígrafe de una variante: «Diagrama 3a (variante en 26)». |\pgfgovariationmove| es el número de la jugada que reemplaza.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments = \meta{comments options} (default true)}
+	Escribe debajo de cada diagrama los comentarios de sus jugadas, como |\sgfcomment|, cada uno con el número de la jugada. Se prende con |comments| o |comments = true| y se apaga con |false| (es el valor inicial); las demás opciones no la prenden: |comments = {true, align = justify}|. Así, |\pgfgoset{sgf diagrams = {comments = {font = \itshape}}}| fija el estilo de todo el documento sin prender los comentarios.
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/comments/true}
+	Escribe los comentarios.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/comments/false}
+	No escribe los comentarios. Es el valor inicial.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/font = \meta{font commands} (initially la del epígrafe)}
+	Fuente de los comentarios. Sin esta opción, la de |caption/font|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/align = \meta{left, right, center o justify} (initially left)}
+	Alineación de los comentarios en el ancho del diagrama. Con |justify|, en un diagrama angosto quedan espacios grandes entre las palabras.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/root = \meta{boolean} (default true, initially false)}
+	Escribe también el comentario de la raíz (el de los nodos anteriores a la primera jugada), sin número, antes de los del diagrama que empieza en la jugada 1.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 10, comments = {true, root, font = \itshape}]{partida.sgf}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/number = \meta{text} (initially \texttt{\string\textbf\{\#1\}:\string~})}
+	Lo que va delante de cada comentario; |#1| es el número de la jugada, el que se ve en el tablero (con |restart|, el reiniciado). Por ejemplo, |number = {Jugada~#1.~}|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/separator = \meta{text} (initially un párrafo por comentario)}
+	Lo que va entre los comentarios. Con el valor inicial, cada uno va en su párrafo; con |separator = {\quad}|, van seguidos.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 10, comments = {true, number = {\textbf{#1}.~}, separator = {~}}]{partida.sgf}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/position = \meta{below, right, left o after} (initially below)}
+	Dónde van los comentarios: debajo del epígrafe, al costado del diagrama, como en los libros de partidas comentadas, o con |after| todos juntos después de los diagramas, a lo ancho de la página, cada grupo con el epígrafe de su diagrama como encabezado (se pueden cortar entre páginas). Al costado empiezan a la altura del borde de arriba del tablero; el epígrafe, las notas y el resultado siguen debajo del tablero.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 10, comments = {true, position = right}]{partida.sgf}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/width = \meta{dimension} o auto (initially auto)}
+	Ancho de los comentarios al costado. Con |auto|, lo que queda: fuera de la grilla, el resto de la línea (cada diagrama va en su línea); en la grilla (|layout = {columns = ...}|), el resto de la celda, y con |fit| el tablero ocupa la mitad de la celda y los comentarios la otra mitad. Con una dimensión, en la grilla el tablero ocupa lo que queda de la celda.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/sep = \meta{dimension} (initially 1em)}
+	Espacio entre el diagrama y los comentarios al costado.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 10, layout = {columns = 2, fit},
+			comments = {true, position = left, sep = 2em}]{partida.sgf}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/height = \meta{dimension} o none (initially none)}
+	Altura máxima de los comentarios de un diagrama, debajo o al costado. Lo que no entra va después de los diagramas, como con |after|, con el epígrafe del diagrama como encabezado. Sirve para los comentarios muy largos, que estiran la fila de la grilla.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 30, layout = {columns = 2},
+			comments = {true, height = 6\baselineskip}]{partida.sgf}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/annotations = \meta{boolean} (default true, initially true)}
@@ -519,6 +664,10 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 
 	\sgfdiagrams[step = 10, comments]{partida.sgf}
 	\sgfdiagrams[step = 10, comments, annotations = false]{partida.sgf}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/chat = \meta{boolean} (default true, initially true)}
+	Con |comments|, como |/pgfgo/sgf comment/chat|: con |false|, sin el chat de KGS y OGS. Una jugada a la que solo le quedaba chat no aparece.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/figures = \meta{boolean} (default true, initially true)}
@@ -573,6 +722,10 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	En los textos del resultado (|\pgfgodefinelanguage|), el nombre del ganador: |black name| o |white name|.
 \end{command}
 
+\begin{command}{\pgfgovariationmove}
+	En el epígrafe de una variante (|variation title|) y en su texto en cada idioma (|variation at|), el número de la jugada que reemplaza.
+\end{command}
+
 \begin{command}{\pgfgopoints}
 	En los textos del resultado, la diferencia de puntos, como está en el archivo.
 \end{command}
@@ -607,7 +760,20 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/title = \meta{text} (initially vacío)}
-	Comienzo del epígrafe del enunciado: «Problema 1: Juegan negras».
+	Comienzo del epígrafe del enunciado: «Problema 1: Juegan negras». Con varias partidas (|game = 1:20|), va seguido del número de cada una; vacío, es |Problem| o su traducción: «Problema 7: Juegan negras». Las soluciones dicen también de qué problema son: «Problema 7: Variante 1».
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/to play = \meta{auto, black, white o none} (initially auto)}
+	Quién juega, para el epígrafe del enunciado. Con |auto|, lo que dice |PL| o, si no está, el color de la primera jugada; si no hay ninguna de las dos, no se dice. Muchas colecciones no lo dicen en el archivo: |to play = black|. Con |none|, el epígrafe no lo dice.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/verdict = \meta{boolean} (default true, initially false)}
+	El epígrafe de cada solución dice si es correcta o incorrecta («Variante 2 (incorrecta)»), con los textos |correct| y |wrong| del idioma. Se decide con las anotaciones de la línea: el último |GB| o |GW| (la posición es buena para negras o para blancas), según quién juega; si no hay, la primera jugada con |TE| o |BM| (las jugadas impares son de quien juega: un |BM| suyo es un error, uno del rival no); si no, la palabra |RIGHT| en un comentario, como en los archivos de goproblems.com. Si no hay nada de eso, no dice nada.
+
+	\begin{codeexample}[]
+		\sgfproblem[verdict, statement = false, comments = false,
+			goban = {scale = 0.5}]{problema.sgf}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/variation title = \meta{text} (initially Variation o su traducción)}
@@ -622,12 +788,56 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Texto del enunciado cuando juegan las blancas.
 \end{key}
 
-\begin{key}{/pgfgo/sgf problem/comments = \meta{boolean} (default true, initially true)}
-	Escribe el comentario del principio debajo del enunciado y los de cada variante debajo de su diagrama, como |/pgfgo/sgf diagrams/comments|.
+\begin{key}{/pgfgo/sgf problem/comments = \meta{comments options} (default true)}
+	Escribe el comentario del principio debajo del enunciado y los de cada variante debajo de su diagrama, como |/pgfgo/sgf diagrams/comments|. Acá están prendidos al empezar; se apagan con |comments = false|. Las opciones son |true|, |false|, |font|, |align|, |number|, |separator|, |position|, |width|, |sep| y |height|, como en |\sgfdiagrams|; |font| y |align| valen también para el comentario del enunciado.
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf problem/comments/true}
+	Escribe los comentarios. Es el valor inicial.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf problem/comments/false}
+	No escribe los comentarios.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf problem/comments/font = \meta{font commands} (initially la del epígrafe)}
+	Como |/pgfgo/sgf diagrams/comments/font|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/align = \meta{left, right, center o justify} (initially left)}
+	Como |/pgfgo/sgf diagrams/comments/align|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/number = \meta{text} (initially \texttt{\string\textbf\{\#1\}:\string~})}
+	Como |/pgfgo/sgf diagrams/comments/number|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/separator = \meta{text} (initially un párrafo por comentario)}
+	Como |/pgfgo/sgf diagrams/comments/separator|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/position = \meta{below, right, left o after} (initially below)}
+	Como |/pgfgo/sgf diagrams/comments/position|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/width = \meta{dimension} o auto (initially auto)}
+	Como |/pgfgo/sgf diagrams/comments/width|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/sep = \meta{dimension} (initially 1em)}
+	Como |/pgfgo/sgf diagrams/comments/sep|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/height = \meta{dimension} o none (initially none)}
+	Como |/pgfgo/sgf diagrams/comments/height|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/annotations = \meta{boolean} (default true, initially true)}
 	Con |comments|, escribe también el nombre y las anotaciones de cada jugada (|TE|, |BM|, etc.).
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/chat = \meta{boolean} (default true, initially true)}
+	Con |comments|, como |/pgfgo/sgf comment/chat|: con |false|, sin el chat de KGS y OGS.
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/notes = \meta{boolean} (default true, initially true)}
@@ -676,8 +886,13 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	\sgfproblem[solutions = false, margin = 3]{problema.sgf}
 \end{key}
 
-\begin{key}{/pgfgo/sgf problem/game = \meta{number} (initially 1)}
-	Como |/pgfgo/sgf/game|: en una colección, el problema que se dibuja.
+\begin{key}{/pgfgo/sgf problem/game = \meta{numbers} (initially 1)}
+	Como |/pgfgo/sgf/game|: en una colección, el problema que se dibuja. También varios, con números y rangos como los de las coordenadas: |game = 1:20| o |game = {1:4, 9}|. Entonces van primero todos los enunciados, numerados (|title|), y después las soluciones de los que las tienen. Así se arma una hoja de problemas:
+
+	\begin{codeexample}[code only]
+		\sgfproblem[game = 1:24, to play = black, comments = false,
+			layout = {columns = 6, fit}]{coleccion.sgf}
+	\end{codeexample}
 \end{key}
 
 \subsection{Disposición de los diagramas}

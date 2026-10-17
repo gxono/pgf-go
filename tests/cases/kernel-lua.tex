@@ -75,7 +75,7 @@
 \__test:nnn {setup~white} {\seq_use:Nn \l_pgfgo_kernel_sgf_white_seq {,}} {{3}{3}}
 \__test:nnn {setup~events} {\seq_use:Nn \l_pgfgo_kernel_sgf_moves_seq {,}}
 	{{black}{4}{2},{white}{4}{4},{add-black}{5}{1},{add-white}{5}{5},{black}{2}{2},{remove}{3}{3},{black}{3}{3}}
-\__test:nnn {setup~comment} {\pgfgo_kernel_sgf_comment:n {3}} {White~C3~removed.}
+\__test:nnn {setup~comment} {\pgfgo_kernel_sgf_comment:nn {3} {true}} {White~C3~removed.}
 
 % Variations, marks (TR, SQ, CR, MA, LB) with the colour of the stone below,
 % MN and the game information.
@@ -120,9 +120,10 @@
 \__test:nnn {sgf~white} {\seq_use:Nn \l_pgfgo_kernel_sgf_white_seq {,}} {{7}{3}}
 \__test:nnn {sgf~moves} {\seq_use:Nn \l_pgfgo_kernel_sgf_moves_seq {,}}
 	{{black}{5}{5},{white}{7}{7},{black}{}{},{white}{3}{3},{black}{7}{5}}
-\__test:nnn {sgf~root~comment} {\pgfgo_kernel_sgf_comment:n {0}} {A~comment~with~a~]~bracket.}
-\__test:nnn {sgf~no~comment} {\pgfgo_kernel_sgf_comment:n {2}} {}
-\__test:nnn {sgf~comment~4} {\pgfgo_kernel_sgf_comment:n {4}} {Main~line.}
+\__test:nnn {sgf~root~comment} {\pgfgo_kernel_sgf_comment:nn {0} {true}} {A~comment~with~a~]~bracket.}
+\__test:nnn {sgf~no~comment} {\pgfgo_kernel_sgf_comment:nn {2} {true}} {}
+\__test:nnn {sgf~comment~4} {\pgfgo_kernel_sgf_comment:nn {4} {true}} {Main~line.}
+\__test:nnn {sgf~comment~4~without~chat} {\pgfgo_kernel_sgf_comment:nn {4} {false}} {Main~line.}
 % SGF markup: arrows and lines (AR, LN), selected points (SL) and dimmed
 % points (DD), which are inherited until the next DD.
 \pgfgo_kernel_sgf_read:n {markup.sgf}
