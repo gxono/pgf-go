@@ -1616,6 +1616,7 @@
 \box_new:N \l__pgfgo_sgfdiag_box
 \box_new:N \l__pgfgo_sgfdiag_caption_box
 \box_new:N \l__pgfgo_sgfdiag_cell_box
+\box_new:N \g__pgfgo_sgfdiag_fit_box
 
 %EMPIEZA UNA SERIE DE DIAGRAMAS DEL ARCHIVO #2, CON LAS OPCIONES DE layout #1.
 \cs_new_protected:Npn \__pgfgo_sgfdiag_begin:Nn #1#2 {
@@ -1664,6 +1665,24 @@
 		}
 	}
 	\__pgfgo_sgfdiag_board:nn {#1} {#2}
+	%UN TABLERO MAS ANCHO QUE EL PRIMERO (OTRO PROBLEMA, OTRA VISTA) NO ENTRA CON ESA ESCALA: SOLO ESE SE ACHICA.
+	\pgfgo_layout_if_fit:T {
+		\dim_compare:nNnT {\box_wd:N \l__pgfgo_sgfdiag_box} > {\l_pgfgo_layout_cell_dim + 0.1pt} {
+			\group_begin:
+				\pgfgo_layout_fit:nN
+					{
+						\tl_set:Nn \l__pgfgo_sgfdiag_scale_tl {scale = ##1}
+						\__pgfgo_sgfdiag_board:nn {#1} {#2}
+					}
+					\l__pgfgo_sgfdiag_box
+				\tl_set:Ne \l__pgfgo_sgfdiag_scale_tl {scale = \l_pgfgo_layout_scale_tl}
+				\__pgfgo_sgfdiag_board:nn {#1} {#2}
+				\box_gset_eq:NN \g__pgfgo_sgfdiag_fit_box \l__pgfgo_sgfdiag_box
+			\group_end:
+			\box_set_eq:NN \l__pgfgo_sgfdiag_box \g__pgfgo_sgfdiag_fit_box
+			\box_gclear:N \g__pgfgo_sgfdiag_fit_box
+		}
+	}
 	\bool_lazy_and:nnT {\l__pgfgo_sgfdiag_side_bool} {\pgfgo_layout_if_grid_p:} {
 		\str_if_eq:VnT \l__pgfgo_sgfdiag_comment_width_tl {auto}
 			{\pgfgo_layout_if_fit:F {\dim_set:Nn \l_pgfgo_layout_cell_dim {\box_wd:N \l__pgfgo_sgfdiag_box}}}

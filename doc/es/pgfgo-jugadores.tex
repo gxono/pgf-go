@@ -421,7 +421,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 		\pgfgoset{goban = {partial = A1:C3, scale = 2}}
 		\pgfgoset{stone = {shadow = {true, angle = -45,
 			offset = 1.5pt, opacity = 0.8,
-			image = {file = shadow.png, width = 13pt}}}}
+			image = {file = pgfgo-shadow.png, width = 13pt}}}}
 
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -551,7 +551,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 	\begin{codeexample}[width=4cm]
 		\pgfgoset{players = {white = {stone = {
-			image = {file = stone-white.png, rotate = random},
+			image = {file = pgfgo-yunzi-white-1.png, rotate = random},
 			shine = {true, image = {file = shine.png}}}}}}
 
 		\begin{goban}[5, partial = B2:D4]
@@ -573,7 +573,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 	\begin{codeexample}[width=4cm]
 		\pgfgoset{players = {white = {stone = {
-			image = {file = stone-white.png},
+			image = {file = pgfgo-yunzi-white-1.png},
 			shine = {true, image = {file = shine.png, width = 0.3cm, rotate = 90}}}}}}
 
 		\begin{goban}[5, partial = B2:D4]

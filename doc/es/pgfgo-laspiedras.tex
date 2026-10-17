@@ -249,7 +249,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
-			\stones[w, image = {file = stone-white.png, rotate = random},
+			\stones[w, image = {file = pgfgo-yunzi-white-1.png, rotate = random},
 				shine = {true, image = {file = shine.png}}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
@@ -259,7 +259,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 \label{subsec:piedrasimagen}\begin{key}{/pgfgo/stone/image = \meta{options}}
 	Dibuja la piedra con una imagen (PNG, JPG o PDF) en lugar del círculo: no se dibujan el relleno ni el borde, y la imagen no tiene por qué ser redonda. Si el brillo (|shine|) está prendido, se dibuja encima de la imagen. La sombra (|shadow|) se dibuja con la forma de la imagen; para eso la imagen tiene que tener transparencia (un PNG con canal alfa o un PDF): la sombra de un JPG es un rectángulo. Un prisionero con imagen se ve translúcido, como cualquier prisionero.
 
-	Los archivos se buscan como con |\includegraphics| (por ejemplo, en las carpetas de |\graphicspath|). Cada archivo, con cada tamaño, se guarda una sola vez en el PDF, por más piedras que lo usen. La sombra con la forma de la imagen necesita pdf\LaTeX\ o Lua\LaTeX\ (con salida PDF); con otros motores la piedra se dibuja sin sombra y con un aviso.
+	Los archivos se buscan como con |\includegraphics| (por ejemplo, en las carpetas de |\graphicspath|) y, si no están, entre las imágenes que trae \pgfgoname, en su carpeta |img| (las de los perfiles |shell| y |yunzi|, pág.~\pageref{subsec:perfilshell}). Cada archivo, con cada tamaño, se guarda una sola vez en el PDF, por más piedras que lo usen (pág.~\pageref{subsubsec:imagenespdf}). La sombra con la forma de la imagen necesita pdf\LaTeX\ o Lua\LaTeX\ (con salida PDF); con otros motores la piedra se dibuja sin sombra y con un aviso.
 
 	Un nombre de archivo con coma va entre llaves dobles, |file = {{a,b.png}}|; con llaves simples, la coma separa dos archivos. Como con |\includegraphics|, el nombre no puede tener |&|, |#|, |%|, |$|, |{| ni |}|, ni dos espacios seguidos.
 
@@ -269,8 +269,8 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 		\pgfgoset{goban = {5, partial = B2:D4}}
 
 		\begin{goban}
-			\stones[b, image = {file = stone-black.png}, shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
-			\stone[w, image = {file = stone-white.png}, shadow = {true, angle = -45, offset = 1.5pt}]{B4}
+			\stones[b, image = {file = pgfgo-yunzi-black.png}, shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
+			\stone[w, image = {file = pgfgo-yunzi-white-1.png}, shadow = {true, angle = -45, offset = 1.5pt}]{B4}
 		\end{goban}
 	\end{codeexample}
 
@@ -278,8 +278,8 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 	\begin{codeexample}[]
 		\pgfgoset{players = {
-			black = {stone = {image = {file = stone-black.png}}},
-			white = {stone = {image = {file = stone-white.png}}}}}
+			black = {stone = {image = {file = pgfgo-yunzi-black.png}}},
+			white = {stone = {image = {file = pgfgo-yunzi-white-1.png}}}}}
 
 		\begin{goban}[5, partial = B2:D4]
 			\moves{C3, D3, C2, B3}
@@ -292,7 +292,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
-			\stones[w, image = {file = {stone-white.png, stone-white-2.png}}]{B2, C2, D2, B3, C3, D3}
+			\stones[w, image = {file = {pgfgo-yunzi-white-1.png, pgfgo-yunzi-white-2.png}}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -306,7 +306,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
-			\stones[w, image = {file = stone-white.png,
+			\stones[w, image = {file = pgfgo-yunzi-white-1.png,
 				rotate = random}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
@@ -315,7 +315,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
-			\stones[w, image = {file = stone-white.png,
+			\stones[w, image = {file = pgfgo-yunzi-white-1.png,
 				rotate = -20:20}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
@@ -326,9 +326,9 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
-			\stones[b, image = {file = stone-black.png}]{C2}
-			\stones[b, image = {file = stone-black.png, width = 8pt}]{D3}
-			\stone[w, image = {file = stone-white.png, opacity = 0.5}]{B4}
+			\stones[b, image = {file = pgfgo-yunzi-black.png}]{C2}
+			\stones[b, image = {file = pgfgo-yunzi-black.png, width = 8pt}]{D3}
+			\stone[w, image = {file = pgfgo-yunzi-white-1.png, opacity = 0.5}]{B4}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -391,6 +391,13 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 		\end{goban}
 	\end{codeexample}
 \end{key}
+
+\subsubsection{Imágenes y tamaño del PDF}
+\label{subsubsec:imagenespdf}
+
+Con pdf\LaTeX\ o Lua\LaTeX\ (con salida PDF), cada imagen (de las piedras, el fondo, la cuadrícula, los hoshi, las marcas, el brillo o la sombra) se guarda en el PDF una sola vez, la primera vez que se usa; después, en todo el documento, cada piedra o baldosa que la usa solo la nombra. Una partida dibujada con |profile = shell| guarda la madera, las seis piedras y la sombra una vez, aunque tenga cientos de piedras repartidas en muchos diagramas. Girar una imagen (|rotate|) no agrega otra copia, y la sombra con la forma de la imagen (también con |silhouette|) usa la misma copia. Lo que sí agrega una copia es otro tamaño: la misma imagen con otro |width|, o en tableros con otro |scale| (por ejemplo, con |fit|), se guarda una vez por cada tamaño. Con otros motores (Xe\LaTeX, o salida DVI), la imagen se incluye cada vez que se usa, y el PDF crece con cada piedra.
+
+Las piedras dibujadas, sin imagen, no se guardan así: cada una es un círculo y unas pocas instrucciones de dibujo, casi lo mismo que nombrar una copia guardada. Para piedras vectoriales más elaboradas (degradados, vetas dibujadas), conviene hacerlas en un PDF y usarlo con |stone/image|: un PDF es una imagen vectorial, se ve nítido con cualquier escala y se guarda una sola vez, como las demás imágenes.
 
 
 

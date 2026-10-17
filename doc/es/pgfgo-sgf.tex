@@ -927,7 +927,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/layout/fit = \meta{boolean} (default true, initially false)}
-	Escala cada tablero para que llene el ancho de su columna; reemplaza el |scale| del tablero. Las líneas no cambian de grosor. En |\sgfdiagrams| y |\sgfproblem|, todos los tableros usan la escala que llena la columna con el primero, así las piedras tienen el mismo tamaño en todos. Solo con |columns|.
+	Escala cada tablero para que llene el ancho de su columna; reemplaza el |scale| del tablero. Las líneas no cambian de grosor. En |\sgfdiagrams| y |\sgfproblem|, todos los tableros usan la escala que llena la columna con el primero, así las piedras tienen el mismo tamaño en todos. Si con esa escala un tablero no entra en la columna (un problema más ancho que el primero, por ejemplo), solo ese tablero se achica hasta llenarla. Solo con |columns|.
 \end{key}
 
 \begin{key}{/pgfgo/layout/per page = \meta{number} o |false| (initially 0)}

@@ -1,0 +1,47 @@
+% passes: 2
+\input{code-page}
+\documentclass{beamer}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+% maeda-segoe.sgf: Maeda Nobuaki against Segoe Kensaku, 1940. problem.sgf: a problem with its solution.
+\pgfgoset{profile = shell, goban = {label = {at = {south, west}}}}
+
+
+\begin{document}
+	\begin{frame}{A lesson with pgf-go}
+		\begin{itemize}
+			\item The opening of a game, move by move.
+			\item The whole game in diagrams.
+			\item A problem, and then its solution.
+		\end{itemize}
+	\end{frame}
+
+	\begin{frame}[t]{The opening}
+		\begin{columns}[T]
+			\column{0.55\textwidth}
+				\foreach \k in {1, ..., 12} {
+					\only<\k>{
+						\begin{goban}[sgf size = maeda-segoe.sgf, scale = 0.55]
+							\sgf[to = \k, last mark = circle]{maeda-segoe.sgf}
+						\end{goban}
+					}
+				}
+			\column{0.4\textwidth}
+				\small
+				Black: \sgfinfo{maeda-segoe.sgf}{PB} (\sgfinfo{maeda-segoe.sgf}{BR})\par
+				White: \sgfinfo{maeda-segoe.sgf}{PW} (\sgfinfo{maeda-segoe.sgf}{WR})\par
+				Komi: \sgfinfo{maeda-segoe.sgf}{KM}\par
+				\medskip
+				\foreach \k in {1, ..., 12} {\only<\k>{Move \k}}
+		\end{columns}
+	\end{frame}
+
+	\begin{frame}{The game in diagrams}
+		\sgfdiagrams[step = 100, to = 200, layout = {columns = 2, fit}]{maeda-segoe.sgf}
+	\end{frame}
+
+	\begin{frame}[t]{A problem}
+		\only<1>{\sgfproblem[solutions = false, goban = {scale = 2}]{problem.sgf}}
+		\only<2>{\sgfproblem[statement = false, layout = {columns = 4, fit}]{problem.sgf}}
+	\end{frame}
+\end{document}

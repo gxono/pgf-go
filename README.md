@@ -26,7 +26,7 @@ With LuaLaTeX, the package also captures stones, reads SGF games (in UTF-8, Lati
 ## Installation
 
 You can use the `pgf-go` package by placing all of the
-distribution files (`pgf-go.sty`, the `pgf-go-*.sty` modules, `pgf-go.lua` and `pgf-go-charsets.lua`) in the directory containing your current tex file.
+distribution files (`pgf-go.sty`, the `pgf-go-*.sty` modules, `pgf-go.lua`, `pgf-go-charsets.lua` and the images `img/pgfgo-*` of the profiles `shell` and `yunzi`) in the directory containing your current tex file.
 
 ## How to use it
 
@@ -47,7 +47,9 @@ your LaTeX document:
 
 You can find examples in the `doc/examples` directory:
 
-- `example-0` to `example-7`: stones, marks, sequences, moves, territory marks, profiles and `name`/`resume`.
+- `example-0` to `example-4` and `example-6`: stones, marks, sequences, moves, territory marks, profiles and `name`/`resume`.
+- `example-5`: the styles of the coordinates on the edge (western, Japanese and Chinese, with kanji) and the direction in which they are counted.
+- `example-7`: a collection of games in one SGF file (`game`), each with its own board size.
 - `example-8`: an SGF game with `\sgf`: marks of the file, variations as letters and a variation.
 - `example-9`: a commented game with `\sgfdiagrams`: comments, annotations, result and score.
 - `example-10`: an animated game in the PDF with `\sgfanimation` (needs `animate`).
@@ -60,6 +62,12 @@ You can find examples in the `doc/examples` directory:
 - `example-17`: arrows, lines, a dimmed stone and labels.
 - `example-18`: the commented game in Chinese (`ctex`), read from a GB2312 file.
 - `example-19`: the commented game in Korean (`luatexko`), read from an EUC-KR file.
+- `example-20`: a sheet of problems from a collection (`\sgfproblem` with `game`), with the `shell` profile.
+- `example-21`: a lesson in `beamer`: the opening move by move, the game in diagrams, and a problem and its solution.
+- `example-22`: a professional game of 1940 in diagrams, with the `yunzi` profile.
+- `example-23`: a page of a book: diagrams side by side with `pgfgolayout`, and parts of them in the text with `\pgfgoview`.
+- `example-24`: a style of your own: a profile defined with `\pgfgodefineprofile` and marks defined with `\pgfgodefinemark`.
+- `example-25`: the variations of an SGF file as diagrams of their own, with their comments.
 
 The last page of each example shows its code. The SGF examples need LuaLaTeX.
 

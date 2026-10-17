@@ -670,17 +670,17 @@ Algunos problemas no están en ningún archivo, y \karu\ los dibuja a mano, con 
 \subsection{Un tablero de madera: un perfil con imágenes}
 \label{tut:madera}
 
-Para la portada del cuaderno, \karu\ quiere un tablero que se parezca a uno de verdad: madera, piedras con volumen y blancas con vetas. Los perfiles del catálogo dibujan las piedras como círculos; para esto hacen falta imágenes (PNG, JPG o PDF). Tiene una foto de la madera, |board.jpg|, una imagen de una piedra negra, |black.png|, y cinco de piedras blancas, |white1.png| a |white5.png|, todas en la carpeta |ogs-vars|.
+Para la portada del cuaderno, \karu\ quiere un tablero que se parezca a uno de verdad: madera, piedras con volumen y blancas con vetas. Los perfiles del catálogo dibujan las piedras como círculos; para esto hacen falta imágenes (PNG, JPG o PDF). \pgfgoname\ trae algunas, en la carpeta |img|, y \karu\ empieza con ellas: una foto de madera, |pgfgo-board.jpg|, una piedra negra de pizarra, |pgfgo-shell-black.png|, y cinco blancas de concha, |pgfgo-shell-white-1.png| a |pgfgo-shell-white-5.png|. Se usan por su nombre, desde cualquier documento; las imágenes propias se usan igual, como con |\includegraphics|.
 
 \begin{figure}[H]
 	\centering
 	\pgfgodefineprofile[from = default]{madera}{
-		goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
 		all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
-		black = {stone = {image = {file = ogs-vars/black.png}}},
+		black = {stone = {image = {file = pgfgo-shell-black.png}}},
 		white = {stone = {image = {file = {
-			ogs-vars/white1.png, ogs-vars/white2.png, ogs-vars/white3.png,
-			ogs-vars/white4.png, ogs-vars/white5.png}}}}}
+			pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+			pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}
 	\begin{goban}[profile = madera, use i = false, label = {at = {north, west}}]
 		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
 		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
@@ -690,7 +690,7 @@ Para la portada del cuaderno, \karu\ quiere un tablero que se parezca a uno de v
 Parte del primer tablero del artículo. La madera va en el fondo del tablero, con |background/fill/image| (pág.~\pageref{sec:tablero}). Por defecto, la imagen cubre todo el tablero, recortada si hace falta; con |fit|, puede estirarse o repetirse en baldosas.
 
 \begin{codeexample}[width=4.8cm]
-	\pgfgoset{goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}}}
+	\pgfgoset{goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}}}
 
 	\begin{goban}[use i = false, label = {at = {north, west}}]
 		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
@@ -702,10 +702,10 @@ Las piedras de un jugador se dibujan con una imagen mediante |stone/image| (pág
 
 \begin{codeexample}[width=4.8cm]
 	\pgfgoset{
-		goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
 		players = {
-			black = {stone = {image = {file = ogs-vars/black.png}}},
-			white = {stone = {image = {file = ogs-vars/white1.png}}}}}
+			black = {stone = {image = {file = pgfgo-shell-black.png}}},
+			white = {stone = {image = {file = pgfgo-shell-white-1.png}}}}}
 
 	\begin{goban}[use i = false, label = {at = {north, west}}]
 		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
@@ -717,12 +717,12 @@ Las negras se ven bien, pero las blancas son todas iguales, y en un tablero de v
 
 \begin{codeexample}[width=4.8cm]
 	\pgfgoset{
-		goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
 		players = {
-			black = {stone = {image = {file = ogs-vars/black.png}}},
+			black = {stone = {image = {file = pgfgo-shell-black.png}}},
 			white = {stone = {image = {file = {
-				ogs-vars/white1.png, ogs-vars/white2.png, ogs-vars/white3.png,
-				ogs-vars/white4.png, ogs-vars/white5.png}}}}}}
+				pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+				pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}}
 
 	\begin{goban}[use i = false, label = {at = {north, west}}]
 		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
@@ -734,13 +734,13 @@ Para que las piedras parezcan apoyadas sobre la madera, falta una sombra. |shado
 
 \begin{codeexample}[width=4.8cm]
 	\pgfgoset{
-		goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
 		players = {
 			all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
-			black = {stone = {image = {file = ogs-vars/black.png}}},
+			black = {stone = {image = {file = pgfgo-shell-black.png}}},
 			white = {stone = {image = {file = {
-				ogs-vars/white1.png, ogs-vars/white2.png, ogs-vars/white3.png,
-				ogs-vars/white4.png, ogs-vars/white5.png}}}}}}
+				pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+				pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}}
 
 	\begin{goban}[use i = false, label = {at = {north, west}}]
 		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
@@ -752,13 +752,13 @@ Con cinco imágenes, todavía puede verse alguna repetida. |rotate| gira cada pi
 
 \begin{codeexample}[width=4.8cm]
 	\pgfgoset{
-		goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
 		players = {
 			all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
-			black = {stone = {image = {file = ogs-vars/black.png}}},
+			black = {stone = {image = {file = pgfgo-shell-black.png}}},
 			white = {stone = {image = {file = {
-				ogs-vars/white1.png, ogs-vars/white2.png, ogs-vars/white3.png,
-				ogs-vars/white4.png, ogs-vars/white5.png},
+				pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+				pgfgo-shell-white-4.png, pgfgo-shell-white-5.png},
 				rotate = -15:15}}}}}
 
 	\begin{goban}[use i = false, label = {at = {north, west}}]
@@ -771,23 +771,25 @@ Con cinco imágenes, todavía puede verse alguna repetida. |rotate| gira cada pi
 
 \begin{codeexample}[code only]
 	\pgfgodefineprofile[from = default]{madera}{
-		goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
 		all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
-		black = {stone = {image = {file = ogs-vars/black.png}}},
+		black = {stone = {image = {file = pgfgo-shell-black.png}}},
 		white = {stone = {image = {file = {
-			ogs-vars/white1.png, ogs-vars/white2.png, ogs-vars/white3.png,
-			ogs-vars/white4.png, ogs-vars/white5.png}}}}}
+			pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+			pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}
 
 	\pgfgoset{profile = madera}
 \end{codeexample}
 
 \pgfgodefineprofile[from = default]{madera}{
-	goban = {background = {fill = {image = {file = ogs-vars/board.jpg}}}},
+	goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
 	all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
-	black = {stone = {image = {file = ogs-vars/black.png}}},
+	black = {stone = {image = {file = pgfgo-shell-black.png}}},
 	white = {stone = {image = {file = {
-		ogs-vars/white1.png, ogs-vars/white2.png, ogs-vars/white3.png,
-		ogs-vars/white4.png, ogs-vars/white5.png}}}}}
+		pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+		pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}
+
+Un perfil casi igual, con una sombra difusa y sin el borde del tablero, viene con \pgfgoname: |shell| (pág.~\pageref{subsec:perfilshell}); con |profile = shell| no hace falta definir nada. También está |yunzi|, con piedras mates. Las definiciones del catálogo sirven de punto de partida para cambiar, por ejemplo, la madera por otra foto.
 
 Un perfil vale para todo lo que dibuja \pgfgoname, también para los diagramas de un SGF. Así queda la partida de Lee Sedol y AlphaGo en madera, con un diagrama cada 50 jugadas y la numeración reiniciada en cada uno.
 

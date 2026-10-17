@@ -6,6 +6,15 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- Two profiles drawn with images: `shell` (a wooden board, slate and shell
+  stones, five white stones with their own stripes, turned a little at
+  random, and a soft shadow) and `yunzi` (the same board with matte stones).
+  As every profile, they also define the players `shell-black`, ...: with
+  `players profile = shell` the stones go on any board. The images come with
+  the package, in the folder `img` (`pgfgo-board.jpg`, `pgfgo-shell-black.png`,
+  ...), and can be used by name in your own profiles.
+- An image that is not found (in the folder of the document or in the TeX
+  path) is looked for among the images of the package, in `img`.
 - Shadows of your own: `stone/shadow/image = {file, width, rotate, false}`
   draws an image (a soft shadow, for example) under the stone instead of its
   silhouette, moved by `angle` and `offset` like the silhouette.
@@ -231,6 +240,10 @@ All notable changes to `pgf-go` are listed here.
 
 ### Fixed
 
+- With `layout = {fit}`, all the boards of `\sgfdiagrams` and `\sgfproblem`
+  take the scale that fills the column with the first one; a wider board
+  (another problem of a sheet, for example) came out of its column. Now
+  only that board is made smaller, to fill the column.
 - With `restart`, the comments of `\sgfdiagrams` had the number of the
   move in the game, not the one shown on the board.
 - `annotations` of `\sgfdiagrams`, `\sgfanimation`, `\sgfproblem` and
@@ -368,6 +381,22 @@ All notable changes to `pgf-go` are listed here.
 
 ### Documentation
 
+- New examples in `doc/examples`: a sheet of problems from a collection
+  (`example-20`, with problems of the Igo Hatsuyoron), a lesson in `beamer`
+  (`example-21`), a game of 1940 in diagrams (`example-22`), views in the
+  text and a grid of diagrams (`example-23`), a profile and marks of your
+  own (`example-24`) and the variations of a file as diagrams
+  (`example-25`).
+- `example-5` and `example-7` drew the same boards as `example-0` and
+  `example-1` with another profile; now they show the styles of the
+  coordinates and a collection of games (`games.sgf`).
+- All the images of the manual, the examples and the tests are in one folder,
+  `img`; the manual and the tests no longer have their own copies.
+  `wood.jpg` was removed: where it was used, the examples use
+  `pgfgo-board.jpg`.
+- The Spanish manual explains when an image is kept only once in the PDF
+  (engine, size, rotation) and suggests PDF images for elaborate vector
+  stones.
 - New examples in `doc/examples` (8 to 19): `\sgf`, a commented game,
   animations in the PDF and in `beamer`, a problem, Spanish, Japanese, Chinese
   and Korean texts, captures and ko, territory and score, and arrows and lines.
