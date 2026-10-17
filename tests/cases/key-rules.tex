@@ -19,7 +19,7 @@
 
 \begin{document}
 
-\case{A key alone turns it on, false turns it off, options alone do not turn it on: grid, grid/line, label (south and west), background, stone line and fill, drop shadow, shine}
+\case{A key alone turns it on, false turns it off, options alone do not turn it on: grid, grid/line, label (south and west), background, stone line and fill, shadow, shine}
 \begin{goban}[5, grid = false, grid]\stones[b]{C3}\end{goban}
 \begin{goban}[5, grid = {line = false}, hoshi = {at = {B2, D4}}]\stones[b]{C3}\end{goban}
 \begin{goban}[5, label]\end{goban}
@@ -28,7 +28,7 @@
 \begin{goban}[5, background = {fill = false}, background = {fill}]\end{goban}
 \begin{goban}[5]
 	\stones[b, line = false, line]{A1}\stones[w, fill = false, fill]{B1}
-	\stones[b, drop shadow = {offset = 2pt}]{C1}\stones[b, drop shadow, drop shadow = {offset = 2pt, color = red}]{D1}
+	\stones[b, shadow = {offset = 2pt}]{C1}\stones[b, shadow, shadow = {offset = 2pt, color = red}]{D1}
 	\stones[b, shine = {angle = 45}]{A3}\stones[b, shine]{B3}\stones[w, shine = {true, color = red}]{C3}
 	\stones[b, shine = {true, opacity = 0.5}, scale = 1.6]{E3}
 \end{goban}

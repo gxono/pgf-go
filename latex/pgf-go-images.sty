@@ -23,7 +23,7 @@
 \dim_new:N \l_pgfgo_image_height_dim
 
 \msg_new:nnn {pgfgo} {image-shadow}
-	{The~drop~shadow~of~an~image~needs~pdfTeX~or~LuaTeX~with~PDF~output.~It~is~not~drawn.}
+	{The~shadow~or~the~silhouette~of~an~image~needs~pdfTeX~or~LuaTeX~with~PDF~output.~It~is~not~drawn.}
 \bool_new:N \g__pgfgo_image_shadow_warned_bool
 
 %SEGUN EL MOTOR: \__pgfgo_image_save: GUARDA \l__pgfgo_image_box EN UN Form (O DEJA VACIO
@@ -117,6 +117,15 @@
 \cs_new_protected:Npn \__pgfgo_image_natural:nn #1#2 {
 	\dim_set:Nn \l_pgfgo_image_width_dim {#1}
 	\dim_set:Nn \l_pgfgo_image_height_dim {#2}
+}
+
+%CON VARIOS ARCHIVOS, CUAL (1 A #3) VA EN EL LUGAR (#1,#2): UN PSEUDOAZAR QUE SOLO DEPENDE DEL LUGAR
+%(SIEMPRE EL MISMO, EN CUALQUIER MOTOR) Y QUE NO ES EL DE LOS GIROS: EL ARCHIVO Y EL GIRO NO VAN JUNTOS.
+\cs_new:Npn \pgfgo_image_pick:nnn #1#2#3 {
+	\fp_eval:n {
+		floor((sin((#1) * 39.3468 + (#2) * 11.135) * 24634.6345
+			- floor(sin((#1) * 39.3468 + (#2) * 11.135) * 24634.6345)) * (#3)) + 1
+	}
 }
 
 %LA ULTIMA IMAGEN CARGADA, EN UNA CAJA.

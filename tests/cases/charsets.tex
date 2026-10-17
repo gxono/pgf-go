@@ -1,6 +1,6 @@
 % engines: lualatex
 % render: no
-% expect-warnings: 0
+% expect-warnings: 1
 % expect-errors: 0
 \documentclass{article}
 \usepackage[kernel = lua]{../../latex/pgf-go}
@@ -14,8 +14,8 @@
 \msg_new:nnn {pgfgo-test} {moves} {'#1':~#2~moves~instead~of~2.}
 \cs_new_protected:Npn \__test_check:nn #1#2 {
 	\pgfgo_kernel_sgf_read:n {#1}
-	\str_if_eq:eeF {\pgfgo_kernel_sgf_comment:n {0}} {#2}
-		{\msg_error:nnne {pgfgo-test} {charset} {#1} {\pgfgo_kernel_sgf_comment:n {0}}}
+	\str_if_eq:eeF {\pgfgo_kernel_sgf_comment:nn {0} {true}} {#2}
+		{\msg_error:nnne {pgfgo-test} {charset} {#1} {\pgfgo_kernel_sgf_comment:nn {0} {true}}}
 	\int_compare:nNnF {\seq_count:N \l_pgfgo_kernel_sgf_moves_seq} = {2}
 		{\msg_error:nnne {pgfgo-test} {moves} {#1} {\seq_count:N \l_pgfgo_kernel_sgf_moves_seq}}
 }
@@ -36,6 +36,19 @@
 \pgfgoset{sgf charset = GBK}
 \checksgf{cs-forced.sgf}{黑先活。}
 \endgroup
+
+% Without CA and without sgf charset, cs-forced.sgf is read as Latin-1, but it looks like a two-byte
+% charset: the only warning (sgf-guess-charset).
+\ExplSyntaxOn
+\pgfgo_kernel_sgf_read:n {cs-forced.sgf}
+\ExplSyntaxOff
+
+% UTF-16 with a BOM (and a character outside the BMP, a surrogate pair) is read as UTF-8; its CA
+% (UTF-16LE) gives no warning.
+\checksgf{cs-utf16.sgf}{黑先活。𠀀}
+
+% A root without ; (old files): "(GM[1]SZ[9]C[root];B[cc];W[dd])".
+\checksgf{cs-noroot.sgf}{root}
 
 % A UTF-8 file is read as UTF-8, whatever its CA (here Shift_JIS) or sgf charset say.
 \begingroup

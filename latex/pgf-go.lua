@@ -775,6 +775,9 @@ local function parse_sgf(s)
 				insert(t.nodes, node())
 			elseif c == "(" then
 				insert(t.children, tree())
+			elseif c:match("%a") then
+				-- UN NODO SIN ; (LA RAIZ DE ALGUNOS ARCHIVOS VIEJOS: "(SZ[19]...").
+				insert(t.nodes, node())
 			else
 				i = i + 1
 				return t
@@ -864,10 +867,11 @@ end
 -- CODIFICACIONES. UN ARCHIVO QUE ES UTF-8 VALIDO SE LEE COMO UTF-8. SI NO, SE USA LA CODIFICACION QUE PIDE
 -- \l_pgfgo_kernel_sgf_charset_tl O, CON auto, LA DE CA; SIN NINGUNA, Latin-1 (LA DE SGF POR DEFECTO).
 -- GBK, Big5, Shift_JIS, EUC-JP Y EUC-KR SE CONVIERTEN CON LAS TABLAS DE pgf-go-charsets.lua. UNA
--- CODIFICACION DESCONOCIDA PRODUCE UN AVISO (Y SE LEE COMO Latin-1). LOS NOMBRES SE COMPARAN SIN
+-- CODIFICACION DESCONOCIDA PRODUCE UN AVISO (Y SE LEE COMO Latin-1). UTF-16 CON BOM SE PASA A UTF-8 AL
+-- LEER EL ARCHIVO. LOS NOMBRES SE COMPARAN SIN
 -- MAYUSCULAS NI SIGNOS (Shift_JIS ES shiftjis).
 local charset_kinds = {
-	utf8 = "utf8", iso88591 = "latin", iso885915 = "latin", latin1 = "latin", windows1252 = "latin",
+	utf8 = "utf8", utf16 = "utf8", utf16le = "utf8", utf16be = "utf8", iso88591 = "latin", iso885915 = "latin", latin1 = "latin", windows1252 = "latin",
 	cp1252 = "latin", ascii = "latin", usascii = "latin",
 	gbk = "gbk", gb2312 = "gbk", gb18030 = "gbk", cp936 = "gbk", windows936 = "gbk", euccn = "gbk",
 	big5 = "big5", big5hkscs = "big5", cp950 = "big5", windows950 = "big5",
@@ -959,6 +963,30 @@ local function decode(kind, s)
 	return concat(out)
 end
 
+-- UN TEXTO EN UTF-16 CON BOM (FF FE: LITTLE ENDIAN; FE FF: BIG ENDIAN), PASADO A UTF-8. UN SUSTITUTO
+-- SUELTO ES U+FFFD.
+local function from_utf16(s)
+	local big = s:byte(1) == 0xFE
+	local function unit(i)
+		local a, b = s:byte(i, i + 1)
+		return big and a * 256 + b or b * 256 + a
+	end
+	local out, i, n = {}, 3, #s
+	while i < n do
+		local c = unit(i)
+		i = i + 2
+		if c >= 0xD800 and c <= 0xDBFF and i < n then
+			local c2 = unit(i)
+			if c2 >= 0xDC00 and c2 <= 0xDFFF then
+				c = 0x10000 + (c - 0xD800) * 0x400 + (c2 - 0xDC00)
+				i = i + 2
+			end
+		end
+		insert(out, (c >= 0xD800 and c <= 0xDFFF) and replacement or utf8.char(c))
+	end
+	return concat(out)
+end
+
 -- ARCHIVOS SGF YA LEIDOS, POR RUTA (UN DOCUMENTO SUELE LEER MUCHAS VECES EL MISMO ARCHIVO): {stamp =
 -- FECHA Y TAMANO, text = CONTENIDO, ca = VALOR DE CA, utf8 = SI ES UTF-8 VALIDO, games = {[CODIFICACION] =
 -- PARTIDAS}}. SI EL ARCHIVO CAMBIA, SE VUELVE A LEER.
@@ -972,6 +1000,10 @@ local function sgf_file(path)
 		local f = io.open(path, "rb")
 		local s = f:read("a")
 		f:close()
+		local bom = s:sub(1, 2)
+		if bom == "\255\254" or bom == "\254\255" then
+			s = from_utf16(s)
+		end
 		file = {stamp = stamp, text = s, ca = s:match("CA%s*%[([^%]]*)%]"), utf8 = utf8.len(s) ~= nil, games = {}}
 		sgf_files[path] = file
 	end
@@ -995,6 +1027,12 @@ local function sgf_games(name, path)
 	local games = file.games[kind]
 	if not games then
 		local s = file.text
+		-- SIN UNA CODIFICACION QUE SIRVA, CUATRO BYTES ALTOS SEGUIDOS NO PARECEN Latin-1 (DONDE LAS LETRAS
+		-- CON ACENTO VAN SUELTAS) SINO UNA CODIFICACION DE DOS BYTES (GBK, Shift_JIS...): SE AVISA.
+		if kind == "latin" and (not wanted or charset_kind(wanted) == "utf8")
+				and s:find("[\128-\255][\128-\255][\128-\255][\128-\255]") then
+			message("warning", "sgf-guess-charset", name)
+		end
 		if kind == "latin" then
 			s = s:gsub("[\128-\255]", function(c) return utf8.char(c:byte()) end)
 		elseif kind ~= "utf8" then
@@ -1026,7 +1064,7 @@ end
 
 -- DATOS DE LA ULTIMA PARTIDA LEIDA, POR JUGADA k (0: LOS NODOS ANTERIORES A LA PRIMERA JUGADA). UN NODO
 -- SIN JUGADA SE SUMA A LA JUGADA ANTERIOR.
--- sgf_comments[k]: COMENTARIO (C). sgf_marks[k]: MARCAS (TR, SQ, CR, MA, LB) Y TERRITORIO (TB, TW),
+-- sgf_comments[k]: COMENTARIOS (C), UNO POR NODO, TAL CUAL. sgf_marks[k]: MARCAS (TR, SQ, CR, MA, LB) Y TERRITORIO (TB, TW),
 -- "{forma}{x}{y}{color}{i}" (color: EL DE LA PIEDRA QUE HAY AHI, O neutral; i: EL TEXTO DE LB EN
 -- sgf_labels[i]). LA FORMA DEL TERRITORIO ES black-territory O white-territory; LA DE SL, selected.
 -- sgf_dim[k]: LOS PUNTOS ATENUADOS (DD), QUE SE HEREDAN HASTA EL PROXIMO DD. sgf_lines[k]: FLECHAS (AR) Y
@@ -1040,8 +1078,36 @@ local sgf_notes, sgf_names = {}, {}
 -- sgf_views: LAS VISTAS (VW), {start = jugada desde la que vale, rect = {x1, y1, x2, y2} O nil (TODO EL TABLERO)}.
 local sgf_vars, sgf_style, sgf_figures, sgf_views = {}, 0, {}, {}
 
-function pgfgo.sgf_comment(k)
-	tex.sprint(-2, sgf_comments[k] or "")
+-- SIN EL CHAT DE LOS SERVIDORES: EN OGS, LO QUE SIGUE A UNA LINEA "-- chat --"; EN KGS, LAS LINEAS
+-- "nombre [rango]: ..." Y, SI HABIA ALGUNA, TAMBIEN LAS "nombre: ..." (LOS QUE NO TIENEN RANGO).
+local function without_chat(text)
+	local kept, ranked = {}, false
+	for line in (text .. "\n"):gmatch("(.-)\n") do
+		if line:match("^%s*%-%- chat %-%-%s*$") then break end
+		if line:match("^%s*[%w_]+ %[[%w%?%-]+%]: ") then
+			ranked = true
+		else
+			insert(kept, line)
+		end
+	end
+	if ranked then
+		local rest = {}
+		for _, line in ipairs(kept) do
+			if not line:match("^%s*[%w_]+: ") then insert(rest, line) end
+		end
+		kept = rest
+	end
+	return concat(kept, "\n")
+end
+
+-- EL COMENTARIO DE LA JUGADA k (LOS DE SUS NODOS, SEGUIDOS), EN UNA LINEA. chat: false LE QUITA EL CHAT.
+function pgfgo.sgf_comment(k, chat)
+	local texts = {}
+	for _, raw in ipairs(sgf_comments[k] or {}) do
+		local text = (chat == false and without_chat(raw) or raw):gsub("%s+", " "):match("^%s*(.-)%s*$")
+		if text ~= "" then insert(texts, text) end
+	end
+	tex.sprint(-2, concat(texts, " "))
 end
 
 -- PRIMERO LOS PUNTOS ATENUADOS, PARA QUE LAS DEMAS MARCAS QUEDEN ENCIMA.
@@ -1054,6 +1120,31 @@ end
 
 function pgfgo.sgf_annotations(k)
 	set_clist("l__pgfgo_kernel_sgf_annotations_clist", sgf_notes[k] or {})
+end
+
+-- AVISA SI LA FUENTE ACTUAL NO TIENE ALGUN CARACTER CJK DE text (UNA VEZ POR FUENTE). SE LLAMA AL ESCRIBIR
+-- UN TEXTO DEL ARCHIVO, CUANDO YA ESTA ELEGIDA LA FUENTE CON LA QUE SE ESCRIBE.
+local glyphs_warned = {}
+local function cjk(c)
+	return (c >= 0x2E80 and c <= 0x9FFF) or (c >= 0xAC00 and c <= 0xD7AF) or (c >= 0xF900 and c <= 0xFAFF)
+		or (c >= 0xFF00 and c <= 0xFFEF) or (c >= 0x20000 and c <= 0x2FFFF)
+end
+function pgfgo.sgf_glyphs(text)
+	local id = font.current()
+	local hashes = fonts and fonts.hashes and fonts.hashes.identifiers
+	local f = (hashes and hashes[id]) or font.getfont(id)
+	if not f or not f.characters then return end
+	local name = (f.properties and f.properties.fullname) or f.fullname or f.name or tostring(id)
+	if glyphs_warned[name] then return end
+	pcall(function()
+		for _, c in utf8.codes(text) do
+			if cjk(c) and not f.characters[c] then
+				glyphs_warned[name] = true
+				message("warning", "sgf-glyphs", name, string.format("U+%04X", c))
+				return
+			end
+		end
+	end)
 end
 
 function pgfgo.sgf_name(i)
@@ -1161,6 +1252,49 @@ function pgfgo.sgf_tree(name)
 	end
 	set_clist("l__pgfgo_kernel_sgf_paths_clist", paths)
 	token.set_macro("l_pgfgo_kernel_sgf_extent_tl", view_text(box))
+end
+
+-- LAS VARIANTES DEL ARBOL: CADA LINEA QUE SE APARTA DE LA PRINCIPAL, POR LA JUGADA DONDE NACE, COMO
+-- "{camino}{profundidad}{nace}{empieza}{ultima}{comentada}": camino SIN LOS 1 DEL FINAL (EL DE
+-- \pgfgo_kernel_sgf_read:nn); profundidad: CUANTAS VECES SE APARTA (1: DE LA LINEA PRINCIPAL); nace: LA JUGADA
+-- DE LA LINEA PRINCIPAL QUE REEMPLAZA LA PRIMERA VEZ; empieza: SU PRIMERA JUGADA PROPIA (LA QUE REEMPLAZA LA
+-- ULTIMA VEZ); ultima: SU CANTIDAD DE JUGADAS; comentada: 1 SI ALGUN NODO PROPIO TIENE C.
+function pgfgo.sgf_branches(name)
+	local list = {}
+	local t = read_tree(name)
+	local function walk(tree, choices, depth, moves, born, start, commented)
+		for _, n in ipairs(tree.nodes) do
+			if n.B or n.W then moves = moves + 1 end
+			if depth > 0 and n.C and concat(n.C):match("%S") then commented = true end
+		end
+		if #tree.children == 0 then
+			if depth > 0 then
+				local p = {table.unpack(choices)}
+				while p[#p] == 1 do p[#p] = nil end
+				insert(list, {born = born, text = "{" .. concat(p, ".") .. "}{" .. depth .. "}{" .. born .. "}{"
+					.. start .. "}{" .. moves .. "}{" .. (commented and 1 or 0) .. "}"})
+			end
+		elseif #tree.children == 1 then
+			walk(tree.children[1], choices, depth, moves, born, start, commented)
+		else
+			for i, c in ipairs(tree.children) do
+				local p = {table.unpack(choices)}
+				insert(p, i)
+				if i == 1 then
+					walk(c, p, depth, moves, born, start, commented)
+				else
+					walk(c, p, depth + 1, moves, depth == 0 and moves + 1 or born, moves + 1, false)
+				end
+			end
+		end
+	end
+	if t then walk(t, {}, 0, 0, 0, 0, false) end
+	-- POR LA JUGADA DONDE NACEN; LAS QUE NACEN EN LA MISMA, EN EL ORDEN DEL ARBOL.
+	for i, b in ipairs(list) do b.index = i end
+	table.sort(list, function(a, b) return a.born < b.born or (a.born == b.born and a.index < b.index) end)
+	local texts = {}
+	for _, b in ipairs(list) do insert(texts, b.text) end
+	set_clist("l__pgfgo_kernel_sgf_branches_clist", texts)
 end
 
 local markup = {{"TR", "triangle"}, {"SQ", "square"}, {"CR", "circle"}, {"MA", "cross"},
@@ -1312,10 +1446,10 @@ function pgfgo.sgf_read(name, path_text)
 				end
 			end
 			if n.C then
-				local text = concat(n.C, " "):gsub("%s+", " "):match("^%s*(.-)%s*$")
-				if text ~= "" then
-					sgf_comments[played] = sgf_comments[played] and (sgf_comments[played] .. " " .. text) or text
-				end
+				-- TAL CUAL (CON SUS LINEAS, PARA PODER QUITAR EL CHAT); LOS ESPACIOS SE JUNTAN AL ESCRIBIRLO.
+				local list = sgf_comments[played] or {}
+				sgf_comments[played] = list
+				insert(list, concat(n.C, "\n"))
 			end
 			-- LAS MARCAS SE GUARDAN CON EL COLOR DE LA PIEDRA QUE HAY EN ESE MOMENTO.
 			local function mark(kind, c, i)
@@ -1353,6 +1487,14 @@ function pgfgo.sgf_read(name, path_text)
 			end
 		end
 	end
+	-- LOS PASES CON LOS QUE TERMINA LA LINEA SON {black | white}{}{end}: CIERRAN LA PARTIDA Y NO SE ANOTAN.
+	for i = #moves, 1, -1 do
+		local color, rest = moves[i]:match("^{(%a+)}(.*)$")
+		if color == "black" or color == "white" then
+			if rest ~= "{}{}" then break end
+			moves[i] = "{" .. color .. "}{}{end}"
+		end
+	end
 	local figures = {}
 	for _, f in ipairs(sgf_figures) do insert(figures, "{" .. f[1] .. "}{" .. f[2] .. "}") end
 	set_clist("l__pgfgo_kernel_sgf_figures_clist", figures)
@@ -1372,6 +1514,26 @@ function pgfgo.sgf_info(name, property)
 	local t = read_tree(name)
 	local root = t and t.nodes[1] or {}
 	tex.sprint(-2, concat(root[property] or {}, ", "))
+end
+
+-- LA PROPIEDAD DE LA JUGADA move DE LA LINEA path_text (LA DE SU NODO Y LA DE LOS NODOS SIN JUGADA QUE LO
+-- SIGUEN; move = 0: LOS NODOS ANTERIORES A LA PRIMERA JUGADA), COMO TEXTO. VARIOS VALORES, CON COMAS.
+function pgfgo.sgf_move_info(name, path_text, move, property)
+	local out = {}
+	local t = read_tree(name)
+	if t then
+		local path = {}
+		for d in (path_text or ""):gmatch("%d+") do insert(path, tonumber(d)) end
+		local k = 0
+		for _, n in ipairs((game_line(t, path))) do
+			if n.B or n.W then k = k + 1 end
+			if k > move then break end
+			if k == move then
+				for _, v in ipairs(n[property] or {}) do insert(out, v) end
+			end
+		end
+	end
+	tex.sprint(-2, concat(out, ", "))
 end
 
 

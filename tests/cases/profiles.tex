@@ -34,7 +34,7 @@
 {\pgfgoset{profile = default}\pgfgoset{stone = {line = {color = red}}}\sample}
 
 \case{profile resets the style: the shadow set before is lost (default); options after it are added (wain, red grid); in the options of a goban (pgfgo)}
-{\pgfgoset{stone = {drop shadow}}\pgfgoset{profile = default}\sample}
+{\pgfgoset{stone = {shadow}}\pgfgoset{profile = default}\sample}
 {\pgfgoset{profile = wain, goban = {grid = {line = {color = red}}}}\sample}
 \begin{goban}[5, label = {at = {south, west}}, profile = pgfgo]\moves*{C3,D3}\stone{B2}\end{goban}
 

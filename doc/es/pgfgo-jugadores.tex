@@ -295,15 +295,15 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shadow = \meta{stone drop shadow options} (default true)}
-	Controla las opciones propias de las sombras en las piedras.
+\begin{key}{/pgfgo/players/white/stone/shadow = \meta{stone shadow options} (default true)}
+	La sombra de la piedra, dibujada debajo de ella. Por defecto tiene la silueta de la piedra: el círculo, o la forma de la imagen si la piedra es una imagen (|stone/image|). Con |image|, la sombra es una imagen propia. En los dos casos se corre |offset| hacia |angle| y se agranda |scale| veces.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shadow/true}
+\begin{key}{/pgfgo/players/white/stone/shadow/true}
 	Habilita la sombra en la piedra.
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shadow/false}
+\begin{key}{/pgfgo/players/white/stone/shadow/false}
 	Desactiva la sombra en la piedra.
 	\begin{codeexample}[width=4cm]
 		\pgfgoset{profile = pgfgosmooth}
@@ -314,7 +314,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 			\stone[w]{A3}
 		\end{goban}
 		
-		\pgfgoset{players = {white = {stone = {drop shadow = false}}}}
+		\pgfgoset{players = {white = {stone = {shadow = false}}}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -323,8 +323,8 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shadow/angle = \meta{float}}
-	Establece el ángulo de la sombra.
+\begin{key}{/pgfgo/players/white/stone/shadow/angle = \meta{float} (initially 0)}
+	Hacia dónde cae la sombra, en grados: con |0|, a la derecha; con |-45|, abajo a la derecha. No gira la forma de la sombra.
 	\begin{codeexample}[width=4cm]
 		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
@@ -334,7 +334,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 			\stone[w]{A3}
 		\end{goban}
 		
-		\pgfgoset{players = {white = {stone = {drop shadow = {angle = 225}}}}}
+		\pgfgoset{players = {white = {stone = {shadow = {angle = 225}}}}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -343,8 +343,8 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shadow/offset = \meta{dimension}}
-	Establece el desplazamiento de la sombra respecto al centro.
+\begin{key}{/pgfgo/players/white/stone/shadow/offset = \meta{dimension} (initially 1pt)}
+	Cuánto se corre la sombra respecto del centro de la piedra, en la dirección |angle|.
 	\begin{codeexample}[width=4cm]
 		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
@@ -354,7 +354,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 			\stone[w]{A3}
 		\end{goban}
 		
-		\pgfgoset{players = {white = {stone = {drop shadow = {offset = 0.125cm}}}}}
+		\pgfgoset{players = {white = {stone = {shadow = {offset = 0.125cm}}}}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -363,8 +363,8 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shadow/opacity = \meta{float}}
-	Controla la opacidad de la sombra.
+\begin{key}{/pgfgo/players/white/stone/shadow/opacity = \meta{float} (initially 0.5)}
+	Controla la opacidad de la sombra (también la de la sombra con imagen).
 	\begin{codeexample}[width=4cm]
 		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
@@ -374,7 +374,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 			\stone[w]{A3}
 		\end{goban}
 		
-		\pgfgoset{players = {white = {stone = {drop shadow = {offset = 0.125cm, opacity = 0.1}}}}}
+		\pgfgoset{players = {white = {stone = {shadow = {offset = 0.125cm, opacity = 0.1}}}}}
 		
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -383,13 +383,13 @@ Para no escribir la ruta completa, hay cuatro comandos:
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/players/white/stone/drop shadow/color = \meta{color} (initially black)}
-	El color de la sombra.
+\begin{key}{/pgfgo/players/white/stone/shadow/color = \meta{color} (initially black)}
+	El color de la sombra. Una sombra con imagen tiene sus propios colores, salvo con |image/silhouette|.
 
 	\begin{codeexample}[width=4cm]
 		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
-		\pgfgoset{players = {white = {stone = {drop shadow = {color = blue, offset = 0.1cm}}}}}
+		\pgfgoset{players = {white = {stone = {shadow = {color = blue, offset = 0.1cm}}}}}
 
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -397,6 +397,71 @@ Para no escribir la ruta completa, hay cuatro comandos:
 		\end{goban}
 	\end{codeexample}
 \end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shadow/scale = \meta{float} (initially 1)}
+	Agranda (o achica) la sombra respecto de la piedra. Una sombra más grande que la piedra la hace parecer más alta. También agranda la sombra con imagen.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{goban = {partial = A1:C3, scale = 2}}
+
+		\begin{goban}
+			\stone[b, shadow = {true, angle = -45}]{A1}
+			\stone[b, shadow = {true, angle = -45,
+				scale = 1.3}]{C2}
+			\stone[w, shadow = {true, offset = 0pt,
+				scale = 1.3, color = red}]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shadow/image = \meta{options}}
+	Una sombra propia: una imagen con transparencia (PNG o PDF), centrada en la piedra y dibujada tal cual en lugar de la silueta, por ejemplo una sombra difusa. Se corre y se agranda como la silueta (|angle|, |offset|, |scale|) y usa |opacity|, pero no |color|. No gira con la imagen de la piedra (|stone/image/rotate|), así que cae siempre hacia el mismo lado. Cada archivo se guarda una sola vez en el PDF.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{goban = {partial = A1:C3, scale = 2}}
+		\pgfgoset{stone = {shadow = {true, angle = -45,
+			offset = 1.5pt, opacity = 0.8,
+			image = {file = shadow.png, width = 13pt}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shadow/image/file = \meta{file}}
+	El archivo de la imagen. Se busca como con |\includegraphics|.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shadow/image/width = \meta{dimension} (initially el diámetro de la piedra)}
+	El ancho de la imagen; el alto mantiene la proporción.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shadow/image/rotate = \meta{ángulo} (initially 0)}
+	Gira la imagen de la sombra, igual en todas las piedras.
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shadow/image/silhouette = \meta{boolean} (default true, initially false)}
+	Usa solo la forma de la imagen (su transparencia), pintada con |shadow/color|, en lugar de la imagen tal cual. Necesita pdf\LaTeX\ o Lua\LaTeX\ con salida PDF; con otros motores la sombra no se dibuja y aparece un aviso.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{goban = {partial = A1:C3, scale = 2}}
+		\pgfgoset{stone = {shadow = {true, angle = -45,
+			offset = 2pt, color = blue,
+			image = {file = star.pdf, width = 16pt,
+				rotate = 18, silhouette}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{stylekey}{/pgfgo/players/white/stone/shadow/image/false}
+	Quita la imagen: vuelve la silueta de la piedra.
+\end{stylekey}
 
 \begin{key}{/pgfgo/players/white/stone/shine = \meta{stone shine options} (default true)}
 	Controla el brillo de las piedras, que se dibuja encima de la piedra, sea un círculo o una imagen.
@@ -513,6 +578,21 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 		\begin{goban}[5, partial = B2:D4]
 			\stones[w]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/white/stone/shine/image/silhouette = \meta{boolean} (default true, initially false)}
+	Usa solo la forma de la imagen (su transparencia), pintada con |shine/color|, en lugar de la imagen tal cual. Necesita pdf\LaTeX\ o Lua\LaTeX\ con salida PDF; con otros motores el brillo no se dibuja y aparece un aviso.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{goban = {partial = A1:C3, scale = 2}}
+		\pgfgoset{players = {black = {stone = {shine = {true,
+			color = red, image = {file = shine.png, silhouette}}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -843,7 +923,7 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 	Antes de aplicarlo, el tablero y los jugadores vuelven al estilo inicial (el del perfil |default|): así un perfil no hereda lo que no define, y una sombra o una imagen puesta antes se pierde. Lo que no es estilo queda como estaba: el tamaño, |partial|, |scale|, dónde van las coordenadas y cuáles son, |hoshi/at|, las capturas y las notas. Lo que va después del perfil se suma a él.
 
 	\begin{codeexample}[width=3cm]
-		\pgfgoset{stone = {drop shadow}}
+		\pgfgoset{stone = {shadow}}
 		\begin{goban}[3, profile = default]
 			\stones[b]{A1, B2}
 			\stones[w]{C3}

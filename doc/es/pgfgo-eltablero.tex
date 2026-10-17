@@ -241,8 +241,13 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/grid/image/file =\meta{file}}
-		El archivo de la imagen.
+	\begin{key}{/pgfgo/goban/grid/image/file =\meta{file \opt{, file, ...}}}
+		El archivo de la imagen. Con varios archivos y |fit = tile|, cada baldosa usa uno, elegido por su lugar en la malla: siempre el mismo en cada lugar, en todos los diagramas. Con |fit = stretch|, se usa el primero.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, grid = {image = {file = {cell.png, tile.png}, fit = tile}}, hoshi = false]
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/grid/image/fit =\meta{stretch o tile} (initially stretch)}
@@ -465,8 +470,13 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/fill/image/file =\meta{file}}
-		El archivo de la imagen de fondo.
+	\begin{key}{/pgfgo/goban/background/fill/image/file =\meta{file \opt{, file, ...}}}
+		El archivo de la imagen de fondo. Con varios archivos y |fit = tile|, cada baldosa usa uno, elegido por su lugar: siempre el mismo en cada lugar, también con |partial|. Así el tablero no se ve repetido. Las baldosas tienen el tamaño de la primera imagen (o el de su celda, con |tiles|). Con |stretch| y |cover|, se usa el primero.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, background = {fill = {image = {file = {tile.png, cell.png, wood.jpg}, fit = tile, width = 1cm}}}]
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image/fit =\meta{stretch, cover o tile} (initially cover)}
@@ -663,60 +673,60 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/drop shadow=\meta{options} (default true)}
+	\begin{key}{/pgfgo/goban/background/shadow=\meta{options} (default true)}
 		Dibuja una sombra debajo del tablero. Sin valor, la activa.
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 
-			\begin{goban}[background = {drop shadow}, name = a]
+			\begin{goban}[background = {shadow}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 
-			\begin{goban}[background = {drop shadow = {color = blue, opacity = 0.3}}, resume = a]
+			\begin{goban}[background = {shadow = {color = blue, opacity = 0.3}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/drop shadow=\meta{boolean} (initially false)}
+	\begin{key}{/pgfgo/goban/background/shadow=\meta{boolean} (initially false)}
 		Activa (|true|) o desactiva (|false|) la sombra.
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/drop shadow/angle =\meta{float} (initially -45)}
+	\begin{key}{/pgfgo/goban/background/shadow/angle =\meta{float} (initially -45)}
 		Dirección de la sombra, en grados.
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 
-			\begin{goban}[background = {drop shadow}, name = a]
+			\begin{goban}[background = {shadow}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 
-			\begin{goban}[background = {drop shadow = {angle = 45}}, resume = a]
+			\begin{goban}[background = {shadow = {angle = 45}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/drop shadow/offset =\meta{dimension} (initially 1.5pt)}
+	\begin{key}{/pgfgo/goban/background/shadow/offset =\meta{dimension} (initially 1.5pt)}
 		Distancia entre el tablero y su sombra.
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 
-			\begin{goban}[background = {drop shadow}, name = a]
+			\begin{goban}[background = {shadow}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 
-			\begin{goban}[background = {drop shadow = {offset = 4pt}}, resume = a]
+			\begin{goban}[background = {shadow = {offset = 4pt}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/drop shadow/opacity =\meta{float} (initially 0.5)}
+	\begin{key}{/pgfgo/goban/background/shadow/opacity =\meta{float} (initially 0.5)}
 		Opacidad de la sombra.
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/drop shadow/color =\meta{color} (initially black)}
+	\begin{key}{/pgfgo/goban/background/shadow/color =\meta{color} (initially black)}
 		Color de la sombra.
 	\end{key}
 

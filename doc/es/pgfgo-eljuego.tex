@@ -133,6 +133,10 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 		Texto entre los dos números.
 	\end{key}
 
+	\begin{key}{/pgfgo/notes/pass = \meta{text} (initially pass o su traducción)}
+		Un pase de un archivo SGF (pág.~\pageref{subsec:sgf}) cuenta, pero no se dibuja. Con |notes|, si se numeraría, se anota «N: pass», en orden con las demás notas. Los pases con los que termina la partida no se anotan. Esta clave es el texto después del número.
+	\end{key}
+
 	\begin{key}{/pgfgo/notes/separator = \meta{text} (initially una coma y un espacio)}
 		Texto entre las notas.
 

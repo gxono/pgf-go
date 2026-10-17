@@ -220,15 +220,15 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	Abreviatura de «neutral».
 \end{key}
 
-\begin{key}{/pgfgo/stone/drop shadow = \meta{options}}
-	Sombra de la piedra: |true|, |false|, |angle|, |offset|, |opacity| y |color|. Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}).
+\begin{key}{/pgfgo/stone/shadow = \meta{options} (default true)}
+	Sombra de la piedra, dibujada debajo: |true|, |false|, |angle|, |offset|, |opacity|, |color|, |scale| e |image|. Sin |image| tiene la silueta de la piedra; con |image|, es una imagen propia (tal cual, o solo su forma con |silhouette|). Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}).
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
 
 		\begin{goban}
-			\stones[b, drop shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
-			\stone[w, drop shadow = {true, angle = -45, offset = 1.5pt}]{B4}
+			\stones[b, shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
+			\stone[w, shadow = {true, angle = -45, offset = 1.5pt}]{B4}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -245,7 +245,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 		\end{goban}
 	\end{codeexample}
 
-	Con |image|, el brillo es una imagen con transparencia (PNG o PDF), centrada en la piedra. Si la piedra también es una imagen, el brillo se dibuja encima y no gira con ella: las piedras pueden tener vetas giradas al azar (|rotate = random|) y la luz siempre del mismo lado.
+	Con |image|, el brillo es una imagen con transparencia (PNG o PDF), centrada en la piedra (tal cual, o solo su forma, del color del brillo, con |silhouette|). Si la piedra también es una imagen, el brillo se dibuja encima y no gira con ella: las piedras pueden tener vetas giradas al azar (|rotate = random|) y la luz siempre del mismo lado.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
@@ -257,7 +257,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 
 \label{subsec:piedrasimagen}\begin{key}{/pgfgo/stone/image = \meta{options}}
-	Dibuja la piedra con una imagen (PNG, JPG o PDF) en lugar del círculo: no se dibujan el relleno ni el borde, y la imagen no tiene por qué ser redonda. Si el brillo (|shine|) está prendido, se dibuja encima de la imagen. La sombra (|drop shadow|) se dibuja con la forma de la imagen; para eso la imagen tiene que tener transparencia (un PNG con canal alfa o un PDF): la sombra de un JPG es un rectángulo. Un prisionero con imagen se ve translúcido, como cualquier prisionero.
+	Dibuja la piedra con una imagen (PNG, JPG o PDF) en lugar del círculo: no se dibujan el relleno ni el borde, y la imagen no tiene por qué ser redonda. Si el brillo (|shine|) está prendido, se dibuja encima de la imagen. La sombra (|shadow|) se dibuja con la forma de la imagen; para eso la imagen tiene que tener transparencia (un PNG con canal alfa o un PDF): la sombra de un JPG es un rectángulo. Un prisionero con imagen se ve translúcido, como cualquier prisionero.
 
 	Los archivos se buscan como con |\includegraphics| (por ejemplo, en las carpetas de |\graphicspath|). Cada archivo, con cada tamaño, se guarda una sola vez en el PDF, por más piedras que lo usen. La sombra con la forma de la imagen necesita pdf\LaTeX\ o Lua\LaTeX\ (con salida PDF); con otros motores la piedra se dibuja sin sombra y con un aviso.
 
@@ -269,8 +269,8 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 		\pgfgoset{goban = {5, partial = B2:D4}}
 
 		\begin{goban}
-			\stones[b, image = {file = stone-black.png}, drop shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
-			\stone[w, image = {file = stone-white.png}, drop shadow = {true, angle = -45, offset = 1.5pt}]{B4}
+			\stones[b, image = {file = stone-black.png}, shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
+			\stone[w, image = {file = stone-white.png}, shadow = {true, angle = -45, offset = 1.5pt}]{B4}
 		\end{goban}
 	\end{codeexample}
 

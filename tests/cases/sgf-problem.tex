@@ -29,4 +29,17 @@
 \case{caption = \{font = \string\itshape\}}
 \sgfproblem[solutions = false, caption = {font = \itshape}]{views.sgf}
 
+% problems.sgf: three problems on 9x9; 1 without PL nor moves, 2 with PL[W], 3 with
+% two solutions (B A9 TE "Correct."; B D9 BM "Wrong.", W A9).
+
+\case{game = 1:3: the statements "Problem 1" (nobody to play), "Problem 2: White to play", "Problem 3: Black to play", then "Problem 3: Variation 1" and "2"}
+\sgfproblem[game = 1:3, goban = {scale = 0.5}, layout = {columns = 4}]{problems.sgf}
+
+\case{game = \{1, 3\}, to play = black, title = Ejercicio, comments = false, solutions = false: "Ejercicio 1: Black to play", "Ejercicio 3: Black to play"}
+\sgfproblem[game = {1, 3}, to play = black, title = Ejercicio, comments = false, solutions = false, goban = {scale = 0.5}, layout = {columns = 4}]{problems.sgf}
+
+\case{verdict: problems.sgf 3: Variation 1 (correct, TE on move 1), Variation 2 (wrong, BM on move 1) / problem.sgf: 1 and 2 correct (TE), 3 wrong (BM), 4 nothing}
+\sgfproblem[game = 3, verdict, statement = false, goban = {scale = 0.5}, layout = {columns = 4}]{problems.sgf}
+\sgfproblem[verdict, statement = false, comments = false, goban = {scale = 0.5}, layout = {columns = 4}]{problem.sgf}
+
 \end{document}

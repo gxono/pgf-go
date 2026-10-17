@@ -15,7 +15,7 @@
 % game.sgf: 9x9; B E5, W G7, B pass, W C3, B G5.
 % annotated.sgf: annotations and comments.
 
-\case{\textbackslash sgf: to = last and to = -1 play the whole game; last mark on the last move (with and without numbers); last mark = false}
+\case{\textbackslash sgf: to = last and to = -1 play the whole game; last mark on the last move without numbers; with numbers the last move keeps its number and has no mark; last mark = false}
 \begin{goban}\sgf[to = last]{game.sgf}\end{goban}
 \begin{goban}\sgf[to = -1, numbers = false, last mark = circle]{game.sgf}\end{goban}
 \begin{goban}\sgf[to = 4, last mark = {triangle, line = {color = red}}]{game.sgf}\end{goban}

@@ -11,7 +11,9 @@ Usage:
                                            contains one of these words
     python tests/run_tests.py --update     accept the current output as the
                                            new reference images
-    python tests/run_tests.py --manuals    also compare the two manuals
+    python tests/run_tests.py --manuals    also compare the manuals (for now only
+                                           the Spanish one: see MANUALS in
+                                           check_docs.py)
     python tests/run_tests.py --kernel expl3
                                            compile everything with lualatex and
                                            kernel = expl3 (lualatex uses lua by
@@ -108,7 +110,10 @@ def collect_documents(include_manuals, kernel=None):
                                   expect_warnings=0,
                                   passes=int(header.get("passes", 1))))
     if include_manuals:
-        for lang in ("es", "en"):
+        # The same manuals that check_docs.py checks.
+        sys.path.insert(0, str(TESTS))
+        from check_docs import MANUALS
+        for lang in MANUALS:
             path = ROOT / "doc" / lang / f"pgfgo-{lang}.tex"
             # The manuals contain two examples that warn on purpose.
             documents.append(Document(name=f"manuals/{lang}", source=path,
@@ -270,7 +275,7 @@ def main():
     parser.add_argument("--update", action="store_true",
                         help="replace the reference images with the current output")
     parser.add_argument("--manuals", action="store_true",
-                        help="also compile and compare the Spanish and English manuals")
+                        help="also compile and compare the manuals (for now only the Spanish one)")
     parser.add_argument("--kernel", choices=["expl3", "lua"],
                         help="compile with this compute kernel (lualatex only) and "
                              "compare with the same references")

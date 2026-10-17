@@ -6,6 +6,68 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- Shadows of your own: `stone/shadow/image = {file, width, rotate, false}`
+  draws an image (a soft shadow, for example) under the stone instead of its
+  silhouette, moved by `angle` and `offset` like the silhouette.
+  `stone/shadow/scale` (initially 1) makes the shadow bigger or smaller than
+  the stone, also the image. `silhouette` in `stone/shadow/image` and in
+  `stone/shine/image` uses only the shape of the image, in the colour of the
+  shadow or of the shine (pdfLaTeX or LuaLaTeX).
+- Several files in the tiles of the board: `goban/background/fill/image/file`
+  and `goban/grid/image/file` take a list, like `stone/image/file`; with
+  `fit = tile` each tile uses one of them, always the same in each place of
+  the mesh (also with `partial`), so that the board does not look repeated.
+  `stretch` and `cover` use the first file.
+- `comments/position = after` writes the comments of `\sgfdiagrams` and
+  `\sgfproblem` after the diagrams, full width, each group with the caption
+  of its diagram; `comments/height` (initially `none`) sends there what does
+  not fit below or beside a diagram.
+- `\sgfproblem[verdict]`: the caption of each solution says whether it is
+  correct or wrong (new texts `correct` and `wrong`), from the `GB`/`GW`,
+  `TE`/`BM` or "RIGHT" of the line.
+- Sheets of problems: `\sgfproblem[game = 1:20]` (numbers and ranges, as in the
+  coordinates: `{1:4, 9}`) draws the statements of several problems of a
+  collection, numbered ("Problem 7", new text `problem` in every language, or
+  `title`), and then the solutions. `to play = auto | black | white | none`
+  says who plays when the file does not.
+- Variations as diagrams: `\sgfdiagrams[variations]` draws the variations of
+  the game too, each one after the diagram where its first move is (diagram
+  3a, 3b...), numbered from 1, with its comments; the caption says which
+  move it replaces (`variation title`, `\pgfgovariationmove`, new text
+  `variation at` in every language). `variations = commented` (the default
+  value), `all`, `none`, `depth = n` (initially 1) and paths of variations
+  (`2`, `2.3.1`), which can be added: `variations = {commented, 5}`.
+- `\sgfinfo[move = n]` writes a property of a move (`BL` and `WL`, the time
+  left on KGS and OGS), and `variation` its line.
+- A warning when the font of an SGF text (comments, `\sgfinfo`) has no glyph
+  for its Chinese, Japanese or Korean characters, once per font: LaTeX only
+  writes them in the `.log`. Not with luatexja, ctex, luatexko or xeCJK,
+  which write them with another font.
+- Options for the comments of `\sgfdiagrams` and `\sgfproblem`:
+  `comments/font` (initially the font of the caption), `comments/align`
+  (`left`, `right`, `center` or `justify`) and, in `\sgfdiagrams`,
+  `comments/root`, the comment of the root before the others. As in
+  `\sgfanimation`, these options do not turn the comments on:
+  `comments = {true, align = justify}`.
+- `comments/number` (what goes before each comment, `#1` is the number;
+  initially in bold with a colon) and `comments/separator` (between the
+  comments, initially `\par`) in `\sgfdiagrams` and `\sgfproblem`.
+- Comments beside the diagrams: `comments/position = right` or `left` puts
+  the comments of `\sgfdiagrams` and `\sgfproblem` beside the board, from
+  its top, as in books of commented games. `comments/width` (initially
+  `auto`: the rest of the line, or of the cell of the grid; with `fit`,
+  half of it) and `comments/sep` (initially `1em`).
+- Comments without chat: `chat = false` in `\sgfcomment`, `\sgfdiagrams`,
+  `\sgfproblem` and `\sgfanimation` removes the chat of the servers from
+  the comments: on OGS, everything after a line "-- chat --"; on KGS, the
+  lines "name [rank]: ..." and, if there is one, also the lines
+  "name: ..." of the same comment.
+- Passes in the notes: with `goban/notes`, a numbered pass of an SGF file
+  is noted as "N: pass" (new text `pass` in every language, and key
+  `notes/pass`), in order with the "N at M" notes. The passes that end the
+  game are not noted. `\sgfdiagrams` and
+  `\sgfproblem` write them under each diagram, so a missing number is
+  no longer silent.
 - Views in the text: `goban/name = <name>` stores everything that `goban`
   draws, and `\pgfgoview[<options>]{<name>}{<part>}` draws a point
   (`D4`) or a rectangle (`B2:E5`) of that board as it was at the end,
@@ -46,7 +108,7 @@ All notable changes to `pgf-go` are listed here.
 - `mark/scale` changes the size of the marks (shapes, images and text).
 - Opacity: `mark/line/opacity`, `mark/fill/opacity`, `move/label/opacity`,
   `stone/image/opacity` and `goban/hoshi/opacity`.
-- `stone/drop shadow/color`, `move/label/font` (initially `\bfseries`),
+- `stone/shadow/color`, `move/label/font` (initially `\bfseries`),
   `mark/label/font size`, `goban/label/color`, and
   `goban/hoshi/image/width` and `rotate` (like
   `stone/image/rotate`).
@@ -113,7 +175,7 @@ All notable changes to `pgf-go` are listed here.
   difference in the texts of the result.
 - Images (PNG, JPG or PDF): `stone/image` (`file`, `width`, `false`) draws
   the stones with an image; with several files, each point always uses the
-  same one. `drop shadow` has the shape of the image (pdfLaTeX or LuaLaTeX).
+  same one. `shadow` has the shape of the image (pdfLaTeX or LuaLaTeX).
   `goban/background/fill/image` (`file`, `fit = stretch | cover | tile`,
   `width`, `from`, `tiles`, `false`) puts an image on the background of the
   board, placed according to the whole board (tiles start from the corner,
@@ -169,6 +231,8 @@ All notable changes to `pgf-go` are listed here.
 
 ### Fixed
 
+- With `restart`, the comments of `\sgfdiagrams` had the number of the
+  move in the game, not the one shown on the board.
 - `annotations` of `\sgfdiagrams`, `\sgfanimation`, `\sgfproblem` and
   `\sgfcomment` changed all of them at once; now each command has its own.
 - The expl3 kernel expands the coordinates before reading them, as the Lua
@@ -185,9 +249,29 @@ All notable changes to `pgf-go` are listed here.
 - `players/<player>/mark/sequence/from` was ignored: `\marks` started the
   sequence at the `from` of the neutral player. Now it starts at the `from`
   of the player of the marks.
+- SGF files in UTF-16 (with a byte order mark) and files whose root node has
+  no `;` (`(SZ[19]...`, written by some old programs) gave an empty board
+  without a warning; now they are read.
+- A file that is not UTF-8 and has no `CA` is still read as Latin-1, but if
+  it looks like GBK, Big5, Shift_JIS or EUC-KR there is a warning that says
+  to set `sgf charset`; before, the comments and names came out garbled
+  without a warning.
+- The `sgf-charset` and `\moves` messages lost some spaces.
 
 ### Behaviour changes
 
+- `stone/shadow/offset` is initially 1pt (it was 0pt, so `shadow` alone
+  drew the shadow under the stone, where it could not be seen).
+- With several files in `stone/image/file`, the file of each point is chosen
+  in a new way, the same as the tiles of the board: with two files the old
+  choice made a regular pattern (three points of four used the second one).
+  Each point still shows always the same file, but not the same as before.
+- **A move number is never covered.** In `\sgf`, `\sgfdiagrams` and
+  `\sgfanimation`, a label of the file (`LB`) on a numbered stone is not
+  drawn (the number stays), and `last mark` does not mark a move with a
+  number; before, the label replaced the number and the last mark was drawn
+  over it. Shapes of the file (`TR`, `SQ`, `CR`, `MA`, `SL`) still replace
+  the number.
 - **Profiles are keys.** `profile = <name>` (the board `<name>` and the
   players `<name>-neutral`, `<name>-black`, `<name>-white`),
   `goban profile = <name>`, `players profile = <name>` and
@@ -219,6 +303,7 @@ All notable changes to `pgf-go` are listed here.
 - **Keys and commands with new names; the old names were removed.**
   `partial = B2:D4` (or `{B2, D4}`, `{B2 to D4}`) instead of
   `partial = {from = B2 to D4}`; `stone/shine` instead of `drop shine`;
+  `stone/shadow` and `goban/background/shadow` instead of `drop shadow`;
   `goban/label/color` instead of `text color`;
   `goban/background/fill/image/anchor` instead of `from`;
   `goban/label/columns direction = right to left` and
@@ -295,6 +380,11 @@ All notable changes to `pgf-go` are listed here.
 
 ### Tests
 
+- `docs/keys` and `--manuals` only look at the Spanish manual for now
+  (`MANUALS` in `tests/check_docs.py`).
+- New case `real-games`: an extract of Lee Sedol - AlphaGo (many root
+  properties, labels on every commented node, variations) and a synthetic
+  game of 320 moves with passes and `BL`/`WL`.
 - New cases for `\moves` as a sequence (`moves`, and a ko in one `\moves`
   in `captures`), the prisoner style of one player (`stones`), `custom`
   for one player (`marks`) and their errors (`errors`).

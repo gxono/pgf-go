@@ -1,0 +1,32 @@
+% engines: lualatex
+% expect-warnings: 17
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% alphago.sgf: an extract of Lee Sedol - AlphaGo, game 1 (CGoban, comments by
+% An Younggil): many root properties, LB on every commented node, and two
+% variations at move 10. long.sgf: a synthetic game of 320 moves (not legal
+% go) with passes (B[] and W[]) and BL/WL on every move.
+
+\case{alphago.sgf, root properties: \sgfinfo{alphago.sgf}{PB} (\sgfinfo{alphago.sgf}{BR}) -- \sgfinfo{alphago.sgf}{PW}, \sgfinfo{alphago.sgf}{EV}, \sgfinfo{alphago.sgf}{RO}, \sgfinfo{alphago.sgf}{DT}, \sgfinfo{alphago.sgf}{PC}, \sgfinfo{alphago.sgf}{RU}, \sgfinfo{alphago.sgf}{KM}, \sgfinfo{alphago.sgf}{OT}, \sgfinfo{alphago.sgf}{RE}}
+
+\case{step = 5 with comments: in diagram 2 the labels of move 10 are drawn (8, 9 and 10 are their own numbers; A on 7 is not drawn: the number stays)}
+\sgfdiagrams[step = 5, comments, goban = {partial = H6:T19}]{alphago.sgf}
+
+\case{variation = 2: W D17 instead of R17}
+\begin{goban}[19, partial = A10:K19]\sgf[variation = 2]{alphago.sgf}\end{goban}
+
+\case{long.sgf: the whole game with captures (16 moves on points that are not empty: 16 warnings) / up to move 100 (none) / sgfinfo RE = \sgfinfo{long.sgf}{RE}}
+\begin{goban}[sgf size = long.sgf, captures]\sgf{long.sgf}\end{goban}
+\begin{goban}[sgf size = long.sgf, captures]\sgf[to = 100]{long.sgf}\end{goban}
+
+\case{\textbackslash sgfinfo with move: BL of move 1 = \sgfinfo[move = 1]{long.sgf}{BL} (600), WL of move 2 = \sgfinfo[move = 2]{long.sgf}{WL} (598), BL of move 2 = [\sgfinfo[move = 2]{long.sgf}{BL}] (empty), move 0 = root: \sgfinfo[move = 0]{long.sgf}{PB}}
+
+\case{A CJK comment with Latin Modern: one warning (sgf-glyphs), only once for the font: [\sgfcomment{cs-utf8.sgf}{0}] [\sgfcomment{cs-utf8.sgf}{0}]}
+
+\end{document}

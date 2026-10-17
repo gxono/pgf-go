@@ -731,7 +731,7 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 \end{key}
 
 \begin{key}{/pgfgo/sgf/marks = \meta{boolean} (default true, initially true)}
-	Draws the marks of the file (|TR|, |SQ|, |CR|, |MA|, |SL| and the labels of |LB|), the arrows (|AR|) and the lines (|LN|) of the last node that is shown, and dims the points of |DD| (which stay dimmed until the next |DD|; p.~\pageref{subsec:arrows}). Each mark takes the color of the stone on that point, so that it can be seen, and replaces the number of the move. The territory of the file (|TB| and |TW|) is drawn as that of |\territory| (p.~\pageref{subsec:territory}) and counts for |\pgfgoscore|.
+	Draws the marks of the file (|TR|, |SQ|, |CR|, |MA|, |SL| and the labels of |LB|), the arrows (|AR|) and the lines (|LN|) of the last node that is shown, and dims the points of |DD| (which stay dimmed until the next |DD|; p.~\pageref{subsec:arrows}). Each mark takes the color of the stone on that point, so that it can be seen, and replaces the number of the move. Labels are the exception: they do not cover a number, so they are not drawn on a numbered stone. The territory of the file (|TB| and |TW|) is drawn as that of |\territory| (p.~\pageref{subsec:territory}) and counts for |\pgfgoscore|.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variations.sgf]
@@ -795,7 +795,7 @@ In the examples, |game.sgf| contains a short 9$\times$9 game:
 \end{key}
 
 \begin{key}{/pgfgo/sgf/last mark = \meta{mark options} or |false| (initially false)}
-	Marks the last move shown, with the options of a mark (|circle|, |triangle|, |custom = ...|, etc.). A pass is not marked, and neither is a point the file already marks. The mark goes over the number: it is mostly useful with |numbers = false|.
+	Marks the last move shown, with the options of a mark (|circle|, |triangle|, |custom = ...|, etc.). A pass is not marked, and neither is a point the file already marks nor a move with a number (the number already tells which one is the last): it is meant for |numbers = false|.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variations.sgf]
