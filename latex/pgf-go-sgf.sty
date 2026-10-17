@@ -702,8 +702,56 @@
 	}
 }
 
+%\pgfgodefinesgf[game = <n>, charset = <codificacion>]{<nombre>}{<archivo>}: <nombre> SIRVE DONDE VA UN
+%ARCHIVO SGF (\sgf, \sgfinfo, sgf size, ...). EL KERNEL LO TRADUCE AL ARCHIVO; game Y charset QUEDAN EN
+%\g__pgfgo_sgf_names_prop ({game}{charset}, VACIOS SI NO SE DIERON) Y CADA COMANDO LOS PONE ANTES DE SUS
+%OPCIONES, QUE GANAN. UN NOMBRE QUE NO ESTA DEFINIDO ES UN ARCHIVO.
+\prop_new:N \g__pgfgo_sgf_names_prop
+\tl_new:N \l__pgfgo_sgf_name_game_tl
+\tl_new:N \l__pgfgo_sgf_name_charset_tl
+\tl_new:N \l__pgfgo_sgf_name_tl
+\keys_define:nn {pgfgo / define~sgf} {
+	game					.tl_set:N		= \l__pgfgo_sgf_name_game_tl,
+	charset				.tl_set:N		= \l__pgfgo_sgf_name_charset_tl,
+}
+\NewDocumentCommand \pgfgodefinesgf {O{}mm} {
+	\group_begin:
+		\keys_set:nn {pgfgo / define~sgf} {#1}
+		\prop_gput:Nee \g__pgfgo_sgf_names_prop {\text_expand:n {#2}}
+			{{\exp_not:V \l__pgfgo_sgf_name_game_tl} {\exp_not:V \l__pgfgo_sgf_name_charset_tl}}
+		\pgfgo_kernel_if_feature:nT {sgf} {\pgfgo_kernel_sgf_define:nn {#2} {#3}}
+	\group_end:
+}
+
+%SI #1 ES UN NOMBRE DE \pgfgodefinesgf, PONE SU game Y SU charset.
+\cs_new_protected:Npn \pgfgo_sgf_use_name:n #1 {
+	\prop_get:NeNT \g__pgfgo_sgf_names_prop {\text_expand:n {#1}} \l__pgfgo_sgf_name_tl
+		{\exp_after:wN \__pgfgo_sgf_use_name:nn \l__pgfgo_sgf_name_tl}
+}
+\cs_new_protected:Npn \__pgfgo_sgf_use_name:nn #1#2 {
+	\tl_if_empty:nF {#1} {\int_set:Nn \l_pgfgo_kernel_sgf_game_int {#1}}
+	\tl_if_empty:nF {#2} {\tl_set:Nn \l_pgfgo_kernel_sgf_charset_tl {#2}}
+}
+\cs_generate_variant:Nn \pgfgo_sgf_use_name:n {V}
+\prg_generate_conditional_variant:Nnn \prop_get:NnN {NeN} {T}
+
+%EJECUTA #2 CON EL game Y EL charset DEL NOMBRE #1, Y DESPUES VUELVE A LOS DE ANTES (PARA LAS CLAVES DE
+%goban, QUE NO ESTAN EN UN GRUPO PROPIO).
+\int_new:N \l__pgfgo_sgf_saved_game_int
+\tl_new:N \l__pgfgo_sgf_saved_charset_tl
+\cs_new_protected:Npn \pgfgo_sgf_with_name:nn #1#2 {
+	\int_set_eq:NN \l__pgfgo_sgf_saved_game_int \l_pgfgo_kernel_sgf_game_int
+	\tl_set_eq:NN \l__pgfgo_sgf_saved_charset_tl \l_pgfgo_kernel_sgf_charset_tl
+	\pgfgo_sgf_use_name:n {#1}
+	#2
+	\int_set_eq:NN \l_pgfgo_kernel_sgf_game_int \l__pgfgo_sgf_saved_game_int
+	\tl_set_eq:NN \l_pgfgo_kernel_sgf_charset_tl \l__pgfgo_sgf_saved_charset_tl
+}
+\cs_generate_variant:Nn \pgfgo_sgf_with_name:nn {V}
+
 \cs_new_protected:Npn \pgfgo_sgf:nn #1#2 {
 	\group_begin:
+		\pgfgo_sgf_use_name:n {#2}
 		\keys_set:nn {pgfgo / sgf} {#1}
 		\tl_set:Nn \l__pgfgo_sgf_file_tl {#2}
 		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgf_variation_tl
@@ -906,6 +954,7 @@
 \NewDocumentCommand \sgfcomment {O{}mm} {
 	\__pgfgo_sgf_if_kernel:n {
 		\group_begin:
+			\pgfgo_sgf_use_name:n {#2}
 			\keys_set:nn {pgfgo / sgf~comment} {#1}
 			\bool_set_eq:NN \l__pgfgo_sgf_annotations_bool \l__pgfgo_sgfcomment_annotations_bool
 			\bool_set_eq:NN \l__pgfgo_sgf_chat_bool \l__pgfgo_sgfcomment_chat_bool
@@ -927,6 +976,7 @@
 \NewDocumentCommand \sgfinfo {O{}mm} {
 	\__pgfgo_sgf_if_kernel:n {
 		\group_begin:
+			\pgfgo_sgf_use_name:n {#2}
 			\keys_set:nn {pgfgo / sgf~info} {#1}
 			\bool_lazy_and:nnTF
 				{\int_compare_p:nNn {\l__pgfgo_sgfinfo_move_int} = {0}}
@@ -1048,6 +1098,7 @@
 
 %LEE LA PARTIDA Y FIJA LOS CUADROS. SEPARADO DE \pgfgo_sgfanimation:nn PARA PODER DIBUJAR CUADROS SUELTOS.
 \cs_new_protected:Npn \pgfgo_sgfanimation_setup:nn #1#2 {
+	\pgfgo_sgf_use_name:n {#2}
 	\keys_set:nn {pgfgo / sgf~animation} {#1}
 	\bool_set_eq:NN \l__pgfgo_sgf_annotations_bool \l__pgfgo_sgfanim_annotations_bool
 	\bool_set_eq:NN \l__pgfgo_sgf_chat_bool \l__pgfgo_sgfanim_chat_bool
@@ -2151,6 +2202,7 @@
 
 \cs_new_protected:Npn \pgfgo_sgfdiagrams:nn #1#2 {
 	\group_begin:
+		\pgfgo_sgf_use_name:n {#2}
 		\keys_set:nn {pgfgo / sgf~diagrams} {#1}
 		\bool_set_eq:NN \l__pgfgo_sgf_annotations_bool \l__pgfgo_sgfdiag_annotations_bool
 		\bool_set_eq:NN \l__pgfgo_sgf_chat_bool \l__pgfgo_sgfdiag_chat_bool
@@ -2543,6 +2595,7 @@
 
 \cs_new_protected:Npn \pgfgo_sgfproblem:nn #1#2 {
 	\group_begin:
+		\pgfgo_sgf_use_name:n {#2}
 		\keys_set:nn {pgfgo / sgf~problem} {#1}
 		\bool_set_eq:NN \l__pgfgo_sgf_annotations_bool \l__pgfgo_sgfprob_annotations_bool
 		\bool_set_eq:NN \l__pgfgo_sgf_chat_bool \l__pgfgo_sgfprob_chat_bool

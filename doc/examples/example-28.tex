@@ -1,0 +1,23 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=9cm]{standalone}
+\usepackage{../../latex/pgf-go}
+
+
+\pgfgoset{profile = pgfgo, goban = {13, label = {at = {south, west}}}}
+
+
+\begin{document}
+	% Each framework is a polygon given by its corners; pgf-go fills its squares and measures it.
+	\begin{goban}
+		\stones[b]{K4, K10, J7, L7}
+		\stones[w]{D4, D10, C7, F3}
+		\territory[b, draw = region]{J3, M3, M11, J11}
+		\territory[w, draw = region]{B2, F2, F5, E5, E11, B11}
+		\marks[triangle]{J10}
+		\arrow{D7}{G7}
+	\end{goban}
+
+	\smallskip
+	Black's framework: \pgfgoregion{b}{area} squares; White's: \pgfgoregion{w}{area}.
+	The triangle shows where White can reduce it.
+\end{document}

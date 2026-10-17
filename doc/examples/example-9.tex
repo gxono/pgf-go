@@ -3,14 +3,15 @@
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
 
+\pgfgodefinesgf{game}{commented.sgf}
 \pgfgoset{goban = {background = {fill = {color = pgfgo}}, label = {at = {south, west}}}}
 
 
 \begin{document}
-	\section*{\sgfinfo{commented.sgf}{GN}}
-	\sgfinfo{commented.sgf}{PB} against \sgfinfo{commented.sgf}{PW},
-	komi \sgfinfo{commented.sgf}{KM}. \sgfcomment{commented.sgf}{0}
+	\section*{\sgfinfo{game}{GN}}
+	\sgfinfo{game}{PB} against \sgfinfo{game}{PW},
+	komi \sgfinfo{game}{KM}. \sgfcomment{game}{0}
 
 	\medskip
-	\sgfdiagrams[step = 9, comments]{commented.sgf}
+	\sgfdiagrams[step = 9, comments]{game}
 \end{document}

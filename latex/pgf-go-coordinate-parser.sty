@@ -13,6 +13,10 @@
 %	LN -| LN		JOTA: PRIMERO HORIZONTAL Y DESPUES VERTICAL.
 %	LN |- LN		GAMMA: PRIMERO VERTICAL Y DESPUES HORIZONTAL.
 %	LN -- LN		LINEA HORIZONTAL O VERTICAL (SI ES DIAGONAL, AVISO diagonal-line).
+%	LN :--: LN		LINEA EN CUALQUIER DIRECCION: UNA PIEDRA POR FILA (O POR COLUMNA, SI AVANZA MAS DE LO
+%				QUE SUBE), LA MAS CERCANA A LA RECTA ENTRE LOS DOS EXTREMOS.
+%	LN :-|: LN		ESA LINEA, Y EN CADA ESCALON LA ESQUINA DE -| (PRIMERO HORIZONTAL): UNA ESCALERA.
+%	LN :|-: LN		LO MISMO CON LA ESQUINA DE |- (PRIMERO VERTICAL).
 %	LN r LN			RECTANGULO HUECO.
 %	LN R LN			RECTANGULO RELLENO.
 %	L[...] O [...]N O [...][...]	LISTAS DE LETRAS O NUMEROS (Y RANGOS) ENTRE CORCHETES (A[1,3:4], [B,D]2, [A:B][4:5]).
@@ -158,6 +162,90 @@
 				{\msg_warning:nnn {pgfgo} {diagonal-line} {#1#2~--~#3#4}}
 		}
 }
+%A1 :--: E6, A1 :-|: E6 Y A1 :|-: E6 (#1: --, -| O |-). LAS PIEDRAS VAN EN EL ORDEN DEL CAMINO, DE LA
+%PRIMERA A LA SEGUNDA. EL EJE LARGO AVANZA DE A UNA; EN EL CORTO, LA POSICION MAS CERCANA A LA RECTA. SI LA
+%RECTA PASA JUSTO ENTRE DOS, GANA LA DEL LADO DEL EXTREMO MAS CERCANO, Y EN EL MEDIO EXACTO, LA MENOR: ASI LA
+%LINEA NO DEPENDE DEL ORDEN DE LOS EXTREMOS Y ES SIMETRICA. LA MISMA CUENTA ESTA EN pgf-go.lua.
+\int_new:N \l__pgfgo_coordinate_x_int
+\int_new:N \l__pgfgo_coordinate_y_int
+\int_new:N \l__pgfgo_coordinate_px_int
+\int_new:N \l__pgfgo_coordinate_py_int
+\int_new:N \l__pgfgo_coordinate_dx_int
+\int_new:N \l__pgfgo_coordinate_dy_int
+\int_new:N \l__pgfgo_coordinate_steps_int
+\int_new:N \l__pgfgo_coordinate_base_int
+\int_new:N \l__pgfgo_coordinate_rest_int
+\cs_new_protected:Npn \__pgfgo_coordinate_stairs:nnnnn #1#2#3#4#5 {
+	\__pgfgo_coordinate_columns:nn {#2} {#4}
+	\int_set:Nn \l__pgfgo_coordinate_dx_int {\l__pgfgo_coordinate_b_int - \l__pgfgo_coordinate_a_int}
+	\int_set:Nn \l__pgfgo_coordinate_dy_int {#5 - #3}
+	\int_set:Nn \l__pgfgo_coordinate_steps_int
+		{\int_max:nn {\int_abs:n {\l__pgfgo_coordinate_dx_int}} {\int_abs:n {\l__pgfgo_coordinate_dy_int}}}
+	\int_compare:nNnTF {\l__pgfgo_coordinate_steps_int} = {0}
+		{\__pgfgo_coordinate_put:nn {\int_use:N \l__pgfgo_coordinate_a_int} {\int_eval:n {#3}}}
+		{
+			\int_step_inline:nnn {0} {\l__pgfgo_coordinate_steps_int} {
+				\int_compare:nNnTF {\int_abs:n {\l__pgfgo_coordinate_dy_int}} < {\int_abs:n {\l__pgfgo_coordinate_dx_int}}
+					{
+						\int_set:Nn \l__pgfgo_coordinate_x_int
+							{\l__pgfgo_coordinate_a_int + \int_sign:n {\l__pgfgo_coordinate_dx_int} * ##1}
+						\__pgfgo_coordinate_offset:nn {\l__pgfgo_coordinate_dy_int} {##1}
+						\int_set:Nn \l__pgfgo_coordinate_y_int
+							{#3 + \int_sign:n {\l__pgfgo_coordinate_dy_int} * \l__pgfgo_coordinate_base_int}
+					}
+					{
+						\int_set:Nn \l__pgfgo_coordinate_y_int {#3 + \int_sign:n {\l__pgfgo_coordinate_dy_int} * ##1}
+						\__pgfgo_coordinate_offset:nn {\l__pgfgo_coordinate_dx_int} {##1}
+						\int_set:Nn \l__pgfgo_coordinate_x_int
+							{\l__pgfgo_coordinate_a_int + \int_sign:n {\l__pgfgo_coordinate_dx_int} * \l__pgfgo_coordinate_base_int}
+					}
+				%EN UN ESCALON (CAMBIAN LAS DOS), LA ESQUINA DE -| O DE |- VA ANTES.
+				\bool_lazy_all:nT
+					{
+						{\int_compare_p:nNn {##1} > {0}}
+						{\int_compare_p:n {\l__pgfgo_coordinate_x_int != \l__pgfgo_coordinate_px_int}}
+						{\int_compare_p:n {\l__pgfgo_coordinate_y_int != \l__pgfgo_coordinate_py_int}}
+					}
+					{
+						\str_case:nn {#1} {
+							{-|} {\__pgfgo_coordinate_put:nn
+								{\int_use:N \l__pgfgo_coordinate_x_int} {\int_use:N \l__pgfgo_coordinate_py_int}}
+							{|-} {\__pgfgo_coordinate_put:nn
+								{\int_use:N \l__pgfgo_coordinate_px_int} {\int_use:N \l__pgfgo_coordinate_y_int}}
+						}
+					}
+				\__pgfgo_coordinate_put:nn {\int_use:N \l__pgfgo_coordinate_x_int} {\int_use:N \l__pgfgo_coordinate_y_int}
+				\int_set_eq:NN \l__pgfgo_coordinate_px_int \l__pgfgo_coordinate_x_int
+				\int_set_eq:NN \l__pgfgo_coordinate_py_int \l__pgfgo_coordinate_y_int
+			}
+		}
+}
+%CON LOS GRUPOS DE SU EXPRESION REGULAR: L1, N1, OPERADOR, L2, N2.
+\cs_new_protected:Npn \__pgfgo_coordinate_stairs_match:nnnnn #1#2#3#4#5 {
+	\__pgfgo_coordinate_stairs:nnnnn {#3} {#1} {#2} {#4} {#5}
+}
+%DEJA EN \l__pgfgo_coordinate_base_int CUANTO SE CORRIO EL EJE CORTO (QUE AVANZA #1 EN TOTAL) EN EL PASO #2
+%DE \l__pgfgo_coordinate_steps_int: |#1| * #2 / PASOS, REDONDEADO (LOS EMPATES COMO SE DICE ARRIBA).
+\cs_new_protected:Npn \__pgfgo_coordinate_offset:nn #1#2 {
+	\int_set:Nn \l__pgfgo_coordinate_base_int
+		{\int_div_truncate:nn {\int_abs:n {#1} * (#2)} {\l__pgfgo_coordinate_steps_int}}
+	\int_set:Nn \l__pgfgo_coordinate_rest_int
+		{2 * (\int_abs:n {#1} * (#2) - \l__pgfgo_coordinate_base_int * \l__pgfgo_coordinate_steps_int)}
+	\int_compare:nNnTF {\l__pgfgo_coordinate_rest_int} = {\l__pgfgo_coordinate_steps_int}
+		{
+			\int_compare:nNnTF {2 * (#2)} = {\l__pgfgo_coordinate_steps_int}
+				{\int_compare:nNnT {#1} < {0} {\int_incr:N \l__pgfgo_coordinate_base_int}}
+				{
+					\int_compare:nNnT {2 * (#2)} > {\l__pgfgo_coordinate_steps_int}
+						{\int_incr:N \l__pgfgo_coordinate_base_int}
+				}
+		}
+		{
+			\int_compare:nNnT {\l__pgfgo_coordinate_rest_int} > {\l__pgfgo_coordinate_steps_int}
+				{\int_incr:N \l__pgfgo_coordinate_base_int}
+		}
+}
+
 %B1 r D3: CADA COLUMNA DA SUS DOS PUNTOS (ABAJO Y ARRIBA) Y DESPUES CADA FILA LOS SUYOS (IZQUIERDA Y DERECHA).
 \cs_new_protected:Npn \__pgfgo_coordinate_frame:nnnn #1#2#3#4 {
 	\__pgfgo_coordinate_columns:nn {#1} {#3}
@@ -192,6 +280,7 @@
 \regex_const:Nn \c__pgfgo_coordinate_jota_regex 	{\A([A-Z]{1})(\d{1,2})\s*-\|\s*([A-Z]{1})(\d{1,2})\Z}
 \regex_const:Nn \c__pgfgo_coordinate_gamma_regex 	{\A([A-Z]{1})(\d{1,2})\s*\|-\s*([A-Z]{1})(\d{1,2})\Z}
 \regex_const:Nn \c__pgfgo_coordinate_line_regex 	{\A([A-Z]{1})(\d{1,2})\s*--\s*([A-Z]{1})(\d{1,2})\Z}
+\regex_const:Nn \c__pgfgo_coordinate_stairs_regex 	{\A([A-Z]{1})(\d{1,2})\s*:(--|-\||\|-):\s*([A-Z]{1})(\d{1,2})\Z}
 \regex_const:Nn \c__pgfgo_coordinate_frame_regex 	{\A([A-Z]{1})(\d{1,2})\s*r\s*([A-Z]{1})(\d{1,2})\Z}
 \regex_const:Nn \c__pgfgo_coordinate_filled_regex 	{\A([A-Z]{1})(\d{1,2})\s*R\s*([A-Z]{1})(\d{1,2})\Z}
 
@@ -204,6 +293,7 @@
 \cs_new_protected:Npn \__pgfgo_coordinate_subset:n #1 {
 	\tl_set:Ne \l__pgfgo_coordinate_subset_tl {#1}
 	\str_if_in:NnTF \l__pgfgo_coordinate_subset_tl {:} {
+		\__pgfgo_coordinate_try:NN \c__pgfgo_coordinate_stairs_regex \__pgfgo_coordinate_stairs_match:nnnnn
 		\__pgfgo_coordinate_try:NN \c__pgfgo_coordinate_LLN_regex \__pgfgo_coordinate_LLN:nnn
 		\__pgfgo_coordinate_try:NN \c__pgfgo_coordinate_LNN_regex \__pgfgo_coordinate_LNN:nnn
 		\__pgfgo_coordinate_try:NN \c__pgfgo_coordinate_LLNN_regex \__pgfgo_coordinate_LLNN:nnnn
@@ -241,7 +331,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %UN OPERADOR ENTRE DOS PUNTOS SE SEPARA DEL SIGUIENTE: A2 -| A3 -| A5 -- B2 ES A2 -| A3, A3 -| A5, A5 -- B2.
-\regex_const:Nn \c__pgfgo_coordinate_chain_regex {( -- | \|- | -\| | r | R) \s* (\w+\d+) \s* ( -- | \|- | -\| | r | R)}
+%LOS DE LA ESCALERA (:--:, :-|:, :|-:) VAN PRIMERO, ASI SU -- NO SE TOMA SOLO.
+\regex_const:Nn \c__pgfgo_coordinate_chain_regex {
+	( :--: | :\|-: | :-\|: | -- | \|- | -\| | r | R) \s* (\w+\d+) \s* ( :--: | :\|-: | :-\|: | -- | \|- | -\| | r | R)
+}
 
 %CORCHETES: [...][...], L[...] Y [...]N.
 \regex_const:Nn \c__pgfgo_coordinate_brackets_both_regex {\[([^\]]*)\]\[([^\]]*)\]}

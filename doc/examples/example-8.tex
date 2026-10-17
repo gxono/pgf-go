@@ -3,17 +3,18 @@
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
 
+\pgfgodefinesgf{game}{commented.sgf}
 \pgfgoset{goban = {background = {fill = {color = pgfgo}}, label = {at = {south, west}}}}
 
 
 \begin{document}
-	\begin{goban}[sgf size = commented.sgf, captures]
-		\sgf[to = 15]{commented.sgf}
+	\begin{goban}[sgf size = game, captures]
+		\sgf[to = 15]{game}
 	\end{goban}
-	\begin{goban}[sgf size = commented.sgf]
-		\sgf[to = 1, variations = children]{commented.sgf}
+	\begin{goban}[sgf size = game]
+		\sgf[to = 1, variations = children]{game}
 	\end{goban}
-	\begin{goban}[sgf size = commented.sgf]
-		\sgf[variation = 2]{commented.sgf}
+	\begin{goban}[sgf size = game]
+		\sgf[variation = 2]{game}
 	\end{goban}
 \end{document}

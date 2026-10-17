@@ -68,8 +68,8 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		La jugada de la que |sgf view| toma la vista. Un |VW| vale desde la jugada de su nodo (o desde la siguiente, si el nodo no tiene jugada) hasta el próximo |VW|, y |VW[]| vuelve a mostrar todo el tablero. Con 0, es la vista del principio. Puede ir antes o después de |sgf view|. |\sgfdiagrams|, |\sgfanimation| y |\sgfproblem| eligen la vista solos.
 
 		\begin{codeexample}[code only]
-			\begin{goban}[sgf view = partida.sgf, sgf view move = 120]
-				\sgf[from = 101, to = 120]{partida.sgf}
+			\begin{goban}[sgf view = partida, sgf view move = 120]
+				\sgf[from = 101, to = 120]{partida}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -78,8 +78,8 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		Toma el tamaño del tablero de una partida SGF (su propiedad |SZ|). Solo con el kernel en Lua (pág.~\pageref{subsec:kernel}).
 
 		\begin{codeexample}[]
-			\begin{goban}[sgf size = variantes.sgf, label = {at = {north, west}}]
-				\sgf{variantes.sgf}
+			\begin{goban}[sgf size = variantes, label = {at = {north, west}}]
+				\sgf{variantes}
 			\end{goban}
 		\end{codeexample}
 	\end{key}

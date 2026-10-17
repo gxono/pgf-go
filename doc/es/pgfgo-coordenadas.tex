@@ -196,7 +196,7 @@ En este ejemplo, \verb+A1 -| D3+ va horizontalmente de A1 a D1 y luego verticalm
 
 \sssseccion{Línea horizontal o vertical}
 
-Dadas dos intersecciones alineadas vertical u horizontalmente, este operador las conecta con una línea recta de piedras. Su sintaxis es |LN -- LN|. Puede encadenarse con los dos comandos anteriores para formar patrones más elaborados. Si las intersecciones no están alineadas, el operador no dibuja nada (quién sabe, quizás en el futuro genere escaleras ;)).
+Dadas dos intersecciones alineadas vertical u horizontalmente, este operador las conecta con una línea recta de piedras. Su sintaxis es |LN -- LN|. Puede encadenarse con los dos comandos anteriores para formar patrones más elaborados. Si las intersecciones no están alineadas, el operador no dibuja nada: para eso están las líneas en cualquier dirección y las escaleras, más abajo.
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}]
@@ -209,7 +209,30 @@ Dadas dos intersecciones alineadas vertical u horizontalmente, este operador las
 
 Aquí, |A1 -- A5| dibuja una línea vertical, mientras que \verb+I9 -| F6 -- I6+ combina un recorrido «horizontal--vertical» con una línea horizontal adicional.
 
-¡Ojo! \verb+A1 -- D1 -| F3+ es un encadenamiento permitido, mientras que \verb+A:D1 -| F3+ no lo es, porque |:| no es un operador de cadena. Esto podría cambiar en futuras versiones del paquete.
+¡Ojo! \verb+A1 -- D1 -| F3+ es un encadenamiento permitido, mientras que \verb+A:D1 -| F3+ no lo es, porque el |:| de los rangos no es un operador de cadena.
+
+\sssseccion{Líneas en cualquier dirección y escaleras}
+
+Para dos intersecciones cualesquiera, |LN :--: LN| dibuja la línea de piedras más parecida a la recta que las une: una piedra por fila (o por columna, si la línea avanza más de lo que sube o baja), la más cercana a la recta. Esas piedras se tocan solo por las esquinas en cada escalón, como en una diagonal, así que en go no forman un grupo. Para que lo formen, \verb+LN :-|: LN+ y \verb+LN :|-: LN+ rellenan cada escalón con la esquina de \verb+-|+ (primero horizontal) o de \verb+|-+ (primero vertical): el resultado es una escalera conectada. Si las dos intersecciones están en una misma fila o columna, los tres operadores dan la misma línea recta.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A1 :--: C7}
+		\stones[fill = {color = blue}]{D1 :-|: F7}
+		\stones[fill = {color = orange}]{G1 :|-: I7}
+	\end{goban}
+\end{codeexample}
+
+Cuando la recta pasa justo entre dos intersecciones, la piedra va del lado del extremo más cercano, y en el medio exacto, a la columna (o la fila) menor. Así, |A1 :--: C5| y |C5 :--: A1| dan las mismas piedras, y la línea queda simétrica, como la recta. En las escaleras el orden sí importa, como en \verb+-|+ y \verb+|-+.
+
+Las intersecciones van en el orden del camino, de la primera a la segunda, con la esquina de cada escalón antes del escalón: |\moves| y |sequence| las numeran a lo largo de la línea. Los tres operadores se encadenan con los demás, como en \verb+A1 :--: E3 -| G6+; los dos puntos son parte del operador, así que no se confunden con un rango.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[7, label = {at = {south, west}}]
+		\stones[w]{A1 :-|: F4}
+		\marks[sequence]{A1 :-|: F4}
+	\end{goban}
+\end{codeexample}
 
 \sssseccion{Rectángulos rellenos y vacíos}
 

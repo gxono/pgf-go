@@ -4,6 +4,8 @@
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
 % maeda-segoe.sgf: Maeda Nobuaki against Segoe Kensaku, 1940. problem.sgf: a problem with its solution.
+\pgfgodefinesgf{game}{maeda-segoe.sgf}
+\pgfgodefinesgf{problem}{problem.sgf}
 \pgfgoset{profile = shell, goban = {label = {at = {south, west}}}}
 
 
@@ -21,27 +23,27 @@
 			\column{0.55\textwidth}
 				\foreach \k in {1, ..., 12} {
 					\only<\k>{
-						\begin{goban}[sgf size = maeda-segoe.sgf, scale = 0.55]
-							\sgf[to = \k, last mark = circle]{maeda-segoe.sgf}
+						\begin{goban}[sgf size = game, scale = 0.55]
+							\sgf[to = \k, last mark = circle]{game}
 						\end{goban}
 					}
 				}
 			\column{0.4\textwidth}
 				\small
-				Black: \sgfinfo{maeda-segoe.sgf}{PB} (\sgfinfo{maeda-segoe.sgf}{BR})\par
-				White: \sgfinfo{maeda-segoe.sgf}{PW} (\sgfinfo{maeda-segoe.sgf}{WR})\par
-				Komi: \sgfinfo{maeda-segoe.sgf}{KM}\par
+				Black: \sgfinfo{game}{PB} (\sgfinfo{game}{BR})\par
+				White: \sgfinfo{game}{PW} (\sgfinfo{game}{WR})\par
+				Komi: \sgfinfo{game}{KM}\par
 				\medskip
 				\foreach \k in {1, ..., 12} {\only<\k>{Move \k}}
 		\end{columns}
 	\end{frame}
 
 	\begin{frame}{The game in diagrams}
-		\sgfdiagrams[step = 100, to = 200, layout = {columns = 2, fit}]{maeda-segoe.sgf}
+		\sgfdiagrams[step = 100, to = 200, layout = {columns = 2, fit}]{game}
 	\end{frame}
 
 	\begin{frame}[t]{A problem}
-		\only<1>{\sgfproblem[solutions = false, goban = {scale = 2}]{problem.sgf}}
-		\only<2>{\sgfproblem[statement = false, layout = {columns = 4, fit}]{problem.sgf}}
+		\only<1>{\sgfproblem[solutions = false, goban = {scale = 2}]{problem}}
+		\only<2>{\sgfproblem[statement = false, layout = {columns = 4, fit}]{problem}}
 	\end{frame}
 \end{document}

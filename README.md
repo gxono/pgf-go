@@ -68,8 +68,12 @@ You can find examples in the `doc/examples` directory:
 - `example-23`: a page of a book: diagrams side by side with `pgfgolayout`, and parts of them in the text with `\pgfgoview`.
 - `example-24`: a style of your own: a profile defined with `\pgfgodefineprofile` and marks defined with `\pgfgodefinemark`.
 - `example-25`: the variations of an SGF file as diagrams of their own, with their comments.
+- `example-26`: a sequence in several diagrams: each one goes on from another (`resume`), with the numbers and the turn, and a variation.
+- `example-27`: the end of a game counted: the captures, the territory found by `\territory{auto}` and the score, as in the file.
+- `example-28`: frameworks drawn as regions from their corners, and their size with `\pgfgoregion`.
+- `example-29`: a ladder, written with lines and stairs in the coordinates (`D4 :-|: F6`, `D5 :--: F7`).
 
-The last page of each example shows its code. The SGF examples need LuaLaTeX.
+The examples that read an SGF file more than once give it a name with `\pgfgodefinesgf`. The last page of each example shows its code. The SGF examples need LuaLaTeX.
 
 ## History
    - version 0.2026.10.13 : Lua compute kernel, captures, SGF games (`\sgf`, `\sgfanimation`, `\sgfdiagrams`), star points, arrows and lines, "3 at 1" notes, territory and score. Both manuals are complete.

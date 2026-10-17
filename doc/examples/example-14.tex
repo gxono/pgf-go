@@ -4,6 +4,7 @@
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
 
+\pgfgodefinesgf{kifu}{kifu.sgf}
 \pgfgoset{
 	goban = {background = {fill = {color = pgfgo}}, label = {at = {north, east}, style = japanese}},
 	lang = ja,
@@ -11,8 +12,8 @@
 
 
 \begin{document}
-	\sgfinfo{kifu.sgf}{GN}：\sgfinfo{kifu.sgf}{PB}対\sgfinfo{kifu.sgf}{PW}、コミ\sgfinfo{kifu.sgf}{KM}。\sgfcomment{kifu.sgf}{0}
+	\sgfinfo{kifu}{GN}：\sgfinfo{kifu}{PB}対\sgfinfo{kifu}{PW}、コミ\sgfinfo{kifu}{KM}。\sgfcomment{kifu}{0}
 
 	\medskip
-	\sgfdiagrams[step = 9, comments]{kifu.sgf}
+	\sgfdiagrams[step = 9, comments]{kifu}
 \end{document}

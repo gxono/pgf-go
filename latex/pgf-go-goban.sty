@@ -119,7 +119,7 @@
 		%EL TAMANO DE LA PARTIDA DE UN ARCHIVO SGF (SZ). SOLO CON kernel = lua.
 		sgf~size					.code:n			= {
 																			\pgfgo_kernel_if_feature:nTF {sgf} {
-																				\pgfgo_kernel_sgf_read:n {#1}
+																				\pgfgo_sgf_with_name:nn {#1} {\pgfgo_kernel_sgf_read:n {#1}}
 																				\int_set_eq:NN \l_pgfgo_goban_size_x_int \l_pgfgo_kernel_sgf_size_x_int
 																				\int_set_eq:NN \l_pgfgo_goban_size_y_int \l_pgfgo_kernel_sgf_size_y_int
 																			}{
@@ -1048,8 +1048,10 @@
 	\bool_new:N \l__pgfgo_goban_sgf_view_bool
 	\cs_new_protected:Npn \__pgfgo_goban_sgf_view: {
 		\pgfgo_kernel_if_feature:nTF {sgf} {
-			\exp_args:NVV \pgfgo_kernel_sgf_read:nn
-				\l__pgfgo_goban_sgf_view_file_tl \l_pgfgo_goban_sgf_view_variation_tl
+			\pgfgo_sgf_with_name:Vn \l__pgfgo_goban_sgf_view_file_tl {
+				\exp_args:NVV \pgfgo_kernel_sgf_read:nn
+					\l__pgfgo_goban_sgf_view_file_tl \l_pgfgo_goban_sgf_view_variation_tl
+			}
 			\int_set_eq:NN \l_pgfgo_goban_size_x_int \l_pgfgo_kernel_sgf_size_x_int
 			\int_set_eq:NN \l_pgfgo_goban_size_y_int \l_pgfgo_kernel_sgf_size_y_int
 			\pgfgo_kernel_sgf_view:nn {\l_pgfgo_goban_sgf_view_from_int} {\l_pgfgo_goban_sgf_view_to_int}

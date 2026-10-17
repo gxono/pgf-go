@@ -8,15 +8,17 @@
 \begin{figure}[H]
 	\centering
 	\begin{goban}[captures, label = {at = {north, west}}]
-		\sgf{partida.sgf}
+		\sgf{partida}
 	\end{goban}
 \end{figure}
 
-En \pgfgoname, todos los diagramas se dibujan dentro del entorno |goban|, y dentro de él, |\sgf| dibuja la partida del archivo. Para leer archivos SGF hay que compilar con Lua\LaTeX\ (pág.~\pageref{subsec:kernel}).
+En \pgfgoname, todos los diagramas se dibujan dentro del entorno |goban|, y dentro de él, |\sgf| dibuja la partida del archivo. Para leer archivos SGF hay que compilar con Lua\LaTeX\ (pág.~\pageref{subsec:kernel}). Como va a usar el archivo muchas veces, primero le da un nombre con |\pgfgodefinesgf| (pág.~\pageref{subsec:sgfnombres}): desde ahí lo llama |partida|, y si el archivo cambia de lugar, lo corrige en un solo sitio.
 
 \begin{codeexample}[width=4.8cm]
+	\pgfgodefinesgf{partida}{partida.sgf}
+
 	\begin{goban}
-		\sgf{partida.sgf}
+		\sgf{partida}
 	\end{goban}
 \end{codeexample}
 
@@ -24,7 +26,7 @@ Las jugadas aparecen numeradas, como en los libros. Pero con la jugada 7 las neg
 
 \begin{codeexample}[width=4.8cm]
 	\begin{goban}[captures]
-		\sgf{partida.sgf}
+		\sgf{partida}
 	\end{goban}
 \end{codeexample}
 
@@ -32,13 +34,13 @@ Para comentar la partida en el texto, \karu\ la detiene en la jugada 7 con |to|.
 
 \begin{codeexample}[width=4.8cm]
 	\begin{goban}[captures]
-		\sgf[to = 7]{partida.sgf}
+		\sgf[to = 7]{partida}
 	\end{goban}
 
-	Jugada 7: \sgfcomment{partida.sgf}{7}
+	Jugada 7: \sgfcomment{partida}{7}
 \end{codeexample}
 
-Esta partida es de $9\times9$, el tamaño que tiene un |goban| por defecto. Para una partida de otro tamaño, |sgf size = partida.sgf| toma el tamaño del archivo; así lo hará \karu\ con una partida de $19\times19$ en la pág.~\pageref{tut:partida}. Allí también verá cómo dibujar una partida larga en una serie de diagramas.
+Esta partida es de $9\times9$, el tamaño que tiene un |goban| por defecto. Para una partida de otro tamaño, |sgf size = partida| toma el tamaño del archivo; así lo hará \karu\ con una partida de $19\times19$ en la pág.~\pageref{tut:partida}. Allí también verá cómo dibujar una partida larga en una serie de diagramas.
 
 \subsection{Una posición a mano}
 \label{tut:posicion}
@@ -495,55 +497,57 @@ Para el artículo, \karu\ prefiere que el territorio se vea como una mancha de c
 \subsection{Una partida entera}
 \label{tut:partida}
 
-Para el final del artículo, \karu\ quiere comentar una partida larga: la primera entre Lee Sedol y AlphaGo, de 2016, guardada en |lee.sgf|. Como en el primer tutorial (pág.~\pageref{tut:primera}), no hace falta escribir sus 186 jugadas: \pgfgoname\ las lee del archivo (pág.~\pageref{subsec:sgf}).
+Para el final del artículo, \karu\ quiere comentar una partida larga: la primera entre Lee Sedol y AlphaGo, de 2016, guardada en |lee.sgf|, que llama |lee|. Como en el primer tutorial (pág.~\pageref{tut:primera}), no hace falta escribir sus 186 jugadas: \pgfgoname\ las lee del archivo (pág.~\pageref{subsec:sgf}).
 
 Lo primero son los datos de la partida, que |\sgfinfo| toma de la raíz del archivo.
 
 \begin{codeexample}[code only]
-	\sgfinfo{lee.sgf}{PB} (negras) contra \sgfinfo{lee.sgf}{PW} (blancas),
-	\sgfinfo{lee.sgf}{EV}, \sgfinfo{lee.sgf}{RO}, \sgfinfo{lee.sgf}{DT}.
-	Resultado: \sgfinfo{lee.sgf}{RE}.
+	\pgfgodefinesgf{lee}{lee.sgf}
+
+	\sgfinfo{lee}{PB} (negras) contra \sgfinfo{lee}{PW} (blancas),
+	\sgfinfo{lee}{EV}, \sgfinfo{lee}{RO}, \sgfinfo{lee}{DT}.
+	Resultado: \sgfinfo{lee}{RE}.
 \end{codeexample}
 
-\sgfinfo{lee.sgf}{PB} (negras) contra \sgfinfo{lee.sgf}{PW} (blancas),
-\sgfinfo{lee.sgf}{EV}, \sgfinfo{lee.sgf}{RO}, \sgfinfo{lee.sgf}{DT}.
-Resultado: \sgfinfo{lee.sgf}{RE}.
+\sgfinfo{lee}{PB} (negras) contra \sgfinfo{lee}{PW} (blancas),
+\sgfinfo{lee}{EV}, \sgfinfo{lee}{RO}, \sgfinfo{lee}{DT}.
+Resultado: \sgfinfo{lee}{RE}.
 
 |\sgfinfo| escribe el resultado tal como está en el archivo; más adelante, |\sgfdiagrams| lo escribe en palabras.
 
 La partida es de $19\times19$: |sgf size| le da al tablero el tamaño que dice el archivo. Con |to|, \karu\ la muestra hasta la jugada 30, y con |scale|, achica el tablero.
 
 \begin{codeexample}[]
-	\begin{goban}[sgf size = lee.sgf, captures, scale = 0.6]
-		\sgf[to = 30]{lee.sgf}
+	\begin{goban}[sgf size = lee, captures, scale = 0.6]
+		\sgf[to = 30]{lee}
 	\end{goban}
 \end{codeexample}
 
 Para comentar un tramo, \karu\ numera solo las jugadas desde la 21 con |from|: las anteriores se dibujan sin número.
 
 \begin{codeexample}[]
-	\begin{goban}[sgf size = lee.sgf, captures, scale = 0.6]
-		\sgf[from = 21, to = 30]{lee.sgf}
+	\begin{goban}[sgf size = lee, captures, scale = 0.6]
+		\sgf[from = 21, to = 30]{lee}
 	\end{goban}
 \end{codeexample}
 
 Después, \karu\ quiere la partida entera, como en los libros: un diagrama cada 50 jugadas, cada uno con su epígrafe y sus notas «N en M», y el resultado al final. Eso hace |\sgfdiagrams|, que se usa fuera de |goban|. Con |layout|, los diagramas van en una grilla de dos columnas, y con |fit| se escalan para llenarlas (pág.~\pageref{subsec:disposicion}). Aquí se muestran solo los dos últimos, con |from|.
 
 \begin{codeexample}[code only]
-	\sgfdiagrams[step = 50, from = 101, layout = {columns = 2, fit}]{lee.sgf}
+	\sgfdiagrams[step = 50, from = 101, layout = {columns = 2, fit}]{lee}
 \end{codeexample}
 
-\sgfdiagrams[step = 50, from = 101, layout = {columns = 2, fit}]{lee.sgf}
+\sgfdiagrams[step = 50, from = 101, layout = {columns = 2, fit}]{lee}
 
 El epígrafe y el resultado están en castellano porque el documento usa |babel| en castellano (pág.~\pageref{subsec:idiomas}). Algunos libros reinician la numeración en cada diagrama; con |restart|, cada diagrama, desde el segundo, numera desde 1.
 
 \begin{codeexample}[code only]
 	\sgfdiagrams[step = 50, from = 51, to = 150, restart,
-		goban = {label = {at = {north, west}}}, layout = {columns = 2, fit}]{lee.sgf}
+		goban = {label = {at = {north, west}}}, layout = {columns = 2, fit}]{lee}
 \end{codeexample}
 
 \sgfdiagrams[step = 50, from = 51, to = 150, restart,
-	goban = {label = {at = {north, west}}}, layout = {columns = 2, fit}]{lee.sgf}
+	goban = {label = {at = {north, west}}}, layout = {columns = 2, fit}]{lee}
 
 \subsection{Variantes: recordar un tablero}
 \label{tut:variantes}
@@ -622,28 +626,30 @@ Un tablero con nombre también sirve para comparar estilos. Antes de elegir el p
 Para sus estudiantes, \karu\ prepara un cuaderno de problemas de vida y muerte. Los problemas suelen guardarse también en SGF: la posición inicial, quién juega y un árbol con cada variante de la solución, correcta o no, con sus comentarios. |\sgfproblem| dibuja todo eso: primero el enunciado y después un diagrama por variante. Si el archivo no dice qué parte del tablero mostrar, se muestra solo la que usa el problema.
 
 \begin{codeexample}[code only]
-	\sgfproblem[title = Problema 1]{problema.sgf}
+	\pgfgodefinesgf{problema}{problema.sgf}
+
+	\sgfproblem[title = Problema 1]{problema}
 \end{codeexample}
 
-\sgfproblem[title = Problema 1]{problema.sgf}
+\sgfproblem[title = Problema 1]{problema}
 
 En un cuaderno, las soluciones no van junto al enunciado. \karu\ pone los enunciados en la primera parte, con |solutions = false|, y las soluciones al final, con |statement = false|.
 
 \begin{codeexample}[code only]
-	\sgfproblem[title = Problema 1, solutions = false]{problema.sgf}
+	\sgfproblem[title = Problema 1, solutions = false]{problema}
 	% ... al final del cuaderno:
-	\sgfproblem[statement = false, layout = {columns = 4, fit}]{problema.sgf}
+	\sgfproblem[statement = false, layout = {columns = 4, fit}]{problema}
 \end{codeexample}
 
-\sgfproblem[title = Problema 1, solutions = false]{problema.sgf}
+\sgfproblem[title = Problema 1, solutions = false]{problema}
 
-\sgfproblem[statement = false, layout = {columns = 4, fit}]{problema.sgf}
+\sgfproblem[statement = false, layout = {columns = 4, fit}]{problema}
 
 Algunos problemas no están en ningún archivo, y \karu\ los dibuja a mano, con la misma parte del tablero que muestra |\sgfproblem|. Para que tengan el mismo tamaño que los demás, los pone junto con los de |\sgfproblem| en un mismo |pgfgolayout|, que acomoda en una grilla todos los tableros que contiene.
 
 \begin{codeexample}[code only]
 	\begin{pgfgolayout}[columns = 3, fit]
-		\sgfproblem[title = Problema 1, solutions = false]{problema.sgf}
+		\sgfproblem[title = Problema 1, solutions = false]{problema}
 		\begin{goban}[19, partial = A16:F19]
 			\stones[b]{A:C16, D17, E18:19}
 			\stones[w]{A:C17, D18:19}
@@ -656,7 +662,7 @@ Algunos problemas no están en ningún archivo, y \karu\ los dibuja a mano, con 
 \end{codeexample}
 
 \begin{pgfgolayout}[columns = 3, fit]
-	\sgfproblem[title = Problema 1, solutions = false]{problema.sgf}
+	\sgfproblem[title = Problema 1, solutions = false]{problema}
 	\begin{goban}[19, partial = A16:F19]
 		\stones[b]{A:C16, D17, E18:19}
 		\stones[w]{A:C17, D18:19}
@@ -796,13 +802,13 @@ Un perfil vale para todo lo que dibuja \pgfgoname, también para los diagramas d
 \begin{codeexample}[code only]
 	\pgfgoset{profile = madera}
 
-	\sgfdiagrams[step = 50, restart, layout = {columns = 2, fit}]{lee.sgf}
+	\sgfdiagrams[step = 50, restart, layout = {columns = 2, fit}]{lee}
 \end{codeexample}
 
 \begingroup
 \pgfgoset{profile = madera}
 
-\sgfdiagrams[step = 50, restart, layout = {columns = 2, fit}]{lee.sgf}
+\sgfdiagrams[step = 50, restart, layout = {columns = 2, fit}]{lee}
 \endgroup
 
 \subsection{Diapositivas y animaciones}
@@ -820,12 +826,12 @@ Un perfil vale para todo lo que dibuja \pgfgoname, también para los diagramas d
 				\column{0.5\textwidth}
 					\foreach \k in {1, ..., 10} {
 						\only<\k>{
-							\begin{goban}[sgf size = partida.sgf, captures, scale = 1.5]
-								\sgf[to = \k]{partida.sgf}
+							\begin{goban}[sgf size = partida, captures, scale = 1.5]
+								\sgf[to = \k]{partida}
 							\end{goban}}}
 				\column{0.45\textwidth}
 					\foreach \k in {1, ..., 10} {
-						\only<\k>{\small\sgfcomment{partida.sgf}{\k}}}
+						\only<\k>{\small\sgfcomment{partida}{\k}}}
 			\end{columns}
 		\end{frame}
 	\end{document}
@@ -836,7 +842,7 @@ Para repasar la partida entera, en cambio, le alcanzan los diagramas del apéndi
 \begin{codeexample}[code only]
 	\begin{frame}{Lee Sedol contra AlphaGo}
 		\centering
-		\sgfdiagrams[step = 50, goban = {scale = 0.6}, layout = {per frame}]{lee.sgf}
+		\sgfdiagrams[step = 50, goban = {scale = 0.6}, layout = {per frame}]{lee}
 	\end{frame}
 \end{codeexample}
 
@@ -846,13 +852,13 @@ En un PDF para leer en pantalla, en cambio, prefiere una animación: |\sgfanimat
 	\pgfgoset{profile = madera}
 
 	\sgfanimation[to = 40, fps = 4, goban = {captures, scale = 0.5},
-		animate = {controls, loop}]{lee.sgf}
+		animate = {controls, loop}]{lee}
 \end{codeexample}
 
 \begin{center}
 	\pgfgoset{profile = madera}
 	\sgfanimation[to = 40, fps = 4, goban = {captures, scale = 0.5},
-		animate = {controls, loop}]{lee.sgf}
+		animate = {controls, loop}]{lee}
 \end{center}
 
 \subsection{Otros idiomas}
@@ -863,15 +869,15 @@ Un colega de \karu\ quiere traducir el cuaderno al francés. Los textos que escr
 \begin{codeexample}[code only]
 	\pgfgoset{lang = fr}
 
-	\sgfdiagrams[step = 5, layout = {columns = 2}]{partida.sgf}
-	\sgfproblem[solutions = false]{problema.sgf}
+	\sgfdiagrams[step = 5, layout = {columns = 2}]{partida}
+	\sgfproblem[solutions = false]{problema}
 \end{codeexample}
 
 \begingroup
 \pgfgoset{lang = fr}
 
-\sgfdiagrams[step = 5, layout = {columns = 2}]{partida.sgf}
-\sgfproblem[solutions = false]{problema.sgf}
+\sgfdiagrams[step = 5, layout = {columns = 2}]{partida}
+\sgfproblem[solutions = false]{problema}
 \endgroup
 
 El comentario del problema, «Negras matan.», no se traduce: está escrito así en el archivo. Cada texto del paquete puede cambiarse, además, con su propia \emph{key}, en cualquier idioma: por ejemplo, el epígrafe de los diagramas, con |title|.

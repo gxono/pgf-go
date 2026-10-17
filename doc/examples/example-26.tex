@@ -1,0 +1,24 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=14cm]{standalone}
+\usepackage{../../latex/pgf-go}
+
+
+\pgfgoset{profile = pgfgo, goban = {19, partial = A1:H8, label = {at = {south, west}}}}
+
+
+\begin{document}
+	% Each diagram goes on from the board of another one (resume): the stones are already there, and the
+	% numbers and the turn go on. The third one is a variation of the first.
+	\begin{pgfgolayout}[columns = 3, fit]
+		\begin{goban}[name = first]
+			\stones[b]{D4}
+			\moves*[w]{C3, D3, C4, D5}
+		\end{goban}
+		\begin{goban}[resume = first]
+			\moves*{B5, B6, C6, C7}
+		\end{goban}
+		\begin{goban}[resume = first]
+			\moves*{B6, C6, B5}
+		\end{goban}
+	\end{pgfgolayout}
+\end{document}

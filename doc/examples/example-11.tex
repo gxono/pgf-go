@@ -5,29 +5,30 @@
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
 
+\pgfgodefinesgf{game}{commented.sgf}
 \pgfgoset{goban = {background = {fill = {color = pgfgo}}, label = {at = {south, west}}}}
 
 
 \begin{document}
-	\begin{frame}[t]{\sgfinfo{commented.sgf}{GN}}
+	\begin{frame}[t]{\sgfinfo{game}{GN}}
 		\begin{columns}[T]
 			\column{0.5\textwidth}
 				\foreach \k in {1, ..., 19} {
 					\only<\k>{
-						\begin{goban}[sgf size = commented.sgf, captures, scale = 1.5]
-							\sgf[to = \k - 1]{commented.sgf}
+						\begin{goban}[sgf size = game, captures, scale = 1.5]
+							\sgf[to = \k - 1]{game}
 						\end{goban}
 					}
 				}
 			\column{0.45\textwidth}
 				\foreach \k in {1, ..., 19} {
-					\only<\k>{\small\sgfcomment{commented.sgf}{\k - 1}}
+					\only<\k>{\small\sgfcomment{game}{\k - 1}}
 				}
 		\end{columns}
 	\end{frame}
 
 	\begin{frame}{The same game with \texttt{animate}}
 		\centering
-		\sgfanimation[comments = {true, height = 4em}, goban = {captures, scale = 1.2}]{commented.sgf}
+		\sgfanimation[comments = {true, height = 4em}, goban = {captures, scale = 1.2}]{game}
 	\end{frame}
 \end{document}

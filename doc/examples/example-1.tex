@@ -1,32 +1,31 @@
 \input{code-page}
-\documentclass[border=0.5cm]{standalone}
+\documentclass[border=0.5cm, varwidth=6.2cm]{standalone}
 \usepackage{../../latex/pgf-go}
 
 
 \pgfgoset{profile = pgfgosmooth}
 
+
 \begin{document}
-	\vbox{
-	\hbox{
-	\begin{goban}[partial = A9:E5]
-		\stone[b]{C7}
-		\marks[sequence]{C8, D7, C6, B7}
-	\end{goban}\thinspace
-	\begin{goban}[partial = E9:I5]
-		\stone[b]{G7}
-		\stone[w]{F7}
-		\marks[sequence]{G8, H7, G6}
-	\end{goban}}
-	\hbox{
-	\begin{goban}[partial = A1:E5]
-		\stone[b]{C3}
-		\stones[w]{B3,C2}
-		\marks[sequence]{C4, D3}
-	\end{goban}\thinspace
-	\begin{goban}[partial = E1:I5]
-		\stone[b]{G3}
-		\stones[w]{F3,G2, H3}
-		\marks[sequence]{G4}
-	\end{goban}
-}}
+	\begin{pgfgolayout}[columns = 2]
+		\begin{goban}[partial = A9:E5]
+			\stone[b]{C7}
+			\marks[sequence]{C8, D7, C6, B7}
+		\end{goban}
+		\begin{goban}[partial = E9:I5]
+			\stone[b]{G7}
+			\stone[w]{F7}
+			\marks[sequence]{G8, H7, G6}
+		\end{goban}
+		\begin{goban}[partial = A1:E5]
+			\stone[b]{C3}
+			\stones[w]{B3,C2}
+			\marks[sequence]{C4, D3}
+		\end{goban}
+		\begin{goban}[partial = E1:I5]
+			\stone[b]{G3}
+			\stones[w]{F3,G2, H3}
+			\marks[sequence]{G4}
+		\end{goban}
+	\end{pgfgolayout}
 \end{document}

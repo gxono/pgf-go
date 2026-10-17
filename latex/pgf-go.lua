@@ -213,11 +213,60 @@ local function sorted_range(a, b)
 	end
 end
 
+-- A1 :--: E6, A1 :-|: E6 Y A1 :|-: E6 (mode: "--", "-|" O "|-"), EN EL ORDEN DEL CAMINO. EL EJE LARGO AVANZA
+-- DE A UNA; EN EL CORTO, LA POSICION MAS CERCANA A LA RECTA. EN UN EMPATE GANA LA DEL LADO DEL EXTREMO MAS
+-- CERCANO, Y EN EL MEDIO EXACTO, LA MENOR. EN CADA ESCALON, -| Y |- PONEN ANTES SU ESQUINA. LA MISMA CUENTA
+-- ESTA EN pgf-go-coordinate-parser.sty (\__pgfgo_coordinate_stairs:nnnnn).
+local function stairs(out, mode, x1, y1, x2, y2)
+	local dx, dy = x2 - x1, y2 - y1
+	local n = math.max(math.abs(dx), math.abs(dy))
+	if n == 0 then
+		out(x1, y1)
+		return
+	end
+	local function offset(d, i)
+		local a = math.abs(d) * i
+		local base = a // n
+		local rest = 2 * (a - base * n)
+		if rest > n or (rest == n and (2 * i > n or (2 * i == n and d < 0))) then
+			base = base + 1
+		end
+		return (d < 0 and -1 or 1) * base
+	end
+	local px, py
+	for i = 0, n do
+		local x, y
+		if math.abs(dy) < math.abs(dx) then
+			x, y = x1 + (dx < 0 and -i or i), y1 + offset(dy, i)
+		else
+			x, y = x1 + offset(dx, i), y1 + (dy < 0 and -i or i)
+		end
+		if px and x ~= px and y ~= py then
+			if mode == "-|" then
+				out(x, py)
+			elseif mode == "|-" then
+				out(px, y)
+			end
+		end
+		out(x, y)
+		px, py = x, y
+	end
+end
+
 -- CADA FORMA DE SUBCONJUNTO, EN EL ORDEN EN QUE SE PRUEBAN. c ES LA COLUMNA (LETRA -> NUMERO) Y w
 -- LA PARTE VISIBLE. LAS FILAS QUE SE ESCRIBEN TAL CUAL (C05) QUEDAN COMO TEXTO, COMO EN expl3.
 local subsets = {
 	{"^([A-Z])(%d%d?)$", function(out, c, w, l, n)
 		out(c(l), n)
+	end},
+	{"^([A-Z])(%d%d?)%s*:(%-%-):%s*([A-Z])(%d%d?)$", function(out, c, w, l1, n1, op, l2, n2)
+		stairs(out, op, c(l1), tonumber(n1), c(l2), tonumber(n2))
+	end},
+	{"^([A-Z])(%d%d?)%s*:(%-|):%s*([A-Z])(%d%d?)$", function(out, c, w, l1, n1, op, l2, n2)
+		stairs(out, op, c(l1), tonumber(n1), c(l2), tonumber(n2))
+	end},
+	{"^([A-Z])(%d%d?)%s*:(|%-):%s*([A-Z])(%d%d?)$", function(out, c, w, l1, n1, op, l2, n2)
+		stairs(out, op, c(l1), tonumber(n1), c(l2), tonumber(n2))
 	end},
 	{"^([A-Z]):([A-Z])%s*(%d%d?)$", function(out, c, w, l1, l2, n)
 		for x in sorted_range(c(l1), c(l2)) do out(x, n) end
@@ -305,9 +354,9 @@ local function expand_subset(subset, c, w)
 end
 
 
--- CADENAS DE OPERADORES: A2 -| A3 -| A5 SE PARTE EN A2 -| A3, A3 -| A5. REPRODUCE LA EXPRESION
--- REGULAR (--|\|-|-\||r|R)\s*(\w+\d+)\s*(--|\|-|-\||r|R) DEL KERNEL expl3, CON SU BACKTRACKING.
-local operators = {"--", "|-", "-|", "r", "R"}
+-- CADENAS DE OPERADORES: A2 -| A3 -| A5 SE PARTE EN A2 -| A3, A3 -| A5. REPRODUCE LA EXPRESION REGULAR
+-- (:--:|:\|-:|:-\|:|--|\|-|-\||r|R)\s*(\w+\d+)\s*(...) DEL KERNEL expl3, CON SU BACKTRACKING.
+local operators = {":--:", ":|-:", ":-|:", "--", "|-", "-|", "r", "R"}
 
 local function operators_at(s, i)
 	local found = {}
@@ -349,7 +398,7 @@ local function expand_chains(s)
 		local out, i, replaced = {}, 1, false
 		while i <= #s do
 			-- UNA CADENA SOLO PUEDE EMPEZAR DONDE EMPIEZA UN OPERADOR; LO DEMAS PASA TAL CUAL.
-			local j = s:find("[-|rR]", i)
+			local j = s:find("[-|rR:]", i)
 			if not j then
 				insert(out, s:sub(i))
 				break

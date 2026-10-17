@@ -2,16 +2,18 @@
 \documentclass[border=0.5cm, varwidth=15cm]{standalone}
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
-% maeda-segoe.sgf: Maeda Nobuaki against Segoe Kensaku, 1940 (moves only).
+% maeda-segoe.sgf: Maeda Nobuaki against Segoe Kensaku, 1940 (moves only). With a name, the file is
+% written only once.
+\pgfgodefinesgf{game}{maeda-segoe.sgf}
 \pgfgoset{profile = yunzi, goban = {label = {at = {south, west}}}}
 
 
 \begin{document}
-	\section*{\sgfinfo{maeda-segoe.sgf}{PB} -- \sgfinfo{maeda-segoe.sgf}{PW}}
-	Black: \sgfinfo{maeda-segoe.sgf}{PB} \sgfinfo{maeda-segoe.sgf}{BR}.
-	White: \sgfinfo{maeda-segoe.sgf}{PW} \sgfinfo{maeda-segoe.sgf}{WR}.
-	Komi \sgfinfo{maeda-segoe.sgf}{KM}. Played in 1940.
+	\section*{\sgfinfo{game}{PB} -- \sgfinfo{game}{PW}}
+	Black: \sgfinfo{game}{PB} \sgfinfo{game}{BR}.
+	White: \sgfinfo{game}{PW} \sgfinfo{game}{WR}.
+	Komi \sgfinfo{game}{KM}. Played in 1940.
 
 	\medskip
-	\sgfdiagrams[step = 50, goban = {captures}, layout = {columns = 2, fit}]{maeda-segoe.sgf}
+	\sgfdiagrams[step = 50, goban = {captures}, layout = {columns = 2, fit}]{game}
 \end{document}

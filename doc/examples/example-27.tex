@@ -1,0 +1,21 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=8cm]{standalone}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+
+\pgfgodefinesgf{game}{commented.sgf}
+\pgfgoset{profile = pgfgo, goban = {label = {at = {south, west}}}}
+
+
+\begin{document}
+	% The end of a game: pgf-go plays it with the captures, finds the territory and counts it.
+	\begin{goban}[sgf size = game, captures]
+		\sgf[marks = false, numbers = false]{game}
+		\prisoner[w]{B3} % The dead white stone.
+		\territory{auto}
+	\end{goban}
+
+	\smallskip
+	Black \pgfgoscore{b}, White \pgfgoscore[komi = 6.5]{w}.
+	Result in the file: \sgfinfo{game}{RE}.
+\end{document}

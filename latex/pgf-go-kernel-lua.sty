@@ -171,7 +171,20 @@
 
 %EL NOMBRE DE UN ARCHIVO SGF PARA Lua. \text_expand:n DEJA \& \# \% \$ \{ \} SIN EXPANDIR (\$ COMO
 %\protect \$); pgf-go.lua LES SACA LA BARRA.
-\cs_new:Npn \__pgfgo_kernel_lua_file:n #1 {\lua_escape:e {\text_expand:n {#1}}}
+%UN NOMBRE DEFINIDO CON \pgfgo_kernel_sgf_define:nn ES SU ARCHIVO, YA PREPARADO PARA Lua. EL NOMBRE SE
+%BUSCA YA EXPANDIDO: PUEDE LLEGAR EN UNA VARIABLE (\sgfproblem, sgf view).
+\prop_new:N \g__pgfgo_kernel_lua_sgf_names_prop
+\cs_new:Npn \__pgfgo_kernel_lua_file:n #1 {\__pgfgo_kernel_lua_name:e {\text_expand:n {#1}}}
+\cs_new:Npn \__pgfgo_kernel_lua_name:n #1 {
+	\prop_if_in:NnTF \g__pgfgo_kernel_lua_sgf_names_prop {#1}
+		{\prop_item:Nn \g__pgfgo_kernel_lua_sgf_names_prop {#1}}
+		{\lua_escape:n {#1}}
+}
+\cs_generate_variant:Nn \__pgfgo_kernel_lua_name:n {e}
+\cs_new_protected:Npn \pgfgo_kernel_sgf_define:nn #1#2 {
+	\prop_gput:Nee \g__pgfgo_kernel_lua_sgf_names_prop {\text_expand:n {#1}} {\lua_escape:e {\text_expand:n {#2}}}
+}
+\cs_generate_variant:Nn \prop_gput:Nnn {Nee}
 
 \cs_new_protected:Npn \pgfgo_kernel_sgf_read:n #1 {\pgfgo_kernel_sgf_read:nn {#1} {}}
 

@@ -6,6 +6,21 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- Lines in any direction and stairs in the coordinates: `A1 :--: E6` puts
+  one stone per row (or per column) on the stone nearest to the straight line
+  between the two ends; `A1 :-|: E6` and `A1 :|-: E6` fill each step with the
+  corner of `-|` or `|-`, so the stones make a connected staircase. When the
+  line passes exactly between two points, the stone goes to the side of the
+  nearest end (in the exact middle, to the smaller column or row): the line
+  does not depend on the order of its ends. The points come in the order of
+  the path, and the three operators chain with the others. Both kernels.
+- Names for SGF files: `\pgfgodefinesgf[game = 2, charset = GBK]{lee}{games/lee.sgf}`
+  and then `lee` goes wherever a file goes (`\sgf`, `\sgfinfo`,
+  `\sgfcomment`, `\sgfdiagrams`, `\sgfproblem`, `\sgfanimation`, `sgf size`
+  and `sgf view`). The path, the game and the charset are written once; the
+  options of each command win over those of the name. A name that is not
+  defined is a file, as before. New kernel function
+  `\pgfgo_kernel_sgf_define:nn`.
 - Two profiles drawn with images: `shell` (a wooden board, slate and shell
   stones, five white stones with their own stripes, turned a little at
   random, and a soft shadow) and `yunzi` (the same board with matte stones).
@@ -387,6 +402,16 @@ All notable changes to `pgf-go` are listed here.
   text and a grid of diagrams (`example-23`), a profile and marks of your
   own (`example-24`) and the variations of a file as diagrams
   (`example-25`).
+- The examples and the Spanish manual give their SGF files a name with
+  `\pgfgodefinesgf` and use the name; the first tutorial explains why.
+- New examples: a sequence in several diagrams with `resume` and a
+  variation (`example-26`), the count of a finished game (`example-27`)
+  and frameworks as regions (`example-28`).
+- New example: a ladder (`example-29`), drawn with lines and stairs.
+- The examples have only the code they need: `example-0` and `example-4`
+  set a background that their profile replaced, and `example-1` and
+  `example-6` place the boards with `pgfgolayout` instead of boxes and
+  tables.
 - `example-5` and `example-7` drew the same boards as `example-0` and
   `example-1` with another profile; now they show the styles of the
   coordinates and a collection of games (`games.sgf`).
@@ -425,6 +450,10 @@ All notable changes to `pgf-go` are listed here.
 - New cases for problems, print modes, views during the game, results,
   coordinate styles and charsets.
 - The examples can ask for two runs (`% passes: 2`).
+- New case `stairs`: lines and stairs, their ties in both orders, the order
+  of the points, chains and subtraction (the same with `--kernel expl3`).
+- New case `sgf-names`: names for SGF files, their game and charset, and the
+  options of a command over them.
 - New case for unusual file names (`file-names`); a test can choose its job
   name (`% jobname:`).
 - `run_tests.py` compiles files whose name has spaces, and a PDF that

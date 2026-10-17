@@ -4,15 +4,16 @@
 
 % games.sgf is a collection: several games in one file, one after the other. game chooses one of them;
 % each game keeps its own board size.
+\pgfgodefinesgf{games}{games.sgf}
 \pgfgoset{profile = pgfgo, goban = {label = {at = {south, west}}}}
 
 
 \begin{document}
 	\foreach \g in {1, 2} {
-		\subsection*{Game \g: \sgfinfo[game = \g]{games.sgf}{PB} -- \sgfinfo[game = \g]{games.sgf}{PW}}
-		Result: \sgfinfo[game = \g]{games.sgf}{RE}.
+		\subsection*{Game \g: \sgfinfo[game = \g]{games}{PB} -- \sgfinfo[game = \g]{games}{PW}}
+		Result: \sgfinfo[game = \g]{games}{RE}.
 
 		\medskip
-		\sgfdiagrams[game = \g, step = 20, to = 40, layout = {columns = 2, fit}]{games.sgf}
+		\sgfdiagrams[game = \g, step = 20, to = 40, layout = {columns = 2, fit}]{games}
 	}
 \end{document}

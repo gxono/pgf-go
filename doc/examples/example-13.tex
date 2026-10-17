@@ -4,16 +4,17 @@
 \usepackage[kernel = lua]{../../latex/pgf-go}
 
 
+\pgfgodefinesgf{partida}{comentada.sgf}
 \pgfgoset{
 	goban = {background = {fill = {color = pgfgo}}, label = {at = {south, west}}},
 }
 
 
 \begin{document}
-	\section*{\sgfinfo{comentada.sgf}{GN}}
-	\sgfinfo{comentada.sgf}{PB} contra \sgfinfo{comentada.sgf}{PW},
-	komi \sgfinfo{comentada.sgf}{KM}. \sgfcomment{comentada.sgf}{0}
+	\section*{\sgfinfo{partida}{GN}}
+	\sgfinfo{partida}{PB} contra \sgfinfo{partida}{PW},
+	komi \sgfinfo{partida}{KM}. \sgfcomment{partida}{0}
 
 	\medskip
-	\sgfdiagrams[step = 9, comments]{comentada.sgf}
+	\sgfdiagrams[step = 9, comments]{partida}
 \end{document}

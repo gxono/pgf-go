@@ -105,6 +105,8 @@
 %\l_pgfgo_kernel_sgf_charset_tl O, SI ES auto, EN LA DE CA (Latin-1 SI NO HAY): Latin-1, GBK (Y GB2312),
 %Big5, Shift_JIS, EUC-JP O EUC-KR. OTRA CODIFICACION DA EL AVISO sgf-charset Y SE LEE COMO Latin-1. SIN CA,
 %UN ARCHIVO QUE PARECE DE DOS BYTES DA EL AVISO sgf-guess-charset. UTF-16 CON BOM SE PASA A UTF-8.
+%	\pgfgo_kernel_sgf_define:nn {<nombre>}{<archivo>}
+%		DESDE AHORA, <nombre> EN EL LUGAR DE UN ARCHIVO (EN TODAS LAS FUNCIONES DE ABAJO) ES <archivo>.
 %	\pgfgo_kernel_sgf_read:nn {<archivo>}{<variante>}
 %		LEE UNA LINEA DE LA PARTIDA. <variante> ES UNA LISTA DE NUMEROS (2.1): EN CADA
 %		BIFURCACION SE TOMA ESA VARIANTE (1 ES LA PRINCIPAL); CUANDO SE TERMINA, SE SIGUE POR LA PRIMERA.
@@ -219,6 +221,7 @@
 	pgfgo_kernel_territory:n
 }
 \clist_const:Nn \c__pgfgo_kernel_sgf_clist {
+	pgfgo_kernel_sgf_define:nn,
 	pgfgo_kernel_sgf_read:n,
 	pgfgo_kernel_sgf_read:nn,
 	pgfgo_kernel_sgf_comment:nn,

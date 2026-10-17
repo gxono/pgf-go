@@ -21,6 +21,8 @@
 			\item SGF: la numeración que pide |PM| (|numbers| y |restart = auto|), y la vista (|VW|) cuando cambia durante la partida (|sgf view move|; |\sgfdiagrams| y |\sgfanimation| la usan solos). |\sgfdiagrams| escribe el resultado y el puntaje debajo del último diagrama (|result|).
 			\item Las coordenadas del borde pueden ser letras, números o kanji en cada eje, contados desde cualquier lado (|columns|, |rows|, |style = japanese|, etc.).
 			\item SGF: se leen archivos en GBK, Big5, Shift\_JIS, EUC-JP y EUC-KR (|CA| o |sgf charset|).
+			\item Líneas en cualquier dirección y escaleras en las coordenadas: |A1 :--: E6|, \verb+A1 :-|: E6+ y \verb+A1 :|-: E6+.
+			\item SGF: nombres para los archivos, con |\pgfgodefinesgf| (pág.~\pageref{subsec:sgfnombres}): la ruta, la partida y la codificación se escriben una sola vez.
 			\item Dos perfiles con imágenes, |shell| y |yunzi| (pág.~\pageref{subsec:perfilshell}): un tablero de madera con piedras de pizarra y concha, o mates. Las imágenes vienen con el paquete, en la carpeta |img|.
 		\end{itemize}
 	\item 0.2025.03.13: Corrección de errores. Cada |goban| empieza en la jugada 1 con negras, |\mark| y |\marks| solo existen dentro de |goban|, y lo que cae fuera de un tablero parcial ya no se dibuja. La lista completa está en el archivo |CHANGELOG.md|.

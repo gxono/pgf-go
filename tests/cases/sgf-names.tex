@@ -1,0 +1,58 @@
+% engines: lualatex
+% expect-warnings: 1
+% expect-errors: 0
+%
+% Names for SGF files (\pgfgodefinesgf): the name instead of the file in every command, the game and
+% the charset of the name, the options of a command win over them, a name in \sgfproblem and in a
+% macro, and a name that is also a file.
+% The only warning: sgf size = coleccion (game 2, 9x9) must not leave game 2 for the next \sgf, which
+% reads game 1 of collection.sgf (5x5) on that 9x9 board.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+
+% cs-forced.sgf has no CA: with the charset of the name it is read as GBK. A wrong comment is an error.
+\ExplSyntaxOn
+\msg_new:nnn {pgfgo-test} {charset} {Wrong~comment~'#1'.}
+\pgfgodefinesgf[charset = GBK]{chino}{cs-forced.sgf}
+\pgfgo_sgf_with_name:nn {chino} {\pgfgo_kernel_sgf_read:n {chino}}
+\str_if_eq:eeF {\pgfgo_kernel_sgf_comment:nn {0} {true}} {黑先活。}
+	{\msg_error:nne {pgfgo-test} {charset} {\pgfgo_kernel_sgf_comment:nn {0} {true}}}
+\ExplSyntaxOff
+
+\pgfgodefinesgf{partida}{game.sgf}
+\pgfgodefinesgf[game = 2]{coleccion}{collection.sgf}
+
+\begin{document}
+
+\case{A name in sgf size, sgf, sgf info and sgf diagrams}
+\begin{goban}[sgf size = partida, scale = 0.5]
+	\sgf{partida}
+\end{goban}
+\sgfinfo{partida}{PB} -- \sgfinfo{partida}{PW}
+\sgfdiagrams[step = 2, goban = {scale = 0.5}]{partida}
+
+\case{The game of the name (2), and game = 1 in the command}
+\begin{goban}[sgf view = coleccion, scale = 0.5]
+	\sgf{coleccion}
+\end{goban}
+\sgfcomment{coleccion}{0} / \sgfcomment[game = 1]{coleccion}{0}
+
+\case{sgf size with a name does not change the game of the next sgf (the warning)}
+\begin{goban}[sgf size = coleccion, scale = 0.5]
+	\sgf{collection.sgf}
+\end{goban}
+
+\case{A name in sgf problem (it reaches the kernel in a variable) and a name in a macro}
+\pgfgodefinesgf{prob}{problem.sgf}
+\sgfproblem[solutions = false, goban = {scale = 0.5}]{prob}
+\newcommand\gamename{partida}
+\sgfinfo{\gamename}{PB}
+
+\case{A name that is also a file: the name wins}
+\pgfgodefinesgf{game.sgf}{collection.sgf}
+\sgfcomment{game.sgf}{0}
+
+\end{document}
