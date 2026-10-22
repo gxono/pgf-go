@@ -20,6 +20,7 @@
 %		ES TODO EL TABLERO, O LA VENTANA RECORTADA AL TABLERO SI \l_pgfgo_goban_partial_bool.
 %	\pgfgo_kernel_if_visible:nnTF {x}{y}
 %		VERDADERO SI (x,y) ESTA EN LA PARTE VISIBLE. SI ESTA FUERA DEL TABLERO AVISA (outside-board).
+%		CON \l_pgfgo_goban_partial_auto_bool, ANTES SUMA EL PUNTO A LO DIBUJADO (\pgfgo_kernel_extent_add:nn).
 %	\pgfgo_kernel_column_name:n {x}							EXPANDIBLE
 %		LETRA DE LA COLUMNA x. SIN use i SE SALTEA LA I.
 %	\pgfgo_kernel_hoshi:
@@ -170,8 +171,8 @@
 %		RECORRE TODO EL ARBOL DE LA PARTIDA. DEJA:
 %		\l_pgfgo_kernel_sgf_paths_seq		TODAS LAS LINEAS, EN ORDEN, COMO <variante> PARA
 %			\pgfgo_kernel_sgf_read:nn (VACIA PARA UNA PARTIDA SIN BIFURCACIONES).
-%		\l_pgfgo_kernel_sgf_extent_tl		EL RECTANGULO QUE CONTIENE TODAS LAS PIEDRAS, JUGADAS Y MARCAS DEL
-%			ARBOL, {x1}{y1}{x2}{y2}. VACIO SI NO HAY NINGUNA.
+%		\l_pgfgo_kernel_sgf_extent_tl		EL RECTANGULO QUE CONTIENE TODAS LAS PIEDRAS, JUGADAS, MARCAS, FLECHAS
+%			Y LINEAS DEL ARBOL, {x1}{y1}{x2}{y2}. VACIO SI NO HAY NINGUNA.
 %	\pgfgo_kernel_sgf_branches:n {<archivo>}
 %		DEJA EN \l_pgfgo_kernel_sgf_branches_seq LAS LINEAS QUE SE APARTAN DE LA PRINCIPAL, EN ORDEN, COMO
 %		{<variante>}{<profundidad>}{<nace>}{<empieza>}{<ultima>}{<comentada>}: <variante> COMO PARA
@@ -253,6 +254,8 @@
 
 \bool_new:N \l_pgfgo_use_i_bool
 \bool_new:N \l_pgfgo_goban_partial_bool
+%partial = auto: MIENTRAS SE DIBUJA SE VE TODO EL TABLERO (\l_pgfgo_goban_partial_bool ES FALSO).
+\bool_new:N \l_pgfgo_goban_partial_auto_bool
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -339,6 +342,76 @@
 
 \cs_generate_variant:Nn \msg_warning:nnn {nnV}
 \cs_generate_variant:Nn \msg_error:nnnn {nnnV, nnVe}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%LO DIBUJADO (partial = auto). IGUAL EN TODOS LOS KERNELS.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%	\pgfgo_kernel_extent_clear:
+%		EMPIEZA SIN NADA DIBUJADO.
+%	\pgfgo_kernel_extent_add:nn {x}{y}
+%		SUMA EL PUNTO (SI ESTA EN EL TABLERO) AL RECTANGULO DE LO DIBUJADO.
+%	\pgfgo_kernel_extent_window:n {margen}
+%		FIJA LA PARTE VISIBLE (Y \l_pgfgo_goban_partial_bool): EL RECTANGULO DE LO DIBUJADO, margen LINEAS MAS
+%		GRANDE. UN LADO QUE QUEDA A DOS LINEAS O MENOS DEL BORDE LLEGA HASTA EL. SIN NADA DIBUJADO, TODO EL
+%		TABLERO. EL RECTANGULO ES GLOBAL: LO SUMAN LAS PIEDRAS Y MARCAS DE ADENTRO DE LOS GRUPOS.
+\int_new:N \g__pgfgo_kernel_extent_from_x_int
+\int_new:N \g__pgfgo_kernel_extent_from_y_int
+\int_new:N \g__pgfgo_kernel_extent_to_x_int
+\int_new:N \g__pgfgo_kernel_extent_to_y_int
+\bool_new:N \g__pgfgo_kernel_extent_bool
+
+\cs_new_protected:Npn \pgfgo_kernel_extent_clear: {
+	\bool_gset_false:N \g__pgfgo_kernel_extent_bool
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_extent_add:nn #1#2 {
+	\bool_lazy_and:nnT
+		{\int_compare_p:n {1 <= #1 <= \l_pgfgo_goban_size_x_int}}
+		{\int_compare_p:n {1 <= #2 <= \l_pgfgo_goban_size_y_int}}
+		{
+			\bool_if:NTF \g__pgfgo_kernel_extent_bool
+				{
+					\int_gset:Nn \g__pgfgo_kernel_extent_from_x_int {\int_min:nn {\g__pgfgo_kernel_extent_from_x_int} {#1}}
+					\int_gset:Nn \g__pgfgo_kernel_extent_from_y_int {\int_min:nn {\g__pgfgo_kernel_extent_from_y_int} {#2}}
+					\int_gset:Nn \g__pgfgo_kernel_extent_to_x_int {\int_max:nn {\g__pgfgo_kernel_extent_to_x_int} {#1}}
+					\int_gset:Nn \g__pgfgo_kernel_extent_to_y_int {\int_max:nn {\g__pgfgo_kernel_extent_to_y_int} {#2}}
+				}
+				{
+					\bool_gset_true:N \g__pgfgo_kernel_extent_bool
+					\int_gset:Nn \g__pgfgo_kernel_extent_from_x_int {#1}
+					\int_gset:Nn \g__pgfgo_kernel_extent_from_y_int {#2}
+					\int_gset:Nn \g__pgfgo_kernel_extent_to_x_int {#1}
+					\int_gset:Nn \g__pgfgo_kernel_extent_to_y_int {#2}
+				}
+		}
+}
+
+\cs_new:Npn \__pgfgo_kernel_extent_low:nn #1#2 {
+	\int_compare:nNnTF {#1 - #2} > {3} {#1 - #2} {1}
+}
+\cs_new:Npn \__pgfgo_kernel_extent_high:nnn #1#2#3 {
+	\int_compare:nNnTF {#1 + #2} < {#3 - 2} {#1 + #2} {#3}
+}
+\cs_new_protected:Npn \pgfgo_kernel_extent_window:n #1 {
+	\bool_set_true:N \l_pgfgo_goban_partial_bool
+	\bool_if:NTF \g__pgfgo_kernel_extent_bool
+		{
+			\int_set:Nn \l_pgfgo_goban_from_x_int {\__pgfgo_kernel_extent_low:nn {\g__pgfgo_kernel_extent_from_x_int} {#1}}
+			\int_set:Nn \l_pgfgo_goban_from_y_int {\__pgfgo_kernel_extent_low:nn {\g__pgfgo_kernel_extent_from_y_int} {#1}}
+			\int_set:Nn \l_pgfgo_goban_to_x_int
+				{\__pgfgo_kernel_extent_high:nnn {\g__pgfgo_kernel_extent_to_x_int} {#1} {\l_pgfgo_goban_size_x_int}}
+			\int_set:Nn \l_pgfgo_goban_to_y_int
+				{\__pgfgo_kernel_extent_high:nnn {\g__pgfgo_kernel_extent_to_y_int} {#1} {\l_pgfgo_goban_size_y_int}}
+		}
+		{
+			\int_set:Nn \l_pgfgo_goban_from_x_int {1}
+			\int_set:Nn \l_pgfgo_goban_from_y_int {1}
+			\int_set_eq:NN \l_pgfgo_goban_to_x_int \l_pgfgo_goban_size_x_int
+			\int_set_eq:NN \l_pgfgo_goban_to_y_int \l_pgfgo_goban_size_y_int
+		}
+}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

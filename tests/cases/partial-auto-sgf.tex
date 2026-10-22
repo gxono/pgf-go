@@ -1,0 +1,43 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+
+% Draws frames of \sgfanimation one by one (as in sgf-animation.tex).
+\ExplSyntaxOn
+\NewDocumentCommand \frames {mmm} {
+	\group_begin:
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\clist_map_inline:nn {#3} {\pgfgo_sgfanimation_frame:n {##1}\quad}
+	\group_end:
+}
+\ExplSyntaxOff
+\begin{document}
+
+% joseki.sgf: 19x19, upper right corner. B R16, W P17; then B N17, W R14, B R12 (main line) or
+% B Q15, W N17 with the label a at O16. The whole tree uses N12:R17.
+
+\case{goban with captures (G9 is captured) and with \string\sgf}
+\begin{goban}[19, partial = auto, captures]
+	\stones[b]{F9, G10, H9}\stones[w]{G9}\moves{G8}
+\end{goban}
+\begin{goban}[19, partial = auto]\sgf[to = 2]{joseki.sgf}\end{goban}
+\begin{goban}[19, partial = auto]\sgf{joseki.sgf}\end{goban}
+
+\case{sgf diagrams, partial = auto: the same part (M11:T19) in every diagram, also in the variation}
+\sgfdiagrams[partial = auto, step = 2, variations, goban = {scale = 0.5}]{joseki.sgf}
+
+\case{sgf diagrams, partial = auto with goban = \{partial margin = 0\}: N12:T19}
+\sgfdiagrams[partial = auto, goban = {scale = 0.5, partial margin = 0}]{joseki.sgf}
+
+\case{sgf diagrams: a view wins over partial = auto (A5:E9, then the whole board, then F1:I4)}
+\sgfdiagrams[partial = auto, step = 2, goban = {scale = 0.4}]{views.sgf}
+
+\case{sgf animation, partial = auto: frames 0, 2 and 5 have the same board}
+\frames{partial = auto, goban = {scale = 0.4}}{joseki.sgf}{0, 2, 5}
+
+\end{document}

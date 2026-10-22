@@ -97,6 +97,7 @@
 
 
 \prg_new_protected_conditional:Npnn \pgfgo_kernel_if_visible:nn #1#2 {T, F, TF} {
+	\bool_if:NT \l_pgfgo_goban_partial_auto_bool {\pgfgo_kernel_extent_add:nn {#1} {#2}}
 	\bool_if:nTF {
 		\int_compare_p:n {1 <= #1 <= \l_pgfgo_goban_size_x_int} &&
 		\int_compare_p:n {1 <= #2 <= \l_pgfgo_goban_size_y_int}

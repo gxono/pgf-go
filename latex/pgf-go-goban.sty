@@ -101,15 +101,23 @@
 		label							.code:n 		= {\keys_set:nn{pgfgo / goban / label} {#1}},
 		label							.default:n	= {true},
 
-		%LAS ESQUINAS (partial = B2:D4, {B2, D4} O {B2 to D4}) O false.
+		%LAS ESQUINAS (partial = B2:D4, {B2, D4} O {B2 to D4}), auto (LO QUE SE DIBUJA, CON partial margin
+		%LINEAS MAS; VER \__pgfgo_goban_end:) O false.
 		partial						.code:n 		= {
-																			\str_if_eq:nnTF {#1} {false}
-																				{\bool_set_false:N \l_pgfgo_goban_partial_bool}
-																				{
-																					\bool_set_true:N \l_pgfgo_goban_partial_bool
-																					\__pgfgo_goban_partial_corners:n {#1}
-																				}
+																			\bool_set_false:N \l_pgfgo_goban_partial_auto_bool
+																			\str_case:nnF {#1} {
+																				{false}	{\bool_set_false:N \l_pgfgo_goban_partial_bool}
+																				{auto}	{
+																									\bool_set_false:N \l_pgfgo_goban_partial_bool
+																									\bool_set_true:N \l_pgfgo_goban_partial_auto_bool
+																								}
+																			}{
+																				\bool_set_true:N \l_pgfgo_goban_partial_bool
+																				\__pgfgo_goban_partial_corners:n {#1}
+																			}
 																		},
+		partial~margin		.int_set:N	= \l_pgfgo_goban_partial_margin_int,
+		partial~margin		.initial:n	= {1},
 
 		scale							.tl_set:N		= \l_pgfgo_goban_scale_tl,
 		scale							.initial:n	= {1},
@@ -832,8 +840,9 @@
 	}
 	\cs_generate_variant:Nn \__pgfgo_goban_tile_point:NNnnnn {NNV}
 
-	%DIBUJA EL TABLERO. #1 Y #2 SON EL TAMANO COMPLETO; LA PARTE VISIBLE YA LA CALCULO \pgfgo_kernel_board_init:.
-	%EL ENTORNO TERMINA CON \__pgfgo_goban_end:.
+	%EMPIEZA EL DIBUJO. #1 Y #2 SON EL TAMANO COMPLETO; LA PARTE VISIBLE YA LA CALCULO \pgfgo_kernel_board_init:.
+	%CON partial = auto, EL TABLERO SE DIBUJA AL CERRAR, CUANDO YA SE SABE QUE PARTE SE USO (SUS CAPAS VAN
+	%DEBAJO IGUAL). EL ENTORNO TERMINA CON \__pgfgo_goban_end:.
 	\cs_new_protected:Npn \__pgfgo_goban_begin:nn #1#2 {
 		\group_begin:
 		\pgfsetlayers{
@@ -852,7 +861,18 @@
 		\pgfsetxvec{\pgfpoint{ \l_pgfgo_goban_grid_x_sep_dim}{0}}
 		\pgfsetyvec{\pgfpoint{0}{ \l_pgfgo_goban_grid_y_sep_dim}}
 		\pgftransformscale{\l_pgfgo_goban_scale_tl}
+		\bool_if:NTF \l_pgfgo_goban_partial_auto_bool
+			{\pgfgo_kernel_extent_clear:}
+			{\__pgfgo_goban_board:nn {#1} {#2}}
 
+		\tl_if_empty:NF \l__pgfgo_goban_resume_memory_tl {\use:e {\__pgfgo_goban_resume_code:}}
+		\tl_if_empty:NF \l_pgfgo_goban_view_tl {\pgfgo_kernel_remember_replay:V \l_pgfgo_goban_view_tl}
+	}
+	\cs_generate_variant:Nn \pgfgo_kernel_remember_replay:n {V}
+	\cs_generate_variant:Nn \__pgfgo_goban_begin:nn {VV}
+
+	%EL TABLERO: FONDO, CUADRICULA Y COORDENADAS, CADA UNO EN SU CAPA.
+	\cs_new_protected:Npn \__pgfgo_goban_board:nn #1#2 {
 		\pgfonlayer{pgfgo_layer_goban_border}
 		\bool_if:NT \l_pgfgo_goban_border_bool {\__pgfgo_goban_background:nn {#1} {#2}}
 		\endpgfonlayer
@@ -880,12 +900,8 @@
 		\__pgfgo_goban_labels:
 		\endpgfscope
 		\endpgfonlayer
-
-		\tl_if_empty:NF \l__pgfgo_goban_resume_memory_tl {\use:e {\__pgfgo_goban_resume_code:}}
-		\tl_if_empty:NF \l_pgfgo_goban_view_tl {\pgfgo_kernel_remember_replay:V \l_pgfgo_goban_view_tl}
 	}
-	\cs_generate_variant:Nn \pgfgo_kernel_remember_replay:n {V}
-	\cs_generate_variant:Nn \__pgfgo_goban_begin:nn {VV}
+	\cs_generate_variant:Nn \__pgfgo_goban_board:nn {VV}
 
 	%EL FONDO (#1 Y #2: EL TAMANO COMPLETO), CON SU SOMBRA, SU IMAGEN Y SU BORDE.
 	\cs_new_protected:Npn \__pgfgo_goban_background:nn #1#2 {
@@ -1109,6 +1125,7 @@
 				}
 			}{
 				\bool_set_true:N \l_pgfgo_goban_partial_bool
+				\bool_set_false:N \l_pgfgo_goban_partial_auto_bool
 				\bool_set_true:N \l__pgfgo_goban_sgf_view_bool
 				\exp_after:wN \__pgfgo_goban_sgf_view:nnnn \l_pgfgo_kernel_sgf_view_tl
 			}
@@ -1140,8 +1157,26 @@
 		\dim_gset:cn {pgf@picmaxy} {#4}
 	}
 
+	%RECORTA AL CAMINO QUE ARMA #1 SIN CAMBIAR EL TAMANO DEL DIBUJO (CON partial = auto, MIENTRAS SE DIBUJA EL
+	%CUERPO, LA PARTE VISIBLE ES TODO EL TABLERO).
+	\cs_new_protected:Npn \pgfgo_goban_clip:n #1 {
+		\tl_set:Ne \l_tmpa_tl {
+			{\dim_use:c {pgf@picminx}} {\dim_use:c {pgf@picminy}}
+			{\dim_use:c {pgf@picmaxx}} {\dim_use:c {pgf@picmaxy}}
+		}
+		#1
+		\pgfusepath{clip}
+		\exp_after:wN \__pgfgo_goban_set_bbox:nnnn \l_tmpa_tl
+	}
+
 	\cs_new_protected:Npn \__pgfgo_goban_end: {
 		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_end:}
+		%partial = auto: LA PARTE VISIBLE ES LO QUE SE DIBUJO (EL TERRITORIO COMO REGION SE SUMO AL PEDIRLO), Y
+		%RECIEN AHORA SE DIBUJA EL TABLERO.
+		\bool_if:NT \l_pgfgo_goban_partial_auto_bool {
+			\pgfgo_kernel_extent_window:n {\l_pgfgo_goban_partial_margin_int}
+			\__pgfgo_goban_board:VV \l_pgfgo_goban_size_x_int \l_pgfgo_goban_size_y_int
+		}
 		\pgfgo_territory_end:
 		\tl_if_empty:NF \l_pgfgo_goban_bbox_tl
 			{\exp_after:wN \__pgfgo_goban_set_bbox:nnnn \l_pgfgo_goban_bbox_tl}

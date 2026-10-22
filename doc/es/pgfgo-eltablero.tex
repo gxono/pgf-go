@@ -777,8 +777,8 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{tikzpicture}
 	\end{figure}
 	
-	\begin{key}{/pgfgo/goban/partial=\meta{intersection}|:|\meta{intersection} o |false|}
-		Muestra solo una parte del tablero: el rectángulo que tiene esas dos intersecciones como esquinas opuestas, en cualquier orden. También puede escribirse |partial = {B2, D4}| o |partial = {B2 to D4}|. Con |false|, vuelve a mostrar el tablero completo (por ejemplo, después de un |partial| global hecho con |\pgfgoset|).
+	\begin{key}{/pgfgo/goban/partial=\meta{intersection}|:|\meta{intersection}, |auto| o |false|}
+		Muestra solo una parte del tablero: el rectángulo que tiene esas dos intersecciones como esquinas opuestas, en cualquier orden. También puede escribirse |partial = {B2, D4}| o |partial = {B2 to D4}|. Con |auto|, la parte la elige el tablero: la que usan las piedras, jugadas, marcas, flechas, líneas y territorios que se dibujan, con |partial margin| líneas más. Lo que se dibuja directamente con \tikzname\ no cuenta. Con |false|, vuelve a mostrar el tablero completo (por ejemplo, después de un |partial| global hecho con |\pgfgoset|).
 	\end{key}
 	
 	\begin{codeexample}[]
@@ -795,7 +795,21 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\begin{goban}[partial = E2:B4]
 			\draw[flecha] (5,2)--(2,4); % Desde E2 hasta B4
 		\end{goban}
-	\end{codeexample}	
+	\end{codeexample}
+
+	\begin{key}{/pgfgo/goban/partial margin=\meta{number} (initially 1)}
+		Líneas que |partial = auto| agrega alrededor de lo dibujado. Un lado que queda a dos líneas o menos del borde llega hasta el borde. Sin nada dibujado, se ve todo el tablero.
+
+		\begin{codeexample}[]
+			\begin{goban}[19, partial = auto]
+				\moves{Q16, R14, R16, P17}
+			\end{goban}
+
+			\begin{goban}[19, partial = auto, partial margin = 0]
+				\stones[b]{J10, K11}\stones[w]{K9}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
 	
 	\subsection{Etiquetas del tablero}
 	

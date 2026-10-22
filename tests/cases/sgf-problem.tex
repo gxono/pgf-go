@@ -16,13 +16,13 @@
 \sgfproblem[title = Problem 1, variation title = Variante, caption = {font = \itshape},
 	black to play = Juegan negras, comments = false, notes = false]{problem.sgf}
 
-\case{statement only, crop = false (whole board), goban options}
-\sgfproblem[solutions = false, crop = false, goban = {scale = 0.4}]{problem.sgf}
+\case{statement only, partial = false (whole board), goban options}
+\sgfproblem[solutions = false, partial = false, goban = {scale = 0.4}]{problem.sgf}
 
-\case{solutions only, margin = 3 (A14:H19), annotations = false}
-\sgfproblem[statement = false, margin = 3, annotations = false]{problem.sgf}
+\case{solutions only, partial margin = 3 (A14:H19), annotations = false}
+\sgfproblem[statement = false, goban = {partial margin = 3}, annotations = false]{problem.sgf}
 
-\case{A game with a view: the view is used; with view = false, the crop}
+\case{A game with a view: the view is used; with view = false, partial = auto}
 \sgfproblem[solutions = false]{views.sgf}
 \sgfproblem[solutions = false, view = false]{views.sgf}
 

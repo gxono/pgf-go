@@ -124,9 +124,11 @@
 %----------------------------------------DIBUJO-------------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%LOS PUNTOS #3 ({x}{y},...) SON TERRITORIO DE #1 (black, white O neutral). #2: marks, fill O region.
+%LOS PUNTOS #3 ({x}{y},...) SON TERRITORIO DE #1 (black, white O neutral). #2: marks, fill O region. CON
+%partial = auto SON PARTE DE LO DIBUJADO (LAS MARCAS LO HACEN SOLAS).
 \cs_new_protected:Npn \pgfgo_territory_parsed:nnn #1#2#3 {
 	\clist_map_inline:nn {#3} {\__pgfgo_territory_own:nnn {#1} ##1}
+	\bool_if:NT \l_pgfgo_goban_partial_auto_bool {\clist_map_inline:nn {#3} {\pgfgo_kernel_extent_add:nn ##1}}
 	\str_case:nnF {#2} {
 		{fill}		{\__pgfgo_territory_fill:nn {#1} {#3}}
 		{region}	{
@@ -346,10 +348,11 @@
 
 %RECORTA A LA PARTE VISIBLE DE LA CUADRICULA, AGRANDADA #1 CASILLAS.
 \cs_new_protected:Npn \__pgfgo_territory_clip:n #1 {
-	\pgfpathrectanglecorners
-		{\pgfpointxy{\int_use:N \l_pgfgo_goban_from_x_int - #1}{\int_use:N \l_pgfgo_goban_from_y_int - #1}}
-		{\pgfpointxy{\int_use:N \l_pgfgo_goban_to_x_int + #1}{\int_use:N \l_pgfgo_goban_to_y_int + #1}}
-	\pgfusepath{clip}
+	\pgfgo_goban_clip:n {
+		\pgfpathrectanglecorners
+			{\pgfpointxy{\int_use:N \l_pgfgo_goban_from_x_int - #1}{\int_use:N \l_pgfgo_goban_from_y_int - #1}}
+			{\pgfpointxy{\int_use:N \l_pgfgo_goban_to_x_int + #1}{\int_use:N \l_pgfgo_goban_to_y_int + #1}}
+	}
 }
 
 \cs_new_protected:Npn \__pgfgo_territory_region_path:n #1 {

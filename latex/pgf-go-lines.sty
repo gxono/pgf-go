@@ -122,18 +122,24 @@
 	\dim_gset:cn {pgf@y} {#2 \l__pgfgo_lines_halo_dim}
 }
 
-%DIBUJA UNA FLECHA O UNA LINEA (#1: arrow O line) CON LAS OPCIONES #2, DE (#3,#4) A (#5,#6).
+%DIBUJA UNA FLECHA O UNA LINEA (#1: arrow O line) CON LAS OPCIONES #2, DE (#3,#4) A (#5,#6). CON
+%partial = auto, LOS EXTREMOS SON PARTE DE LO DIBUJADO.
 \cs_new_protected:Npn \pgfgo_line_parsed:nnnnnn #1#2#3#4#5#6 {
 	\bool_lazy_and:nnF {\int_compare_p:nNn {#3} = {#5}} {\int_compare_p:nNn {#4} = {#6}} {
+		\bool_if:NT \l_pgfgo_goban_partial_auto_bool {
+			\pgfgo_kernel_extent_add:nn {#3} {#4}
+			\pgfgo_kernel_extent_add:nn {#5} {#6}
+		}
 		\group_begin:
 			\keys_set_exclude_groups:nnn {pgfgo / #1} {preset} {#2}
 			\fp_set_eq:Nc \l__pgfgo_lines_bend_fp {l__pgfgo_ #1 _bend_fp}
 			\pgfonlayer{pgfgo_layer_mark}
 			\pgfscope
-				\pgfpathrectanglecorners
-					{\pgfpointxy{\int_use:N \l_pgfgo_goban_from_x_int - 0.5}{\int_use:N \l_pgfgo_goban_from_y_int - 0.5}}
-					{\pgfpointxy{\int_use:N \l_pgfgo_goban_to_x_int + 0.5}{\int_use:N \l_pgfgo_goban_to_y_int + 0.5}}
-				\pgfusepath{clip}
+				\pgfgo_goban_clip:n {
+					\pgfpathrectanglecorners
+						{\pgfpointxy{\int_use:N \l_pgfgo_goban_from_x_int - 0.5}{\int_use:N \l_pgfgo_goban_from_y_int - 0.5}}
+						{\pgfpointxy{\int_use:N \l_pgfgo_goban_to_x_int + 0.5}{\int_use:N \l_pgfgo_goban_to_y_int + 0.5}}
+				}
 				\pgfsetroundcap
 				\pgfsetroundjoin
 				\str_if_eq:nnT {#1} {arrow} {

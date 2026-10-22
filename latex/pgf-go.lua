@@ -1273,7 +1273,8 @@ local function sgf_size(root)
 end
 
 -- TODAS LAS LINEAS DE LA PARTIDA, COMO VARIANTES ("2.1"; LA UNICA LINEA DE UNA PARTIDA SIN BIFURCACIONES ES
--- ""), EN ORDEN. Y EL RECTANGULO QUE CONTIENE TODAS LAS PIEDRAS, JUGADAS Y MARCAS DEL ARBOL.
+-- ""), EN ORDEN. Y EL RECTANGULO QUE CONTIENE TODAS LAS PIEDRAS, JUGADAS, MARCAS, FLECHAS Y LINEAS DEL ARBOL
+-- (UNA FLECHA aa:cc SE LEE COMO EL RECTANGULO DE SUS EXTREMOS).
 function pgfgo.sgf_tree(name)
 	local paths, box = {}, nil
 	local t = read_tree(name)
@@ -1290,7 +1291,7 @@ function pgfgo.sgf_tree(name)
 		end
 		local function walk(tree, prefix)
 			for _, n in ipairs(tree.nodes) do
-				for _, prop in ipairs({"AB", "AW", "B", "W", "TR", "SQ", "CR", "MA", "SL"}) do
+				for _, prop in ipairs({"AB", "AW", "B", "W", "TR", "SQ", "CR", "MA", "SL", "AR", "LN"}) do
 					for _, v in ipairs(n[prop] or {}) do extend(v) end
 				end
 				for _, v in ipairs(n.LB or {}) do extend(v:match("^(%a%a):") or "") end

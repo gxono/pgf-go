@@ -6,6 +6,18 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- `goban/partial = auto`: the board shows only the part that is used by the
+  stones, moves, marks, arrows, lines and territory drawn on it, with
+  `goban/partial margin` (initially 1) more lines; a side two lines or less
+  from the edge reaches the edge, and an empty board is whole. The board is
+  drawn when the `goban` ends, under what is on it. `\sgfdiagrams` and
+  `\sgfanimation` have `partial = auto` too (initially `false`): every
+  diagram or frame shows the same part, the one that the whole tree of the
+  file uses (also in the diagrams of the variations), unless the file has a
+  view (`VW`).
+- The part of a SGF tree that `\sgfproblem` shows also counts its arrows and
+  lines (`AR`, `LN`).
+
 - `layout/width = natural`: the columns of the grid are as wide as the widest
   diagram (with its caption, cut as without grid), so `column sep` is the
   real space between boards of the same width; the grid is centered and the
@@ -363,6 +375,10 @@ All notable changes to `pgf-go` are listed here.
 
 ### Behaviour changes
 
+- `sgf problem/crop` and `sgf problem/margin` are removed. `\sgfproblem`
+  has `partial = auto` (initially) or `false` instead, and the lines around
+  the problem are `goban = {partial margin = <n>}`.
+
 - `\moves` numbers its moves: the starred versions `\moves*` and `\move*`
   are removed, and so is `\move` (`\moves{C3}` plays one move). The new key
   `move/numbers` (initially `true`) says whether the moves get their number:
@@ -527,6 +543,10 @@ All notable changes to `pgf-go` are listed here.
 - `variantes.sgf` (Spanish manual) has a standard result, `RE[B+R]`.
 
 ### Tests
+
+- New cases `partial-auto` (`goban`, both kernels) and `partial-auto-sgf`
+  (with captures, `\sgf`, `\sgfdiagrams`, `\sgfanimation` and a view; fixture
+  `joseki.sgf`). `sgf-problem` uses `partial` and `partial margin`.
 
 - New case `installed`: the package loaded as `\usepackage{pgf-go}` from
   the TeX path, with the profiles `shell` and `yunzi`. `run_tests.py` has the

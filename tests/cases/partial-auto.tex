@@ -1,0 +1,45 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{partial = auto: a corner, with one more line; the sides near the edge reach it}
+\begin{goban}[19, partial = auto, label = {at = all}]
+	\stones[b]{Q16, R14}\stones[w]{R16, P17}
+\end{goban}
+\begin{goban}[19, partial = auto, label = {at = all}]
+	\moves{Q16, R14, R16, P17}
+\end{goban}
+
+\case{partial margin = 0 and 3; in the middle of the board}
+\begin{goban}[19, partial = auto, partial margin = 0, label = {at = all}]
+	\stones[b]{J10, K11}\stones[w]{K9}
+\end{goban}
+\begin{goban}[19, partial = auto, partial margin = 3, label = {at = all}]
+	\stones[b]{J10, K11}\stones[w]{K9}
+\end{goban}
+
+\case{Marks, arrows and territory are part of what is drawn}
+\begin{goban}[19, partial = auto]
+	\stones[b]{D4}\marks[triangle]{F7}
+\end{goban}
+\begin{goban}[19, partial = auto]
+	\stones[b]{D4}\arrow{D4}{H6}
+\end{goban}
+\begin{goban}[19, partial = auto]
+	\stones[b]{C3, D3, D2}\territory[b, draw = region]{C2, C1, D1}\territory[w, draw = fill]{H8}
+\end{goban}
+
+\case{An empty board is whole}
+\begin{goban}[9, partial = auto]\end{goban}
+
+\case{partial = auto and then false, or a window: the last one wins}
+\begin{goban}[9, partial = auto, partial = false]\stones[b]{C3}\end{goban}
+\begin{goban}[9, partial = auto, partial = A1:E5]\stones[b]{C3, G7}\end{goban}
+
+\end{document}

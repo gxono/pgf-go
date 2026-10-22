@@ -486,6 +486,10 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Si el archivo tiene vista (|VW|), los tableros muestran solo esa parte, como |sgf view|. Todos los cuadros tienen el mismo tablero: si la vista cambia durante la partida, el tablero abarca las vistas de todos los cuadros (y si en alguno se ve todo el tablero, se ve todo).
 \end{key}
 
+\begin{key}{/pgfgo/sgf animation/partial = \meta{auto o false} (initially false)}
+	Con |auto|, donde no hay vista del archivo, los tableros muestran solo la parte que usa la partida, como en |\sgfdiagrams|. Todos los cuadros tienen el mismo tablero.
+\end{key}
+
 \begin{key}{/pgfgo/sgf animation/layers = \meta{boolean} (default true, initially true)}
 	Arma la animación por capas: el tablero se dibuja una sola vez, y cada piedra también, en una lámina que |animate| muestra mientras la piedra sigue en el tablero (con la opción |timeline| de |animate|). Lo único que se dibuja en cada cuadro es lo que cambia: la marca de la última jugada, las marcas del archivo y el comentario. Así, el PDF crece con la cantidad de jugadas y no con su cuadrado: una partida de 200 jugadas ocupa menos de 1~MB, en lugar de más de 10~MB, y además compila más rápido. Con |layers = false|, cada cuadro es un |goban| entero. El |timeline| se guarda en un archivo auxiliar, |<jobname>-pgfgo-<n>.tln|.
 \end{key}
@@ -717,6 +721,14 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Si el archivo tiene vista (|VW|), cada diagrama muestra solo esa parte, como |sgf view|. Si la vista cambia durante la partida, cada diagrama abarca las vistas de sus jugadas.
 \end{key}
 
+\begin{key}{/pgfgo/sgf diagrams/partial = \meta{auto o false} (initially false)}
+	Con |auto|, donde no hay vista del archivo, cada diagrama muestra solo la parte del tablero que usa la partida (todas sus líneas), como |/pgfgo/goban/partial = auto|. Es la misma en todos los diagramas, también en los de las variantes. Sirve, por ejemplo, para un joseki.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[partial = auto, variations]{joseki}
+	\end{codeexample}
+\end{key}
+
 \begin{key}{/pgfgo/sgf diagrams/game = \meta{number} (initially 1)}
 	Como |/pgfgo/sgf/game|.
 \end{key}
@@ -915,18 +927,14 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Si el archivo tiene vista (|VW|) al principio, todos los diagramas muestran esa parte.
 \end{key}
 
-\begin{key}{/pgfgo/sgf problem/crop = \meta{boolean} (default true, initially true)}
-	Si no se usa la vista del archivo, muestra solo la parte del tablero donde hay piedras, jugadas o marcas en alguna línea del problema, con |margin| líneas más. Un lado que queda a dos líneas o menos del borde llega hasta el borde. Es la misma en todos los diagramas. Con |crop = false|, se ve todo el tablero.
-\end{key}
-
-\begin{key}{/pgfgo/sgf problem/margin = \meta{number} (initially 1)}
-	Líneas que |crop| agrega alrededor del problema.
+\begin{key}{/pgfgo/sgf problem/partial = \meta{auto o false} (initially auto)}
+	Con |auto|, si no se usa la vista del archivo, muestra solo la parte del tablero donde hay piedras, jugadas, marcas, flechas o líneas en alguna línea del problema, como |/pgfgo/goban/partial = auto|. Es la misma en todos los diagramas. Las líneas que se agregan alrededor se cambian con |goban = {partial margin = ...}|. Con |false|, se ve todo el tablero.
 
 	\begin{codeexample}[code only]
-		\sgfproblem[solutions = false, margin = 3]{problema}
+		\sgfproblem[solutions = false, goban = {partial margin = 3}]{problema}
 	\end{codeexample}
 
-	\sgfproblem[solutions = false, margin = 3]{problema}
+	\sgfproblem[solutions = false, goban = {partial margin = 3}]{problema}
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/game = \meta{numbers} (initially 1)}
