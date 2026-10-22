@@ -201,7 +201,7 @@
 \cs_new_protected:Npn \pgfgo_kernel_sgf_read:n #1 {\pgfgo_kernel_sgf_read:nn {#1} {}}
 
 \cs_new_protected:Npn \pgfgo_kernel_sgf_read:nn #1#2 {
-	\lua_now:e {pgfgo.sgf_read("\__pgfgo_kernel_lua_file:n {#1}", "\lua_escape:e {#2}")}
+	\lua_now:e {pgfgo.sgf_read("\__pgfgo_kernel_lua_file:n {#1}", "\lua_escape:e {#2}", \__pgfgo_kernel_lua_use_i:)}
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_black_seq \l__pgfgo_kernel_sgf_black_clist
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_white_seq \l__pgfgo_kernel_sgf_white_clist
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_moves_seq \l__pgfgo_kernel_sgf_moves_clist
@@ -254,7 +254,8 @@
 }
 \cs_new:Npn \pgfgo_kernel_sgf_move_info:nnnn #1#2#3#4 {
 	\lua_now:e {
-		pgfgo.sgf_move_info("\__pgfgo_kernel_lua_file:n {#1}", "\lua_escape:e {#2}", \int_eval:n {#3},
+		pgfgo.sgf_move_info("\__pgfgo_kernel_lua_file:n {#1}", "\lua_escape:e {#2}", \__pgfgo_kernel_lua_use_i:,
+			\int_eval:n {#3},
 			"\lua_escape:e {#4}")
 	}
 }
@@ -273,10 +274,18 @@
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_paths_seq \l__pgfgo_kernel_sgf_paths_clist
 }
 
+\cs_new_protected:Npn \pgfgo_kernel_sgf_extent:nn #1#2 {
+	\lua_now:e {pgfgo.sgf_extent("\__pgfgo_kernel_lua_file:n {#1}", "\lua_escape:e {#2}", \__pgfgo_kernel_lua_use_i:)}
+}
+
 \clist_new:N \l__pgfgo_kernel_sgf_branches_clist
 \seq_new:N \l_pgfgo_kernel_sgf_branches_seq
-\cs_new_protected:Npn \pgfgo_kernel_sgf_branches:n #1 {
-	\lua_now:e {pgfgo.sgf_branches("\__pgfgo_kernel_lua_file:n {#1}")}
+\cs_new_protected:Npn \pgfgo_kernel_sgf_path:nn #1#2 {
+	\lua_now:e {pgfgo.sgf_path("\__pgfgo_kernel_lua_file:n {#1}", "\lua_escape:e {#2}", \__pgfgo_kernel_lua_use_i:)}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_sgf_branches:nn #1#2 {
+	\lua_now:e {pgfgo.sgf_branches("\__pgfgo_kernel_lua_file:n {#1}", "\lua_escape:e {#2}", \__pgfgo_kernel_lua_use_i:)}
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_branches_seq \l__pgfgo_kernel_sgf_branches_clist
 }
 

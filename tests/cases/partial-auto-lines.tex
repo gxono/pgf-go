@@ -1,0 +1,42 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+
+% Draws frames of \sgfanimation one by one (as in sgf-animation.tex).
+\ExplSyntaxOn
+\NewDocumentCommand \frames {mmm} {
+	\group_begin:
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\clist_map_inline:nn {#3} {\pgfgo_sgfanimation_frame:n {##1}\quad}
+	\group_end:
+}
+\ExplSyntaxOff
+\begin{document}
+
+% far-branch.sgf: 19x19. Main line Q16, R14, O17 (upper right); the commented variation 2 plays
+% D4, F3, C6 (lower left). partial = auto uses only the lines that are drawn. The label a at C17 (move
+% 2, as in Kogo's Joseki Dictionary) is not drawn, so it does not count.
+
+\case{sgf diagrams, main line only: the upper right}
+\sgfdiagrams[partial = auto, goban = {scale = 0.4}]{far-branch.sgf}
+
+\case{sgf diagrams, to = 2: the label a at C17 is drawn (the whole width); with marks = false, it is not}
+\sgfdiagrams[partial = auto, to = 2, goban = {scale = 0.4}]{far-branch.sgf}
+\sgfdiagrams[partial = auto, to = 2, marks = false, goban = {scale = 0.4}]{far-branch.sgf}
+
+\case{sgf diagrams, variation = 2 and variation = \{D4\}: the lower left}
+\sgfdiagrams[partial = auto, variation = 2, goban = {scale = 0.4}]{far-branch.sgf}
+\sgfdiagrams[partial = auto, variation = {D4}, goban = {scale = 0.4}]{far-branch.sgf}
+
+\case{sgf diagrams with variations: main line and variation, the whole board in both}
+\sgfdiagrams[partial = auto, variations, goban = {scale = 0.3}]{far-branch.sgf}
+
+\case{sgf animation, variation = 2: frames 0 and 3 in the lower left}
+\frames{partial = auto, variation = 2, goban = {scale = 0.4}}{far-branch.sgf}{0, 3}
+
+\end{document}

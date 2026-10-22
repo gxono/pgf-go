@@ -851,41 +851,6 @@ local function parse_sgf(s)
 	return games
 end
 
--- NODOS DE UNA LINEA DE LA PARTIDA. path ES UNA LISTA DE NUMEROS: EN CADA BIFURCACION SE TOMA LA
--- VARIANTE path[i] (1 ES LA PRINCIPAL). CUANDO path SE TERMINA, SE SIGUE POR LA PRIMERA.
--- DEVUELVE TAMBIEN SI path PIDE UNA VARIANTE QUE NO EXISTE.
--- DEVUELVE ADEMAS, POR NODO, SUS HIJOS (LOS NODOS QUE PUEDEN SEGUIR) Y SUS HERMANOS (LAS ALTERNATIVAS
--- A ESE NODO, EL INCLUIDO).
-local function game_line(t, path)
-	local nodes, kids, sibs, i, missing = {}, {}, {}, 1, false
-	local siblings
-	local function firsts(tree)
-		local list = {}
-		for _, c in ipairs(tree.children) do
-			if c.nodes[1] then insert(list, c.nodes[1]) end
-		end
-		return list
-	end
-	while t do
-		for j, n in ipairs(t.nodes) do
-			insert(nodes, n)
-			sibs[#nodes] = (j == 1 and siblings) or {n}
-			kids[#nodes] = j < #t.nodes and {t.nodes[j + 1]} or firsts(t)
-		end
-		local choice = 1
-		if #t.children > 1 then
-			choice = path[i] or 1
-			i = i + 1
-			if choice < 1 or choice > #t.children then
-				missing, choice = true, 1
-			end
-		end
-		siblings = firsts(t)
-		t = t.children[choice]
-	end
-	return nodes, missing or i <= #path, kids, sibs
-end
-
 -- a..z SON 1..26 Y A..Z SON 27..52.
 local function sgf_number(c)
 	local b = c:byte()
@@ -912,6 +877,104 @@ local function sgf_coords(v, size_y)
 		end
 	end
 	return list
+end
+
+-- EL CAMINO DE UNA VARIANTE, COMO TEXTO: NUMEROS (2.1) O LAS JUGADAS DE LA LINEA DESDE LA PRIMERA, SEPARADAS
+-- POR COMAS O ESPACIOS (R16, P17, pass). DEVUELVE LA LISTA (NUMEROS, O {x, y} Y "pass") Y SI SON JUGADAS.
+-- UNA LISTA QUE NO SE ENTIENDE DEVUELVE nil.
+local function parse_path(text, use_i)
+	text = text or ""
+	if not text:find("%a") then
+		local path = {}
+		for d in text:gmatch("%d+") do insert(path, tonumber(d)) end
+		return path, false
+	end
+	local path = {}
+	for item in text:gmatch("[^,%s]+") do
+		local l, n = item:match("^([A-Z])(%d%d?)$")
+		if l then
+			insert(path, {column_number(l, use_i), tonumber(n)})
+		elseif item == "pass" then
+			insert(path, "pass")
+		else
+			return nil
+		end
+	end
+	return path, true
+end
+
+-- NODOS DE UNA LINEA DE LA PARTIDA. path ES UNA LISTA DE NUMEROS: EN CADA BIFURCACION SE TOMA LA
+-- VARIANTE path[i] (1 ES LA PRINCIPAL). CON moves, ES LA LISTA DE LAS JUGADAS DE LA LINEA ({x, y} O "pass"):
+-- EN CADA BIFURCACION SE TOMA LA VARIANTE QUE JUEGA LA SIGUIENTE. CUANDO path SE TERMINA, SE SIGUE POR LA
+-- PRIMERA. DEVUELVE TAMBIEN SI path PIDE UNA VARIANTE QUE NO EXISTE (O UNA JUGADA QUE NO ESTA).
+-- DEVUELVE ADEMAS, POR NODO, SUS HIJOS (LOS NODOS QUE PUEDEN SEGUIR) Y SUS HERMANOS (LAS ALTERNATIVAS
+-- A ESE NODO, EL INCLUIDO), Y LA VARIANTE QUE SE TOMO EN CADA BIFURCACION.
+local function game_line(t, path, moves, size_x, size_y)
+	local nodes, kids, sibs, choices, i, missing = {}, {}, {}, {}, 1, false
+	local siblings
+	local function firsts(tree)
+		local list = {}
+		for _, c in ipairs(tree.children) do
+			if c.nodes[1] then insert(list, c.nodes[1]) end
+		end
+		return list
+	end
+	-- SI LA JUGADA DEL NODO n ES path[i]: true, false, O nil SI n NO TIENE JUGADA.
+	local function matches(n)
+		local v = (n.B or n.W or {})[1]
+		if not v then return nil end
+		local want = path[i]
+		local c = v ~= "" and sgf_coords(v, size_y)[1]
+		if not c or (v == "tt" and size_x <= 19 and size_y <= 19) then
+			return want == "pass"
+		end
+		return type(want) == "table" and want[1] == c[1] and want[2] == c[2]
+	end
+	-- LA PRIMERA JUGADA DE UNA VARIANTE: SI ES path[i].
+	local function starts_with(tree)
+		for _, n in ipairs(tree.nodes) do
+			local m = matches(n)
+			if m ~= nil then return m end
+		end
+		return false
+	end
+	while t do
+		for j, n in ipairs(t.nodes) do
+			insert(nodes, n)
+			sibs[#nodes] = (j == 1 and siblings) or {n}
+			kids[#nodes] = j < #t.nodes and {t.nodes[j + 1]} or firsts(t)
+			if moves and not missing and path[i] then
+				local m = matches(n)
+				if m == false then
+					missing = true
+				elseif m then
+					i = i + 1
+				end
+			end
+		end
+		local choice = 1
+		if #t.children > 1 then
+			if moves then
+				if not missing and path[i] then
+					choice = nil
+					for k, c in ipairs(t.children) do
+						if starts_with(c) then choice = k break end
+					end
+					if not choice then missing, choice = true, 1 end
+				end
+			else
+				choice = path[i] or 1
+				i = i + 1
+				if choice < 1 or choice > #t.children then
+					missing, choice = true, 1
+				end
+			end
+			insert(choices, choice)
+		end
+		siblings = firsts(t)
+		t = t.children[choice]
+	end
+	return nodes, missing or i <= #path, kids, sibs, choices
 end
 
 local function find_file(name)
@@ -1272,30 +1335,40 @@ local function sgf_size(root)
 	return size_x, size_y
 end
 
+-- LAS PROPIEDADES CON PUNTOS QUE SE DIBUJAN (LB VA APARTE: SU PUNTO ES LO QUE ESTA ANTES DE LOS :).
+local stone_props = {"AB", "AW", "B", "W"}
+local drawn_props = {"AB", "AW", "B", "W", "TR", "SQ", "CR", "MA", "SL", "AR", "LN"}
+
+-- SUMA AL RECTANGULO box ({x1, y1, x2, y2} O nil) LOS PUNTOS QUE SE DIBUJAN DEL NODO n (CON stones, SOLO
+-- LAS PIEDRAS Y LAS JUGADAS). DEVUELVE EL NUEVO. UNA FLECHA aa:cc SE LEE COMO EL RECTANGULO DE SUS EXTREMOS.
+local function node_box(box, n, size_x, size_y, stones)
+	local function extend(v)
+		if v == "tt" and size_x <= 19 and size_y <= 19 then return end
+		for _, c in ipairs(sgf_coords(v, size_y)) do
+			if c[1] <= size_x and c[2] >= 1 then
+				box = box and {math.min(box[1], c[1]), math.min(box[2], c[2]),
+					math.max(box[3], c[1]), math.max(box[4], c[2])} or {c[1], c[2], c[1], c[2]}
+			end
+		end
+	end
+	for _, prop in ipairs(stones and stone_props or drawn_props) do
+		for _, v in ipairs(n[prop] or {}) do extend(v) end
+	end
+	if not stones then
+		for _, v in ipairs(n.LB or {}) do extend(v:match("^(%a%a):") or "") end
+	end
+	return box
+end
+
 -- TODAS LAS LINEAS DE LA PARTIDA, COMO VARIANTES ("2.1"; LA UNICA LINEA DE UNA PARTIDA SIN BIFURCACIONES ES
--- ""), EN ORDEN. Y EL RECTANGULO QUE CONTIENE TODAS LAS PIEDRAS, JUGADAS, MARCAS, FLECHAS Y LINEAS DEL ARBOL
--- (UNA FLECHA aa:cc SE LEE COMO EL RECTANGULO DE SUS EXTREMOS).
+-- ""), EN ORDEN. Y EL RECTANGULO QUE CONTIENE TODAS LAS PIEDRAS, JUGADAS, MARCAS, FLECHAS Y LINEAS DEL ARBOL.
 function pgfgo.sgf_tree(name)
 	local paths, box = {}, nil
 	local t = read_tree(name)
 	if t then
 		local size_x, size_y = sgf_size(t.nodes[1])
-		local function extend(v)
-			if v == "tt" and size_x <= 19 and size_y <= 19 then return end
-			for _, c in ipairs(sgf_coords(v, size_y)) do
-				if c[1] <= size_x and c[2] >= 1 then
-					box = box and {math.min(box[1], c[1]), math.min(box[2], c[2]),
-						math.max(box[3], c[1]), math.max(box[4], c[2])} or {c[1], c[2], c[1], c[2]}
-				end
-			end
-		end
 		local function walk(tree, prefix)
-			for _, n in ipairs(tree.nodes) do
-				for _, prop in ipairs({"AB", "AW", "B", "W", "TR", "SQ", "CR", "MA", "SL", "AR", "LN"}) do
-					for _, v in ipairs(n[prop] or {}) do extend(v) end
-				end
-				for _, v in ipairs(n.LB or {}) do extend(v:match("^(%a%a):") or "") end
-			end
+			for _, n in ipairs(tree.nodes) do box = node_box(box, n, size_x, size_y) end
 			if #tree.children == 0 then
 				insert(paths, "{" .. concat(prefix, ".") .. "}")
 			elseif #tree.children == 1 then
@@ -1314,14 +1387,39 @@ function pgfgo.sgf_tree(name)
 	token.set_macro("l_pgfgo_kernel_sgf_extent_tl", view_text(box))
 end
 
--- LAS VARIANTES DEL ARBOL: CADA LINEA QUE SE APARTA DE LA PRINCIPAL, POR LA JUGADA DONDE NACE, COMO
--- "{camino}{profundidad}{nace}{empieza}{ultima}{comentada}": camino SIN LOS 1 DEL FINAL (EL DE
--- \pgfgo_kernel_sgf_read:nn); profundidad: CUANTAS VECES SE APARTA (1: DE LA LINEA PRINCIPAL); nace: LA JUGADA
--- DE LA LINEA PRINCIPAL QUE REEMPLAZA LA PRIMERA VEZ; empieza: SU PRIMERA JUGADA PROPIA (LA QUE REEMPLAZA LA
--- ULTIMA VEZ); ultima: SU CANTIDAD DE JUGADAS; comentada: 1 SI ALGUN NODO PROPIO TIENE C.
-function pgfgo.sgf_branches(name)
+-- EL RECTANGULO QUE CONTIENE LAS PIEDRAS Y LAS JUGADAS DE LAS LINEAS paths_text (CAMINOS COMO LOS DE
+-- parse_path, SEPARADOS POR ;). SIN LAS MARCAS: CADA DIAGRAMA DIBUJA SOLO LAS DE SU ULTIMA JUGADA (Y LAS SUMA
+-- EL goban). UN CAMINO QUE NO EXISTE SUMA LO QUE LEE (SIN AVISO: YA AVISA sgf_read).
+function pgfgo.sgf_extent(name, paths_text, use_i)
+	local box
+	local t = read_tree(name)
+	if t then
+		local size_x, size_y = sgf_size(t.nodes[1])
+		for text in (paths_text .. ";"):gmatch("([^;]*);") do
+			local path, moves = parse_path(text, use_i)
+			for _, n in ipairs((game_line(t, path or {}, moves, size_x, size_y))) do
+				box = node_box(box, n, size_x, size_y, true)
+			end
+		end
+	end
+	token.set_macro("l_pgfgo_kernel_sgf_extent_tl", view_text(box))
+end
+
+-- LAS VARIANTES DEL ARBOL: CADA LINEA QUE SE APARTA DE LA LINEA path_text (UN CAMINO, VER parse_path; VACIO
+-- ES LA PRINCIPAL), POR LA JUGADA DONDE NACE, COMO "{camino}{profundidad}{nace}{empieza}{ultima}{comentada}":
+-- camino SIN LOS 1 DEL FINAL (EL DE \pgfgo_kernel_sgf_read:nn); profundidad: CUANTAS VECES SE APARTA (1: DE
+-- ESA LINEA); nace: LA JUGADA DE ESA LINEA QUE REEMPLAZA LA PRIMERA VEZ; empieza: SU PRIMERA JUGADA PROPIA (LA
+-- QUE REEMPLAZA LA ULTIMA VEZ); ultima: SU CANTIDAD DE JUGADAS; comentada: 1 SI ALGUN NODO PROPIO TIENE C.
+function pgfgo.sgf_branches(name, path_text, use_i)
 	local list = {}
 	local t = read_tree(name)
+	-- LA VARIANTE QUE TOMA LA LINEA EN CADA BIFURCACION (DESPUES DE LAS QUE PIDE, LA PRIMERA).
+	local base = {}
+	if t then
+		local path, moves = parse_path(path_text, use_i)
+		local _
+		_, _, _, _, base = game_line(t, path or {}, moves, sgf_size(t.nodes[1]))
+	end
 	local function walk(tree, choices, depth, moves, born, start, commented)
 		for _, n in ipairs(tree.nodes) do
 			if n.B or n.W then moves = moves + 1 end
@@ -1337,10 +1435,12 @@ function pgfgo.sgf_branches(name)
 		elseif #tree.children == 1 then
 			walk(tree.children[1], choices, depth, moves, born, start, commented)
 		else
+			-- EN LA LINEA, LA BIFURCACION #choices + 1 SIGUE POR base; FUERA DE ELLA, POR LA PRIMERA.
+			local follow = depth == 0 and base[#choices + 1] or 1
 			for i, c in ipairs(tree.children) do
 				local p = {table.unpack(choices)}
 				insert(p, i)
-				if i == 1 then
+				if i == follow then
 					walk(c, p, depth, moves, born, start, commented)
 				else
 					walk(c, p, depth + 1, moves, depth == 0 and moves + 1 or born, moves + 1, false)
@@ -1357,24 +1457,50 @@ function pgfgo.sgf_branches(name)
 	set_clist("l__pgfgo_kernel_sgf_branches_clist", texts)
 end
 
+-- EL CAMINO path_text COMO NUMEROS, SIN LOS 1 DEL FINAL (EL QUE USA \pgfgo_kernel_sgf_branches:n). UN
+-- CAMINO DE JUGADAS SE TRADUCE CON LAS VARIANTES QUE TOMA; SI NO EXISTE, O NO SE ENTIENDE, QUEDA COMO ESTA.
+function pgfgo.sgf_path(name, path_text, use_i)
+	local path, moves = parse_path(path_text, use_i)
+	if path and moves then
+		local t = read_tree(name)
+		local missing, choices = true, nil
+		if t then
+			local _
+			_, missing, _, _, choices = game_line(t, path, true, sgf_size(t.nodes[1]))
+		end
+		path = not missing and choices or nil
+	end
+	if path then
+		while path[#path] == 1 do path[#path] = nil end
+		path_text = concat(path, ".")
+	end
+	token.set_macro("l_pgfgo_kernel_sgf_path_tl", path_text)
+end
+
 local markup = {{"TR", "triangle"}, {"SQ", "square"}, {"CR", "circle"}, {"MA", "cross"},
 	{"SL", "selected"}, {"TB", "black-territory"}, {"TW", "white-territory"}}
 
-function pgfgo.sgf_read(name, path_text)
+-- LA LINEA path_text (UN CAMINO, VER parse_path) DE LA PARTIDA t. AVISO sgf-variation SI NO EXISTE.
+local function read_line(name, t, path_text, use_i)
+	local size_x, size_y = sgf_size(t.nodes[1])
+	local path, moves = parse_path(path_text, use_i)
+	local nodes, missing, kids, sibs, choices = game_line(t, path or {}, moves, size_x, size_y)
+	if missing or not path then
+		message("warning", "sgf-variation", name, path_text)
+	end
+	return nodes, kids, sibs, choices, missing or not path
+end
+
+function pgfgo.sgf_read(name, path_text, use_i)
 	local black, white, moves = {}, {}, {}
 	sgf_comments, sgf_marks, sgf_labels, sgf_dim, sgf_lines = {}, {}, {}, {}, {}
 	sgf_notes, sgf_names = {}, {}
 	sgf_vars, sgf_style, sgf_figures, sgf_views = {}, 0, {}, {}
 	local size_x, size_y = 19, 19
 	local print_mode, komi = 1, "0"
-	local path = {}
-	for d in (path_text or ""):gmatch("%d+") do insert(path, tonumber(d)) end
 	local t = read_tree(name)
 	if t then
-		local nodes, missing, kids, sibs = game_line(t, path)
-		if missing then
-			message("warning", "sgf-variation", name, path_text)
-		end
+		local nodes, kids, sibs = read_line(name, t, path_text, use_i)
 		local root = nodes[1] or {}
 		size_x, size_y = sgf_size(root)
 		sgf_style = root.ST and tonumber(root.ST[1]) or 0
@@ -1578,14 +1704,13 @@ end
 
 -- LA PROPIEDAD DE LA JUGADA move DE LA LINEA path_text (LA DE SU NODO Y LA DE LOS NODOS SIN JUGADA QUE LO
 -- SIGUEN; move = 0: LOS NODOS ANTERIORES A LA PRIMERA JUGADA), COMO TEXTO. VARIOS VALORES, CON COMAS.
-function pgfgo.sgf_move_info(name, path_text, move, property)
+function pgfgo.sgf_move_info(name, path_text, use_i, move, property)
 	local out = {}
 	local t = read_tree(name)
 	if t then
-		local path = {}
-		for d in (path_text or ""):gmatch("%d+") do insert(path, tonumber(d)) end
+		local path, moves = parse_path(path_text, use_i)
 		local k = 0
-		for _, n in ipairs((game_line(t, path))) do
+		for _, n in ipairs((game_line(t, path or {}, moves, sgf_size(t.nodes[1])))) do
 			if n.B or n.W then k = k + 1 end
 			if k > move then break end
 			if k == move then

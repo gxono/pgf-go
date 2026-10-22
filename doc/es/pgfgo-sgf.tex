@@ -96,8 +96,12 @@ En los ejemplos, los archivos se usan por su nombre (pág.~\pageref{subsec:sgfno
 
 |from| y |to| cuentan las jugadas del archivo. El número que se muestra puede ser otro: la propiedad |MN| del archivo lo cambia (las jugadas siguientes siguen desde ahí), y también |restart|. En los ejemplos que siguen, |variantes| es |variantes.sgf|, una partida de 7$\times$7 con dos bifurcaciones, marcas y |MN[10]| en la cuarta jugada de la línea principal.
 
-\begin{key}{/pgfgo/sgf/variation = \meta{números} (initially la línea principal)}
-	Elige una variante: en cada bifurcación de la partida se toma, en orden, la variante indicada (1 es la principal). Por ejemplo, |variation = 2.1| toma la segunda variante en la primera bifurcación y la primera en la segunda. Cuando la lista se termina, se sigue por la primera variante. Si una variante no existe, se produce una advertencia.
+\begin{key}{/pgfgo/sgf/variation = \meta{números o jugadas} (initially la línea principal)}
+	Elige una variante: en cada bifurcación de la partida se toma, en orden, la variante indicada (1 es la principal). Por ejemplo, |variation = 2.1| toma la segunda variante en la primera bifurcación y la primera en la segunda.
+
+	En un archivo con muchas bifurcaciones, como un diccionario de josekis, es más cómodo dar las jugadas de la línea desde la primera, separadas por comas o espacios: |variation = {R16, P17, Q15}|. En cada bifurcación se toma la variante que juega la siguiente; un pase se escribe |pass|. Cada intersección es una letra mayúscula y un número, como en |\stone|.
+
+	En los dos casos, cuando la lista se termina, se sigue por la primera variante. Si una variante (o una jugada) no existe, se produce una advertencia y se sigue por la primera desde ahí.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variantes]
@@ -106,6 +110,10 @@ En los ejemplos, los archivos se usan por su nombre (pág.~\pageref{subsec:sgfno
 
 		\begin{goban}[sgf size = variantes]
 			\sgf[variation = 1.2]{variantes}
+		\end{goban}
+
+		\begin{goban}[sgf size = variantes]
+			\sgf[variation = {C5, C3}]{variantes}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -487,7 +495,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/partial = \meta{auto o false} (initially false)}
-	Con |auto|, donde no hay vista del archivo, los tableros muestran solo la parte que usa la partida, como en |\sgfdiagrams|. Todos los cuadros tienen el mismo tablero.
+	Con |auto|, donde no hay vista del archivo, los tableros muestran solo la parte que usa la línea que se anima (la de |variation|), como en |\sgfdiagrams|. Todos los cuadros tienen el mismo tablero.
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/layers = \meta{boolean} (default true, initially true)}
@@ -559,6 +567,10 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	El número de la primera jugada de cada diagrama, desde el segundo. También prende |restart|. Con |step = 99| y |restart = {from = 0}|, el primer diagrama va de 1 a 99, y en el segundo la jugada 100 se muestra como 0, la 101 como 1, y así.
 \end{key}
 
+\begin{key}{/pgfgo/sgf diagrams/marks = \meta{boolean} (default true, initially true)}
+	Como |/pgfgo/sgf/marks|: cada diagrama muestra las marcas, flechas y líneas de su última jugada. Con |marks = false| no se dibujan; sirve, por ejemplo, para un diccionario de josekis que marca con letras las jugadas que pueden seguir.
+\end{key}
+
 \begin{key}{/pgfgo/sgf diagrams/notes = \meta{boolean} (default true, initially true)}
 	Escribe debajo de cada diagrama sus notas: «N en M» y los pases, «N: pasa».
 \end{key}
@@ -600,7 +612,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/variations = \meta{variations options} (default commented)}
-	Dibuja también las variantes de la partida, cada una en su diagrama, después del diagrama donde nace su primera jugada: «Diagrama 3a», «Diagrama 3b»... Las jugadas de cada variante se numeran desde 1, y el epígrafe dice qué jugada reemplaza la primera (|variation title|). Las anteriores se ven sin número, como estaban. Las opciones dicen cuáles se dibujan, y se suman: |variations = {commented, 5}|. Además de las de abajo, cualquier otra cosa es el camino de una variante, como en |variation| (|2|, |2.3.1|): esa se dibuja siempre, a cualquier profundidad. Los |1| del final no cambian la línea: |2.3.1| es la misma que |2.3|. Si el archivo no la tiene, se produce un aviso. Sus comentarios y notas se escriben como los de los demás diagramas. Solo con la línea principal (sin |variation|).
+	Dibuja también las variantes de la partida, cada una en su diagrama, después del diagrama donde nace su primera jugada: «Diagrama 3a», «Diagrama 3b»... Las jugadas de cada variante se numeran desde 1, y el epígrafe dice qué jugada reemplaza la primera (|variation title|). Las anteriores se ven sin número, como estaban. Las opciones dicen cuáles se dibujan, y se suman: |variations = {commented, 5}|. Además de las de abajo, cualquier otra cosa es el camino de una variante, como en |variation| (|2|, |2.3.1|, o sus jugadas entre llaves y separadas por espacios: |{R16 P17 Q15}|): esa se dibuja siempre, a cualquier profundidad. Los |1| del final no cambian la línea: |2.3.1| es la misma que |2.3|. Si el archivo no la tiene, se produce un aviso. Sus comentarios y notas se escriben como los de los demás diagramas. Con |variation|, las variantes son las que se apartan de esa línea (también la principal): así se dibujan las respuestas a partir de una posición de un diccionario de josekis.
 
 	\begin{codeexample}[]
 		\sgfdiagrams[step = 2, to = 3, variations = all, goban = {scale = 0.5}]{variantes}
@@ -620,7 +632,15 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{stylekey}
 
 \begin{key}{/pgfgo/sgf diagrams/variations/depth = \meta{number} (initially 1)}
-	Hasta qué profundidad dibujan |commented| y |all|: |1|, solo las que salen de la línea principal; |2|, también las variantes de esas, y así. Las de una variante van después de ella, y su epígrafe dice qué jugada de ella reemplazan.
+	Hasta qué profundidad dibujan |commented| y |all|: |1|, solo las que salen de la línea que se dibuja (la principal, o la de |variation|); |2|, también las variantes de esas, y así. Las de una variante van después de ella, y su epígrafe dice qué jugada de ella reemplazan.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/variations/from = \meta{number} (initially 1)}
+	Desde qué jugada dibujan |commented| y |all|: solo las variantes que nacen en esa jugada o después. Con |variation|, sirve para dibujar solo las respuestas a una posición, sin las alternativas a las jugadas que llevan a ella.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[variation = {R16, P17}, variations = {commented, from = 3}]{josekis}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/variation title = \meta{text} (initially «variation at» y el número, o su traducción)}
@@ -722,10 +742,11 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/partial = \meta{auto o false} (initially false)}
-	Con |auto|, donde no hay vista del archivo, cada diagrama muestra solo la parte del tablero que usa la partida (todas sus líneas), como |/pgfgo/goban/partial = auto|. Es la misma en todos los diagramas, también en los de las variantes. Sirve, por ejemplo, para un joseki.
+	Con |auto|, donde no hay vista del archivo, cada diagrama muestra solo la parte del tablero que usan las líneas que se dibujan (la de |variation| y las de |variations|), como |/pgfgo/goban/partial = auto|. Es la misma en todos los diagramas, también en los de las variantes. Sirve, por ejemplo, para un joseki de un archivo con muchas ramas por todo el tablero.
 
 	\begin{codeexample}[code only]
 		\sgfdiagrams[partial = auto, variations]{joseki}
+		\sgfdiagrams[partial = auto, variation = {R16, P17}, variations = {commented, from = 3}, marks = false]{josekis}
 	\end{codeexample}
 \end{key}
 

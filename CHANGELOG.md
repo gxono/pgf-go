@@ -6,15 +6,29 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- `variation` (in `\sgf`, `\sgfcomment`, `\sgfinfo`, `\sgfanimation` and
+  `\sgfdiagrams`) can also be the moves of the line from the first one, with
+  commas or spaces: `variation = {R16, P17, Q15}`; at each branch, the
+  variation that plays the next move is taken, and `pass` is a pass. Also in
+  the list of `sgf diagrams/variations`, in braces: `variations = {{R16 P17}}`.
+  Useful for files with many branches, such as a joseki dictionary.
 - `goban/partial = auto`: the board shows only the part that is used by the
   stones, moves, marks, arrows, lines and territory drawn on it, with
   `goban/partial margin` (initially 1) more lines; a side two lines or less
   from the edge reaches the edge, and an empty board is whole. The board is
   drawn when the `goban` ends, under what is on it. `\sgfdiagrams` and
   `\sgfanimation` have `partial = auto` too (initially `false`): every
-  diagram or frame shows the same part, the one that the whole tree of the
-  file uses (also in the diagrams of the variations), unless the file has a
-  view (`VW`).
+  diagram or frame shows the same part, the one that the lines that are
+  drawn use (the one of `variation` and those of `variations`; also in the
+  diagrams of the variations), unless the file has a view (`VW`).
+- `sgf diagrams/variations` also works with `variation`: the variations are
+  the lines that leave that line (the main line too), and `depth` counts from
+  it. `sgf diagrams/variations/from` (initially 1): `commented` and `all`
+  draw only the variations born at that move or later. For example, the
+  answers to a position of a joseki dictionary:
+  `\sgfdiagrams[variation = {R16, P17}, variations = {commented, from = 3}]{josekis}`.
+- `sgf diagrams/marks` (initially `true`): like `sgf/marks`, in every
+  diagram; `marks = false` draws no marks, arrows or lines of the file.
 - The part of a SGF tree that `\sgfproblem` shows also counts its arrows and
   lines (`AR`, `LN`).
 

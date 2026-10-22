@@ -1,0 +1,36 @@
+% engines: lualatex
+% expect-warnings: 3
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% joseki.sgf: 19x19. B R16, W P17; then B N17, W R14, B R12 (main line, 1) or B Q15, W N17 (2).
+% tenuki.sgf: 9x9. B C7, W G3; then B pass, W G7 (main line) or B G7, W C3 (2).
+
+\case{variation by moves: R16 P17 Q15 (= 2), R16 P17 N17 R14 (= main line), only R16 (= main line)}
+\begin{goban}[19, partial = M11:T19, scale = 0.4]\sgf[variation = {R16, P17, Q15}]{joseki.sgf}\end{goban}
+\begin{goban}[19, partial = M11:T19, scale = 0.4]\sgf[variation = {R16 P17 N17 R14}]{joseki.sgf}\end{goban}
+\begin{goban}[19, partial = M11:T19, scale = 0.4]\sgf[variation = R16]{joseki.sgf}\end{goban}
+
+\case{a pass in the list: C7 G3 pass (= main line), C7 G3 G7 (= 2)}
+\begin{goban}[9, scale = 0.4]\sgf[variation = {C7, G3, pass}]{tenuki.sgf}\end{goban}
+\begin{goban}[9, scale = 0.4]\sgf[variation = {C7, G3, G7}]{tenuki.sgf}\end{goban}
+
+\case{sgf comment and sgf info with moves: Solid. / White takes the corner. / mc}
+\sgfcomment[variation = {R16, P17, Q15}]{joseki.sgf}{4} /
+\sgfcomment[variation = {C7, G3, pass}]{tenuki.sgf}{4} /
+\sgfinfo[variation = {R16, P17, Q15}, move = 4]{joseki.sgf}{W}
+
+\case{sgf diagrams: variations = \{\{R16 P17 Q15\}\} draws 3a, as variations = 2}
+\sgfdiagrams[step = 3, variations = {{R16 P17 Q15}}, goban = {scale = 0.4, partial = M11:T19}]{joseki.sgf}
+
+\case{warnings: a move that is not there (Q14), a line longer than the game, a variation that is not drawn}
+\begin{goban}[19, partial = M11:T19, scale = 0.4]\sgf[variation = {R16, P17, Q14}]{joseki.sgf}\end{goban}
+\begin{goban}[19, partial = M11:T19, scale = 0.4]\sgf[variation = {R16, P17, Q15, N17, A1}]{joseki.sgf}\end{goban}
+\sgfdiagrams[step = 5, variations = {{R16 P17 Q14}}, goban = {scale = 0.3, partial = M11:T19}]{joseki.sgf}
+
+\end{document}

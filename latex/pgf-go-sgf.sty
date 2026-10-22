@@ -25,13 +25,19 @@
 }
 
 %partial = auto EN \sgfdiagrams, \sgfproblem Y \sgfanimation: TODOS LOS TABLEROS TIENEN LA MISMA PARTE
-%VISIBLE, LA QUE USA EL ARBOL DEL ARCHIVO #1 (TODAS SUS LINEAS). \__pgfgo_sgf_extent_add: LA SUMA A LO DIBUJADO
-%DENTRO DE CADA goban (SI EL goban TODAVIA TIENE partial = auto).
+%VISIBLE, LA QUE USAN LAS LINEAS QUE SE DIBUJAN: TODO EL ARBOL DEL ARCHIVO #1 (\__pgfgo_sgf_extent:n, EN
+%\sgfproblem) O LAS LINEAS #2, SEPARADAS POR ; (\__pgfgo_sgf_extent:nn). \__pgfgo_sgf_extent_add: LA SUMA A LO
+%DIBUJADO DENTRO DE CADA goban (SI EL goban TODAVIA TIENE partial = auto).
 \tl_new:N \l__pgfgo_sgf_extent_tl
 \cs_new_protected:Npn \__pgfgo_sgf_extent:n #1 {
 	\pgfgo_kernel_sgf_tree:n {#1}
 	\tl_set_eq:NN \l__pgfgo_sgf_extent_tl \l_pgfgo_kernel_sgf_extent_tl
 }
+\cs_new_protected:Npn \__pgfgo_sgf_extent:nn #1#2 {
+	\pgfgo_kernel_sgf_extent:nn {#1} {#2}
+	\tl_set_eq:NN \l__pgfgo_sgf_extent_tl \l_pgfgo_kernel_sgf_extent_tl
+}
+\cs_generate_variant:Nn \__pgfgo_sgf_extent:nn {nV}
 \cs_new_protected:Npn \__pgfgo_sgf_extent_add: {
 	\bool_lazy_and:nnT {\l_pgfgo_goban_partial_auto_bool} {! \tl_if_empty_p:N \l__pgfgo_sgf_extent_tl}
 		{\exp_after:wN \__pgfgo_sgf_extent_add:nnnn \l__pgfgo_sgf_extent_tl}
@@ -1128,7 +1134,7 @@
 	\__pgfgo_sgf_cache_begin:
 	\tl_set:Nn \l__pgfgo_sgfanim_file_tl {#2}
 	\tl_clear:N \l__pgfgo_sgf_extent_tl
-	\bool_if:NT \l__pgfgo_sgfanim_partial_bool {\__pgfgo_sgf_extent:n {#2}}
+	\bool_if:NT \l__pgfgo_sgfanim_partial_bool {\__pgfgo_sgf_extent:nV {#2} \l__pgfgo_sgfanim_variation_tl}
 	\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfanim_variation_tl
 	%LOS TABLEROS TIENEN EL TAMANO DE LA PARTIDA (goban = {...} PUEDE CAMBIARLO).
 	\__pgfgo_sgf_size:N \l__pgfgo_sgfanim_size_tl
@@ -1530,6 +1536,8 @@
 \bool_new:N \l__pgfgo_sgfdiag_var_commented_bool
 \bool_new:N \l__pgfgo_sgfdiag_var_all_bool
 \int_new:N \l__pgfgo_sgfdiag_var_depth_int
+\bool_new:N \l__pgfgo_sgfdiag_marks_bool
+\int_new:N \l__pgfgo_sgfdiag_var_from_int
 \seq_new:N \l__pgfgo_sgfdiag_var_paths_seq
 \tl_new:N \l__pgfgo_sgfdiag_var_title_tl
 %LA PARTIDA: EL ARCHIVO, SU TAMANO, SU komi, SUS JUGADAS Y LA ULTIMA QUE SE DIBUJA.
@@ -1565,6 +1573,10 @@
 	numbers					.bool_set:N	= \l__pgfgo_sgfdiag_numbers_bool,
 	numbers					.default:n	= {true},
 	numbers					.initial:n	= {true},
+	%marks: COMO EN \sgf, EN CADA DIAGRAMA.
+	marks						.bool_set:N	= \l__pgfgo_sgfdiag_marks_bool,
+	marks						.default:n	= {true},
+	marks						.initial:n	= {true},
 	last~mark				.code:n			= {
 															\str_if_eq:nnTF {#1} {false}
 																{\tl_clear:N \l__pgfgo_sgfdiag_last_tl}
@@ -1655,8 +1667,9 @@
 	sep						.initial:n	= {1em},
 }
 
-%none: NINGUNA. commented: LAS QUE TIENEN COMENTARIOS. all: TODAS. depth: HASTA QUE PROFUNDIDAD (commented Y
-%all). OTRA COSA ES EL CAMINO DE UNA VARIANTE (2, 2.3.1), QUE SE DIBUJA SIEMPRE.
+%none: NINGUNA. commented: LAS QUE TIENEN COMENTARIOS. all: TODAS. depth: HASTA QUE PROFUNDIDAD; from: LAS QUE
+%NACEN EN ESA JUGADA O DESPUES (commented Y all). OTRA COSA ES EL CAMINO DE UNA VARIANTE (2, 2.3.1, {R16 P17}),
+%QUE SE DIBUJA SIEMPRE.
 \keys_define:nn {pgfgo / sgf~diagrams / variations} {
 	none						.code:n			= {
 		\bool_set_false:N \l__pgfgo_sgfdiag_var_commented_bool
@@ -1667,8 +1680,10 @@
 	all							.code:n			= {\bool_set_true:N \l__pgfgo_sgfdiag_var_all_bool},
 	depth						.int_set:N	= \l__pgfgo_sgfdiag_var_depth_int,
 	depth						.initial:n	= {1},
+	from						.int_set:N	= \l__pgfgo_sgfdiag_var_from_int,
+	from						.initial:n	= {1},
 	unknown					.code:n			= {
-		\seq_put_right:Ne \l__pgfgo_sgfdiag_var_paths_seq {\__pgfgo_sgfdiag_var_canonical:e {\l_keys_key_str}}
+		\seq_put_right:NV \l__pgfgo_sgfdiag_var_paths_seq \l_keys_key_str
 	},
 }
 
@@ -1933,6 +1948,7 @@
 						variation = {\exp_not:V \l__pgfgo_sgfdiag_variation_tl},
 						restart = {\exp_not:V \l__pgfgo_sgfdiag_sgf_restart_tl},
 						numbers = \bool_if:NTF \l__pgfgo_sgfdiag_numbers_bool {true} {false},
+						marks = \bool_if:NTF \l__pgfgo_sgfdiag_marks_bool {true} {false},
 						last~mark = {\tl_if_empty:NTF \l__pgfgo_sgfdiag_last_tl {false} {\exp_not:V \l__pgfgo_sgfdiag_last_tl}}
 					}
 					{\exp_not:V \l__pgfgo_sgfdiag_file_tl}
@@ -2107,17 +2123,6 @@
 	}
 }
 
-%EL CAMINO #1 SIN LOS 1 DEL FINAL (2.3.1 ES LA MISMA LINEA QUE 2.3). EXPANDIBLE.
-\cs_new:Npn \__pgfgo_sgfdiag_var_canonical:n #1 {
-	\exp_args:Ne \__pgfgo_sgfdiag_var_strip:n {\str_if_eq:nnTF {#1} {} {} {#1}}
-}
-\cs_new:Npn \__pgfgo_sgfdiag_var_strip:n #1 {
-	\str_if_eq:eeTF {\str_range:nnn {#1} {-2} {-1}} {.1}
-		{\exp_args:Ne \__pgfgo_sgfdiag_var_strip:n {\str_range:nnn {#1} {1} {-3}}}
-		{\str_if_eq:nnTF {#1} {1} {} {#1}}
-}
-\cs_generate_variant:Nn \__pgfgo_sgfdiag_var_canonical:n {e}
-
 %LAS VARIANTES QUE NACEN EN LAS JUGADAS #2 A #3 DEL DIAGRAMA #1, CADA UNA CON SU LETRA (3a, 3b, ...). LAS
 %VARIANTES DE UNA VARIANTE VAN DONDE VA LA VARIANTE DE LA QUE SALEN (NACEN EN LA MISMA JUGADA).
 \int_new:N \l__pgfgo_sgfdiag_var_count_int
@@ -2128,19 +2133,24 @@
 %#4: CAMINO, #5: PROFUNDIDAD, #6: NACE, #7: EMPIEZA, #8: ULTIMA, #9: COMENTADA. SE DIBUJA SI ESTA EN LA
 %LISTA, O SI commented O all LA INCLUYEN (HASTA LA PROFUNDIDAD depth).
 \bool_new:N \l__pgfgo_sgfdiag_var_wanted_bool
+%#1: CAMINO, #2: PROFUNDIDAD, #3: NACE, #4: COMENTADA.
+\cs_new_protected:Npn \__pgfgo_sgfdiag_var_wanted:nnnn #1#2#3#4 {
+	\seq_if_in:NnTF \l__pgfgo_sgfdiag_var_found_seq {#1}
+		{\bool_set_true:N \l__pgfgo_sgfdiag_var_wanted_bool}
+		{
+			\bool_set:Nn \l__pgfgo_sgfdiag_var_wanted_bool {
+				\int_compare_p:nNn {#2} < {\l__pgfgo_sgfdiag_var_depth_int + 1} &&
+				! \int_compare_p:nNn {#3} < {\l__pgfgo_sgfdiag_var_from_int} &&
+				(
+					\l__pgfgo_sgfdiag_var_all_bool ||
+					(\l__pgfgo_sgfdiag_var_commented_bool && \int_compare_p:nNn {#4} = {1})
+				)
+			}
+		}
+}
 \cs_new_protected:Npn \__pgfgo_sgfdiag_var_if:nnnnnnnnn #1#2#3#4#5#6#7#8#9 {
 	\int_compare:nT {#2 <= #6 <= #3} {
-		\seq_if_in:NnTF \l__pgfgo_sgfdiag_var_paths_seq {#4}
-			{\bool_set_true:N \l__pgfgo_sgfdiag_var_wanted_bool}
-			{
-				\bool_set:Nn \l__pgfgo_sgfdiag_var_wanted_bool {
-					\int_compare_p:nNn {#5} < {\l__pgfgo_sgfdiag_var_depth_int + 1} &&
-					(
-						\l__pgfgo_sgfdiag_var_all_bool ||
-						(\l__pgfgo_sgfdiag_var_commented_bool && \int_compare_p:nNn {#9} = {1})
-					)
-				}
-			}
+		\__pgfgo_sgfdiag_var_wanted:nnnn {#4} {#5} {#6} {#9}
 		\bool_if:NT \l__pgfgo_sgfdiag_var_wanted_bool {
 			\int_incr:N \l__pgfgo_sgfdiag_var_count_int
 			\__pgfgo_sgfdiag_variation:nnnnn {#1 \int_to_alph:n {\l__pgfgo_sgfdiag_var_count_int}} {#4} {#7} {#7} {#8}
@@ -2306,7 +2316,6 @@
 		\__pgfgo_sgf_cache_begin:
 		\__pgfgo_sgfdiag_begin:Nn \l__pgfgo_sgfdiag_layout_tl {#2}
 		\tl_clear:N \l__pgfgo_sgf_extent_tl
-		\bool_if:NT \l__pgfgo_sgfdiag_partial_bool {\__pgfgo_sgf_extent:n {#2}}
 		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfdiag_variation_tl
 		\__pgfgo_sgf_size:N \l__pgfgo_sgfdiag_size_tl
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_komi_tl \l_pgfgo_kernel_sgf_komi_tl
@@ -2325,6 +2334,7 @@
 				{\l__pgfgo_sgfdiag_total_int}
 				{\int_min:nn {\l__pgfgo_sgfdiag_to_int} {\l__pgfgo_sgfdiag_total_int}}
 		}
+		\bool_if:NT \l__pgfgo_sgfdiag_partial_bool {\__pgfgo_sgfdiag_extent:n {#2}}
 		\bool_lazy_and:nnTF {\l__pgfgo_sgfdiag_figures_bool} {! \seq_if_empty_p:N \l_pgfgo_kernel_sgf_figures_seq}
 			{\__pgfgo_sgfdiag_figures:}
 			{\__pgfgo_sgfdiag_steps:}
@@ -2333,32 +2343,51 @@
 	\group_end:
 }
 
-%LAS VARIANTES DEL ARCHIVO #1 QUE PUEDEN DIBUJARSE (SOLO CON LA LINEA PRINCIPAL). UN CAMINO DE LA LISTA QUE NO
-%ES UNA VARIANTE DA UN AVISO.
+%LAS VARIANTES DEL ARCHIVO #1 QUE PUEDEN DIBUJARSE: LAS QUE SE APARTAN DE LA LINEA QUE SE DIBUJA (LA DE
+%variation). LOS CAMINOS DE LA LISTA,
+%COMO NUMEROS SIN LOS 1 DEL FINAL (2.3.1 ES LA MISMA LINEA QUE 2.3), QUEDAN EN \l__pgfgo_sgfdiag_var_found_seq.
+%UN CAMINO QUE NO ES UNA VARIANTE DA UN AVISO.
 \msg_new:nnn {pgfgo} {sgf-no-variation}
 	{'#1'~has~no~variation~'#2':~it~is~not~drawn.}
 \seq_new:N \l__pgfgo_sgfdiag_var_seq
+\seq_new:N \l__pgfgo_sgfdiag_var_found_seq
 \cs_new_protected:Npn \__pgfgo_sgfdiag_var_setup:n #1 {
 	\seq_clear:N \l__pgfgo_sgfdiag_var_seq
-	\bool_lazy_and:nnT
-		{\tl_if_empty_p:N \l__pgfgo_sgfdiag_variation_tl}
+	\seq_clear:N \l__pgfgo_sgfdiag_var_found_seq
+	\bool_lazy_or:nnT
+		{\l__pgfgo_sgfdiag_var_commented_bool || \l__pgfgo_sgfdiag_var_all_bool}
+		{! \seq_if_empty_p:N \l__pgfgo_sgfdiag_var_paths_seq}
 		{
-			\bool_lazy_or_p:nn {\l__pgfgo_sgfdiag_var_commented_bool || \l__pgfgo_sgfdiag_var_all_bool}
-				{! \seq_if_empty_p:N \l__pgfgo_sgfdiag_var_paths_seq}
-		}
-		{
-			\pgfgo_kernel_sgf_branches:n {#1}
+			\exp_args:NnV \pgfgo_kernel_sgf_branches:nn {#1} \l__pgfgo_sgfdiag_variation_tl
 			\seq_set_eq:NN \l__pgfgo_sgfdiag_var_seq \l_pgfgo_kernel_sgf_branches_seq
 			\seq_map_inline:Nn \l__pgfgo_sgfdiag_var_paths_seq {
+				\pgfgo_kernel_sgf_path:nn {#1} {##1}
+				\seq_put_right:NV \l__pgfgo_sgfdiag_var_found_seq \l_pgfgo_kernel_sgf_path_tl
 				\bool_set_false:N \l_tmpa_bool
 				\seq_map_inline:Nn \l__pgfgo_sgfdiag_var_seq {
-					\str_if_eq:eeT {\use_i:nnnnnn ####1} {##1} {\bool_set_true:N \l_tmpa_bool \seq_map_break:}
+					\str_if_eq:eeT {\use_i:nnnnnn ####1} {\l_pgfgo_kernel_sgf_path_tl}
+						{\bool_set_true:N \l_tmpa_bool \seq_map_break:}
 				}
 				\bool_if:NF \l_tmpa_bool {\msg_warning:nnnn {pgfgo} {sgf-no-variation} {#1} {##1}}
 			}
-			%LA LECTURA DE LA LINEA PRINCIPAL QUEDA COMO ESTABA.
+			%LA LECTURA DE LA LINEA QUE SE DIBUJA QUEDA COMO ESTABA.
 			\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#1} \l__pgfgo_sgfdiag_variation_tl
 		}
+}
+
+%partial = auto: LA PARTE VISIBLE DE LA LINEA QUE SE DIBUJA Y DE LAS VARIANTES QUE SE DIBUJAN (LAS QUE
+%NACEN HASTA LA ULTIMA JUGADA), DEL ARCHIVO #1.
+\tl_new:N \l__pgfgo_sgfdiag_extent_tl
+\cs_new_protected:Npn \__pgfgo_sgfdiag_extent:n #1 {
+	\tl_set_eq:NN \l__pgfgo_sgfdiag_extent_tl \l__pgfgo_sgfdiag_variation_tl
+	\seq_map_inline:Nn \l__pgfgo_sgfdiag_var_seq {\__pgfgo_sgfdiag_extent:nnnnnn ##1}
+	\__pgfgo_sgf_extent:nV {#1} \l__pgfgo_sgfdiag_extent_tl
+}
+\cs_new_protected:Npn \__pgfgo_sgfdiag_extent:nnnnnn #1#2#3#4#5#6 {
+	\int_compare:nNnF {#3} > {\l__pgfgo_sgfdiag_last_int} {
+		\__pgfgo_sgfdiag_var_wanted:nnnn {#1} {#2} {#3} {#6}
+		\bool_if:NT \l__pgfgo_sgfdiag_var_wanted_bool {\tl_put_right:Nn \l__pgfgo_sgfdiag_extent_tl {; #1}}
+	}
 }
 
 \NewDocumentCommand{\sgfdiagrams}{O{}m}{

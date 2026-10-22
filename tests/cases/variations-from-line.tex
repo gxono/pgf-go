@@ -1,0 +1,29 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% var-tree.sgf: 9x9. E5, C7, then three variations at move 3: 1 (G3, G7 "Main.", C3), 2 (G7 "Variation 2,
+% commented.", then 2.1: G3, C3, or 2.2: C3 "Sub-variation 2.2.", G3) and 3 (C3, G3).
+
+\case{variation = 2, variations = all: from line 2, the variations 1 and 3 (3a, 3b) and 2.2 (4a)}
+\sgfdiagrams[variation = 2, variations = all, step = 3, goban = {scale = 0.4}]{var-tree.sgf}
+
+\case{variation = \{E5 C7 G7\}, variations (commented): 1 (3a) and 2.2 (4a), not 3}
+\sgfdiagrams[variation = {E5 C7 G7}, variations, step = 3, goban = {scale = 0.4}]{var-tree.sgf}
+
+\case{variation = 2.2, variations = \{1\}: only the main line (3a)}
+\sgfdiagrams[variation = 2.2, variations = {1}, step = 3, goban = {scale = 0.4}]{var-tree.sgf}
+
+\case{variation = 2, variations = \{all, from = 4\}: only 2.2 (4a)}
+\sgfdiagrams[variation = 2, variations = {all, from = 4}, step = 3, goban = {scale = 0.4}]{var-tree.sgf}
+
+\case{variation = 2, variations = all, partial = auto: the same part in every diagram}
+\sgfdiagrams[variation = 2, variations = all, partial = auto, step = 3, goban = {scale = 0.4}]{var-tree.sgf}
+
+\end{document}
