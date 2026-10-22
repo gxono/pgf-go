@@ -11,7 +11,7 @@
 \case{A capture: the view shows the final board (black 2 at D3 captures white 1 at C3)}
 \begin{goban}[5, captures, name = ko]
 	\stones[b]{B3, C2, C4}\stones[w]{D2, D4, E3}
-	\moves*[w]{C3, D3}
+	\moves[w]{C3, D3}
 \end{goban}
 \pgfgoview{ko}{C3} \pgfgoview{ko}{B2:E4} \pgfgoview[numbers = false, label = false]{ko}{B2:E4}
 Prisoners of black after the views: \pgfgoprisoners{black}.

@@ -101,11 +101,14 @@ configure the test:
 % render: no                    only compile and check the log
 % passes: 2                     number of runs (default 1; animate needs 2)
 % jobname: a b, c=d             compile with this job name (default: the file name)
+% installed: yes                load the package as if it were installed: \usepackage{pgf-go}
 ```
 
 Fonts differ slightly between engines, so each engine has its own reference
 images: those of the first engine are in `tests/reference/cases/<name>/`, and
-those of the others are in a subfolder named after the engine. Then run
+those of the others are in a subfolder named after the engine.
+With `installed: yes`, the files of `latex/` and the images `img/pgfgo-*` are
+copied to one folder that goes first in `TEXINPUTS`, as in an installation. Then run
 `python tests/run_tests.py --update <name>`, check the images in
 `tests/_build/cases/<name>/<engine>/` and commit the references.
 

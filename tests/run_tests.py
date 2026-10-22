@@ -26,6 +26,7 @@ and TeX Live), Python 3.8+ and Pillow.
 
 import argparse
 import concurrent.futures
+import os
 import re
 import shutil
 import subprocess
@@ -66,6 +67,7 @@ class Document:
     passes: int = 1
     kernel: str = None   # compile with \usepackage[kernel = ...]{pgf-go}
     jobname: str = None  # None: the name of the .tex file
+    installed: bool = False  # the package is found in the TeX path
 
     def job(self):
         return self.jobname or self.source.stem
@@ -103,6 +105,7 @@ def collect_documents(include_manuals, kernel=None):
             render=header.get("render", "yes") != "no",
             passes=int(header.get("passes", 1)),
             jobname=header.get("jobname"),
+            installed=header.get("installed", "no") == "yes",
         ))
     for path in sorted((ROOT / "doc" / "examples").glob("example-*.tex")):
         header = read_header(path)
@@ -142,9 +145,18 @@ def compile_document(doc, engine, outdir):
                   f"\\input{{{doc.source.name}}}")
     command = [engine, "-interaction=nonstopmode", f"-jobname={doc.job()}",
                f"-output-directory={outdir}", source]
+    env = None
+    if doc.installed:
+        # The files of an installation (the modules, the Lua files and the
+        # images of the profiles) in one folder, first in the TeX path.
+        texmf = outdir / "texmf"
+        texmf.mkdir()
+        for file in [*(ROOT / "latex").iterdir(), *(ROOT / "img").glob("pgfgo-*")]:
+            shutil.copy2(file, texmf / file.name)
+        env = dict(os.environ, TEXINPUTS=str(texmf) + os.pathsep)
     for _ in range(doc.passes):
         subprocess.run(command, cwd=doc.source.parent, stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL, timeout=TIMEOUT)
+                       stderr=subprocess.DEVNULL, timeout=TIMEOUT, env=env)
     log = outdir / (doc.job() + ".log")
     pdf = outdir / (doc.job() + ".pdf")
     text = log.read_text(encoding="latin-1") if log.exists() else ""

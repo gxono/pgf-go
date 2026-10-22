@@ -287,6 +287,17 @@ All notable changes to `pgf-go` are listed here.
 
 ### Fixed
 
+- Installed in the TeX tree (`\usepackage{pgf-go}`), LuaLaTeX did not load
+  the Lua kernel: `pgf-go.lua` was looked for in the folder of the document.
+  Now it is found with `kpse` (first as a TeX file, the search that found
+  `pgf-go.sty`). The images of the profiles `shell` and `yunzi` are found in
+  the TeX path with both engines.
+- A mark on a background image had a thin ring of the fill colour of the
+  background around it (the soft edge of the colour under the image). The
+  colour now goes in a circle 1pt smaller.
+- With `fit = tile`, each mark on a background image drew again every tile of
+  the visible part (361 marks on `tiles = 19`: 3.5 MB without compression);
+  now only the tiles under the mark (190 KB). Also under `dim`.
 - The points of a range go from its first end to the second:
   `\marks[sequence]{N10:7}` numbered N7 to N10, and `E:A2`, `C5 -- C1` and
   the vertical part of `A9 -| C7` went up or right whatever the order of the
@@ -352,6 +363,12 @@ All notable changes to `pgf-go` are listed here.
 
 ### Behaviour changes
 
+- `\moves` numbers its moves: the starred versions `\moves*` and `\move*`
+  are removed, and so is `\move` (`\moves{C3}` plays one move). The new key
+  `move/numbers` (initially `true`) says whether the moves get their number:
+  `\moves[numbers = false]{...}` is the old `\moves{...}`, and
+  `\pgfgoset{move = {numbers = false}}` (or `move = {numbers = false}` in
+  a `goban`) is for all the moves that follow.
 - Coordinates: the operator `R` is removed (`A1 R C3` is now `A1:C3`), and so
   are `:--:`, `:-|:` and `:|-:` (now `--`, `-|-` and `|-|`). `A1 -- C3`
   between two points that are not in a row or a column draws the line
@@ -511,6 +528,13 @@ All notable changes to `pgf-go` are listed here.
 
 ### Tests
 
+- New case `installed`: the package loaded as `\usepackage{pgf-go}` from
+  the TeX path, with the profiles `shell` and `yunzi`. `run_tests.py` has the
+  header `% installed: yes` (the files of `latex/` and `img/pgfgo-*` in one
+  folder, first in `TEXINPUTS`).
+- `images`: marks on a background image, with tiles and with `dim`.
+- New case `move-numbers` (`numbers` in `\moves`, `\pgfgoset` and `goban`,
+  with `resume` and `notes`).
 - New case `sequence-order` (the order of ranges, chains with ranges and
   rectangles, brackets, and the warning of `sequence` and `\moves`), with
   both kernels. `tests/kernel-checks.tex` checks the order of every form,

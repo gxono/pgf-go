@@ -322,6 +322,7 @@
 		forget							.groups:n = { external },
 		label								.groups:n = { external },
 		from								.groups:n = { external },
+		numbers							.groups:n = { external },
 	}
 
 
@@ -462,6 +463,10 @@
 		white				.groups:n = {external},
 		w						.groups:n = {external},
 		forget			.groups:n = {external},
+		%NO ES DE UN JUGADOR: VALE PARA TODAS LAS JUGADAS (VER pgfgo/move/numbers).
+		numbers			.code:n = {\keys_set:nn { pgfgo / move } {numbers = ##1}},
+		numbers			.default:n = {true},
+		numbers			.groups:n = {external},
 		%EL ESTILO DE LA PIEDRA Y LA MARCA DE \moves (LOS PONE pgfgo/players/<jugador>/stone).
 		line				.groups:n = {external},
 		fill				.groups:n = {external},

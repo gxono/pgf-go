@@ -628,7 +628,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 			color = red, font = \itshape, font size = 6pt, opacity = 0.6}}}}}
 
 		\begin{goban}[3]
-			\moves*{A1, B2, C3, A3}
+			\moves{A1, B2, C3, A3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -658,7 +658,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 			white = {move = {label = {format = alph}}}}}
 
 		\begin{goban}[3]
-			\moves*{A1, B2, C3, A3}
+			\moves{A1, B2, C3, A3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -998,7 +998,7 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 	\pgfgoset{profile = example}
 	
 	\begin{goban}[partial = A1:C3]
-		\moves{A1:3}
+		\moves[numbers = false]{A1:3}
 		\stones[b]{B1,B3,C2}
 		\stones[w]{C1,C3}
 		\stone{B2}
@@ -1018,7 +1018,7 @@ Los perfiles son equivalentes a los estilos de \tikzname. En resumen, permiten g
 		\pgfgoset{profile = ejemplo2}
 
 		\begin{goban}[partial = A1:C3]
-			\moves{A1:3}
+			\moves[numbers = false]{A1:3}
 			\stones[b]{B1,B3,C2}
 			\stones[w]{C1,C3}
 			\stone{B2}

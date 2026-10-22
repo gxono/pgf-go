@@ -6,7 +6,7 @@
 \usepackage{../../latex/pgf-go}
 \newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
 \newcommand\notes[1][]{\par\noindent Notes: [\pgfgomovenotes[#1]]\par}
-\newcommand\ko{\stones[b]{B3,C2,C4}\stones[w]{D2,D4,E3}\moves*[w]{C3}\moves*{D3}\moves*[from = 3, w]{C3}}
+\newcommand\ko{\stones[b]{B3,C2,C4}\stones[w]{D2,D4,E3}\moves[w]{C3}\moves{D3}\moves[from = 3, w]{C3}}
 \pagestyle{empty}
 \begin{document}
 
@@ -16,21 +16,21 @@
 \notes
 
 \case{Several notes, with at = en and separator = \{; \}: "3 en 1; 4 en 2; 5 en 1"}
-\begin{goban}[5, notes]\moves*{C3, D4}\moves*{C3}\moves*{D4}\moves*{C3}\end{goban}
+\begin{goban}[5, notes]\moves{C3, D4}\moves{C3}\moves{D4}\moves{C3}\end{goban}
 \notes[at = en, separator = {; }]
 
 \case{Unnumbered moves are not noted: 2 is drawn on 1 (no notes)}
-\begin{goban}[5, notes]\moves{C3}\moves*{C3}\end{goban}
+\begin{goban}[5, notes]\moves[numbers = false]{C3}\moves{C3}\end{goban}
 \notes
 
 \case{Outside a partial board nothing is noted (no notes); each goban starts without notes}
-\begin{goban}[5, notes, partial = A1:B2]\moves*{C3, D4}\moves*{C3}\end{goban}
+\begin{goban}[5, notes, partial = A1:B2]\moves{C3, D4}\moves{C3}\end{goban}
 \notes
 
 \case{\textbackslash pgfgoset\{notes = \{at = en\}\} and goban = \{notes\} for every board: "2 en 1"}
 \begingroup
 \pgfgoset{notes = {at = en}, goban = {notes}}
-\begin{goban}[5]\moves*{C3}\moves*[w]{C3}\end{goban}
+\begin{goban}[5]\moves{C3}\moves[w]{C3}\end{goban}
 \notes
 \endgroup
 

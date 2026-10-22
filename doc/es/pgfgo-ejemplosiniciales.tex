@@ -129,48 +129,42 @@ Cuando se desea cargar las piedras en orden o siguiendo la secuencia «negro, bl
 \end{goban}
 \end{codeexample}
 
-Por eso, \pgfgoname\ incluye macros que facilitan este proceso. Empecemos con la singular:
-\begin{command}{\move\opt{\oarg{options}}\marg{intersection}}
+Por eso, \pgfgoname\ incluye una macro que facilita este proceso:
+\begin{command}{\moves\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
 \end{command}
-Este comando funciona como |\stone|, pero alterna automáticamente los colores.
+Este comando funciona como |\stones|, pero juega las intersecciones en el orden en que se escriben, alterna automáticamente los colores y numera las jugadas.
 
 \begin{codeexample}[width=5cm]
 \begin{goban}[label = {at = all}]
-	\move{F7}
-	\move{E6}
-	\move{G3}
-	\move{D6}
+	\moves{F7, E6, G3, D6}
 \end{goban}
 \end{codeexample}
 
-La macro |\move|, al igual que |\stone|, tiene una versión plural:
-\begin{command}{\moves\opt{\oarg{options}}\marg{intersection}}
-\end{command}
-En este caso, especificar la \emph{key} |black| o |white| solo determina quién es el primer jugador de la secuencia.
+Con |numbers = false|, las jugadas se dibujan sin números. Especificar la \emph{key} |black| o |white| solo determina quién es el primer jugador de la secuencia.
 
 \begin{codeexample}[width=5cm]
 \begin{goban}[label = {at = all}]
 	\stone[b] {F7}
-	\moves[white]{E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
+	\moves[numbers = false, white]{E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
 		G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
 		I3,I2,I5,H3}
 \end{goban}
 \end{codeexample}
 
-Las macros |\move| y |\moves| también cuentan con versiones «estrelladas» (|\move*| y |\moves*|), que permiten etiquetar las jugadas. Es posible controlar desde dónde comenzará el etiquetado con la \emph{key} |from|.
+La numeración y el turno continúan de un |\moves| al siguiente, aunque las jugadas anteriores no lleven números. Es posible controlar desde dónde comenzará la numeración con la \emph{key} |from|.
 
 \begin{codeexample}[width=5cm]
 \begin{goban}[label = {at = all}]
-	\moves[white] {E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
+	\moves[numbers = false, white] {E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
 		G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
 		I3,I2,I5,H3}
 	
-	\moves*[from = 26]{F6,E5,I4,G6}
-	\move* {H2} % Es negra y etiquetada con 30, sin necesidad de expresarlo.
+	\moves[from = 26]{F6,E5,I4,G6}
+	\moves{H2} % Es negra y etiquetada con 30, sin necesidad de expresarlo.
 \end{goban}
 \end{codeexample}
 
-En este último ejemplo, se observa que |H2| se colocó con |\move*| y, aunque está separado de |\moves*|, es negra y está etiquetada con 30, ya que la última piedra colocada (|G6|) era negra y estaba etiquetada con 29.
+En este último ejemplo, se observa que |H2| se colocó con otro |\moves| y, aunque está separado del anterior, es negra y está etiquetada con 30, ya que la última piedra colocada (|G6|) era negra y estaba etiquetada con 29.
 
 \subsection{Tablero parcial y marcas}
 \label{tut:parcial}
@@ -355,7 +349,7 @@ En el primer tutorial, |captures| retiró una piedra capturada de una partida en
 	\begin{goban}[7, captures, notes]
 		\stones[b]{B3, C2, C4}
 		\stones[w]{C3, D2, D4, E3}
-		\moves*{D3, G6, G5, C3, A6, A5, D3}
+		\moves{D3, G6, G5, C3, A6, A5, D3}
 	\end{goban}
 
 	\pgfgomovenotes
@@ -367,7 +361,7 @@ Negras toman el ko en D3 (1), blancas amenazan en otro lado (2), negras responde
 	\begin{goban}[7]
 		\stones[b]{B3, C2, C4}
 		\stones[w]{C3, D2, D4, E3}
-		\moves*{D3, G6, G5, C3}
+		\moves{D3, G6, G5, C3}
 	\end{goban}
 \end{codeexample}
 
@@ -377,7 +371,7 @@ Con la \emph{key} |captures| (pág.~\pageref{subsec:capturas}), el |goban| lleva
 	\begin{goban}[7, captures]
 		\stones[b]{B3, C2, C4}
 		\stones[w]{C3, D2, D4, E3}
-		\moves*{D3, G6, G5, C3}
+		\moves{D3, G6, G5, C3}
 	\end{goban}
 
 	Negras capturaron \pgfgoprisoners{b},
@@ -390,7 +384,7 @@ Si las piedras capturadas deben seguir viéndose, |captures = fade| las deja com
 	\begin{goban}[7, captures = fade]
 		\stones[b]{B3, C2, C4}
 		\stones[w]{C3, D2, D4, E3}
-		\moves*{D3, G6, G5, C3}
+		\moves{D3, G6, G5, C3}
 	\end{goban}
 \end{codeexample}
 
@@ -400,7 +394,7 @@ El ko sigue: negras amenazan (5), blancas responden (6) y negras retoman en D3 (
 	\begin{goban}[7, captures, notes]
 		\stones[b]{B3, C2, C4}
 		\stones[w]{C3, D2, D4, E3}
-		\moves*{D3, G6, G5, C3, A6, A5, D3}
+		\moves{D3, G6, G5, C3, A6, A5, D3}
 	\end{goban}
 
 	\pgfgomovenotes.
@@ -556,11 +550,11 @@ En los comentarios, \karu\ suele mostrar qué habría pasado con otra jugada. Co
 	\end{goban}
 
 	\begin{goban}[resume = base]
-		\moves*[b]{C2, E3}
+		\moves[b]{C2, E3}
 	\end{goban}
 
 	\begin{goban}[resume = base]
-		\moves*[b]{E3, C2}
+		\moves[b]{E3, C2}
 	\end{goban}
 \end{codeexample}
 
@@ -575,11 +569,11 @@ Las variantes también pueden tener nombre, y seguir desde ellas: con |name| y |
 	\end{goban}
 
 	\begin{goban}[name = variante, resume = base]
-		\moves*[b]{E3, C2}
+		\moves[b]{E3, C2}
 	\end{goban}
 
 	\begin{goban}[resume = {variante, numbers}]
-		\moves*{E4}
+		\moves{E4}
 	\end{goban}
 \end{codeexample}
 

@@ -37,7 +37,7 @@
 \end{goban}
 {\pgfgoset{players = {black = {stone = {image = {file = stone-oval.png, width = 18pt, rotate = random}}}}}
 \begin{goban}[5]
-	\moves{A1, B2, C3, D4}
+	\moves[numbers = false]{A1, B2, C3, D4}
 \end{goban}}
 
 \case{Rotation ranges: 80:100 (almost vertical), -10:10 (almost horizontal), and spaces around the colon}
@@ -49,9 +49,9 @@
 
 \case{Player keys: moves use the image; image = false goes back to circles}
 \pgfgoset{players = {black = {stone = {image = {file = pgfgo-yunzi-black.png}}}, white = {stone = {image = {file = pgfgo-yunzi-white-1.png}}}}}
-\begin{goban}[5]\moves{A1, B1, C1, D1}\stones[b, image = false]{A3}\end{goban}
+\begin{goban}[5]\moves[numbers = false]{A1, B1, C1, D1}\stones[b, image = false]{A3}\end{goban}
 \pgfgoset{players = {black = {stone = {image = false}}, white = {stone = {image = false}}}}
-\begin{goban}[5]\moves{A1, B1}\end{goban}
+\begin{goban}[5]\moves[numbers = false]{A1, B1}\end{goban}
 
 \case{Background images: cover, stretch (rounded corners, partial), tile (partial); marks on empty points show the image under them; dim}
 \begin{goban}[9, background = {fill = {image = {file = pgfgo-board.jpg}}}]
@@ -154,6 +154,17 @@
 	\stones[b, shine = {true, color = red, image = {file = shine.png, silhouette}}]{A1}
 	\stones[b, shine = {true, color = red, image = {file = shine.png, silhouette, silhouette = false}}]{C1}
 	\stones[w, image = {file = pgfgo-yunzi-white-1.png}, shine = {true, color = blue, image = {file = star.pdf, width = 6pt, silhouette}}]{E1}
+\end{goban}
+
+\case{Marks on a background image: no ring of the fill colour (red) around them, and with tiles only the tiles under the mark are drawn again (dim too)}
+\begin{goban}[5, scale = 2, background = {fill = {color = red, image = {file = tile.png, fit = tile, tiles = 5}}}]
+	\marks[triangle]{A1, C3, E5}
+	\marks[sequence]{B4, D2}
+	\marks[dim]{A5, E1}
+\end{goban}
+\begin{goban}[5, scale = 2, background = {fill = {color = red, image = {file = pgfgo-board.jpg}}}]
+	\marks[triangle]{A1, C3, E5}
+	\marks[circle]{B4, D2}
 \end{goban}
 
 \end{document}

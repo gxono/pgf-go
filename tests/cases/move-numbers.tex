@@ -1,0 +1,38 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{Moves are numbered by default: 1, 2 / numbers = false: no numbers, and 3 at C4}
+\begin{goban}[5]\moves{C3,D3}\end{goban}
+\begin{goban}[5]\moves[numbers = false]{C3,D3}\moves{C4}\end{goban}
+
+\case{goban move = \{numbers = false\}: C3, D3 without numbers, then numbers: 3, 4}
+\begin{goban}[5, move = {numbers = false}]\moves{C3,D3}\moves[numbers]{C4,D4}\end{goban}
+
+\case{pgfgoset move = \{numbers = false\} in a group: no numbers / after the group: 1, 2}
+{\pgfgoset{move = {numbers = false}}\begin{goban}[5]\moves{C3,D3}\end{goban}}
+\begin{goban}[5]\moves{C3,D3}\end{goban}
+
+\case{pgfgoset move = \{numbers = false, label = \{color = red\}\}: no numbers / numbers: red 1, 2}
+{\pgfgoset{move = {numbers = false, label = {color = red}}}
+\begin{goban}[5]\moves{C3,D3}\end{goban}
+\begin{goban}[5]\moves[numbers]{C3,D3}\end{goban}}
+
+\case{profile does not change numbers (it is not looks, as notes): no numbers}
+{\pgfgoset{move = {numbers = false}}\begin{goban}[5, profile = default]\moves{C3,D3}\end{goban}}
+
+\case{resume with numbers brings the numbers as they were drawn: C3, D3 without numbers, 3 at C4}
+\begin{goban}[5, name = a]\moves[numbers = false]{C3,D3}\moves{C4}\end{goban}
+\begin{goban}[5, resume = {a, numbers}]\end{goban}
+
+\case{notes: moves without numbers are not noted (C3 again is drawn, no notes)}
+\begin{goban}[5, notes, move = {numbers = false}]\moves{C3,D3,C3}\end{goban}
+\par\noindent Notes: [\pgfgomovenotes]
+
+\end{document}

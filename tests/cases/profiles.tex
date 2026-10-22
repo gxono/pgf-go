@@ -18,7 +18,7 @@
 \begin{document}
 
 \case{Built-in profiles: default, pgfgo, pgfgosmooth, wain}
-\newcommand\sample{\begin{goban}[5, label = {at = {south, west}}]\moves*{C3,D3}\stone{B2}\marks[b, triangle]{C3}\end{goban}}
+\newcommand\sample{\begin{goban}[5, label = {at = {south, west}}]\moves{C3,D3}\stone{B2}\marks[b, triangle]{C3}\end{goban}}
 {\pgfgoset{profile = default}\sample}
 {\pgfgoset{profile = pgfgo}\sample}
 {\pgfgoset{profile = pgfgosmooth}\sample}
@@ -36,7 +36,7 @@
 \case{profile resets the style: the shadow set before is lost (default); options after it are added (wain, red grid); in the options of a goban (pgfgo)}
 {\pgfgoset{stone = {shadow}}\pgfgoset{profile = default}\sample}
 {\pgfgoset{profile = wain, goban = {grid = {line = {color = red}}}}\sample}
-\begin{goban}[5, label = {at = {south, west}}, profile = pgfgo]\moves*{C3,D3}\stone{B2}\end{goban}
+\begin{goban}[5, label = {at = {south, west}}, profile = pgfgo]\moves{C3,D3}\stone{B2}\end{goban}
 
 \case{One player: a pgfgo board with wain black stones; all = the same player for the three}
 {\pgfgoset{goban profile = pgfgo, players = {black = {profile = wain-black}}}\sample}
@@ -46,7 +46,7 @@
 {\pgfgoset{profile = simple}\sample}
 
 \case{profile keeps size, partial, coordinates and scale (7x7, A1:D4, labels, 0.8) but not the red stones}
-\begin{goban}[7, partial = A1:D4, label, scale = 0.8, stone = {fill = {color = red}}, profile = wain]\moves*{B2,C3}\end{goban}
+\begin{goban}[7, partial = A1:D4, label, scale = 0.8, stone = {fill = {color = red}}, profile = wain]\moves{B2,C3}\end{goban}
 
 \case{Image profiles found in img without \textbackslash graphicspath: shell, yunzi, baduktv; a file name without extension}
 {\pgfgoset{profile = shell}\sample}

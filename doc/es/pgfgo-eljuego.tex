@@ -16,11 +16,11 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 			\pgfgoset{goban = {5, partial = A1:C3}}
 
 			\begin{goban}
-				\moves*{B1,A1,A2}
+				\moves{B1,A1,A2}
 			\end{goban}
 
 			\begin{goban}[captures]
-				\moves*{B1,A1,A2} % 3 captura a 2.
+				\moves{B1,A1,A2} % 3 captura a 2.
 			\end{goban}
 		\end{codeexample}
 
@@ -42,7 +42,7 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 			\begin{goban}[captures = fade]
 				\stones[w]{C1,D1}
 				\stones[b]{B1,C2,D2}
-				\moves*{E1}
+				\moves{E1}
 			\end{goban}
 		\end{codeexample}
 	\end{stylekey}
@@ -62,13 +62,13 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 			\begin{goban}
 				\stones[w]{A1}\stones[b]{B1}
 				\marks[triangle]{A1}
-				\moves*{A2}
+				\moves{A2}
 			\end{goban}
 
 			\begin{goban}[captured marks = remove]
 				\stones[w]{A1}\stones[b]{B1}
 				\marks[triangle]{A1}
-				\moves*{A2} % el triángulo se va con la piedra blanca.
+				\moves{A2} % el triángulo se va con la piedra blanca.
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -90,7 +90,7 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 			\pgfgoset{goban = {5, partial = A1:C3}}
 
 			\begin{goban}[captures]
-				\moves*{B1,A1,A2}
+				\moves{B1,A1,A2}
 			\end{goban}
 
 			Negras: \pgfgoprisoners{black}. Blancas: \pgfgoprisoners{white}.
@@ -104,7 +104,7 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 
 	\begin{key}{/pgfgo/goban/notes=\meta{boolean} (default true, initially false)}
 
-		Una jugada numerada en un punto donde ya hubo una jugada numerada del mismo |goban| no se dibuja: el punto sigue mostrando la primera, aunque haya sido capturada, y se anota «N at M». Solo cuentan las jugadas numeradas (|\moves*|) que se ven en el tablero. Funciona con los dos kernels.
+		Una jugada numerada en un punto donde ya hubo una jugada numerada del mismo |goban| no se dibuja: el punto sigue mostrando la primera, aunque haya sido capturada, y se anota «N at M». Solo cuentan las jugadas numeradas (|\moves| sin |numbers = false|) que se ven en el tablero. Funciona con los dos kernels.
 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = A2:E4}}
@@ -112,9 +112,9 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 			\begin{goban}[notes]
 				\stones[b]{B3,C2,C4}
 				\stones[w]{D2,D4,E3}
-				\moves*[w]{C3}
-				\moves*{D3}
-				\moves*[from = 3, w]{C3}
+				\moves[w]{C3}
+				\moves{D3}
+				\moves[from = 3, w]{C3}
 			\end{goban}
 
 			\pgfgomovenotes[at = en]
@@ -144,10 +144,10 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 			\begin{goban}[5, partial = A2:E4, notes]
 				\stones[b]{B3,C2,C4}
 				\stones[w]{D2,D4,E3}
-				\moves*[w]{C3}
-				\moves*{D3}
-				\moves*[from = 3, w]{C3}
-				\moves*{D3}
+				\moves[w]{C3}
+				\moves{D3}
+				\moves[from = 3, w]{C3}
+				\moves{D3}
 			\end{goban}
 
 			\pgfgomovenotes[at = en, separator = {; }]

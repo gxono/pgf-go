@@ -6,11 +6,17 @@
 \clist_gset:Nn \g_pgfgo_kernel_features_clist {captures, territory, sgf}
 
 %NOMBRE COMPLETO DEL ARCHIVO #2 DEL PAQUETE, EN #1: SE BUSCA JUNTO A pgf-go.sty Y, SI NO ESTA AHI, EN
-%EL PATH DE TeX.
+%EL PATH DE TeX CON kpse (INSTALADO, \file_full_name:n DEVUELVE EL NOMBRE SIN LA CARPETA Y dofile NO LO
+%ENCUENTRA). PRIMERO COMO tex, LA MISMA BUSQUEDA QUE ENCONTRO pgf-go.sty: COMO lua PUEDE APARECER OTRA
+%COPIA (POR EJ. CON TEXINPUTS).
 \cs_new_protected:Npn \__pgfgo_kernel_lua_find:Nn #1#2 {
 	\tl_clear:N #1
 	\tl_if_empty:NF \c__pgfgo_path_tl {\tl_set:Ne #1 {\file_full_name:n {\c__pgfgo_path_tl / #2}}}
-	\tl_if_empty:NT #1 {\tl_set:Ne #1 {\file_full_name:n {#2}}}
+	\tl_if_empty:NT #1 {
+		\tl_set:Ne #1 {\lua_now:e {
+			tex.sprint(-2,~kpse.find_file("#2",~"tex")~or~kpse.find_file("#2",~"lua")~or~"#2")
+		}}
+	}
 }
 
 \tl_new:N \l__pgfgo_kernel_lua_file_tl

@@ -36,11 +36,11 @@
 \begin{goban}[7]\drawpath{D4, B[3:1], F2}\end{goban}
 
 \case{Moves along a chain and a range: C3 -| E5, E6:7}
-\begin{goban}[7]\moves{C3 -| E5, E6:7}\end{goban}
+\begin{goban}[7]\moves[numbers = false]{C3 -| E5, E6:7}\end{goban}
 
 \case{No fixed order: marks on A1:C3 (no warning), sequence on A1:C3 and moves on B2 r D4 (a warning each)}
 \begin{goban}[5]\marks{A1:C3}\end{goban}
 \begin{goban}[5]\marks[sequence]{A1:C3}\end{goban}
-\begin{goban}[5]\moves{B2 r D4}\end{goban}
+\begin{goban}[5]\moves[numbers = false]{B2 r D4}\end{goban}
 
 \end{document}

@@ -213,7 +213,7 @@
 		\pgfpathrectanglecorners {\pgfpointxy{-0.5}{-0.5}} {\pgfpointxy{0.5}{0.5}}
 		\pgfusepath{fill, clip}
 		\pgftransformshift{\pgfpointxy{-\l__pgfgo_mark_x_tl}{-\l__pgfgo_mark_y_tl}}
-		\pgfgo_goban_background_image:
+		\pgfgo_goban_background_image:VV \l__pgfgo_mark_x_tl \l__pgfgo_mark_y_tl
 		\endpgfscope
 	}{
 		\pgfpathrectanglecorners {\pgfpointxy{-0.5}{-0.5}} {\pgfpointxy{0.5}{0.5}}
@@ -360,12 +360,16 @@
 		\tl_set:Ne \l_pgfgo_mark_shadow_scale_tl
 			{\bool_if:NTF \l_pgfgo_mark_hatched_lines_bool {1} {0.8}}
 
-		%CON IMAGEN DE FONDO, EL CIRCULO MUESTRA LA PARTE DE LA IMAGEN QUE LE CORRESPONDE.
+		%CON IMAGEN DE FONDO, EL CIRCULO MUESTRA LA PARTE DE LA IMAGEN QUE LE CORRESPONDE. DEBAJO, EL COLOR
+		%DEL FONDO (POR SI LA IMAGEN ES TRANSPARENTE) VA EN UN CIRCULO 1pt MAS CHICO: CON EL MISMO CIRCULO, EL
+		%BORDE SUAVIZADO DEL COLOR SE VERIA COMO UN ANILLO ALREDEDOR DE LA MARCA.
 		\pgfgo_goban_if_background_image:TF {
+			\pgfpathcircle{\pgfpointxy{#1}{#2}}{\l_pgfgo_players_stone_radius_dim * \l_pgfgo_mark_shadow_scale_tl - 1pt}
+			\pgfusepath{fill}
 			\pgfscope
 			\pgfpathcircle{\pgfpointxy{#1}{#2}}{\l_pgfgo_players_stone_radius_dim * \l_pgfgo_mark_shadow_scale_tl}
-			\pgfusepath{fill, clip}
-			\pgfgo_goban_background_image:
+			\pgfusepath{clip}
+			\pgfgo_goban_background_image:nn {#1} {#2}
 			\endpgfscope
 		}{
 			\pgftransformshift{\pgfpointxy{#1}{#2}}

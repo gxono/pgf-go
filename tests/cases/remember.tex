@@ -31,13 +31,13 @@
 \begin{goban}[5, resume = a]\end{goban}
 
 \case{Moves: no numbers by default; numbering and turn continue (4 white, 5 black); numbers; label = forget hides 2}
-\begin{goban}[5, name = a]\moves*{C2}\moves*[label = forget]{B4}\moves*{D3}\end{goban}
-\begin{goban}[5, resume = a]\moves*{C:D4}\end{goban}
-\begin{goban}[5, resume = {a, numbers}]\moves*{C:D4}\end{goban}
+\begin{goban}[5, name = a]\moves{C2}\moves[label = forget]{B4}\moves{D3}\end{goban}
+\begin{goban}[5, resume = a]\moves{C:D4}\end{goban}
+\begin{goban}[5, resume = {a, numbers}]\moves{C:D4}\end{goban}
 
 \case{moves[forget] is not resumed (resume: only C3, and the next move is 1)}
-\begin{goban}[5, name = a]\stone[b]{C3}\moves*[forget]{D3,D4}\end{goban}
-\begin{goban}[5, resume = a]\moves*{B2}\end{goban}
+\begin{goban}[5, name = a]\stone[b]{C3}\moves[forget]{D3,D4}\end{goban}
+\begin{goban}[5, resume = a]\moves{B2}\end{goban}
 
 \case{Marks only with marks; sequences restart at 1; marks[forget] is not resumed (no square on B2)}
 \begin{goban}[5, name = a]\stones[b]{C3}\marks[b, triangle]{C3}\marks[sequence]{A1,B1,C1}\marks[forget, square]{B2}\end{goban}
@@ -50,8 +50,8 @@
 \begin{goban}[5, resume = {a, territory}]\end{goban}
 
 \case{b keeps what it got from a as it was drawn (no numbers, no marks) plus its own mark and move}
-\begin{goban}[5, name = a]\moves*{C3,D3}\marks[circle]{A1}\end{goban}
-\begin{goban}[5, name = b, resume = a]\moves*{C4}\marks[triangle]{E5}\end{goban}
+\begin{goban}[5, name = a]\moves{C3,D3}\marks[circle]{A1}\end{goban}
+\begin{goban}[5, name = b, resume = a]\moves{C4}\marks[triangle]{E5}\end{goban}
 \begin{goban}[5, resume = {b, numbers, marks}]\end{goban}
 
 \case{Fragile options survive the memory}
@@ -63,7 +63,7 @@
 \begin{goban}[9, resume = a, partial = A1:E5]\end{goban}
 
 \case{Views: what was forgotten is not drawn, unless forgotten}
-\begin{goban}[5, name = f]\stones[b]{C3}\stone[w, forget]{D4}\moves*[label = forget]{B2}\marks[forget, circle]{A1}\end{goban}
+\begin{goban}[5, name = f]\stones[b]{C3}\stone[w, forget]{D4}\moves[label = forget]{B2}\marks[forget, circle]{A1}\end{goban}
 \pgfgoview{f}{A1:E5} \pgfgoview[forgotten]{f}{A1:E5}
 
 \case{resume keeps the size of the named board (13, then 7x5 through two names); a size of its own wins (15)}

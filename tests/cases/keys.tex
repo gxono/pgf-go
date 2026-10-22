@@ -53,11 +53,11 @@
 \case{Per-player settings with \textbackslash pgfgoset\{players = \ldots\} and \textbackslash pgfgosetallplayers}
 {\pgfgoset{players = {black = {stone = {fill = {color = brown}}, move = {label = {color = yellow}}},
                       white = {move = {label = {color = red, format = alph}}}}}
-\begin{goban}[5]\moves*{B2,C2,D2}\end{goban}}
+\begin{goban}[5]\moves{B2,C2,D2}\end{goban}}
 {\pgfgosetallplayers{stone = {radius = 4pt}}
-\begin{goban}[5]\moves*{B2,C2}\stone{D2}\end{goban}}
+\begin{goban}[5]\moves{B2,C2}\stone{D2}\end{goban}}
 {\pgfgoset{move = {label = {color = green}}}
-\begin{goban}[5]\moves*{B2,C2}\end{goban}}
+\begin{goban}[5]\moves{B2,C2}\end{goban}}
 {\pgfgoset{mark = {square}}
 \begin{goban}[5]\marks{C3}\end{goban}}
 
@@ -90,7 +90,7 @@
 
 \case{Global use i and move numbers brought back with resume = \{..., numbers\}}
 {\pgfgoset{goban = {use i}}
-\begin{goban}[9, label = {at = south}, name = keys]\stones[b]{H1,I1}\moves*{H3,I3}\end{goban}
+\begin{goban}[9, label = {at = south}, name = keys]\stones[b]{H1,I1}\moves{H3,I3}\end{goban}
 \begin{goban}[9, label = {at = south}, resume = {keys, numbers}]\end{goban}}
 
 \end{document}

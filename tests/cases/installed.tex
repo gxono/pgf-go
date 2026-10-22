@@ -1,0 +1,22 @@
+% engines: lualatex, pdflatex
+% installed: yes
+%
+% The package as if it were installed (run_tests.py puts latex/ and the images
+% img/pgfgo-* in TEXINPUTS): \usepackage{pgf-go} without a folder. With LuaLaTeX,
+% pgf-go.lua is found with kpse (\file_full_name:n gave the name without its folder and
+% the Lua kernel did not load). The profiles shell and yunzi find their images in the
+% TeX path.
+\documentclass{article}
+\usepackage{pgf-go}
+\begin{document}
+
+\begin{goban}[profile = shell, partial = A1:J10]
+\moves{D4, C4, C3, B3, D3, B4, C5}
+\marks[triangle]{D5, H8}
+\end{goban}
+\begin{goban}[profile = yunzi, partial = A1:J10]
+\stones[black]{C3, D4, E5}\stones[white]{D3, E4, F5, G6, C4}
+\marks[circle]{F3}
+\end{goban}
+
+\end{document}

@@ -137,9 +137,8 @@ def code_commands():
         commands.update(re.findall(r"\\let\\(pgfgo[A-Za-z]+)", source))
         commands.update(re.findall(r"\\cs_(?:new|g?set)_eq:N[Nc]\s*\\(pgfgo[A-Za-z]+)(?![A-Za-z_:@])", source))
         commands.update("env:" + e for e in re.findall(r"NewDocumentEnvironment\s*\{(\w+)\}", source))
-        # \mark, \marks and \sgf exist inside goban; \move is \let to \moves.
+        # \mark, \marks and \sgf exist inside goban.
         commands.update(re.findall(r"\\cs_set_eq:NN\s*\\([A-Za-z]+)\s*\\__pgfgo", source))
-        commands.update(re.findall(r"\\let\\([A-Za-z]+)\\[A-Za-z]+\s*$", source, re.M))
     return commands
 
 

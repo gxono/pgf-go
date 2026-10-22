@@ -45,7 +45,7 @@ Cada archivo se lee una sola vez en todo el documento, por más comandos que lo 
 
 \begin{command}{\sgf\opt{\oarg{options}}\marg{file}}
 
-	Dibuja en el |goban| la línea principal de la primera partida del archivo: las piedras iniciales (|AB| y |AW|) como con |\stones|, y las jugadas como con |\moves*|. Las variantes no se dibujan. Los pases cuentan para la numeración, pero no se dibujan (con |goban/notes| se anotan, «N: pass»). Solo existe dentro de |goban|.
+	Dibuja en el |goban| la línea principal de la primera partida del archivo: las piedras iniciales (|AB| y |AW|) como con |\stones|, y las jugadas como con |\moves|. Las variantes no se dibujan. Los pases cuentan para la numeración, pero no se dibujan (con |goban/notes| se anotan, «N: pass»). Solo existe dentro de |goban|.
 \end{command}
 
 Las piedras que agregan (|AB|, |AW|) o quitan (|AE|) los nodos posteriores a la primera jugada se aplican junto con la jugada anterior. Quitar piedras necesita |captures|; sin |captures|, |\sgf| avisa una vez y no las quita.
@@ -88,7 +88,7 @@ En los ejemplos, los archivos se usan por su nombre (pág.~\pageref{subsec:sgfno
 	\begin{codeexample}[width=5cm]
 		\begin{goban}[captures]
 			\sgf[to = 6]{partida}
-			\moves*{F5} % Sigue con la 7 (negras), en otro lugar.
+			\moves{F5} % Sigue con la 7 (negras), en otro lugar.
 		\end{goban}
 	\end{codeexample}
 \end{key}

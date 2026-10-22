@@ -282,7 +282,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 			white = {stone = {image = {file = pgfgo-yunzi-white-1.png}}}}}
 
 		\begin{goban}[5, partial = B2:D4]
-			\moves{C3, D3, C2, B3}
+			\moves[numbers = false]{C3, D3, C2, B3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -406,20 +406,15 @@ Las piedras dibujadas, sin imagen, no se guardan así: cada una es un círculo y
 \subsection{Movimientos}
 \label{subsec:movimientos}
 
-Los comandos de movimientos permiten representar secuencias de jugadas alternando automáticamente entre negro y blanco. Incluyen opciones para numerar las jugadas y personalizar las piedras asociadas.
+|\moves| representa secuencias de jugadas alternando automáticamente entre negro y blanco. Sus opciones deciden si las jugadas llevan número y personalizan las piedras asociadas.
 
-\begin{command}{\move\opt{*}\opt{\oarg{options}}\marg{intersection}}
-	
-	Dibuja una piedra como parte de una secuencia de movimientos, alternando colores automáticamente (negro, blanco, negro, etc.). La versión estrellada (|\move*|) añade una etiqueta numérica a la piedra.
-\end{command}
+\begin{command}{\moves\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
 
-\begin{command}{\moves\opt{*}\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
-	
-	Similar a |\move|, pero con varias jugadas. Las jugadas son una secuencia: se juegan en el orden en que se escriben y una intersección puede repetirse (por ejemplo, para retomar un ko con |captures|). Acepta la sintaxis de |\stones| (pág.~\pageref{subsec:sintaxis-de-coordenadas}) y juega cada elemento en su orden (pág.~\pageref{subsec:orden-coordenadas}): un camino (|A1 -- A3 -- C3|) va de su primer punto al último, y un segmento, del primer extremo al segundo (|C:A 4| va de C4 a A4; |C5:1|, de C5 a C1). Lo que no tiene un recorrido fijo (rectángulos, |r|, columnas y filas enteras, |*|) se juega igual, con un aviso. Los grupos sustractivos (|;|) dan error: |\moves| solo agrega jugadas.
+	Dibuja piedras como parte de una secuencia de jugadas, alternando colores automáticamente (negro, blanco, negro, etc.) y con su número (|numbers|). Las jugadas son una secuencia: se juegan en el orden en que se escriben y una intersección puede repetirse (por ejemplo, para retomar un ko con |captures|). Acepta la sintaxis de |\stones| (pág.~\pageref{subsec:sintaxis-de-coordenadas}) y juega cada elemento en su orden (pág.~\pageref{subsec:orden-coordenadas}): un camino (|A1 -- A3 -- C3|) va de su primer punto al último, y un segmento, del primer extremo al segundo (|C:A 4| va de C4 a A4; |C5:1|, de C5 a C1). Lo que no tiene un recorrido fijo (rectángulos, |r|, columnas y filas enteras, |*|) se juega igual, con un aviso. Los grupos sustractivos (|;|) dan error: |\moves| solo agrega jugadas.
 
 	\begin{codeexample}[]
 		\begin{goban}[5]
-			\moves*{B1 -| D3, C:A 4, E5}
+			\moves{B1 -| D3, C:A 4, E5}
 		\end{goban}
 	\end{codeexample}
 \end{command}
@@ -430,12 +425,29 @@ Las opciones de |\moves| también aceptan las del estilo de la piedra (|fill|, |
 
 \begin{codeexample}[]
 	\begin{goban}[5, partial = B2:D4]
-		\moves{C3, D3, C2}
-		\moves[mark = circle]{B3}
+		\moves[numbers = false]{C3, D3, C2}
+		\moves[numbers = false, mark = circle]{B3}
 	\end{goban}
 \end{codeexample}
 
-Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move = {...}}| que es equivalente a |\pgfgoset{players = {all = {move = {...}}}}|.
+Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move = {...}}| que es equivalente a |\pgfgoset{players = {all = {move = {...}}}}|, salvo |numbers|, que no es de un jugador: vale para todas las jugadas.
+
+\begin{key}{/pgfgo/move/numbers=\meta{boolean} (default true, initially true)}
+
+	Si las jugadas llevan su número. Sin números, las jugadas igual cuentan: la jugada siguiente sigue la numeración y el turno. Como opción de |\moves| vale para esas jugadas; con |\pgfgoset{move = {numbers = false}}| o |\begin{goban}[move = {numbers = false}]|, para todas las que siguen.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = B2:D4]
+			\moves[numbers = false]{C3, D3}
+			\moves{C2, B3}
+		\end{goban}
+
+		\begin{goban}[5, partial = B2:D4, move = {numbers = false}]
+			\moves{C3, D3}
+			\moves[numbers]{C2, B3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
 
 \begin{key}{/pgfgo/move/black}
 	
@@ -450,8 +462,8 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		\end{goban}
 		
 		\begin{goban}
-			\moves[b]{C2,B4}
-			\move{D3}
+			\moves[numbers = false, b]{C2,B4}
+			\moves[numbers = false]{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -469,8 +481,8 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		\end{goban}
 		
 		\begin{goban}
-			\moves[white]{C2,B4}
-			\move{D3}
+			\moves[numbers = false, white]{C2,B4}
+			\moves[numbers = false]{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -496,8 +508,8 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		\end{goban}
 		
 		\begin{goban}
-			\moves*[from = 7]{C2,B4}
-			\move*{D3}
+			\moves[from = 7]{C2,B4}
+			\moves{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -520,8 +532,8 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		\end{goban}
 		
 		\begin{goban}
-			\moves*[from = 7]{C2,B4}
-			\move*[label = {font size = 0.5em}]{D3}
+			\moves[from = 7]{C2,B4}
+			\moves[label = {font size = 0.5em}]{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -544,8 +556,8 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		\end{goban}
 		
 		\begin{goban}
-			\moves*[from = 7]{C2,B4}
-			\move*{D3}
+			\moves[from = 7]{C2,B4}
+			\moves{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -564,8 +576,8 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		
 		\pgfgoset{move={label = {format=alph}}}
 		\begin{goban}
-			\moves*[from = 7]{C2,B4}
-			\move*{D3}
+			\moves[from = 7]{C2,B4}
+			\moves{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -584,8 +596,8 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		
 		\pgfgoset{move = {label = {format = Alph}}}
 		\begin{goban}
-			\moves*[from = 7]{C2,B4}
-			\move*{D3}
+			\moves[from = 7]{C2,B4}
+			\moves{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -604,8 +616,8 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		
 		\pgfgoset{move = {label = {format = roman}}}
 		\begin{goban}
-			\moves*{C2,B4}
-			\move*{D3}
+			\moves{C2,B4}
+			\moves{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -624,8 +636,8 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		
 		\pgfgoset{move = {label = {format = Roman}}}
 		\begin{goban}
-			\moves*{C2,B4}
-			\move*{D3}
+			\moves{C2,B4}
+			\moves{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -638,13 +650,13 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		\pgfgoset{goban = {5, partial = B2:D4}}
 		
 		\begin{goban}
-			\moves*{C2,B4}
-			\move*{D3}
+			\moves{C2,B4}
+			\moves{D3}
 		\end{goban}
 		
 		\begin{goban}
-			\moves*[label = {color = red}]{C2,B4}
-			\move*[label = {color = blue}]{D3}
+			\moves[label = {color = red}]{C2,B4}
+			\moves[label = {color = blue}]{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -657,13 +669,13 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 		\pgfgoset{goban = {5, partial = B2:D4}}
 
 		\begin{goban}[name = a]
-			\moves*{C2}
-			\moves*[label = forget]{B4}
-			\moves*{D3}
+			\moves{C2}
+			\moves[label = forget]{B4}
+			\moves{D3}
 		\end{goban}
 
 		\begin{goban}[resume = {a, numbers}]
-			\moves*{C:D4}
+			\moves{C:D4}
 		\end{goban}
 	\end{codeexample}
 \end{key}
