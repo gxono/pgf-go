@@ -415,7 +415,7 @@ Los comandos de movimientos permiten representar secuencias de jugadas alternand
 
 \begin{command}{\moves\opt{*}\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
 	
-	Similar a |\move|, pero con varias jugadas. Las jugadas son una secuencia: se juegan en el orden en que se escriben y una intersección puede repetirse (por ejemplo, para retomar un ko con |captures|). Cada elemento de la lista es una intersección (|C3|), un camino (|A1 -- A3 -- C3|: cada tramo va de su primer punto al segundo) o un tramo de fila o de columna, en el orden en que se escribe (|C:A 4| es |C4 -- A4|; |C 5:1| es |C5 -- C1|). Las demás formas de |\stones| (rectángulos, |*|, corchetes, |;|) no tienen un orden claro y dan error.
+	Similar a |\move|, pero con varias jugadas. Las jugadas son una secuencia: se juegan en el orden en que se escriben y una intersección puede repetirse (por ejemplo, para retomar un ko con |captures|). Acepta la sintaxis de |\stones| (pág.~\pageref{subsec:sintaxis-de-coordenadas}) y juega cada elemento en su orden (pág.~\pageref{subsec:orden-coordenadas}): un camino (|A1 -- A3 -- C3|) va de su primer punto al último, y un segmento, del primer extremo al segundo (|C:A 4| va de C4 a A4; |C5:1|, de C5 a C1). Lo que no tiene un recorrido fijo (rectángulos, |r|, columnas y filas enteras, |*|) se juega igual, con un aviso. Los grupos sustractivos (|;|) dan error: |\moves| solo agrega jugadas.
 
 	\begin{codeexample}[]
 		\begin{goban}[5]

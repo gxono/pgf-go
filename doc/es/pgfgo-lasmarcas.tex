@@ -214,7 +214,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 \end{key}
 
 \begin{key}{/pgfgo/mark/sequence=\meta{options} (default from = 1)}
-	Permite numerar una serie de marcas en orden. La fuente, el tamaño y el color de los números se eligen con |label| (|label = {font = \bfseries, color = red}|), igual que el texto de |custom|.
+	Permite numerar una serie de marcas en orden. La fuente, el tamaño y el color de los números se eligen con |label| (|label = {font = \bfseries, color = red}|), igual que el texto de |custom|. Las marcas se numeran en el orden de las coordenadas (pág.~\pageref{subsec:orden-coordenadas}); si no lo tienen fijo, como un rectángulo, |sequence| avisa.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]

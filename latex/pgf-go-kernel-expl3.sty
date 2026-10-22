@@ -176,9 +176,13 @@
 
 %LAS COORDENADAS SE EXPANDEN ANTES (COMO EN EL KERNEL lua).
 \cs_new_protected:Npn \pgfgo_kernel_points:n #1 {
-	\__pgfgo_coordinate_points:eN {#1} \l_pgfgo_kernel_points_seq
+	\__pgfgo_coordinate_points:eNN {#1} \l_pgfgo_kernel_points_seq \l_pgfgo_kernel_points_ordered_bool
 }
-\cs_generate_variant:Nn \__pgfgo_coordinate_points:nN {eN}
+\cs_new_protected:Npn \pgfgo_kernel_moves:n #1 {
+	\__pgfgo_coordinate_moves:eNN {#1} \l_pgfgo_kernel_points_seq \l_pgfgo_kernel_points_ordered_bool
+}
+\cs_generate_variant:Nn \__pgfgo_coordinate_points:nNN {eNN}
+\cs_generate_variant:Nn \__pgfgo_coordinate_moves:nNN {eNN}
 
 
 \prg_new_protected_conditional:Npnn \pgfgo_kernel_point:n #1 {TF} {

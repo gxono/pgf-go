@@ -198,22 +198,12 @@ local function point(x, y)
 	return "{" .. x .. "}{" .. y .. "}"
 end
 
--- RECORRE DE a A b EN ORDEN CRECIENTE, SIN IMPORTAR CUAL ES MAYOR.
-local function sorted_range(a, b)
-	a, b = tonumber(a), tonumber(b)
-	if a > b then
-		a, b = b, a
-	end
-	local i = a - 1
-	return function()
-		i = i + 1
-		if i <= b then
-			return i
-		end
-	end
+-- PASO PARA IR DE a A b (1 SI SON IGUALES).
+local function step(a, b)
+	return a <= b and 1 or -1
 end
 
--- A1 :--: E6, A1 :-|: E6 Y A1 :|-: E6 (mode: "--", "-|" O "|-"), EN EL ORDEN DEL CAMINO. EL EJE LARGO AVANZA
+-- A1 -- E6, A1 -|- E6 Y A1 |-| E6 (mode: "--", "-|" O "|-"), EN EL ORDEN DEL CAMINO. EL EJE LARGO AVANZA
 -- DE A UNA; EN EL CORTO, LA POSICION MAS CERCANA A LA RECTA. EN UN EMPATE GANA LA DEL LADO DEL EXTREMO MAS
 -- CERCANO, Y EN EL MEDIO EXACTO, LA MENOR. EN CADA ESCALON, -| Y |- PONEN ANTES SU ESQUINA. LA MISMA CUENTA
 -- ESTA EN pgf-go-coordinate-parser.sty (\__pgfgo_coordinate_stairs:nnnnn).
@@ -253,171 +243,173 @@ local function stairs(out, mode, x1, y1, x2, y2)
 	end
 end
 
--- CADA FORMA DE SUBCONJUNTO, EN EL ORDEN EN QUE SE PRUEBAN. c ES LA COLUMNA (LETRA -> NUMERO) Y w
--- LA PARTE VISIBLE. LAS FILAS QUE SE ESCRIBEN TAL CUAL (C05) QUEDAN COMO TEXTO, COMO EN expl3.
-local subsets = {
-	{"^([A-Z])(%d%d?)$", function(out, c, w, l, n)
-		out(c(l), n)
-	end},
-	{"^([A-Z])(%d%d?)%s*:(%-%-):%s*([A-Z])(%d%d?)$", function(out, c, w, l1, n1, op, l2, n2)
-		stairs(out, op, c(l1), tonumber(n1), c(l2), tonumber(n2))
-	end},
-	{"^([A-Z])(%d%d?)%s*:(%-|):%s*([A-Z])(%d%d?)$", function(out, c, w, l1, n1, op, l2, n2)
-		stairs(out, op, c(l1), tonumber(n1), c(l2), tonumber(n2))
-	end},
-	{"^([A-Z])(%d%d?)%s*:(|%-):%s*([A-Z])(%d%d?)$", function(out, c, w, l1, n1, op, l2, n2)
-		stairs(out, op, c(l1), tonumber(n1), c(l2), tonumber(n2))
-	end},
-	{"^([A-Z]):([A-Z])%s*(%d%d?)$", function(out, c, w, l1, l2, n)
-		for x in sorted_range(c(l1), c(l2)) do out(x, n) end
-	end},
-	{"^([A-Z])%s*(%d%d?):(%d%d?)$", function(out, c, w, l, n1, n2)
-		for y in sorted_range(n1, n2) do out(c(l), y) end
-	end},
-	{"^([A-Z]):([A-Z])%s*(%d%d?):(%d%d?)$", function(out, c, w, l1, l2, n1, n2)
-		for x in sorted_range(c(l1), c(l2)) do
-			for y in sorted_range(n1, n2) do out(x, y) end
+-- RECTANGULO DE ESQUINAS (x1,y1) Y (x2,y2), COLUMNA POR COLUMNA DESDE x1 Y CADA COLUMNA DESDE y1: EMPIEZA
+-- EN LA PRIMERA ESQUINA Y TERMINA EN LA SEGUNDA. TIENE UN ORDEN SOLO SI ES UNA LINEA (O UN PUNTO).
+local function rectangle(out, x1, y1, x2, y2)
+	for x = x1, x2, step(x1, x2) do
+		for y = y1, y2, step(y1, y2) do out(x, y) end
+	end
+	return x1 == x2 or y1 == y2
+end
+
+-- LOS OPERADORES DE CADENA, DE (x1,y1) A (x2,y2), CON LOS DOS EXTREMOS. DEVUELVEN SI TIENEN UN ORDEN.
+local links = {
+	["--"] = function(out, x1, y1, x2, y2)
+		stairs(out, "--", x1, y1, x2, y2)
+		return true
+	end,
+	["-|-"] = function(out, x1, y1, x2, y2)
+		stairs(out, "-|", x1, y1, x2, y2)
+		return true
+	end,
+	["|-|"] = function(out, x1, y1, x2, y2)
+		stairs(out, "|-", x1, y1, x2, y2)
+		return true
+	end,
+	["-|"] = function(out, x1, y1, x2, y2)
+		for x = x1, x2, step(x1, x2) do out(x, y1) end
+		for y = y1 + step(y1, y2), y2, step(y1, y2) do out(x2, y) end
+		return true
+	end,
+	["|-"] = function(out, x1, y1, x2, y2)
+		for y = y1, y2, step(y1, y2) do out(x1, y) end
+		for x = x1 + step(x1, x2), x2, step(x1, x2) do out(x, y2) end
+		return true
+	end,
+	-- EL CONTORNO, UNA VUELTA DESDE (x1,y1): PRIMERO HORIZONTAL HASTA x2.
+	r = function(out, x1, y1, x2, y2)
+		if x1 == x2 or y1 == y2 then
+			rectangle(out, x1, y1, x2, y2)
+			return false
 		end
+		local sx, sy = step(x1, x2), step(y1, y2)
+		for x = x1, x2, sx do out(x, y1) end
+		for y = y1 + sy, y2, sy do out(x2, y) end
+		for x = x2 - sx, x1, -sx do out(x, y2) end
+		for y = y2 - sy, y1 + sy, -sy do out(x1, y) end
+		return false
+	end,
+}
+
+-- LOS TRAMOS QUE SE ENCADENAN (A3, A:C 3, C 1:3, A1:C3) SON RECTANGULOS: DEVUELVEN SUS DOS ESQUINAS.
+-- c ES LA COLUMNA (LETRA -> NUMERO).
+local pieces = {
+	{"^([A-Z])(%d%d?)$", function(c, l, n)
+		return c(l), tonumber(n), c(l), tonumber(n)
 	end},
-	{"^([A-Z])(%d%d?)%s*%-|%s*([A-Z])(%d%d?)$", function(out, c, w, l1, n1, l2, n2)
-		for x in sorted_range(c(l1), c(l2)) do out(x, n1) end
-		for y in sorted_range(n1, n2) do out(c(l2), y) end
+	{"^([A-Z]):([A-Z])%s*(%d%d?)$", function(c, l1, l2, n)
+		return c(l1), tonumber(n), c(l2), tonumber(n)
 	end},
-	{"^([A-Z])(%d%d?)%s*|%-%s*([A-Z])(%d%d?)$", function(out, c, w, l1, n1, l2, n2)
-		for y in sorted_range(n1, n2) do out(c(l1), y) end
-		for x in sorted_range(c(l1), c(l2)) do out(x, n2) end
+	{"^([A-Z])%s*(%d%d?):(%d%d?)$", function(c, l, n1, n2)
+		return c(l), tonumber(n1), c(l), tonumber(n2)
 	end},
-	{"^([A-Z])(%d%d?)%s*%-%-%s*([A-Z])(%d%d?)$", function(out, c, w, l1, n1, l2, n2)
-		if tonumber(n1) == tonumber(n2) then
-			for x in sorted_range(c(l1), c(l2)) do out(x, n1) end
-		elseif c(l1) == c(l2) then
-			for y in sorted_range(n1, n2) do out(c(l1), y) end
-		else
-			message("warning", "diagonal-line", l1 .. n1 .. " -- " .. l2 .. n2)
-		end
-	end},
-	{"^([A-Z])(%d%d?)%s*R%s*([A-Z])(%d%d?)$", function(out, c, w, l1, n1, l2, n2)
-		for x in sorted_range(c(l1), c(l2)) do
-			for y in sorted_range(n1, n2) do out(x, y) end
-		end
-	end},
-	{"^([A-Z])(%d%d?)%s*r%s*([A-Z])(%d%d?)$", function(out, c, w, l1, n1, l2, n2)
-		for x in sorted_range(c(l1), c(l2)) do
-			out(x, n1)
-			out(x, n2)
-		end
-		for y in sorted_range(n1, n2) do
-			out(c(l1), y)
-			out(c(l2), y)
-		end
-	end},
-	{"^([A-Z])$", function(out, c, w, l)
-		for y in sorted_range(w.fy, w.ty) do out(c(l), y) end
-	end},
-	{"^(%d%d?)$", function(out, c, w, n)
-		for x in sorted_range(w.fx, w.tx) do out(x, n) end
-	end},
-	{"^([A-Z]):([A-Z])$", function(out, c, w, l1, l2)
-		for x in sorted_range(c(l1), c(l2)) do
-			for y in sorted_range(w.fy, w.ty) do out(x, y) end
-		end
-	end},
-	{"^(%d%d?):(%d%d?)$", function(out, c, w, n1, n2)
-		for x in sorted_range(w.fx, w.tx) do
-			for y in sorted_range(n1, n2) do out(x, y) end
-		end
-	end},
-	{"^%*$", function(out, c, w)
-		for x in sorted_range(w.fx, w.tx) do
-			for y in sorted_range(w.fy, w.ty) do out(x, y) end
-		end
+	{"^([A-Z])(%d%d?):([A-Z])(%d%d?)$", function(c, l1, n1, l2, n2)
+		return c(l1), tonumber(n1), c(l2), tonumber(n2)
 	end},
 }
 
--- INTERSECCIONES DE UN SUBCONJUNTO (A3, A:C, A3 -| B5, ...), SIN REPETIR.
-local function expand_subset(subset, c, w)
-	local list, seen = {}, {}
-	local function out(x, y)
-		add_unique(list, seen, point(x, y))
-	end
-	for _, rule in ipairs(subsets) do
-		local captures = {subset:match(rule[1])}
+local function piece(s, c)
+	for _, rule in ipairs(pieces) do
+		local captures = {s:match(rule[1])}
 		if captures[1] then
-			rule[2](out, c, w, table.unpack(captures))
-			return list
+			return {rule[2](c, table.unpack(captures))}
 		end
 	end
-	if subset:find("%S") then
-		message("warning", "unknown-coordinate", subset)
-	end
-	return list
 end
 
+-- LO QUE NO SE ENCADENA NI TIENE UN ORDEN: RECTANGULOS DE RANGOS, COLUMNAS Y FILAS ENTERAS Y *. w ES LA
+-- PARTE VISIBLE.
+local regions = {
+	{"^([A-Z]):([A-Z])%s*(%d%d?):(%d%d?)$", function(out, c, w, l1, l2, n1, n2)
+		return rectangle(out, c(l1), tonumber(n1), c(l2), tonumber(n2))
+	end},
+	{"^([A-Z])$", function(out, c, w, l)
+		rectangle(out, c(l), w.fy, c(l), w.ty)
+	end},
+	{"^(%d%d?)$", function(out, c, w, n)
+		rectangle(out, w.fx, tonumber(n), w.tx, tonumber(n))
+	end},
+	{"^([A-Z]):([A-Z])$", function(out, c, w, l1, l2)
+		rectangle(out, c(l1), w.fy, c(l2), w.ty)
+	end},
+	{"^(%d%d?):(%d%d?)$", function(out, c, w, n1, n2)
+		rectangle(out, w.fx, tonumber(n1), w.tx, tonumber(n2))
+	end},
+	{"^%*$", function(out, c, w)
+		rectangle(out, w.fx, w.fy, w.tx, w.ty)
+	end},
+}
 
--- CADENAS DE OPERADORES: A2 -| A3 -| A5 SE PARTE EN A2 -| A3, A3 -| A5. REPRODUCE LA EXPRESION REGULAR
--- (:--:|:\|-:|:-\|:|--|\|-|-\||r|R)\s*(\w+\d+)\s*(...) DEL KERNEL expl3, CON SU BACKTRACKING.
-local operators = {":--:", ":|-:", ":-|:", "--", "|-", "-|", "r", "R"}
+-- PARTE A1 -| C3 -- E3 EN {"A1", "-|", "C3", "--", "E3"}. EN CADA LUGAR SE PRUEBAN LOS OPERADORES EN ESTE
+-- ORDEN, COMO LA EXPRESION REGULAR DEL KERNEL expl3.
+local operators = {"-|-", "|-|", "--", "-|", "|-", "r"}
 
-local function operators_at(s, i)
-	local found = {}
-	for _, op in ipairs(operators) do
-		if s:sub(i, i + #op - 1) == op then
-			insert(found, {i + #op, op})
+local function split_chain(s)
+	local parts, i, start = {}, 1, 1
+	while i <= #s do
+		local found
+		for _, op in ipairs(operators) do
+			if s:sub(i, i + #op - 1) == op then
+				found = op
+				break
+			end
+		end
+		if found then
+			insert(parts, s:sub(start, i - 1):match("^%s*(.-)%s*$"))
+			insert(parts, found)
+			i = i + #found
+			start = i
+		else
+			i = i + 1
 		end
 	end
-	return found
+	insert(parts, s:sub(start):match("^%s*(.-)%s*$"))
+	return parts
 end
 
-local function run_end(s, i, class)
-	while i <= #s and s:sub(i, i):find(class) do
-		i = i + 1
+-- UN ELEMENTO (LO QUE ESTA ENTRE DOS COMAS): DEJA SUS INTERSECCIONES EN out, EN ORDEN, Y DEVUELVE SI TIENE
+-- UN ORDEN FIJO. EN UNA CADENA CADA OPERADOR VA DEL ULTIMO PUNTO DE UN TRAMO AL PRIMERO DEL SIGUIENTE, Y
+-- EL PUNTO QUE COMPARTEN VA UNA SOLA VEZ. SI NO SE RECONOCE, AVISA Y NO DEJA NADA.
+local function expand_item(item, c, w, out)
+	local parts = split_chain(item)
+	local corners = {}
+	for k = 1, #parts, 2 do
+		corners[k] = piece(parts[k], c)
+		if not corners[k] then
+			corners = nil
+			break
+		end
 	end
-	return i
-end
-
-local function chain_match(s, i)
-	for _, first in ipairs(operators_at(s, i)) do
-		local j = first[1]
-		for k = run_end(s, j, "%s"), j, -1 do
-			for word_end = run_end(s, k, "[%w_]") - 1, k, -1 do
-				for digits_end = run_end(s, word_end + 1, "%d") - 1, word_end + 1, -1 do
-					for t = run_end(s, digits_end + 1, "%s"), digits_end + 1, -1 do
-						local last = operators_at(s, t)[1]
-						if last then
-							return last[1], first[2], s:sub(k, digits_end), last[2]
-						end
-					end
+	if not corners then
+		if #parts == 1 then
+			for _, rule in ipairs(regions) do
+				local captures = {item:match(rule[1])}
+				if captures[1] then
+					return rule[2](out, c, w, table.unpack(captures)) or false
 				end
 			end
 		end
+		message("warning", "unknown-coordinate", item)
+		return true
 	end
-end
-
-local function expand_chains(s)
-	repeat
-		local out, i, replaced = {}, 1, false
-		while i <= #s do
-			-- UNA CADENA SOLO PUEDE EMPEZAR DONDE EMPIEZA UN OPERADOR; LO DEMAS PASA TAL CUAL.
-			local j = s:find("[-|rR:]", i)
-			if not j then
-				insert(out, s:sub(i))
-				break
-			end
-			insert(out, s:sub(i, j - 1))
-			local stop, op1, coordinate, op2 = chain_match(s, j)
-			if stop then
-				insert(out, op1 .. " " .. coordinate .. ", " .. coordinate .. " " .. op2)
-				i, replaced = stop, true
-			else
-				insert(out, s:sub(j, j))
-				i = j + 1
-			end
+	local skip = false
+	local function put(x, y)
+		if skip then
+			skip = false
+		else
+			out(x, y)
 		end
-		s = concat(out)
-	until not replaced
-	return s
+	end
+	local ordered = rectangle(put, table.unpack(corners[1]))
+	for k = 2, #parts, 2 do
+		local from, to = corners[k - 1], corners[k + 1]
+		skip = true
+		ordered = links[parts[k]](put, from[3], from[4], to[1], to[2]) and ordered
+		skip = true
+		ordered = rectangle(put, table.unpack(to)) and ordered
+	end
+	return ordered
 end
-
 
 -- ELEMENTOS DE UNA LISTA SEPARADA POR COMAS, SIN ESPACIOS EN LOS EXTREMOS Y SIN ELEMENTOS VACIOS.
 local function clist(s)
@@ -431,41 +423,30 @@ local function clist(s)
 	return items
 end
 
--- INTERSECCIONES DE UN GRUPO (LO QUE ESTA ENTRE DOS ;).
-local function expand_group(group, c, w)
-	group = expand_chains(group)
-
-	-- LAS FORMAS CON CORCHETES TIENEN COMAS ADENTRO: SE SACAN ANTES DE PARTIR EL GRUPO.
-	local bracketed = {}
+-- LOS CORCHETES SE REPARTEN EN SU LUGAR: A[1:3, 5] ES A1:3, A5; [A, C:D]2 ES A2, C:D2; [A, B][1, 2] ES
+-- A1, A2, B1, B2. ASI CONSERVAN SU ORDEN Y PUEDEN SER TRAMOS DE UNA CADENA.
+local function expand_brackets(group)
+	local function join(list)
+		return concat(list, ", ")
+	end
 	group = group:gsub("%[([^%]]*)%]%[([^%]]*)%]", function(letters, numbers)
+		local out = {}
 		for _, l in ipairs(clist(letters)) do
-			for _, n in ipairs(clist(numbers)) do insert(bracketed, l .. n) end
+			for _, n in ipairs(clist(numbers)) do insert(out, l .. n) end
 		end
-		return ""
+		return join(out)
 	end)
-	local by_letter = {}
 	group = group:gsub("([A-Z])%[([^%]]*)%]", function(l, numbers)
-		for _, n in ipairs(clist(numbers)) do insert(by_letter, l .. n) end
-		return ""
+		local out = {}
+		for _, n in ipairs(clist(numbers)) do insert(out, l .. n) end
+		return join(out)
 	end)
-	local by_number = {}
 	group = group:gsub("%[([^%]]*)%](%d%d?)", function(letters, n)
-		for _, l in ipairs(clist(letters)) do insert(by_number, l .. n) end
-		return ""
+		local out = {}
+		for _, l in ipairs(clist(letters)) do insert(out, l .. n) end
+		return join(out)
 	end)
-
-	local subsets_list = clist(group)
-	for _, more in ipairs({bracketed, by_letter, by_number}) do
-		for _, s in ipairs(more) do insert(subsets_list, s) end
-	end
-
-	local list, seen = {}, {}
-	for _, subset in ipairs(subsets_list) do
-		for _, item in ipairs(expand_subset(subset, c, w)) do
-			add_unique(list, seen, item)
-		end
-	end
-	return list
+	return group
 end
 
 local function column_function(use_i)
@@ -474,31 +455,57 @@ local function column_function(use_i)
 	end
 end
 
--- TODA LA SINTAXIS DE \stones: LOS GRUPOS SEPARADOS POR ; SE SUMAN Y SE RESTAN ALTERNADAMENTE.
-function pgfgo.points(spec, use_i)
+-- LAS INTERSECCIONES DE UN GRUPO (LO QUE ESTA ENTRE DOS ;), EN ORDEN Y CON REPETICIONES, Y SI TODOS SUS
+-- ELEMENTOS TIENEN UN ORDEN FIJO.
+local function expand_group(group, use_i)
 	local fx, tx, fy, ty = window()
 	local w = {fx = fx, tx = tx, fy = fy, ty = ty}
 	local c = column_function(use_i)
-	local list = {}
-	local add = true
+	local list, ordered = {}, true
+	local function out(x, y)
+		insert(list, point(x, y))
+	end
+	for _, item in ipairs(clist(expand_brackets(group))) do
+		ordered = expand_item(item, c, w, out) and ordered
+	end
+	return list, ordered
+end
+
+local function set_ordered(ordered)
+	tex_code("\\bool_set_" .. (ordered and "true" or "false") .. ":N\\l_pgfgo_kernel_points_ordered_bool")
+end
+
+-- TODA LA SINTAXIS DE \stones: LOS GRUPOS SEPARADOS POR ; SE SUMAN Y SE RESTAN ALTERNADAMENTE. EL ORDEN
+-- ES EL DE LOS GRUPOS QUE SUMAN.
+function pgfgo.points(spec, use_i)
+	local list, seen = {}, {}
+	local add, ordered = true, true
 	for group in (spec .. ";"):gmatch("([^;]*);") do
-		local items = expand_group(group:match("^%s*(.-)%s*$"), c, w)
+		local items, group_ordered = expand_group(group, use_i)
 		if add then
-			for _, item in ipairs(items) do insert(list, item) end
+			for _, item in ipairs(items) do add_unique(list, seen, item) end
+			ordered = ordered and group_ordered
 		else
 			local removed = {}
 			for _, item in ipairs(items) do removed[item] = true end
 			local kept = {}
+			seen = {}
 			for _, item in ipairs(list) do
-				if not removed[item] then insert(kept, item) end
+				if not removed[item] then add_unique(kept, seen, item) end
 			end
 			list = kept
 		end
 		add = not add
 	end
-	local unique, seen = {}, {}
-	for _, item in ipairs(list) do add_unique(unique, seen, item) end
-	set_clist("l__pgfgo_kernel_points_clist", unique)
+	set_clist("l__pgfgo_kernel_points_clist", list)
+	set_ordered(ordered)
+end
+
+-- LAS JUGADAS DE \moves: UN SOLO GRUPO, EN ORDEN Y CON REPETICIONES.
+function pgfgo.moves(spec, use_i)
+	local list, ordered = expand_group(spec, use_i)
+	set_clist("l__pgfgo_kernel_points_clist", list)
+	set_ordered(ordered)
 end
 
 -- PUNTOS DE UN POLIGONO: LAS INTERSECCIONES DEL TABLERO DENTRO DEL POLIGONO CERRADO O SOBRE SU BORDE,
@@ -895,8 +902,11 @@ local function sgf_coords(v, size_y)
 	a = a or v:match("^(%a%a)$")
 	b = b or a
 	if a then
-		for x in sorted_range(sgf_number(a:sub(1, 1)), sgf_number(b:sub(1, 1))) do
-			for y in sorted_range(sgf_number(a:sub(2, 2)), sgf_number(b:sub(2, 2))) do
+		local x1, x2 = sgf_number(a:sub(1, 1)), sgf_number(b:sub(1, 1))
+		local y1, y2 = sgf_number(a:sub(2, 2)), sgf_number(b:sub(2, 2))
+		-- EN ORDEN CRECIENTE, SIN IMPORTAR CUAL ESQUINA VIENE PRIMERO.
+		for x = math.min(x1, x2), math.max(x1, x2) do
+			for y = math.min(y1, y2), math.max(y1, y2) do
 				insert(list, {x, size_y - y + 1})
 			end
 		end

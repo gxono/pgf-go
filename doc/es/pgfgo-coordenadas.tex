@@ -7,7 +7,7 @@ Algo que distingue a \pgfgoname\ de otros paquetes es la posibilidad de introduc
 	\item Posibilidad de eliminar piedras agregando el grupo sustractivo despu\'es de un <<;>>.
 \end{itemize}
 
-Estas formas solo funcionan en los comandos plurales (|\stones|, |\marks|, |\prisoners|); |\stone|, |\mark| y |\prisoner| reciben una sola intersección. |\moves| acepta solo las que tienen un orden claro (pág.~\pageref{subsec:movimientos}). Sin embargo, por motivos de rendimiento y consistencia, se han restringido algunas libertades que en un comienzo no estaban. Por ejemplo, para referirse a una intersección, la coordenada alfabética debe escribirse en mayúsculas y sin espacios. Así, la intersección B5 debe ingresarse como |B5|, y no como |B 5|, |B  5| o |b5|, ya que los espacios entre letra y número no son válidos en este contexto. Las restricciones se explicarán en cada caso.
+Estas formas solo funcionan en los comandos plurales (|\stones|, |\marks|, |\prisoners|); |\stone|, |\mark| y |\prisoner| reciben una sola intersección. |\moves| las acepta todas salvo los grupos sustractivos, y avisa si no tienen un orden fijo (pág.~\pageref{subsec:orden-coordenadas}). Sin embargo, por motivos de rendimiento y consistencia, se han restringido algunas libertades que en un comienzo no estaban. Por ejemplo, para referirse a una intersección, la coordenada alfabética debe escribirse en mayúsculas y sin espacios. Así, la intersección B5 debe ingresarse como |B5|, y no como |B 5|, |B  5| o |b5|, ya que los espacios entre letra y número no son válidos en este contexto. Las restricciones se explicarán en cada caso.
 
 
 Cuando \pgfgoname\ tiene que leer el argumento de las coordenadas se puede encontrar con algo como esto
@@ -114,7 +114,7 @@ Los segmentos son grupos de piedras verticales u horizontales explícitamente de
 	\end{goban}
 \end{codeexample}
 
-Aquí, |B2:4| representa un segmento vertical de B2 a B4, mientras que |C:D2| indica un segmento horizontal de C2 a D2.
+Aquí, |B2:4| representa un segmento vertical de B2 a B4, mientras que |C:D2| indica un segmento horizontal de C2 a D2. Los segmentos van del primer extremo al segundo: |H9:2| baja de H9 a H2 y |E:A2| va de E2 a A2. Además, se encadenan con los operadores que veremos más adelante.
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}]
@@ -177,11 +177,11 @@ donde los corchetes no pueden anidarse.
 
 Esto puede combinarse tambi\'en con algunos operadores que veremos a continuaci\'on para crear nodos en los caminos.
 
-Hasta aquí hemos visto comandos para intersecciones que no pueden combinarse con otros en una misma instrucción y que, por lo tanto, \textbf{deben} separarse por comas. Ahora exploraremos comandos que sí permiten encadenarse entre sí, ofreciendo mayor flexibilidad para patrones complejos.
+Hasta aquí hemos visto formas que no pueden combinarse con otras en un mismo elemento y que, por lo tanto, \textbf{deben} separarse por comas. Ahora veremos operadores que unen dos intersecciones con un camino y que pueden encadenarse entre sí, ofreciendo mayor flexibilidad para patrones complejos.
 
 \sssseccion{Horizontal--Vertical y Vertical--Horizontal}
 
-Dadas dos intersecciones no alineadas vertical ni horizontalmente, estos comandos generan las intersecciones que conectan la primera con la segunda mediante un recorrido «horizontal--vertical» o «vertical--horizontal». Esto puede recordar al operador \verb+-|+ de TikZ, de donde tomé prestada la idea. La sintaxis es \verb+LN -| LN+ (para el primer caso) o \verb+LN |- LN+ (para el segundo), con o sin espacios. Estos comandos, junto con el siguiente, pueden encadenarse para formar escaleras o recorridos propios de la m\'etrica de Manhattan.
+Dadas dos intersecciones no alineadas vertical ni horizontalmente, estos comandos generan las intersecciones que conectan la primera con la segunda mediante un recorrido «horizontal--vertical» o «vertical--horizontal». Esto puede recordar al operador \verb+-|+ de TikZ, de donde tomé prestada la idea. La sintaxis es \verb+LN -| LN+ (para el primer caso) o \verb+LN |- LN+ (para el segundo), con o sin espacios. Estos comandos, junto con los siguientes, pueden encadenarse para formar escaleras o recorridos propios de la m\'etrica de Manhattan.
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}]
@@ -194,72 +194,92 @@ Dadas dos intersecciones no alineadas vertical ni horizontalmente, estos comando
 
 En este ejemplo, \verb+A1 -| D3+ va horizontalmente de A1 a D1 y luego verticalmente a D3.
 
-\sssseccion{Línea horizontal o vertical}
+\sssseccion{Líneas en cualquier dirección}
 
-Dadas dos intersecciones alineadas vertical u horizontalmente, este operador las conecta con una línea recta de piedras. Su sintaxis es |LN -- LN|. Puede encadenarse con los dos comandos anteriores para formar patrones más elaborados. Si las intersecciones no están alineadas, el operador no dibuja nada: para eso están las líneas en cualquier dirección y las escaleras, más abajo.
+Para dos intersecciones cualesquiera, |LN -- LN| dibuja la línea de piedras más parecida a la recta que las une: una piedra por fila (o por columna, si la línea avanza más de lo que sube o baja), la más cercana a la recta. Si las dos intersecciones están en una misma fila o columna, es la línea recta entre ellas.
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}]
 		\stones[fill = {color = red}]{A1 -- A5}
 		\stones[fill = {color = blue}] {A1 -- D1}
-		\stones[fill = {color = magenta}] {A6 -- B9} % No dibuja porque no están alineados.
+		\stones[fill = {color = magenta}] {B9 -- D3}
 		\stones[fill = {color = orange}] {I9 -| F6 -- I6} % Encadenado.
 	\end{goban}
 \end{codeexample}
 
-Aquí, |A1 -- A5| dibuja una línea vertical, mientras que \verb+I9 -| F6 -- I6+ combina un recorrido «horizontal--vertical» con una línea horizontal adicional.
+Cuando la recta pasa justo entre dos intersecciones, la piedra va del lado del extremo más cercano, y en el medio exacto, a la columna (o la fila) menor. Así, |A1 -- C5| y |C5 -- A1| dan las mismas piedras, y la línea queda simétrica, como la recta.
 
-¡Ojo! \verb+A1 -- D1 -| F3+ es un encadenamiento permitido, mientras que \verb+A:D1 -| F3+ no lo es, porque el |:| de los rangos no es un operador de cadena.
+\sssseccion{Escaleras}
 
-\sssseccion{Líneas en cualquier dirección y escaleras}
-
-Para dos intersecciones cualesquiera, |LN :--: LN| dibuja la línea de piedras más parecida a la recta que las une: una piedra por fila (o por columna, si la línea avanza más de lo que sube o baja), la más cercana a la recta. Esas piedras se tocan solo por las esquinas en cada escalón, como en una diagonal, así que en go no forman un grupo. Para que lo formen, \verb+LN :-|: LN+ y \verb+LN :|-: LN+ rellenan cada escalón con la esquina de \verb+-|+ (primero horizontal) o de \verb+|-+ (primero vertical): el resultado es una escalera conectada. Si las dos intersecciones están en una misma fila o columna, los tres operadores dan la misma línea recta.
+Las piedras de una línea inclinada se tocan solo por las esquinas en cada escalón, como en una diagonal, así que en go no forman un grupo. Para que lo formen, \verb+LN -|- LN+ y \verb+LN |-| LN+ rellenan cada escalón con la esquina de \verb+-|+ (primero horizontal) o de \verb+|-+ (primero vertical): el resultado es una escalera conectada, como sugiere el dibujo del operador. Si las dos intersecciones están en una misma fila o columna, dan la misma línea recta que |--|.
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}]
-		\stones[fill = {color = red}]{A1 :--: C7}
-		\stones[fill = {color = blue}]{D1 :-|: F7}
-		\stones[fill = {color = orange}]{G1 :|-: I7}
+		\stones[fill = {color = red}]{A1 -- C7}
+		\stones[fill = {color = blue}]{D1 -|- F7}
+		\stones[fill = {color = orange}]{G1 |-| I7}
 	\end{goban}
 \end{codeexample}
 
-Cuando la recta pasa justo entre dos intersecciones, la piedra va del lado del extremo más cercano, y en el medio exacto, a la columna (o la fila) menor. Así, |A1 :--: C5| y |C5 :--: A1| dan las mismas piedras, y la línea queda simétrica, como la recta. En las escaleras el orden sí importa, como en \verb+-|+ y \verb+|-+.
-
-Las intersecciones van en el orden del camino, de la primera a la segunda, con la esquina de cada escalón antes del escalón: |\moves| y |sequence| las numeran a lo largo de la línea. Los tres operadores se encadenan con los demás, como en \verb+A1 :--: E3 -| G6+; los dos puntos son parte del operador, así que no se confunden con un rango.
-
-\begin{codeexample}[width=6cm]
-	\begin{goban}[7, label = {at = {south, west}}]
-		\stones[w]{A1 :-|: F4}
-		\marks[sequence]{A1 :-|: F4}
-	\end{goban}
-\end{codeexample}
+En las escaleras el orden de los extremos sí importa, como en \verb+-|+ y \verb+|-+.
 
 \sssseccion{Rectángulos rellenos y vacíos}
 
-La sintaxis previa para rectángulos |L:L N:N| es poco intuitiva y más bien una herencia de los segmentos acotados. Por ello, existen dos operadores más directos para crear rectángulos: |R| y |r|. La diferencia radica en que |R| genera un rectángulo relleno, mientras que |r| solo dibuja su contorno. Dados dos vértices diametralmente opuestos del rectángulo, la sintaxis es |LN R LN| o |LN r LN|. Aunque los espacios no son obligatorios por ahora, recomiendo usarlos para mayor legibilidad.
+La sintaxis previa para rectángulos |L:L N:N| es poco intuitiva y más bien una herencia de los segmentos acotados. Es más directo dar dos vértices diametralmente opuestos: |LN:LN| rellena el rectángulo (es la misma escritura que la de |partial|) y |LN r LN| dibuja solo su contorno. Aunque los espacios alrededor de |r| no son obligatorios, recomiendo usarlos para mayor legibilidad.
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}]
-		\stones[fill = {color = red}]{A1 R D3}
+		\stones[fill = {color = red}]{A1:D3}
 		\stones[fill = {color = blue}] {A5 r D8}
 		\stones[fill = {color = orange}] {I8 r G4, H6} % ¡Está vivo!
 	\end{goban}
 \end{codeexample}
 
-Por ejemplo, |A1 R D3| rellena un rectángulo de A1 a D3, mientras que |A5 r D8| dibuja solo el borde de un rectángulo mayor.
+Por ejemplo, |A1:D3| rellena un rectángulo de A1 a D3, mientras que |A5 r D8| dibuja solo el borde de un rectángulo mayor. Un rectángulo de una sola columna o de una sola fila es un segmento: |A5:A9| es |A5:9|.
 
-Los rectángulos también son operadores de cadena y pueden usarse como tales para crear patrones más complejos.
+\sssseccion{Encadenamiento}
+
+Los operadores (\verb+-|+, \verb+|-+, |--|, \verb+-|-+, \verb+|-|+ y |r|) se encadenan: \verb+A1 -| C3 -- E3+ es \verb+A1 -| C3+ seguido de \verb+C3 -- E3+, y C3 va una sola vez. Entre dos operadores no solo puede ir una intersección: también un segmento (|B5:7|, |A:B3|) o un rectángulo (|A1:C3|). Cada operador va del último punto de lo anterior al primero de lo siguiente. Así, \verb+A2 -| B5:7+ es \verb+A2 -| B5+ seguido de |B5:7|, y \verb+B7 -| A:B3+ es \verb+B7 -| A3 -- B3+.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A2 -| B5:7}
+		\stones[fill = {color = blue}]{I9 -| D:F6}
+		\stones[fill = {color = orange}]{F1:3 |- I5}
+	\end{goban}
+\end{codeexample}
+
+Los rectángulos también se encadenan, para crear patrones más complejos.
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}]
 		\stones[fill = {color = orange}] {I8 r G6 r I4} % Ud. adivine.
 		\marks[sequence]{I8,G6,I4}
-		\stones[fill = {color = blue!20}] {A1 R E3 r A6 |- E9 -- E8} % ¡Wow!
+		\stones[fill = {color = blue!20}] {A1:E3 r A6 |- E9 -- E8} % ¡Wow!
 		\marks[sequence]{A1,E3,A6,E9,E8}
 	\end{goban}
 \end{codeexample}
 
-En este caso, |I8 r G6 r I4| encadena dos rectángulos de contorno, mientras que \verb+A1 R E3 r A6 |- E9 -- E8+ combina un rectángulo relleno, un contorno, un recorrido «vertical--horizontal» y una línea, mostrando la potencia del encadenamiento.
+En este caso, |I8 r G6 r I4| encadena dos rectángulos de contorno, mientras que \verb+A1:E3 r A6 |- E9 -- E8+ combina un rectángulo relleno, un contorno, un recorrido «vertical--horizontal» y una línea, mostrando la potencia del encadenamiento. Las formas que van solas (|*|, |L|, |N|, |L:L|, |N:N| y |L:L N:N|) no se encadenan.
+
+\sssseccion{El orden de las intersecciones}
+\label{subsec:orden-coordenadas}
+
+Las intersecciones salen en el orden en que se escriben: los segmentos van del primer extremo al segundo (|N10:7| baja de N10 a N7), los operadores siguen su camino y los corchetes se reparten en su lugar (|D4, B[3:1]| es |D4, B3:1|). Ese es el orden que numeran |\moves| y |sequence|.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[7, label = {at = {south, west}}]
+		\stones[w]{A1 -|- F4}
+		\marks[sequence]{A1 -|- F4}
+	\end{goban}
+
+	\begin{goban}[7, label = {at = {south, west}}]
+		\stones[w]{G7:4 -| D2 -- A2}
+		\marks[sequence = {format = Alph}]{G7:4 -| D2 -- A2}
+	\end{goban}
+\end{codeexample}
+
+Algunas formas no tienen un recorrido fijo: los rectángulos (|LN:LN|, |L:L N:N| y |LN r LN|), las columnas y las filas enteras y |*|. |\stones| y |\marks| las aceptan como a las demás, pero |\marks[sequence]| y |\moves| avisan (|unordered-coordinate|), porque el orden en que las recorren no lo elige quien escribe.
 
 \subsection{Grupos aditivos y sustractivos}
 
@@ -268,7 +288,7 @@ Supongamos que queremos dibujar el siguiente diagrama:
 \begin{figure}[H]
 	\centering
 	\begin{goban}
-		\stones[b]{A1 R E6; C6 |- E3, A1:2;}
+		\stones[b]{A1:E6; C6 |- E3, A 1:2;}
 	\end{goban}
 \end{figure}
 
@@ -276,7 +296,7 @@ Esto puede lograrse con los operadores ya vistos, dividiendo el patrón en varia
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}]
-		\stones[fill = {color = orange}] {A6 R B3, B2 R E1, D4 R E6}
+		\stones[fill = {color = orange}] {A6:B3, B2:E1, D4:E6}
 	\end{goban}
 \end{codeexample}
 
@@ -285,7 +305,7 @@ Pero también podemos imaginar que partimos de un rectángulo completo al que le
 \begin{figure}[H]
 	\centering
 	\begin{goban}
-		\stones[b]{A1 R E6}
+		\stones[b]{A1:E6}
 		\marks[cross, line = {color = white}]{C6 |- E3, A1:2}
 	\end{goban}
 \end{figure}
@@ -294,25 +314,25 @@ De esto tratan los grupos aditivos y sustractivos. Un grupo aditivo añade inter
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}, partial = A1:E6]
-		\stones[b]{A1 R E6} % Grupo aditivo.
+		\stones[b]{A1:E6} % Grupo aditivo.
 	\end{goban}
 	
 	\begin{goban}[label = {at = all}, partial = A1:E6]
-		\stones[b]{A1 R E6; A 1:2} % Grupo aditivo; sustractivo.
+		\stones[b]{A1:E6; A 1:2} % Grupo aditivo; sustractivo.
 	\end{goban}
 	
 	\begin{goban}[label = {at = all}, partial = A1:E6]
-		\stones[b]{A1 R E6; A 1:2, C6 |- E3} % Grupo aditivo; sustractivo.
+		\stones[b]{A1:E6; A 1:2, C6 |- E3} % Grupo aditivo; sustractivo.
 	\end{goban}
 \end{codeexample}
 
-En esta secuencia, primero se dibuja un rectángulo completo (|A1 R E6|), luego se elimina el segmento horizontal |A1:2|, y finalmente se quita el recorrido \verb+C6 |- E3+. Esto resulta en el mismo diagrama que el ejemplo inicial, pero con un enfoque más compacto.
+En esta secuencia, primero se dibuja un rectángulo completo (|A1:E6|), luego se elimina el segmento vertical |A 1:2|, y finalmente se quita el recorrido \verb+C6 |- E3+. Esto resulta en el mismo diagrama que el ejemplo inicial, pero con un enfoque más compacto.
 
 La ventaja de este sistema es que permite realizar ajustes cuando sea necesario. A veces, un patrón aditivo es ideal salvo por una o dos piedras; en esos casos, podemos eliminarlas con un grupo sustractivo sin rehacer todo el diseño.
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}]
-		\stones[b]{A1 R E6; B:D 5, C2}
+		\stones[b]{A1:E6; B:D 5, C2}
 	\end{goban}
 \end{codeexample}
 
@@ -322,16 +342,16 @@ Recordemos que los grupos aditivos y sustractivos pueden encadenarse, separándo
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}, partial = A1:E6]
-		\stones[b]{A1 R E6} % AD
+		\stones[b]{A1:E6} % AD
 	\end{goban}
 	
 	\begin{goban}[label = {at = all}, partial = A1:E6]
-		\stones[b]{A1 R E6; A1 R C4, E6} % AD, SU
+		\stones[b]{A1:E6; A1:C4, E6} % AD, SU
 	\end{goban}
 	
 	\begin{goban}[label = {at = all}, partial = A1:E6]
-		\stones[b]{A1 R E6; A1 R C4, E6; A 1:2} % AD, SU, AD
+		\stones[b]{A1:E6; A1:C4, E6; A 1:2} % AD, SU, AD
 	\end{goban}
 \end{codeexample}
 
-En este último ejemplo, se crea un rectángulo, se eliminan dos regiones (|A1 R C4| y |E6|), y luego se añade un segmento (|A 1:2|).
+En este último ejemplo, se crea un rectángulo, se eliminan dos regiones (|A1:C4| y |E6|), y luego se añade un segmento (|A 1:2|).

@@ -71,7 +71,7 @@ You can find examples in the `doc/examples` directory:
 - `example-26`: a sequence in several diagrams: each one goes on from another (`resume`), with the numbers and the turn, and a variation.
 - `example-27`: the end of a game counted: the captures, the territory found by `\territory{auto}` and the score, as in the file.
 - `example-28`: frameworks drawn as regions from their corners, and their size with `\pgfgoregion`.
-- `example-29`: a ladder, written with lines and stairs in the coordinates (`D4 :-|: F6`, `D5 :--: F7`).
+- `example-29`: a ladder, written with lines and stairs in the coordinates (`D4 -|- F6`, `D5 -- F7`).
 
 The examples that read an SGF file more than once give it a name with `\pgfgodefinesgf`. The last page of each example shows its code. The SGF examples need LuaLaTeX.
 

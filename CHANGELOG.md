@@ -28,14 +28,24 @@ All notable changes to `pgf-go` are listed here.
 - Several files in a mark of your own: `\pgfgodefinemark[image = {file = {a.png,
   b.png, c.png}}]{name}` draws each point with one of them, chosen at random
   as in `stone/image/file` (a point always gets the same file).
-- Lines in any direction and stairs in the coordinates: `A1 :--: E6` puts
+- Lines in any direction and stairs in the coordinates: `A1 -- E6` puts
   one stone per row (or per column) on the stone nearest to the straight line
-  between the two ends; `A1 :-|: E6` and `A1 :|-: E6` fill each step with the
-  corner of `-|` or `|-`, so the stones make a connected staircase. When the
-  line passes exactly between two points, the stone goes to the side of the
-  nearest end (in the exact middle, to the smaller column or row): the line
-  does not depend on the order of its ends. The points come in the order of
-  the path, and the three operators chain with the others. Both kernels.
+  between the two ends (when the ends are in a row or a column it is the
+  straight line, as before); `A1 -|- E6` and `A1 |-| E6` fill each step with
+  the corner of `-|` or `|-`, so the stones make a connected staircase. When
+  the line passes exactly between two points, the stone goes to the side of
+  the nearest end (in the exact middle, to the smaller column or row): the
+  line does not depend on the order of its ends. The points come in the order
+  of the path, and the operators chain with the others. Both kernels.
+- Rectangles as `A1:C3`, the same writing as `partial`.
+- Ranges and rectangles chain with the operators: `A2 -| B5:7` is
+  `A2 -| B5` and then `B5:7`, `B7 -| A:B3` is `B7 -| A3 -- B3`, and
+  `A1:C3 r A6` goes on from C3. Each operator goes from the last point of
+  what comes before to the first point of what comes after.
+- `\marks[sequence]` and `\moves` warn (`unordered-coordinate`) when the
+  coordinates have no fixed order: rectangles (`A1:C3`, `A:C 1:3`, `r`),
+  whole columns and rows, and `*`. New kernel function `\pgfgo_kernel_moves:n`
+  and boolean `\l_pgfgo_kernel_points_ordered_bool`.
 - Names for SGF files: `\pgfgodefinesgf[game = 2, charset = GBK]{lee}{games/lee.sgf}`
   and then `lee` goes wherever a file goes (`\sgf`, `\sgfinfo`,
   `\sgfcomment`, `\sgfdiagrams`, `\sgfproblem`, `\sgfanimation`, `sgf size`
@@ -277,6 +287,12 @@ All notable changes to `pgf-go` are listed here.
 
 ### Fixed
 
+- The points of a range go from its first end to the second:
+  `\marks[sequence]{N10:7}` numbered N7 to N10, and `E:A2`, `C5 -- C1` and
+  the vertical part of `A9 -| C7` went up or right whatever the order of the
+  ends. Brackets (`A[1:3]`, `[A, C]5`) also keep their place in the list
+  (they went to the end). Both kernels.
+- A row written with a zero (`C03`) is the same point as `C3`.
 - A mark with `sequence` outside the visible part of the board (`partial`, or
   a `\pgfgoview`) did not advance the sequence, so the view `{A10}` of
   `\marks[sequence = {format = Alph}]{N10, ..., A10}` showed `A` instead of
@@ -336,6 +352,14 @@ All notable changes to `pgf-go` are listed here.
 
 ### Behaviour changes
 
+- Coordinates: the operator `R` is removed (`A1 R C3` is now `A1:C3`), and so
+  are `:--:`, `:-|:` and `:|-:` (now `--`, `-|-` and `|-|`). `A1 -- C3`
+  between two points that are not in a row or a column draws the line
+  instead of the warning `diagonal-line`, which is removed.
+- `\moves` takes all the coordinates of `\stones` (rectangles, `*`, brackets)
+  and plays each one in its order; the ones with no fixed order give a
+  warning, not an error. Groups that subtract (`;`) give the error
+  `moves-subtract` (the error `moves-coordinate` is removed).
 - `\pgfgoview` with a name that does not exist gives a warning and `??`
   (it was an error), because the `goban` may come later.
 - `goban/use i` is now `false` by default, as usual in go: the columns go
@@ -487,6 +511,10 @@ All notable changes to `pgf-go` are listed here.
 
 ### Tests
 
+- New case `sequence-order` (the order of ranges, chains with ranges and
+  rectangles, brackets, and the warning of `sequence` and `\moves`), with
+  both kernels. `tests/kernel-checks.tex` checks the order of every form,
+  `\l_pgfgo_kernel_points_ordered_bool` and `\pgfgo_kernel_moves:n`.
 - New case `layout-natural` (`layout/width = natural` in `pgfgolayout`,
   `\sgfdiagrams` and `\sgfproblem`, with `align`, `per page` and `fit`).
 - `docs/keys` and `--manuals` only look at the Spanish manual for now

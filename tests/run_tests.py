@@ -115,9 +115,9 @@ def collect_documents(include_manuals, kernel=None):
         from check_docs import MANUALS
         for lang in MANUALS:
             path = ROOT / "doc" / lang / f"pgfgo-{lang}.tex"
-            # The manuals contain two examples that warn on purpose.
+            # The manuals contain one example that warns on purpose.
             documents.append(Document(name=f"manuals/{lang}", source=path,
-                                      expect_warnings=2, passes=2))
+                                      expect_warnings=1, passes=2))
     if kernel:
         # Another kernel must give exactly the same output, so it is compared
         # with the references of the first engine (lualatex). Documents that

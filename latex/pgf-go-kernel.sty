@@ -33,7 +33,10 @@
 %		DEJA EN \l_pgfgo_kernel_points_seq LAS INTERSECCIONES {x}{y}, SIN REPETIR, EN EL ORDEN EN QUE APARECEN.
 %		LAS <coordenadas> SE EXPANDEN CON e.
 %		ACEPTA TODA LA SINTAXIS DE \stones (RANGOS, OPERADORES, CORCHETES, ; PARA RESTAR). AVISA CON
-%		unknown-coordinate Y diagonal-line.
+%		unknown-coordinate. \l_pgfgo_kernel_points_ordered_bool ES VERDADERO SI TODO LO QUE SUMA TIENE UN
+%		ORDEN FIJO (NO LO TIENEN LOS RECTANGULOS, r, LAS COLUMNAS Y FILAS ENTERAS NI *).
+%	\pgfgo_kernel_moves:n {<coordenadas>}
+%		COMO \pgfgo_kernel_points:n, PERO SIN ; Y CON REPETICIONES: LAS JUGADAS DE \moves, EN ORDEN.
 %	\pgfgo_kernel_point:nTF {<coordenada>}
 %		VERDADERO SI ES UNA SOLA INTERSECCION COMO C3; ENTONCES \l_pgfgo_kernel_point_tl ES {x}{y}.
 %	\pgfgo_kernel_polygon:n {{x}{y},{x}{y},...}
@@ -187,6 +190,7 @@
 	pgfgo_kernel_column_name:n,
 	pgfgo_kernel_hoshi:,
 	pgfgo_kernel_points:n,
+	pgfgo_kernel_moves:n,
 	pgfgo_kernel_point:nTF,
 	pgfgo_kernel_polygon:n,
 	pgfgo_kernel_region:n,
@@ -266,6 +270,7 @@
 \int_new:N \l_pgfgo_goban_to_y_int
 
 \seq_new:N \l_pgfgo_kernel_points_seq
+\bool_new:N \l_pgfgo_kernel_points_ordered_bool
 \tl_new:N \l_pgfgo_kernel_point_tl
 \seq_new:N \l_pgfgo_kernel_region_seq
 
@@ -305,8 +310,9 @@
 	{Unknown~goban~key~or~size~'#1'.~Use~a~size~like~'9'~or~'9x13'.}
 \msg_new:nnn {pgfgo} {unknown-coordinate}
 	{Coordinate~'#1'~was~not~recognized~and~is~ignored.~Columns~are~upper-case~letters~(for~example~'C3').}
-\msg_new:nnn {pgfgo} {diagonal-line}
-	{'#1'~is~not~a~horizontal~or~vertical~line~and~is~ignored.}
+\msg_new:nnn {pgfgo} {unordered-coordinate}
+	{'#1'~has~no~fixed~order~(rectangles,~r,~whole~columns~or~rows,~*):~its~points~go~in~the~order~in~
+	which~pgf-go~reads~them.}
 \msg_new:nnn {pgfgo} {outside-board}
 	{Point~(#1,#2)~is~outside~the~board~and~is~ignored.}
 

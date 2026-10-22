@@ -23,23 +23,23 @@
 \case{A:B on a partial board that is not square (A1 to E3): only rows 1-3}
 \begin{goban}[9, partial = A1:E3]\stones[b]{A:B}\end{goban}
 
-\case{Operators: A1 -| C3, A1 |- C3, A2 -- E2, B1 r D3, B1 R D3}
+\case{Operators: A1 -| C3, A1 |- C3, A2 -- E2, B1 r D3, B1:D3}
 \begin{goban}[5]\stones[b]{A1 -| C3}\end{goban}
 \begin{goban}[5]\stones[b]{A1 |- C3}\end{goban}
 \begin{goban}[5]\stones[b]{A2 -- E2}\end{goban}
 \begin{goban}[5]\stones[b]{B1 r D3}\end{goban}
-\begin{goban}[5]\stones[b]{B1 R D3}\end{goban}
+\begin{goban}[5]\stones[b]{B1:D3}\end{goban}
 
-\case{Chained operators: A1 R B2 r A4 |- C5 -- E5}
-\begin{goban}[5]\stones[b]{A1 R B2 r A4 |- C5 -- E5}\end{goban}
+\case{Chained operators: A1:B2 r A4 |- C5 -- E5}
+\begin{goban}[5]\stones[b]{A1:B2 r A4 |- C5 -- E5}\end{goban}
 
 \case{Brackets: A[1,3:4], [B,D]2, [A:B][4:5]}
 \begin{goban}[5]\stones[b]{A[1,3:4]}\end{goban}
 \begin{goban}[5]\stones[b]{[B,D]2}\end{goban}
 \begin{goban}[5]\stones[b]{[A:B][4:5]}\end{goban}
 
-\case{Additive and subtractive groups: rectangle A1 R E5 minus C3 and row 1}
-\begin{goban}[5]\stones[b]{A1 R E5; C3, 1}\end{goban}
+\case{Additive and subtractive groups: rectangle A1:E5 minus C3 and row 1}
+\begin{goban}[5]\stones[b]{A1:E5; C3, 1}\end{goban}
 
 \case{Rows and stars do not reuse the coordinates of the previous command}
 \begin{goban}[5]\stone[b]{C3}\marks[circle]{1}\end{goban}

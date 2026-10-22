@@ -404,6 +404,8 @@
 		\__pgfgo_mark_setup:n {#1}
 		%LA SECUENCIA EMPIEZA EN EL from DEL JUGADOR DE LAS MARCAS.
 		\pgfgo_kernel_sequence_reset:n {\l_pgfgo_mark_sequence_from_int}
+		\bool_lazy_and:nnT {\l__pgfgo_marks_unordered_bool} {\l_pgfgo_players_mark_sequence_bool}
+			{\msg_warning:nnV {pgfgo} {unordered-coordinate} \l__pgfgo_marks_coordinates_tl}
 		\bool_set_true:N \l__pgfgo_mark_ready_bool
 		\clist_map_inline:nn {#2} {\__pgfgo_marks_point:nnn {#1} ##1}
 	\group_end:
@@ -413,10 +415,17 @@
 }
 \cs_generate_variant:Nn \pgfgo_marks_parsed:nn {nV}
 
+%SI LAS COORDENADAS NO TIENEN UN ORDEN FIJO, sequence AVISA (SOLO AL DIBUJARLAS, NO AL REPETIRLAS DE LA MEMORIA).
+\bool_new:N \l__pgfgo_marks_unordered_bool
+\tl_new:N \l__pgfgo_marks_coordinates_tl
 \cs_new_protected:Npn\pgfgo_marks:nn #1#2 {
 	\group_begin:
 		\keys_set_groups:nnn{ pgfgo / mark }{ preset }{#1}
 		\pgfgo_kernel_points:n{#2} %Devuelve \l_pgfgo_kernel_points_seq
+		\bool_if:NF \l_pgfgo_kernel_points_ordered_bool {
+			\bool_set_true:N \l__pgfgo_marks_unordered_bool
+			\tl_set:Ne \l__pgfgo_marks_coordinates_tl {#2}
+		}
 		\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
 		%RECORDAR LAS MARCAS
 		\pgfgo_remember:Nnn \l_pgfgo_goban_remember_mark_bool {mark}

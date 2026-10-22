@@ -12,7 +12,7 @@
 
 \case{A hole (D4-F6 are white stones) / two territories that touch at a corner (D4) / two \texttt{\textbackslash territory} of the same color are one region}
 \begin{goban}[label = {at = {above, left}}]
-	\stones[w]{D4 R F6}
+	\stones[w]{D4:F6}
 	\territory[b, draw = region]{B2,B8,H8,H2}
 \end{goban}
 \begin{goban}[label = {at = {above, left}}]
@@ -43,11 +43,11 @@ white: \pgfgoregion{w}{polygons} (0), neutral: \pgfgoregion{n}{area} (0).
 
 \case{Line styles: below the stones / red, without fill / vertices without line; the last style of each color wins}
 \begin{goban}
-	\stones[b]{C3 R G7}
+	\stones[b]{C3:G7}
 	\territory[b, draw = region, line = {true, above = false, width = 3pt}]{B2,B8,H8,H2}
 \end{goban}
 \begin{goban}
-	\stones[b]{D4 R F6}
+	\stones[b]{D4:F6}
 	\territory[b, draw = region, fill = {opacity = 0}, line = {true, color = red}]{B2,B8,H8,H2}
 \end{goban}
 \begin{goban}

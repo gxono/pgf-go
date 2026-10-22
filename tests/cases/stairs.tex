@@ -2,7 +2,7 @@
 % expect-warnings: 0
 % expect-errors: 0
 %
-% Lines in any direction (A1 :--: E6) and stairs (:-|:, :|-:). The numbers are the order of the points.
+% Lines in any direction (A1 -- E6) and stairs (-|-, |-|). The numbers are the order of the points.
 % With --kernel expl3, the expl3 kernel must give the same points in the same order.
 \documentclass{article}
 \usepackage[margin=1cm]{geometry}
@@ -14,28 +14,28 @@
 
 \begin{document}
 
-\case{A13 to E1: :\mbox{-}\mbox{-}:, :-|: and :|-: (steep: one stone per row)}
-\begin{goban}[13, partial = A1:F13]\drawpath{A13 :--: E1}\end{goban}
-\begin{goban}[13, partial = A1:F13]\drawpath{A13 :-|: E1}\end{goban}
-\begin{goban}[13, partial = A1:F13]\drawpath{A13 :|-: E1}\end{goban}
+\case{A13 to E1: \mbox{-}\mbox{-}, -|- and |-| (steep: one stone per row)}
+\begin{goban}[13, partial = A1:F13]\drawpath{A13 -- E1}\end{goban}
+\begin{goban}[13, partial = A1:F13]\drawpath{A13 -|- E1}\end{goban}
+\begin{goban}[13, partial = A1:F13]\drawpath{A13 |-| E1}\end{goban}
 
-\case{Ties: A1:\mbox{-}\mbox{-}:C5 and C5:\mbox{-}\mbox{-}:A1 give the same stones; the exact middle (A1:\mbox{-}\mbox{-}:B3) goes to the smaller column}
-\begin{goban}[7]\drawpath{A1:--:C5}\end{goban}
-\begin{goban}[7]\drawpath{C5:--:A1}\end{goban}
-\begin{goban}[7]\drawpath{A1:--:B3}\end{goban}
-\begin{goban}[7]\drawpath{B3:--:A1}\end{goban}
+\case{Ties: A1 \mbox{-}\mbox{-} C5 and C5 \mbox{-}\mbox{-} A1 give the same stones; the exact middle (A1 \mbox{-}\mbox{-} B3) goes to the smaller column}
+\begin{goban}[7]\drawpath{A1 -- C5}\end{goban}
+\begin{goban}[7]\drawpath{C5 -- A1}\end{goban}
+\begin{goban}[7]\drawpath{A1 -- B3}\end{goban}
+\begin{goban}[7]\drawpath{B3 -- A1}\end{goban}
 
 \case{Shallow (one stone per column), the same with ties, and the exact middle in rows}
-\begin{goban}[7]\drawpath{A1:--:G3}\end{goban}
-\begin{goban}[7]\drawpath{G3:-|:A1}\end{goban}
-\begin{goban}[7]\drawpath{A1:--:C2}\end{goban}
+\begin{goban}[7]\drawpath{A1 -- G3}\end{goban}
+\begin{goban}[7]\drawpath{G3 -|- A1}\end{goban}
+\begin{goban}[7]\drawpath{A1 -- C2}\end{goban}
 
 \case{Diagonal, aligned, one point, a chain and a subtraction}
-\begin{goban}[7]\drawpath{A1:--:E5}\end{goban}
-\begin{goban}[7]\drawpath{A1:-|:E5}\end{goban}
-\begin{goban}[7]\drawpath{B2 :--: B6}\end{goban}
-\begin{goban}[7]\drawpath{D4:--:D4}\end{goban}
-\begin{goban}[7]\drawpath{A1 :--: E3 -| G6}\end{goban}
-\begin{goban}[7]\stones[w]{A1:|-:G7; C3:|-:E5}\end{goban}
+\begin{goban}[7]\drawpath{A1 -- E5}\end{goban}
+\begin{goban}[7]\drawpath{A1 -|- E5}\end{goban}
+\begin{goban}[7]\drawpath{B2 -- B6}\end{goban}
+\begin{goban}[7]\drawpath{D4 -- D4}\end{goban}
+\begin{goban}[7]\drawpath{A1 -- E3 -| G6}\end{goban}
+\begin{goban}[7]\stones[w]{A1 |-| G7; C3 |-| E5}\end{goban}
 
 \end{document}

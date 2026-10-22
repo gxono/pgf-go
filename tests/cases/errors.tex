@@ -1,6 +1,6 @@
 % engines: lualatex
 % expect-warnings: 0
-% expect-errors: 12
+% expect-errors: 11
 % render: no
 \documentclass{article}
 \usepackage{../../latex/pgf-go}
@@ -19,7 +19,6 @@
 \begin{goban}[5, resume]\end{goban}             % resume needs a name
 \pgfgoset{players = {white = {mark = {custom = ?}}}}  % a mark shape is not a player style
 \pgfgoset{players = {black = {mark = {triangle}}}}    % the same with a named shape
-\begin{goban}[5]\moves{A1 R B2}\end{goban}  % a rectangle has no order
-\begin{goban}[5]\moves{A1; B1}\end{goban}   % neither has a subtraction
+\begin{goban}[5]\moves{A1; B1}\end{goban}   % moves only add
 
 \end{document}

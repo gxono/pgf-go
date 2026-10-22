@@ -22,6 +22,14 @@
 	\pgfgo_kernel_points:n {#1}
 	\__test:nnn {points~'#1'} {\seq_use:Nn \l_pgfgo_kernel_points_seq {,}} {#2}
 }
+\cs_new_protected:Npn \__test_moves:nn #1#2 {
+	\pgfgo_kernel_moves:n {#1}
+	\__test:nnn {moves~'#1'} {\seq_use:Nn \l_pgfgo_kernel_points_seq {,}} {#2}
+}
+\cs_new_protected:Npn \__test_ordered:nn #1#2 {
+	\pgfgo_kernel_points:n {#1}
+	\__test:nnn {ordered~'#1'} {\bool_if:NTF \l_pgfgo_kernel_points_ordered_bool {yes} {no}} {#2}
+}
 
 % Board size and visible part.
 \group_begin:
@@ -55,29 +63,59 @@
 	\__test_points:nn {C3} {{3}{3}}
 	\__test_points:nn {B2, C3, B2} {{2}{2},{3}{3}}
 	\__test_points:nn {A1:2, D4} {{1}{1},{1}{2},{4}{4}}
-	\__test_points:nn {C03} {{3}{03}}
+	\__test_points:nn {C03, C3} {{3}{3}}
 	\__test_points:nn {B2 -- D2} {{2}{2},{3}{2},{4}{2}}
 	\__test_points:nn {B2 -- B4} {{2}{2},{2}{3},{2}{4}}
+	\__test_points:nn {B2 -- D4} {{2}{2},{3}{3},{4}{4}}
+	\__test_points:nn {B2 -|- D4} {{2}{2},{3}{2},{3}{3},{4}{3},{4}{4}}
+	\__test_points:nn {B2 |-| D4} {{2}{2},{2}{3},{3}{3},{3}{4},{4}{4}}
 	\__test_points:nn {B2 -| D4} {{2}{2},{3}{2},{4}{2},{4}{3},{4}{4}}
 	\__test_points:nn {B2 |- D4} {{2}{2},{2}{3},{2}{4},{3}{4},{4}{4}}
+	\__test_points:nn {B4 -| D2} {{2}{4},{3}{4},{4}{4},{4}{3},{4}{2}}
 	\__test_points:nn {B2 -| C3 -| D4} {{2}{2},{3}{2},{3}{3},{4}{3},{4}{4}}
-	\__test_points:nn {B2 R C3} {{2}{2},{2}{3},{3}{2},{3}{3}}
-	\__test_points:nn {B2 r D4} {{2}{2},{2}{4},{3}{2},{3}{4},{4}{2},{4}{4},{2}{3},{4}{3}}
-	\__test_points:nn {B2 R C3; C2} {{2}{2},{2}{3},{3}{3}}
-	\__test_points:nn {B2 R C3; C2; C2, D4} {{2}{2},{2}{3},{3}{3},{3}{2},{4}{4}}
-	\__test_points:nn {B2 R C3; C2; C2, D4; B:C} {{4}{4}}
+	% Ranges go from the first end to the second.
+	\__test_points:nn {D4:2} {{4}{4},{4}{3},{4}{2}}
+	\__test_points:nn {D 4:2} {{4}{4},{4}{3},{4}{2}}
+	\__test_points:nn {D:B2} {{4}{2},{3}{2},{2}{2}}
+	% Ranges and rectangles are pieces of a chain.
+	\__test_points:nn {B2 -| C3:4} {{2}{2},{3}{2},{3}{3},{3}{4}}
+	\__test_points:nn {D4 -| B:C2} {{4}{4},{3}{4},{2}{4},{2}{3},{2}{2},{3}{2}}
+	\__test_points:nn {B2:3 -| D4} {{2}{2},{2}{3},{3}{3},{4}{3},{4}{4}}
+	\__test_points:nn {B2:C3 -- D4} {{2}{2},{2}{3},{3}{2},{3}{3},{4}{4}}
+	\__test_points:nn {B2:C3} {{2}{2},{2}{3},{3}{2},{3}{3}}
+	\__test_points:nn {C3:B2} {{3}{3},{3}{2},{2}{3},{2}{2}}
+	\__test_points:nn {B2 r D4} {{2}{2},{3}{2},{4}{2},{4}{3},{4}{4},{3}{4},{2}{4},{2}{3}}
+	\__test_points:nn {B2:C3; C2} {{2}{2},{2}{3},{3}{3}}
+	\__test_points:nn {B2:C3; C2; C2, D4} {{2}{2},{2}{3},{3}{3},{3}{2},{4}{4}}
+	\__test_points:nn {B2:C3; C2; C2, D4; B:C} {{4}{4}}
 	\__test_points:nn {C} {{3}{2},{3}{3},{3}{4}}
 	\__test_points:nn {3} {{2}{3},{3}{3},{4}{3}}
 	\__test_points:nn {B:C} {{2}{2},{2}{3},{2}{4},{3}{2},{3}{3},{3}{4}}
 	\__test_points:nn {3:4} {{2}{3},{2}{4},{3}{3},{3}{4},{4}{3},{4}{4}}
 	\__test_points:nn {B:C 4} {{2}{4},{3}{4}}
-	\__test_points:nn {D 4:2} {{4}{2},{4}{3},{4}{4}}
-	\__test_points:nn {C:B 3:2} {{2}{2},{2}{3},{3}{2},{3}{3}}
+	\__test_points:nn {C:B 3:2} {{3}{3},{3}{2},{2}{3},{2}{2}}
 	\__test_points:nn {*} {{2}{2},{2}{3},{2}{4},{3}{2},{3}{3},{3}{4},{4}{2},{4}{3},{4}{4}}
+	% Brackets keep their place.
 	\__test_points:nn {B[2,4]} {{2}{2},{2}{4}}
 	\__test_points:nn {[B,D]3} {{2}{3},{4}{3}}
-	\__test_points:nn {[B,D][2,4], C3} {{3}{3},{2}{2},{2}{4},{4}{2},{4}{4}}
-	\__test_points:nn {B[2:3], D2} {{4}{2},{2}{2},{2}{3}}
+	\__test_points:nn {[B,D][2,4], C3} {{2}{2},{2}{4},{4}{2},{4}{4},{3}{3}}
+	\__test_points:nn {D4, B[3:2], D2} {{4}{4},{2}{3},{2}{2},{4}{2}}
+	% Which coordinates have a fixed order.
+	\__test_ordered:nn {B2:4, D:C3, B2 -| C3 -- D4} {yes}
+	\__test_ordered:nn {B2:B4, B[2,4], B:B 2:4} {yes}
+	\__test_ordered:nn {B2:4; *} {yes}
+	\__test_ordered:nn {B2:C3} {no}
+	\__test_ordered:nn {B2 r D4} {no}
+	\__test_ordered:nn {B2 -| C3 r D4} {no}
+	\__test_ordered:nn {B:C 2:3} {no}
+	\__test_ordered:nn {C} {no}
+	\__test_ordered:nn {B:C} {no}
+	\__test_ordered:nn {*} {no}
+	% Moves keep repetitions.
+	\__test_moves:nn {B2, C3, B2} {{2}{2},{3}{3},{2}{2}}
+	\__test_moves:nn {B2 -| C3 -| B2} {{2}{2},{3}{2},{3}{3},{2}{3},{2}{2}}
+	\__test_moves:nn {B2 r C3} {{2}{2},{3}{2},{3}{3},{2}{3}}
+	\__test_moves:nn {C4:2, C3} {{3}{4},{3}{3},{3}{2},{3}{3}}
 
 	\__test_if:nnn {point~C3} {\pgfgo_kernel_point:nTF {C3}} {yes}
 	\__test:nnn {point~C3~value} {\l_pgfgo_kernel_point_tl} {{3}{3}}

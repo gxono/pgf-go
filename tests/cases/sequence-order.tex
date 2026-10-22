@@ -1,0 +1,46 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 2
+% expect-errors: 0
+%
+% Order of the points (\marks[sequence]{N10:7} numbered N7 to N10): ranges go from the first end to the
+% second, ranges and rectangles chain with the operators and brackets keep their place. The numbers are
+% the order. Coordinates without a fixed order warn with \marks[sequence] and \moves (2 warnings), not
+% with \marks alone. pdflatex uses the expl3 kernel: the same points in the same order.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\newcommand\drawpath[1]{\stones[w]{#1}\marks[sequence]{#1}}
+\pagestyle{empty}
+\pgfgoset{goban = {scale = 0.5, label = {at = {south, west}}}}
+
+\begin{document}
+
+\case{Descending ranges: N10:7, N10 -- N7 with letters, F:B3}
+\begin{goban}[13, partial = J5:N11]\drawpath{N10:7}\end{goban}
+\begin{goban}[13, partial = J5:N11]
+	\stones[w]{N10 -- N7}\marks[sequence = {format = Alph}]{N10 -- N7}
+\end{goban}
+\begin{goban}[7]\drawpath{F:B3}\end{goban}
+
+\case{Ranges in chains: A2 -| B5:7, B7 -| A:B3, G1:3 |- E6 -- B6}
+\begin{goban}[7]\drawpath{A2 -| B5:7}\end{goban}
+\begin{goban}[7]\drawpath{B7 -| A:B3}\end{goban}
+\begin{goban}[7]\drawpath{G1:3 |- E6 -- B6}\end{goban}
+
+\case{Rectangles in chains (stones only): A1:B2 -- D4 -|- F7, A7 r C5:E3}
+\begin{goban}[7]\stones[b]{A1:B2 -- D4 -|- F7}\end{goban}
+\begin{goban}[7]\stones[b]{A7 r C5:E3}\end{goban}
+
+\case{Brackets in their place: D4, B[3:1], F2}
+\begin{goban}[7]\drawpath{D4, B[3:1], F2}\end{goban}
+
+\case{Moves along a chain and a range: C3 -| E5, E6:7}
+\begin{goban}[7]\moves{C3 -| E5, E6:7}\end{goban}
+
+\case{No fixed order: marks on A1:C3 (no warning), sequence on A1:C3 and moves on B2 r D4 (a warning each)}
+\begin{goban}[5]\marks{A1:C3}\end{goban}
+\begin{goban}[5]\marks[sequence]{A1:C3}\end{goban}
+\begin{goban}[5]\moves{B2 r D4}\end{goban}
+
+\end{document}
