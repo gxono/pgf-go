@@ -555,6 +555,15 @@ All notable changes to `pgf-go` are listed here.
   of an arrow, the label of the moves of a player, the result of
   `\sgfdiagrams`, the layout of the diagrams, ...).
 - `variantes.sgf` (Spanish manual) has a standard result, `RE[B+R]`.
+- New examples: a page of a joseki dictionary (`example-30`, with its own
+  `joseki.sgf`), problems drawn by hand with `partial = auto`
+  (`example-31`) and their answers, with views before the boards
+  (`example-32`).
+- Spanish manual: a new tutorial, a joseki dictionary (`josekis.sgf`:
+  `variation` by moves, `variations` with `from`, `partial = auto`), and
+  the other tutorials show `partial = auto`, a view before its `goban`,
+  `export` and `\pgfgoimport` for slides, and lines and stairs
+  (`--`, `-|-`) in the coordinates.
 
 ### Tests
 

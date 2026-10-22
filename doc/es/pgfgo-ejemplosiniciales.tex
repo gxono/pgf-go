@@ -199,7 +199,16 @@ Con la \emph{key} |partial|, se indica qué parte del tablero mostrar: dos esqui
 	\end{goban}
 \end{codeexample}
 
-Para eliminar la línea del tablero, recurrimos a la \emph{key} |line| del |background| del |goban|.
+Si no quiere buscar las esquinas, con |partial = auto| el tablero elige la parte: la que usa lo que se dibuja, con una línea más alrededor. Un lado que queda a dos líneas o menos del borde llega hasta el borde, como aquí el de abajo y el de la izquierda.
+
+\begin{codeexample}[]
+	\begin{goban}[partial = auto]
+		\stones[b]{C2,B3,C4}
+		\stones[w]{D4,E3,D2,C3}
+	\end{goban}
+\end{codeexample}
+
+\karu\ prefiere el recorte justo, así que sigue con |B2:E4|. Para eliminar la línea del tablero, recurrimos a la \emph{key} |line| del |background| del |goban|.
 
 \begin{codeexample}[]
 	\begin{goban}[partial = B2:E4, background = {line = false}]
@@ -337,6 +346,32 @@ La vista tiene el estilo del tablero original, pero cualquier opción de |goban|
 
 La negra \pgfgoview{pelea}{E4} está separada de sus compañeras.
 Si juega en A, conecta: \pgfgoview{pelea}{C3:E5}.
+\endgroup
+
+A veces el texto habla de un diagrama que viene después, o de una figura que \LaTeX\ lleva a la página siguiente. Una vista también puede ir antes de su |goban|: como con |\ref|, el |goban| queda en el archivo |.aux| y hay que compilar dos veces. La primera vez, la vista es |??| (pág.~\pageref{subsec:vistas-antes}).
+
+\begin{codeexample}[code only]
+	La flecha roja del diagrama de abajo sale de la negra \pgfgoview{flechas}{E4}.
+
+	\begin{goban}[partial = A1:G7, name = flechas]
+		\stones[b]{C3, D3, E4, C5}
+		\stones[w]{D4, D5, E5, F3}
+		\arrow{C5}{C7}
+		\arrow[color = red!80!black, bend = 30, shorten = 4pt]{E4}{G5}
+	\end{goban}
+\end{codeexample}
+
+\begingroup
+\pgfgoset{view = {background = false, label = false}}
+
+La flecha roja del diagrama de abajo sale de la negra \pgfgoview{flechas}{E4}.
+
+\begin{goban}[partial = A1:G7, name = flechas]
+	\stones[b]{C3, D3, E4, C5}
+	\stones[w]{D4, D5, E5, F3}
+	\arrow{C5}{C7}
+	\arrow[color = red!80!black, bend = 30, shorten = 4pt]{E4}{G5}
+\end{goban}
 \endgroup
 
 \subsection{Un ko: capturas y notas}
@@ -607,10 +642,37 @@ Un tablero con nombre también sirve para comparar estilos. Antes de elegir el p
 	\begin{goban}[resume = {estilos, marks}, profile = simple] \end{goban}
 \end{pgfgolayout}
 
+\subsection{Un diccionario de josekis}
+\label{tut:josekis}
+
+En la clase siguiente, \karu\ quiere explicar las respuestas a la aproximación baja al punto 4-4. Las secuencias conocidas de la apertura en una esquina, los \emph{josekis}, suelen guardarse en un SGF con forma de diccionario: un árbol con una rama por cada jugada posible, comentarios en las que importan y letras en las jugadas que pueden seguir. \karu\ arma uno pequeño, |josekis.sgf|, y lo llama |josekis|.
+
+Primero, la posición: las dos primeras jugadas, con las letras de las respuestas. El tablero es de $19\times19$, pero todo pasa en una esquina; con |partial = auto| (pág.~\pageref{tut:parcial}), el |goban| muestra solo la parte que usa lo que dibuja, también las letras.
+
+\begin{codeexample}[]
+	\pgfgodefinesgf{josekis}{josekis.sgf}
+
+	\begin{goban}[sgf size = josekis, partial = auto]
+		\sgf[to = 2]{josekis}
+	\end{goban}
+\end{codeexample}
+
+Para las respuestas, \karu\ elige la línea con |variation|. En un diccionario hay tantas ramas que es más cómodo dar las jugadas de la línea, desde la primera, que buscar su número: |variation = {Q16, R14}| (pág.~\pageref{subsec:sgf}). Con |variations|, |\sgfdiagrams| dibuja además, cada una en su diagrama, las variantes con comentarios que se apartan de esa línea, y con |from = 3|, solo las que nacen en la jugada 3 o después: las respuestas, y no la invasión en el 3-3, que es otra jugada 2. Con |partial = auto|, todos los diagramas muestran la misma parte del tablero.
+
+\begin{codeexample}[code only]
+	\sgfdiagrams[variation = {Q16, R14}, variations = {commented, from = 3},
+		partial = auto, comments, layout = {columns = 3, fit}]{josekis}
+\end{codeexample}
+
+\sgfdiagrams[variation = {Q16, R14}, variations = {commented, from = 3},
+	partial = auto, comments, layout = {columns = 3, fit}]{josekis}
+
+El primer diagrama es la línea elegida, hasta el final. Las jugadas de cada variante se numeran desde 1, y el epígrafe dice en qué jugada se aparta. En un diccionario grande, cada jugada trae letras en las que pueden seguir; con |marks = false|, los diagramas no las dibujan.
+
 \subsection{Un cuaderno de problemas}
 \label{tut:problemas}
 
-Para sus estudiantes, \karu\ prepara un cuaderno de problemas de vida y muerte. Los problemas suelen guardarse también en SGF: la posición inicial, quién juega y un árbol con cada variante de la solución, correcta o no, con sus comentarios. |\sgfproblem| dibuja todo eso: primero el enunciado y después un diagrama por variante. Si el archivo no dice qué parte del tablero mostrar, se muestra solo la que usa el problema.
+Para sus estudiantes, \karu\ prepara un cuaderno de problemas de vida y muerte. Los problemas suelen guardarse también en SGF: la posición inicial, quién juega y un árbol con cada variante de la solución, correcta o no, con sus comentarios. |\sgfproblem| dibuja todo eso: primero el enunciado y después un diagrama por variante. Si el archivo no dice qué parte del tablero mostrar, se muestra solo la que usa el problema, como con |partial = auto|.
 
 \begin{codeexample}[code only]
 	\pgfgodefinesgf{problema}{problema.sgf}
@@ -632,7 +694,7 @@ En un cuaderno, las soluciones no van junto al enunciado. \karu\ pone los enunci
 
 \sgfproblem[statement = false, layout = {columns = 4, fit}]{problema}
 
-Algunos problemas no están en ningún archivo, y \karu\ los dibuja a mano, con la misma parte del tablero que muestra |\sgfproblem|. Para que tengan el mismo tamaño que los demás, los pone junto con los de |\sgfproblem| en un mismo |pgfgolayout|, que acomoda en una grilla todos los tableros que contiene.
+Algunos problemas no están en ningún archivo, y \karu\ los dibuja a mano, con la misma parte del tablero que muestra |\sgfproblem|. Aquí escribe la parte, |A16:F19|: con |partial = auto|, cada tablero mostraría solo la suya, y no coincidirían. Para que tengan el mismo tamaño que los demás, los pone junto con los de |\sgfproblem| en un mismo |pgfgolayout|, que acomoda en una grilla todos los tableros que contiene.
 
 \begin{codeexample}[code only]
 	\begin{pgfgolayout}[columns = 3, fit]
@@ -833,6 +895,24 @@ Para repasar la partida entera, en cambio, le alcanzan los diagramas del apéndi
 	\end{frame}
 \end{codeexample}
 
+Las diapositivas son otro documento, pero \karu\ no quiere copiar los tableros del artículo. En el artículo, agrega |export| al |goban| de la pelea, que queda en el archivo |pelea.pgfgo|. En las diapositivas, lo trae con |\pgfgoimport|, con su nombre y su estilo, y lo usa como si lo hubiera dibujado ahí: con |\pgfgoview| o con |resume| (pág.~\pageref{subsec:exportar}).
+
+\begin{codeexample}[code only]
+	% En el artículo:
+	\begin{goban}[partial = A1:G7, name = pelea, export = pelea]
+		...
+	\end{goban}
+
+	% En las diapositivas:
+	\pgfgoimport{pelea}
+	...
+	\begin{frame}{Si negras conectan}
+		\begin{goban}[resume = {pelea, marks}, partial = auto]
+			\moves{E3}
+		\end{goban}
+	\end{frame}
+\end{codeexample}
+
 En un PDF para leer en pantalla, en cambio, prefiere una animación: |\sgfanimation| dibuja un tablero por jugada con el paquete |animate|, y sus botones permiten avanzar, retroceder o reproducir la partida (pág.~\pageref{subsec:sgf}). El perfil también vale aquí. La animación se ve en Acrobat Reader y en algunos otros visores; en los demás, solo el primer cuadro.
 
 \begin{codeexample}[code only]
@@ -898,6 +978,16 @@ Para grupos más grandes, hay caminos que doblan en ángulo recto. \verb+A6 |- B
 		\prisoners[b]{H1-|I2}
 		\prisoner[w] {A1}
 		\territory[dame]{auto}
+	\end{goban}
+\end{codeexample}
+
+Entre dos intersecciones que no están en la misma fila ni en la misma columna, |--| es una línea inclinada: \verb+D5 -- F7+ son D5, E6 y F7. Esas piedras se tocan solo por las esquinas; para una cadena conectada, \verb+-|-+ rellena cada escalón, primero hacia el costado y después hacia arriba o hacia abajo: \verb+D4 -|- F6+ son D4, E4, E5, F5 y F6 (\verb+|-|+ empieza por la columna). Con eso, una escalera (\emph{shicho}) se escribe con sus extremos:
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[label = {at = {north, west}}]
+		\stones[w]{D4 -|- F6 -- G6}
+		\stones[b]{C4, D3, D5 -- F7, E3 -- G5}
+		\arrow{G6}{J8}
 	\end{goban}
 \end{codeexample}
 

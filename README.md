@@ -72,6 +72,9 @@ You can find examples in the `doc/examples` directory:
 - `example-27`: the end of a game counted: the captures, the territory found by `\territory{auto}` and the score, as in the file.
 - `example-28`: frameworks drawn as regions from their corners, and their size with `\pgfgoregion`.
 - `example-29`: a ladder, written with lines and stairs in the coordinates (`D4 -|- F6`, `D5 -- F7`).
+- `example-30`: a page of a joseki dictionary: a line given by its moves (`variation = {Q16, R14}`), the answers to it (`variations = {commented, from = 3}`) and the same part of the board in every diagram (`partial = auto`).
+- `example-31`: problems drawn by hand in different parts of the board, each one showing only the part it uses (`partial = auto`), in a grid with `width = natural`.
+- `example-32`: the answers to those problems, explained in a text that shows parts of the diagrams that come after it (`\pgfgoview` before the `goban`; compile twice).
 
 The examples that read an SGF file more than once give it a name with `\pgfgodefinesgf`. The last page of each example shows its code. The SGF examples need LuaLaTeX.
 

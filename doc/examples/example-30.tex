@@ -1,0 +1,24 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=14cm]{standalone}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+
+\pgfgodefinesgf{joseki}{joseki.sgf}
+\pgfgoset{profile = pgfgo}
+
+
+\begin{document}
+	\section*{The 4-4 point: the low approach}
+	% The line is given by its moves, as in a joseki dictionary. The answers are the commented
+	% 	variations that leave it at move 3 or later (not the 3-3 invasion, at move 2).
+	% partial = auto shows the part of the board that all the diagrams use.
+
+	\begin{center}
+		\begin{goban}[sgf size = joseki, partial = auto, scale = 0.8]
+			\sgf[to = 2]{joseki}
+		\end{goban}
+	\end{center}
+
+	\sgfdiagrams[variation = {Q16, R14}, variations = {commented, from = 3}, partial = auto,
+		comments, layout = {columns = 3, fit}]{joseki}
+\end{document}

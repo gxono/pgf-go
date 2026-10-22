@@ -1,0 +1,12 @@
+(;GM[1]FF[4]CA[UTF-8]SZ[19]C[Josekis del punto 4-4, en la esquina superior derecha.]
+;B[pd]
+(;W[qf]C[La aproximación baja.]LB[nc:A][nd:B][qi:C]
+ (;B[nc]C[A: el paso de caballo.]
+  ;W[rd]C[Blancas se deslizan hacia la esquina.]
+  ;B[qc]
+  ;W[qi]C[Y se extienden por el lado.])
+ (;B[nd]C[B: el salto de uno.]
+  ;W[rd];B[qc];W[qi])
+ (;B[qi]C[C: la pinza baja.]
+  ;W[qc]C[Blancas entran en el 3-3.]))
+(;W[qc]C[La invasión en el 3-3.]))

@@ -1,0 +1,12 @@
+(;GM[1]FF[4]CA[UTF-8]SZ[19]C[Josekis of the 4-4 point, in the upper right corner.]
+;B[pd]
+(;W[qf]C[The low approach.]LB[nc:A][nd:B][qi:C]
+ (;B[nc]C[A: the knight's move.]
+  ;W[rd]C[White slides into the corner.]
+  ;B[qc]
+  ;W[qi]C[And extends along the side.])
+ (;B[nd]C[B: the one-space jump.]
+  ;W[rd];B[qc];W[qi])
+ (;B[qi]C[C: the low pincer.]
+  ;W[qc]C[White invades at the 3-3 point.]))
+(;W[qc]C[The 3-3 invasion.]))
