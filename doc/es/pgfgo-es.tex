@@ -22,6 +22,10 @@
 \pgfgodefinesgf{problema}{problema.sgf}
 %LOS KANJI DEL TEXTO (VER label/style).
 \font\pgfgokanji = {file:ipaexm.ttf} at 9pt
+%LA MISMA FUENTE COMO FAMILIA, PARA format = kanji (VER mark/label/format).
+\DeclareFontFamily{TU}{ipaex}{}
+\DeclareFontShape{TU}{ipaex}{m}{n}{<->file:ipaexm.ttf}{}
+\DeclareFontShape{TU}{ipaex}{bx}{n}{<->ssub*ipaex/m/n}{}
 \def\pgfgoname{\textsc{pgfgo}}
 \def\karu{K\={a}ru}
 

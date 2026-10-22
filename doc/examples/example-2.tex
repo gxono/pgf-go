@@ -4,17 +4,16 @@
 
 
 \pgfgoset{
-	goban = {use i = false, background = {fill = {color = pgfgo}}}
+	goban = {background = {fill = {color = pgfgo}}}
 }
 
 \begin{document}
-	\begin{goban}[13, label = {at = {all}}]
+	\begin{goban}[13, label = {at = {all}}, name = game]
 		\stones[b]{A1, J1, K1, G7, N9, D12, D13}
 		\stones[w]{A2, H1, J2, K2, G6, F7, G8, M9, N10, C12, C13, E12, E13}
 		\marks[circle]{B1, L1, N8, H7, D11}
 	\end{goban}
-	\begin{goban}[13, label = {at = {north, east, south}}]
-		\stones[w]{A2, H1, J2, K2, G6, F7, G8, M9, N10, C12, C13, E12, E13}
-		\stones[w,mark = triangle]{B1, L1, N8, H7, D11}
+	\begin{goban}[13, resume = game, label = {at = {north, east, south}}]
+		\stones[w, mark = triangle]{B1, L1, N8, H7, D11}
 	\end{goban}
 \end{document}

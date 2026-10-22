@@ -88,9 +88,9 @@
 \begin{goban}[3, label = {at = {all}, at = {none}}]\end{goban}
 \begin{goban}[5, partial = B2:D4, label = {at = all}]\end{goban}
 
-\case{Global use i = false and move numbers brought back with resume = \{..., numbers\}}
-{\pgfgoset{goban = {use i = false}}
-\begin{goban}[9, label = {at = south}, name = keys]\stones[b]{H1,J1}\moves*{H3,J3}\end{goban}
+\case{Global use i and move numbers brought back with resume = \{..., numbers\}}
+{\pgfgoset{goban = {use i}}
+\begin{goban}[9, label = {at = south}, name = keys]\stones[b]{H1,I1}\moves*{H3,I3}\end{goban}
 \begin{goban}[9, label = {at = south}, resume = {keys, numbers}]\end{goban}}
 
 \end{document}

@@ -18,8 +18,9 @@
 \begin{goban}[5, label = {at = {south, west}, font size = 6pt}]\end{goban}
 \begin{goban}[5, label = {at = {south, west}, font = \bfseries, color = red}]\end{goban}
 
-\case{Labels without I}
-\begin{goban}[9, use i = false, label = {at = {south}}]\end{goban}
+\case{Labels without I (the default) and with use i}
+\begin{goban}[9, label = {at = {south}}]\end{goban}
+\begin{goban}[9, use i, label = {at = {south}}]\end{goban}
 
 \case{Partial boards hide what is outside the window (only C3 visible)}
 \begin{goban}[5, partial = B2:D4]\stones[b]{A1,E5}\stones[w]{C3}\marks[circle]{A5}\moves*{A2,C2}\end{goban}

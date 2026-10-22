@@ -84,7 +84,8 @@
 	\__test_if:nnn {point~C3,D4} {\pgfgo_kernel_point:nTF {C3,D4}} {no}
 	\__test_if:nnn {point~c3} {\pgfgo_kernel_point:nTF {c3}} {no}
 
-	% Columns and coordinates without I.
+	% Columns with I (use i) and coordinates without I (the default).
+	\bool_set_true:N \l_pgfgo_use_i_bool
 	\__test:nnn {column~9} {\pgfgo_kernel_column_name:n {9}} {I}
 	\__test:nnn {column~27} {\pgfgo_kernel_column_name:n {27}} {AA}
 	\bool_set_false:N \l_pgfgo_use_i_bool

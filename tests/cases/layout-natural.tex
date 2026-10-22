@@ -1,0 +1,46 @@
+% engines: lualatex
+% expect-warnings: 1
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% game.sgf: 9x9; B E5, W G7, B pass, W C3, B G5.
+
+\case{pgfgolayout, columns = 2, width = natural, column sep = 0em: the four boards touch (2 x 2)}
+\begin{pgfgolayout}[columns = 2, width = natural, column sep = 0em, row sep = 0em]
+	\begin{goban}[partial = A9:E5, scale = 0.5]\stone[b]{C7}\end{goban}
+	\begin{goban}[partial = E9:I5, scale = 0.5]\stone[w]{G7}\end{goban}
+	\begin{goban}[partial = A1:E5, scale = 0.5]\stone[b]{C3}\end{goban}
+	\begin{goban}[partial = E1:I5, scale = 0.5]\stone[w]{G3}\end{goban}
+\end{pgfgolayout}
+
+\case{columns = 3, width = natural, align = left: the cells are as wide as the 9x9 board; the 5x5 ones go left}
+\begin{pgfgolayout}[columns = 3, width = natural, align = left]
+	\begin{goban}[size = 5, scale = 0.4]\stone[b]{C3}\end{goban}
+	\begin{goban}[size = 9, scale = 0.4]\stone[w]{E5}\end{goban}
+	\begin{goban}[size = 5, scale = 0.4]\stone[b]{B2}\end{goban}
+	\begin{goban}[size = 5, scale = 0.4]\stone[w]{D4}\end{goban}
+\end{pgfgolayout}
+
+\case{columns = 4, width = natural, two cells: the row is two cells wide, centered}
+\begin{pgfgolayout}[columns = 4, width = natural]
+	\begin{goban}[size = 5, scale = 0.4]\stone[b]{C3}\end{goban}
+	\begin{goban}[size = 5, scale = 0.4]\stone[w]{C3}\end{goban}
+\end{pgfgolayout}
+
+\case{sgfdiagrams, columns = 3, width = natural, column sep = 0.5em: the captions fit the boards}
+\sgfdiagrams[step = 1, layout = {columns = 3, width = natural, column sep = 0.5em}, goban = {scale = 0.35}]{game.sgf}
+
+\case{sgfproblem, statement = alone, columns = 3, width = natural}
+\sgfproblem[statement = alone, layout = {columns = 3, width = natural}, goban = {scale = 0.35}]{problem.sgf}
+
+\case{width = natural, fit: a warning, and fit does nothing}
+\sgfdiagrams[step = 2, layout = {columns = 3, width = natural, fit}, goban = {scale = 0.35}]{game.sgf}
+
+\case{columns = 2, width = natural, per page = 2: page break between the groups}
+\sgfdiagrams[step = 1, to = 4, layout = {columns = 2, width = natural, per page = 2}, goban = {scale = 0.35}]{game.sgf}
+\end{document}

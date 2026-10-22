@@ -7,13 +7,16 @@
 % qipu.sgf is in GB2312 (CA[GB2312]): pgf-go converts it.
 \pgfgodefinesgf{qipu}{qipu.sgf}
 \pgfgoset{
-	goban = {background = {fill = {color = pgfgo}}, label = {at = {north, west}, style = chinese}},
+	goban = {
+		background = {fill = {color = pgfgo}}, 
+		label = {at = {north, west}, style = chinese}},
 	lang = zh,
 }
 
 
 \begin{document}
-	\sgfinfo{qipu}{GN}：\sgfinfo{qipu}{PB}对\sgfinfo{qipu}{PW}，贴目\sgfinfo{qipu}{KM}。\sgfcomment{qipu}{0}
+	\sgfinfo{qipu}{GN}：\sgfinfo{qipu}{PB}对\sgfinfo{qipu}{PW}，贴目\sgfinfo{qipu}{KM}。
+	\sgfcomment{qipu}{0}
 
 	\medskip
 	\sgfdiagrams[step = 9, comments]{qipu}

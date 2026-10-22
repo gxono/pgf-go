@@ -66,4 +66,12 @@
 \begin{goban}[5, name = f]\stones[b]{C3}\stone[w, forget]{D4}\moves*[label = forget]{B2}\marks[forget, circle]{A1}\end{goban}
 \pgfgoview{f}{A1:E5} \pgfgoview[forgotten]{f}{A1:E5}
 
+\case{resume keeps the size of the named board (13, then 7x5 through two names); a size of its own wins (15)}
+\begin{goban}[13, scale = 0.4, name = big]\stones[b]{K10, C3}\end{goban}
+\begin{goban}[scale = 0.4, resume = big]\end{goban}
+\begin{goban}[scale = 0.4, resume = big, 15]\end{goban}
+\begin{goban}[7x5, scale = 0.4, name = rect]\stones[w]{G5}\end{goban}
+\begin{goban}[scale = 0.4, resume = rect, name = rect2]\stones[b]{A1}\end{goban}
+\begin{goban}[scale = 0.4, resume = rect2]\end{goban}
+
 \end{document}

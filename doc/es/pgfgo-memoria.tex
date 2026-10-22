@@ -27,7 +27,7 @@
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/resume=\meta{name, options}}
-		Empieza el |goban| con el tablero que tiene ese nombre, como quedó al terminar (con las capturas resueltas: si ese |goban| usaba |captures|, este también). La numeración y el turno siguen desde ahí. Por defecto trae solo las piedras, sin números, marcas ni territorio; las opciones piden el resto. Las opciones del tablero (tamaño, |partial|, coordenadas) se dan en cada |goban|. Si no hay ningún |goban| con ese nombre, se produce un error.
+		Empieza el |goban| con el tablero que tiene ese nombre, como quedó al terminar (con las capturas resueltas: si ese |goban| usaba |captures|, este también). La numeración y el turno siguen desde ahí. Por defecto trae solo las piedras, sin números, marcas ni territorio; las opciones piden el resto. El tamaño es el de ese tablero, salvo que este |goban| dé el suyo (|size|, un número, |sgf size| o |sgf view|; uno puesto antes con |\pgfgoset| no cuenta); las demás opciones del tablero (|partial|, coordenadas) se dan en cada |goban|. Si no hay ningún |goban| con ese nombre, se produce un error.
 
 		Con |name| y |resume| en el mismo |goban| (en cualquier orden), el nuevo nombre guarda lo que trajo, tal como se dibujó, más lo suyo, y el tablero de |resume| no cambia: así se arman variantes. Con el mismo nombre en las dos, el |goban| sigue agregando a ese tablero.
 
@@ -104,6 +104,8 @@
 
 		La vista usa el estilo que tenía ese |goban| al dibujarse (el perfil, lo fijado con |\pgfgoset| y sus opciones), aunque después cambie. Encima van el perfil de las vistas (|view/profile|), |\pgfgoset{view = ...}| y las opciones de la vista.
 
+		El |goban| puede venir después de la vista (p.~\pageref{subsec:vistas-antes}) o de otro documento (p.~\pageref{subsec:exportar}).
+
 		Una vista no cambia nada de lo que guarda el último |goban|: |\pgfgoscore|, |\pgfgoprisoners| y |\pgfgomovenotes| siguen hablando de él, y lo que guarda cada |goban| con nombre queda igual.
 
 		\begin{codeexample}[]
@@ -173,4 +175,51 @@
 			\pgfgoview[profile = simple]{tablero1}{B2:E4}
 			\pgfgoview[profile = wain]{tablero1}{B2:E4}
 		\end{codeexample}
+	\end{key}
+
+	\subsection{Vistas antes del tablero}
+	\label{subsec:vistas-antes}
+	Una vista puede ir antes del |goban| que muestra, como una referencia con |\ref|: el |goban| queda en el archivo |.aux| y la vista lo usa en la compilación siguiente. La primera vez la vista es |??| y hay un aviso; si después el |goban| cambia, otro aviso pide compilar de nuevo. Si dos |goban| tienen el mismo nombre, una vista que va antes de los dos muestra el primero.
+
+	\begin{codeexample}[]
+		Más abajo, la blanca de C3 \pgfgoview{tablero4}{C3} queda en atari.
+		\begin{goban}[5, name = tablero4]
+			\stones[b]{B3, C2, C4}
+			\stones[w]{C3}
+			\marks[sequence]{D3}
+		\end{goban}
+	\end{codeexample}
+
+	\subsection{Usar un tablero en otro documento}
+	\label{subsec:exportar}
+	Un |goban| con nombre se puede guardar en un archivo y usar en otro documento, con sus piedras, números, marcas, territorio y estilo.
+
+	\begin{key}{/pgfgo/goban/export=\meta{file}}
+		Al terminar, el |goban| queda en ese archivo (si no tiene extensión, |.pgfgo|), para |\pgfgoimport|. Necesita |name|. Por seguridad, \TeX\ solo escribe dentro de la carpeta del documento: el archivo va con un nombre relativo, como |tableros/ko|.
+
+		\begin{codeexample}[code only]
+			\begin{goban}[19, name = ko, export = ko]
+				...
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{command}{\pgfgoimport\opt{\oarg{options}}\marg{file}}
+		Trae el |goban| de un archivo de |export| (sin extensión, |.pgfgo|), como si se hubiera dibujado en este documento: sirve para |\pgfgoview| y para |resume|. Se puede usar en el preámbulo.
+
+		\begin{codeexample}[code only]
+			\pgfgoimport{ko}
+			\pgfgoimport[name = otro ko]{ko}
+			...
+			El ko de \pgfgoview{ko}{Q16:S18}.
+			\begin{goban}[resume = {otro ko, marks}]
+				\moves{R17}
+			\end{goban}
+		\end{codeexample}
+
+		Una marca definida con |\pgfgodefinemark| tiene que estar definida también en este documento; si no, hay un aviso.
+	\end{command}
+
+	\begin{key}{/pgfgo/import/name=\meta{name}}
+		El nombre con el que queda el |goban| importado. Sin |name|, el que tenía.
 	\end{key}

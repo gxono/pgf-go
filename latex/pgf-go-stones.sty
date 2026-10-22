@@ -263,8 +263,16 @@
 	}
 }
 
+%UNA PIEDRA TRANSLUCIDA VA EN UN GRUPO DE TRANSPARENCIA: SE COMPONE ENTERA (EL BORDE NO SE VE SOBRE EL
+%RELLENO). OPACA, EL GRUPO NO CAMBIA NADA Y CADA UNO ES UN OBJETO MAS EN EL PDF: VA EN UN \pgfscope.
 \cs_set:Nn\pgfgo_stone_default_shape:{
-	\pgftransparencygroup
+	\bool_lazy_and:nnTF
+		{\fp_compare_p:nNn {\l_pgfgo_players_stone_fill_opacity_fp} = {1}}
+		{\fp_compare_p:nNn {\l_pgfgo_players_stone_line_opacity_fp} = {1}}
+		{\pgfscope \__pgfgo_stone_shape: \endpgfscope}
+		{\pgftransparencygroup \__pgfgo_stone_shape: \endpgftransparencygroup}
+}
+\cs_new_protected:Npn \__pgfgo_stone_shape: {
 	\seq_if_empty:NTF \l_pgfgo_players_stone_image_seq {
 	%SOMBRA
 	\__pgfgo_stone_shadow:n {
@@ -282,7 +290,6 @@
 	\pgfusepath{\bool_if:NT\l_pgfgo_players_stone_line_bool{stroke},\bool_if:NT\l_pgfgo_players_stone_fill_bool{fill}}
 	\__pgfgo_stone_shine:
 	}{\__pgfgo_stone_image:}
-	\endpgftransparencygroup
 }
 
 
@@ -736,7 +743,6 @@
 }
 
 %TAMANO DEL NUMERO SEGUN LA CANTIDAD DE LETRAS Y CIFRAS (SI NO SE FIJA CON label/font size).
-\regex_const:Nn \c__pgfgo_move_label_char_regex {[a-zA-Z\d]}
 \tl_new:N \l__pgfgo_move_label_tl
 \tl_new:N \l__pgfgo_move_label_size_tl
 \int_new:N \l__pgfgo_move_label_int
@@ -761,7 +767,7 @@
 		\tl_set:Ne \l__pgfgo_move_label_tl {\pgfgo_players_move_label_format:n{#5}}
 		\tl_if_empty:NTF \l_pgfgo_players_move_label_font_size_tl
 			{
-				\regex_count:NVN \c__pgfgo_move_label_char_regex \l__pgfgo_move_label_tl \l__pgfgo_move_label_int
+				\pgfgo_players_label_length:NnVN \pgfgo_players_move_label_format:n {#5} \l__pgfgo_move_label_tl \l__pgfgo_move_label_int
 				\tl_set:Ne \l__pgfgo_move_label_size_tl {
 					\int_case:nnF {\l__pgfgo_move_label_int}
 						{{1} {1em} {2} {0.65em}}

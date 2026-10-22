@@ -9,13 +9,16 @@
 % gibo.sgf is in EUC-KR (CA[EUC-KR]): pgf-go converts it.
 \pgfgodefinesgf{gibo}{gibo.sgf}
 \pgfgoset{
-	goban = {background = {fill = {color = pgfgo}}, label = {at = {south, west}}},
+	goban = {
+		background = {fill = {color = pgfgo}},
+		label = {at = {south, west}}},
 	lang = ko,
 }
 
 
 \begin{document}
-	\sgfinfo{gibo}{GN}: \sgfinfo{gibo}{PB} 대 \sgfinfo{gibo}{PW}, 덤 \sgfinfo{gibo}{KM}. \sgfcomment{gibo}{0}
+	\sgfinfo{gibo}{GN}: \sgfinfo{gibo}{PB} 대 \sgfinfo{gibo}{PW}, 덤 \sgfinfo{gibo}{KM}. 
+	\sgfcomment{gibo}{0}
 
 	\medskip
 	\sgfdiagrams[step = 9, comments]{gibo}

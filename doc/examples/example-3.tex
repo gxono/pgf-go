@@ -4,7 +4,7 @@
 
 
 \pgfgoset{
-	goban = {use i = false, background = {fill = {color = pgfgo}}}
+	goban = {background = {fill = {color = pgfgo}}}
 }
 
 \begin{document}
@@ -14,5 +14,11 @@
 		\marks[b, t-circle]{J1,J2,J3,J4,J5,J6,H1,H2,H3,H4,H5,H6,G3,H8,H9,J8,J9,G9,F9,F8,A1,C1}
 		\marks[w, t-square]{A9,A8,B9,B8,C9,C8,A6,B6,C6,A5,D5,A4,B4,C4,D4}
 		\marks[filled square, line = {color = gray}]{F1,F6}
+	\end{goban}
+	
+	\begin{goban}[9, label = {at = {south, west}}]
+		\stones[b]{E9|-J7,G8|-F4|-G2--G1,A2-|D1,B1}
+		\stones[w]{D9|-E6--E1,F5,A:C7,A:D3,B:C5}
+		\territory[dame]{auto}
 	\end{goban}
 \end{document}

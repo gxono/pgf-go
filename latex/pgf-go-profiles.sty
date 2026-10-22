@@ -594,3 +594,33 @@
 		}
 	}
 }
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%BADUK TV
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\pgfgodefineprofile[from = default]{baduktv}{
+	goban = {
+		background = {
+			line = false,
+			fill = {image = {file = baduktv-goban.png}}
+		}
+	},
+	all = {
+		stone = {
+			shadow = {
+				true,
+				angle = -45,
+				offset = 0.75pt,
+				scale = 1.2,
+				opacity = 0.6,
+				image = {file = pgfgo-shadow.png}
+			}
+		}
+	},
+	black = {stone = {image = {file = baduktv-black.png}}},
+	white = {stone = {image = {file = baduktv-white.png}}}
+}

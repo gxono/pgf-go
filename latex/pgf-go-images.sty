@@ -81,14 +81,21 @@
 %pgf-go.sty (POR EJ. \usepackage{../../latex/pgf-go}). UN ARCHIVO QUE NO SE ENCUENTRA (NI EN LA CARPETA DEL
 %DOCUMENTO NI EN EL PATH DE TEX) SE BUSCA AHI; SI TAMPOCO ESTA, QUEDA COMO ESTA (\includegraphics LO BUSCA
 %EN \graphicspath). INSTALADO, \c__pgfgo_path_tl ESTA VACIO Y LAS IMAGENES SE ENCUENTRAN EN EL PATH DE TEX.
+%EN img SE PRUEBA EL NOMBRE TAL CUAL Y CON LAS EXTENSIONES DE \c__pgfgo_image_extensions_clist (COMO HACE
+%\includegraphics CON UN NOMBRE SIN EXTENSION).
 \tl_const:Ne \c__pgfgo_image_dir_tl {\tl_if_empty:NF \c__pgfgo_path_tl {\c__pgfgo_path_tl /../img/}}
+\clist_const:Nn \c__pgfgo_image_extensions_clist {{}, .pdf, .png, .jpg, .jpeg}
 \tl_new:N \l__pgfgo_image_path_tl
 \cs_new_protected:Npn \__pgfgo_image_locate:n #1 {
 	\tl_set:Nn \l__pgfgo_image_path_tl {#1}
 	\tl_if_empty:NF \c__pgfgo_image_dir_tl {
 		\file_if_exist:nF {#1} {
-			\file_if_exist:nT {\c__pgfgo_image_dir_tl #1}
-				{\tl_set:Ne \l__pgfgo_image_path_tl {\exp_not:V \c__pgfgo_image_dir_tl \exp_not:n {#1}}}
+			\clist_map_inline:Nn \c__pgfgo_image_extensions_clist {
+				\file_if_exist:nT {\c__pgfgo_image_dir_tl #1 ##1} {
+					\tl_set:Ne \l__pgfgo_image_path_tl {\exp_not:V \c__pgfgo_image_dir_tl \exp_not:n {#1 ##1}}
+					\clist_map_break:
+				}
+			}
 		}
 	}
 }

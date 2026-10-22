@@ -6,6 +6,28 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- `layout/width = natural`: the columns of the grid are as wide as the widest
+  diagram (with its caption, cut as without grid), so `column sep` is the
+  real space between boards of the same width; the grid is centered and the
+  diagrams are drawn at the end (or at the end of each `per page` or
+  `per frame` group). `fit` does nothing with it (warning `layout-fit-natural`).
+- `\pgfgoview` can come before the `goban` it shows, as `\ref`: the
+  `goban` goes to the `.aux` and the view uses it in the next compilation
+  (the first time it is `??`, with a warning; if the `goban` changes, a
+  warning asks to compile again).
+- `goban/export = <file>` writes a named `goban` to a file (`.pgfgo` if it
+  has no extension), and `\pgfgoimport[name = <name>]{<file>}` brings it to
+  another document, for `\pgfgoview` and `resume`, with its stones, numbers,
+  marks, territory and style.
+
+- Numbers in kanji: `format = kanji` in `move/label` and `mark/label` (and
+  `mark/sequence = {format = kanji}`) writes 一, 二, ..., 十, 十一, ..., 百, ...
+  (〇 for 0), as the kanji of `goban/label/columns = kanji`. They need a
+  font family that has them (`label/font`). A kanji counts as two figures
+  when the size of the number is chosen.
+- Several files in a mark of your own: `\pgfgodefinemark[image = {file = {a.png,
+  b.png, c.png}}]{name}` draws each point with one of them, chosen at random
+  as in `stone/image/file` (a point always gets the same file).
 - Lines in any direction and stairs in the coordinates: `A1 :--: E6` puts
   one stone per row (or per column) on the stone nearest to the straight line
   between the two ends; `A1 :-|: E6` and `A1 :|-: E6` fill each step with the
@@ -255,6 +277,32 @@ All notable changes to `pgf-go` are listed here.
 
 ### Fixed
 
+- A mark with `sequence` outside the visible part of the board (`partial`, or
+  a `\pgfgoview`) did not advance the sequence, so the view `{A10}` of
+  `\marks[sequence = {format = Alph}]{N10, ..., A10}` showed `A` instead of
+  `K`. Hidden marks now advance it too: the labels are those of the whole
+  board.
+- `resume` started the board with the default size (9) instead of the size
+  of the named board, so its stones outside a 9x9 board were lost. Now it
+  takes the size of that board, unless the `goban` gives its own (`size`, a
+  number, `sgf size` or `sgf view`).
+- The profile `baduktv` did not compile (its board image had no extension
+  and was not found in `img`). An image without extension is now also looked
+  for in `img` with the extensions `.pdf`, `.png`, `.jpg` and `.jpeg`.
+- `\pgfgodefinemark[image = {width = ...}]` with `em`: the width was measured
+  inside the picture, where the font is `\nullfont` and `1em` is 0, so the
+  image did not show. Now it is measured when the mark is defined, with the
+  font of the text.
+- `\sgfdiagrams` and `\sgfproblem` with `layout/columns = auto`: a caption
+  wider than its board (as "Problem 3: White to play" under a small corner)
+  made the whole diagram that wide, and fewer diagrams fitted in a line. Now
+  the caption is broken into lines at the width of the board, as in the grid,
+  but never narrower than its longest word nor than the new key
+  `caption/min width` (initially `8em`, in `\sgfdiagrams` and `\sgfproblem`).
+- Smaller PDF files: every stone was drawn in its own transparency group,
+  one more object in the PDF for each stone (a sheet of 900 problems weighed
+  9 MB). Now only a translucent stone (a prisoner, `opacity` below 1) uses
+  one; the others look the same and the sheet is about 15 times smaller.
 - With `layout = {fit}`, all the boards of `\sgfdiagrams` and `\sgfproblem`
   take the scale that fills the column with the first one; a wider board
   (another problem of a sheet, for example) came out of its column. Now
@@ -288,6 +336,11 @@ All notable changes to `pgf-go` are listed here.
 
 ### Behaviour changes
 
+- `\pgfgoview` with a name that does not exist gives a warning and `??`
+  (it was an error), because the `goban` may come later.
+- `goban/use i` is now `false` by default, as usual in go: the columns go
+  from `H` to `J`, and `I` in a coordinate is read as `J`. `use i` (or
+  `use i = true`) brings the `I` back.
 - `stone/shadow/offset` is initially 1pt (it was 0pt, so `shadow` alone
   drew the shadow under the stone, where it could not be seen).
 - With several files in `stone/image/file`, the file of each point is chosen
@@ -434,6 +487,8 @@ All notable changes to `pgf-go` are listed here.
 
 ### Tests
 
+- New case `layout-natural` (`layout/width = natural` in `pgfgolayout`,
+  `\sgfdiagrams` and `\sgfproblem`, with `align`, `per page` and `fit`).
 - `docs/keys` and `--manuals` only look at the Spanish manual for now
   (`MANUALS` in `tests/check_docs.py`).
 - New case `real-games`: an extract of Lee Sedol - AlphaGo (many root
@@ -504,6 +559,9 @@ document is now fixed. See *Behaviour changes* below.
 
 ### Behaviour changes
 
+- `goban/use i` is now `false` by default, as usual in go: the columns go
+  from `H` to `J`, and `I` in a coordinate is read as `J`. `use i` (or
+  `use i = true`) brings the `I` back.
 - **Every `goban` starts at move 1 with Black.** Before, the move number and
   the side to play carried over from the previous `goban` in the document, so
   the same code could produce different numbers and colours depending on what

@@ -6,19 +6,29 @@
 \font\kanji = {file:ipaexm.ttf} at 8pt
 \pgfgoset{profile = wain, goban = {label = {at = {all}}}}
 
-\newcommand\position{
-	\stones[b]{C7, G3, D3}
-	\stones[w]{G7, C3}
-}
-
 
 \begin{document}
 	\begin{tabular}{cc}
-		\begin{goban}[9]\position\end{goban} &
-		\begin{goban}[9, label = {style = japanese, font = \kanji}]\position\end{goban} \\
+		\begin{goban}[9, name=tablero]
+			\stones[b]{C7, G3, D3}
+			\stones[w]{G7, C3}
+		\end{goban} &
+		%
+		\begin{goban}[9, label = {style = japanese, font = \kanji}, resume=tablero]
+		\end{goban}\\
+		%
 		western: letters and numbers & japanese: from the upper right \\[1ex]
-		\begin{goban}[9, label = {style = chinese, font = \kanji}]\position\end{goban} &
-		\begin{goban}[9, label = {columns = numbers, rows = letters, rows direction = top to bottom}]\position\end{goban} \\
+		%
+		\begin{goban}[9, label = {style = chinese, font = \kanji}, resume=tablero]
+		\end{goban} &
+		%
+		\begin{goban}[
+				9, 
+				label = {columns = numbers, rows = letters, rows direction = top to bottom},
+				resume=tablero,
+			]
+		\end{goban} \\
+		%
 		chinese: from the upper left & numbers and letters, rows from the top
 	\end{tabular}
 \end{document}

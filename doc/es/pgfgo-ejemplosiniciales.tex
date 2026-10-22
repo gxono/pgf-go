@@ -3,8 +3,8 @@
 \subsection{La primera partida}
 \label{tut:primera}
 
-\karu\ está escribiendo un artículo para compartir con sus estudiantes. Ha notado que los \emph{softwares} para diagramar no ofrecen formatos ni resultados satisfactorios. Por ello, decide probar \pgfgoname. Lo primero que quiere mostrar es una partida corta que jugó en clase. La tiene guardada en un archivo SGF, |partida.sgf|: el formato en el que casi todos los programas y servidores de go guardan las partidas.
-
+\karu\ está escribiendo un artículo para compartir con sus estudiantes. Le preocupa el peso final de su PDF y ha notado que los \emph{softwares} para diagramar no ofrecen formatos ni resultados satisfactorios. Por ello, decide probar \pgfgoname. Lo primero que quiere mostrar es una partida corta que jugó en clase. La tiene guardada en un archivo SGF, |partida.sgf|: el formato en el que casi todos los programas y servidores de go guardan las partidas.
+  
 \begin{figure}[H]
 	\centering
 	\begin{goban}[captures, label = {at = {north, west}}]
@@ -12,32 +12,32 @@
 	\end{goban}
 \end{figure}
 
-En \pgfgoname, todos los diagramas se dibujan dentro del entorno |goban|, y dentro de él, |\sgf| dibuja la partida del archivo. Para leer archivos SGF hay que compilar con Lua\LaTeX\ (pág.~\pageref{subsec:kernel}). Como va a usar el archivo muchas veces, primero le da un nombre con |\pgfgodefinesgf| (pág.~\pageref{subsec:sgfnombres}): desde ahí lo llama |partida|, y si el archivo cambia de lugar, lo corrige en un solo sitio.
+En \pgfgoname, todos los diagramas se dibujan dentro del entorno |goban|, y dentro de él, |\sgf| dibuja la partida del archivo. Para leer archivos SGF hay que compilar con Lua\LaTeX\ (pág.~\pageref{subsec:kernel}). Como va a usar el archivo muchas veces, primero le da un nombre con |\pgfgodefinesgf| (pág.~\pageref{subsec:sgfnombres}): desde ahí lo llama |partida|, y si el archivo cambia de lugar, lo corrige en un solo sitio\footnote{Desgraciadamente lo implement\'e muy avanzada la documentaci\'on.}.
 
 \begin{codeexample}[width=4.8cm]
-	\pgfgodefinesgf{partida}{partida.sgf}
+\pgfgodefinesgf{partida}{partida.sgf}
 
-	\begin{goban}
-		\sgf{partida}
-	\end{goban}
+\begin{goban}
+	\sgf{partida}
+\end{goban}
 \end{codeexample}
 
 Las jugadas aparecen numeradas, como en los libros. Pero con la jugada 7 las negras capturaron la piedra blanca 2, que sigue en el tablero: \pgfgoname\ dibuja lo que se le pide, sin aplicar las reglas. Con la \emph{key} |captures|, el |goban| retira las piedras capturadas (pág.~\pageref{subsec:capturas}). Las opciones del tablero se escriben entre corchetes, después de |\begin{goban}|.
 
 \begin{codeexample}[width=4.8cm]
-	\begin{goban}[captures]
-		\sgf{partida}
-	\end{goban}
+\begin{goban}[captures]
+	\sgf{partida}
+\end{goban}
 \end{codeexample}
 
 Para comentar la partida en el texto, \karu\ la detiene en la jugada 7 con |to|. El archivo trae un comentario para esa jugada, y |\sgfcomment| lo escribe.
 
 \begin{codeexample}[width=4.8cm]
-	\begin{goban}[captures]
-		\sgf[to = 7]{partida}
-	\end{goban}
+\begin{goban}[captures]
+	\sgf[to = 7]{partida}
+\end{goban}
 
-	Jugada 7: \sgfcomment{partida}{7}
+Jugada 7: \sgfcomment{partida}{7}
 \end{codeexample}
 
 Esta partida es de $9\times9$, el tamaño que tiene un |goban| por defecto. Para una partida de otro tamaño, |sgf size = partida| toma el tamaño del archivo; así lo hará \karu\ con una partida de $19\times19$ en la pág.~\pageref{tut:partida}. Allí también verá cómo dibujar una partida larga en una serie de diagramas.
@@ -50,7 +50,7 @@ Para la introducción del artículo, \karu\ quiere una posición propia, que no 
 \begin{figure}[H]
 	\centering
 	\pgfgoset{profile = pgfgo}
-	\begin{goban}[use i = false, label = {at = {north, west}}]
+	\begin{goban}[label = {at = {north, west}}]
 		\stones[black]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
 		\stones[white]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
 	\end{goban}
@@ -61,63 +61,56 @@ Para la introducción del artículo, \karu\ quiere una posición propia, que no 
 \karu\ empieza por el tablero vacío. Como en el tutorial anterior, todo se dibuja dentro del entorno |goban|. Este entorno controla por defecto el tamaño y el color del tablero, la posición y el tipo de etiquetas, entre otras propiedades. También permite representar tableros parciales.
 
 \begin{codeexample}[width=4.4cm]
-	\begin{goban}
-	\end{goban}
+\begin{goban}
+\end{goban}
 \end{codeexample}
 
 \karu\ está satisfecho. El entorno proporciona por defecto un tablero de $9\times 9$, que es justo lo que necesita, pero debe añadirle etiquetas laterales. El entorno |goban| no requiere parámetros obligatorios, aunque acepta uno opcional: una lista de |keys| o |key=values| para configurarlo. \karu\ consulta la sección sobre |goban| (pág.~\pageref{sec:tablero}) y decide añadir etiquetas al entorno. Sabe que las \emph{keys} que controlan los objetos del goban se dividen en tres grupos: |grid|, para la cuadrícula central; |background|, para el borde y el relleno del tablero; y |label|, para las etiquetas de las coordenadas. Esta última es la que le interesa. A esta \emph{key}, entre otras opciones, se le puede pasar la \emph{key} |at| para definir la posición de las etiquetas con valores como |above|, |west|, |below|, |right|, |all| o |none|. También se pueden usar puntos cardinales. Como solo quiere etiquetas arriba y a la izquierda del goban, empleará las \emph{keys} |above| y |left|.
 
 \begin{codeexample}[width=4.7cm]
-	\begin{goban}[label = {at = {above, left}}]
-	\end{goban}
+\begin{goban}[label = {at = {above, left}}]
+\end{goban}
 \end{codeexample}
 
-\karu\ siente que todo va bien, pero nota que su tablero incluye una |I| en lugar de omitirla y pasar directamente a la |J|. Por defecto, en \pgfgoname\ las «I» existen y se usan tanto como coordenadas como en las etiquetas laterales, aunque es posible eliminarlas. Hay dos formas de hacerlo: establecer |goban/use i| con el valor |false| para todos los tableros (|\pgfgoset{goban = {use i = false}}|), lo que evitaría a \karu\ preocuparse por esto en el resto del artículo, o aplicarla directamente al tablero con la misma \emph{key} y valor.
-
-\begin{codeexample}[width=4.8cm]
-	\pgfgoset{goban = {use i = false}}
-	
-	\begin{goban}[label = {at = {above, left}}]
-	\end{goban}
-\end{codeexample}
+\karu\ nota que las columnas pasan de la |H| a la |J|: como es costumbre en el go, \pgfgoname\ omite la «I», tanto en las coordenadas como en las etiquetas laterales. Si alguna vez la necesita, la \emph{key} |goban/use i| (pág.~\pageref{subsec:usei}) la vuelve a poner.
 
 Ahora sí está listo para colocar las piedras. Para ello, \karu\ dispone de varias macros. Empecemos por la más básica: |\stone[options]{intersection}|. Este comando acepta dos parámetros: el primero, opcional, controla la apariencia y los elementos adicionales de las piedras (como marcas); el segundo, obligatorio, es la intersección. \karu\ no necesita convertir las intersecciones a números, ya que puede indicarlas alfanuméricamente. Por defecto, las piedras son neutrales, pero puede elegir al primer jugador pasando la \emph{key} |black| o |b|.
 
 \begin{codeexample}[width=4.8cm]
-	\begin{goban}[label = {at = {above, left}}, use i = false]
-		\stone[black] {D8}
-		\stone[black] {F8}
-		\stone[b] {E7}
-		\stone[b] {H7}
-	\end{goban}
+\begin{goban}[label = {at = {above, left}}]
+	\stone[black]{D8}
+	\stone[black]{F8}
+	\stone[b]{E7}
+	\stone[b]{H7}
+\end{goban}
 \end{codeexample}
 
 \karu\ sospecha que esta no es la mejor opción si necesita añadir 200 piedras o más. Para simplificar la sintaxis, descubre en la documentación la macro |\stones[options]{intersection, intersection, ...}|, que acepta las mismas \emph{keys} opcionales que |\stone|.\footnote{Entre \texttt{\textbackslash stone\{A1\}} y \texttt{\textbackslash stones\{A1\}}, la primera opción es mucho más rápida. Veremos más adelante que hay muchos procesos involucrados en la lectura del parámetro obligatorio de las macros plurales.}
 
 \begin{codeexample}[width=4.8cm]
-	\begin{goban}[label = {at = {north, west}}, use i = false]
-		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
-	\end{goban}
+\begin{goban}[label = {at = {north, west}}]
+	\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+\end{goban}
 \end{codeexample}
 
 Para añadir piedras blancas, \karu\ debe incluir la \emph{key} |white| en el comando |\stones|. Sabe que |white| y |black| no se refieren literalmente a los colores blanco y negro, sino al segundo y al primer jugador, respectivamente, y que al aplicar estas \emph{keys} los objetos heredan sus propiedades.
 
 \begin{codeexample}[width=4.8cm]
-	\begin{goban}[label = {at = {north, west}}, use i = false]
-		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
-		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
-	\end{goban}
+\begin{goban}[label = {at = {north, west}}]
+	\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+	\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+\end{goban}
 \end{codeexample}
 
 Por último, resta aplicar el estilo a su tablero. Para ello, revisa el catálogo (pág.~\pageref{sec:catalogo}) y encuentra un estilo que le gusta: |pgfgo|. Para aplicarlo, consulta la sección correspondiente a los perfiles (pág.~\pageref{subsec:perfiles}) y decide usar la clave |profile|: |\pgfgoset{profile = <name>}|. Así como lo pone en un |\pgfgoset| (o en las opciones de un |goban|), el perfil vale para todos los tableros que siguen.
 
 \begin{codeexample}[width=4.8cm]
-	\pgfgoset{profile = pgfgo}
-	
-	\begin{goban}[label = {at = {north, west}}, use i = false]
-		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
-		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
-	\end{goban}
+\pgfgoset{profile = pgfgo}
+
+\begin{goban}[label = {at = {north, west}}]
+	\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+	\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+\end{goban}
 \end{codeexample}
 
 Las listas de este tutorial son largas. En el último tutorial (pág.~\pageref{tut:abreviar}), \karu\ aprende a escribirlas más cortas.
@@ -128,12 +121,12 @@ Las listas de este tutorial son largas. En el último tutorial (pág.~\pageref{t
 Cuando se desea cargar las piedras en orden o siguiendo la secuencia «negro, blanco, negro, blanco», puede resultar tedioso e innecesario especificar la \emph{key} correspondiente a cada jugador.
 
 \begin{codeexample}[code only]
-	\begin{goban}
-		\stone[b]	{F7}
-		\stone[w] {E6}
-		\stone[b]	{G3}
-		\stone[w]	{D6}
-	\end{goban}
+\begin{goban}
+	\stone[b]{F7}
+	\stone[w]{E6}
+	\stone[b]{G3}
+	\stone[w]{D6}
+\end{goban}
 \end{codeexample}
 
 Por eso, \pgfgoname\ incluye macros que facilitan este proceso. Empecemos con la singular:
@@ -142,12 +135,12 @@ Por eso, \pgfgoname\ incluye macros que facilitan este proceso. Empecemos con la
 Este comando funciona como |\stone|, pero alterna automáticamente los colores.
 
 \begin{codeexample}[width=5cm]
-	\begin{goban}[label = {at = all}]
-		\move	{F7}
-		\move	{E6}
-		\move	{G3}
-		\move	{D6}
-	\end{goban}
+\begin{goban}[label = {at = all}]
+	\move{F7}
+	\move{E6}
+	\move{G3}
+	\move{D6}
+\end{goban}
 \end{codeexample}
 
 La macro |\move|, al igual que |\stone|, tiene una versión plural:
@@ -156,25 +149,25 @@ La macro |\move|, al igual que |\stone|, tiene una versión plural:
 En este caso, especificar la \emph{key} |black| o |white| solo determina quién es el primer jugador de la secuencia.
 
 \begin{codeexample}[width=5cm]
-	\begin{goban}[label = {at = all}]
-		\stone[b] {F7}
-		\moves[white] {	E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
-			G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
-			I3,I2,I5,H3}
-	\end{goban}
+\begin{goban}[label = {at = all}]
+	\stone[b] {F7}
+	\moves[white]{E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
+		G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
+		I3,I2,I5,H3}
+\end{goban}
 \end{codeexample}
 
 Las macros |\move| y |\moves| también cuentan con versiones «estrelladas» (|\move*| y |\moves*|), que permiten etiquetar las jugadas. Es posible controlar desde dónde comenzará el etiquetado con la \emph{key} |from|.
 
 \begin{codeexample}[width=5cm]
-	\begin{goban}[label = {at = all}]
-		\moves[white] {	E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
-			G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
-			I3,I2,I5,H3}
-		
-		\moves*[from = 26]{F6,E5,I4,G6}
-		\move* {H2} % Es negra y etiquetada con 30, sin necesidad de expresarlo.
-	\end{goban}
+\begin{goban}[label = {at = all}]
+	\moves[white] {E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
+		G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
+		I3,I2,I5,H3}
+	
+	\moves*[from = 26]{F6,E5,I4,G6}
+	\move* {H2} % Es negra y etiquetada con 30, sin necesidad de expresarlo.
+\end{goban}
 \end{codeexample}
 
 En este último ejemplo, se observa que |H2| se colocó con |\move*| y, aunque está separado de |\moves*|, es negra y está etiquetada con 30, ya que la última piedra colocada (|G6|) era negra y estaba etiquetada con 29.
@@ -198,8 +191,8 @@ Para representar este tablero, comenzamos cargando las piedras.
 
 \begin{codeexample}[width=5cm]
 	\begin{goban}
-		\stones[b] {C2,B3,C4}
-		\stones[w] {D4,E3,D2,C3}
+		\stones[b]{C2,B3,C4}
+		\stones[w]{D4,E3,D2,C3}
 	\end{goban}
 \end{codeexample}
 
@@ -207,8 +200,8 @@ Con la \emph{key} |partial|, se indica qué parte del tablero mostrar: dos esqui
 
 \begin{codeexample}[]
 	\begin{goban}[partial = B2:E4]
-		\stones[b] {C2,B3,C4}
-		\stones[w] {D4,E3,D2,C3}
+		\stones[b]{C2,B3,C4}
+		\stones[w]{D4,E3,D2,C3}
 	\end{goban}
 \end{codeexample}
 
@@ -216,8 +209,8 @@ Para eliminar la línea del tablero, recurrimos a la \emph{key} |line| del |back
 
 \begin{codeexample}[]
 	\begin{goban}[partial = B2:E4, background = {line = false}]
-		\stones[b] {C2,B3,C4}
-		\stones[w] {D4,E3,D2,C3}
+		\stones[b]{C2,B3,C4}
+		\stones[w]{D4,E3,D2,C3}
 	\end{goban}
 \end{codeexample}
 
@@ -687,7 +680,7 @@ Para la portada del cuaderno, \karu\ quiere un tablero que se parezca a uno de v
 		white = {stone = {image = {file = {
 			pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
 			pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}
-	\begin{goban}[profile = madera, use i = false, label = {at = {north, west}}]
+	\begin{goban}[profile = madera, label = {at = {north, west}}]
 		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
 		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
 	\end{goban}
@@ -698,7 +691,7 @@ Parte del primer tablero del artículo. La madera va en el fondo del tablero, co
 \begin{codeexample}[width=4.8cm]
 	\pgfgoset{goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}}}
 
-	\begin{goban}[use i = false, label = {at = {north, west}}]
+	\begin{goban}[label = {at = {north, west}}]
 		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
 		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
 	\end{goban}
@@ -713,7 +706,7 @@ Las piedras de un jugador se dibujan con una imagen mediante |stone/image| (pág
 			black = {stone = {image = {file = pgfgo-shell-black.png}}},
 			white = {stone = {image = {file = pgfgo-shell-white-1.png}}}}}
 
-	\begin{goban}[use i = false, label = {at = {north, west}}]
+	\begin{goban}[label = {at = {north, west}}]
 		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
 		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
 	\end{goban}
@@ -730,7 +723,7 @@ Las negras se ven bien, pero las blancas son todas iguales, y en un tablero de v
 				pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
 				pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}}
 
-	\begin{goban}[use i = false, label = {at = {north, west}}]
+	\begin{goban}[label = {at = {north, west}}]
 		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
 		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
 	\end{goban}
@@ -748,7 +741,7 @@ Para que las piedras parezcan apoyadas sobre la madera, falta una sombra. |shado
 				pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
 				pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}}
 
-	\begin{goban}[use i = false, label = {at = {north, west}}]
+	\begin{goban}[label = {at = {north, west}}]
 		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
 		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
 	\end{goban}
@@ -767,7 +760,7 @@ Con cinco imágenes, todavía puede verse alguna repetida. |rotate| gira cada pi
 				pgfgo-shell-white-4.png, pgfgo-shell-white-5.png},
 				rotate = -15:15}}}}}
 
-	\begin{goban}[use i = false, label = {at = {north, west}}]
+	\begin{goban}[label = {at = {north, west}}]
 		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
 		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
 	\end{goban}
@@ -894,7 +887,7 @@ En todos los tutoriales, \karu\ escribió las piedras una por una. Cuando son mu
 \begin{codeexample}[width=4.8cm]
 	\pgfgoset{profile = pgfgo}
 
-	\begin{goban}[label = {at = {north, west}}, use i = false]
+	\begin{goban}[label = {at = {north, west}}]
 		\stones[b]{B2, E2, J2, C3, D3, G3, H3, C:G5, E6, G6}
 		\stones[w]{D8, F8, E7, H7, C6, D6, F6, H6, B5, B4, E4, H2, J3:5}
 	\end{goban}

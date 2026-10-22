@@ -526,4 +526,10 @@
 		{\__pgfgo_kernel_remember_seq:n {#1}} {\__pgfgo_kernel_remember_seq:n {#2}}
 }
 
+\cs_new_protected:Npn \pgfgo_kernel_remember_get:nN #1#2 {
+	\seq_if_exist:cTF {\__pgfgo_kernel_remember_seq:n {#1}}
+		{\tl_set:Ne #2 {\seq_use:cn {\__pgfgo_kernel_remember_seq:n {#1}} {}}}
+		{\tl_clear:N #2}
+}
+
 \ExplSyntaxOff

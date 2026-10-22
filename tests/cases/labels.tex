@@ -17,7 +17,7 @@
 \end{goban}
 
 \case{columns = numbers, rows = letters (use i) / columns direction = right to left, rows direction = top to bottom / western}
-\begin{goban}[9x9, scale = 0.6, label = {at = all, columns = numbers, rows = letters}]
+\begin{goban}[9x9, scale = 0.6, use i, label = {at = all, columns = numbers, rows = letters}]
 	\stones[black]{C3}
 \end{goban}
 \begin{goban}[9x9, scale = 0.6, label = {at = all, columns direction = right to left, rows direction = top to bottom}]
@@ -32,6 +32,17 @@
 \end{goban}
 \begin{goban}[19x19, scale = 0.6, partial = N13:T19, label = {at = all, style = japanese, font = \kanjifont}]
 	\stones[white]{Q16}
+\end{goban}
+
+\case{format = kanji: marks from 9 (one, two and three kanji, 100 and 0) and move numbers from 19}
+\begin{goban}[5, label = {at = {south, west}}]
+	\marks[sequence = {format = kanji, from = 9}, label = {font = \kanjifont}]{A1, B1, C1, D1}
+	\marks[sequence = {format = kanji, from = 99}, label = {font = \kanjifont}]{A3, B3, C3}
+	\marks[sequence = {format = kanji, from = 0}, label = {font = \kanjifont}]{E5}
+\end{goban}
+\begin{goban}[5, players = {all = {move = {label = {format = kanji, font = \kanjifont}}}}]
+	\moves*{A1, B2, C3}
+	\moves*[from = 19]{A5, B5, C5}
 \end{goban}
 
 \end{document}

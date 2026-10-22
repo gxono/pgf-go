@@ -304,4 +304,9 @@
 	\lua_now:e {pgfgo.remember_append("\lua_escape:e {#1}", "\lua_escape:e {#2}")}
 }
 
+%Lua DEJA A CONTINUACION \tl_set:Nn #2 {<CODIGO>}.
+\cs_new_protected:Npn \pgfgo_kernel_remember_get:nN #1#2 {
+	\lua_now:e {pgfgo.remember_get("\lua_escape:e {#1}", "\lua_escape:e {\cs_to_str:N #2}")}
+}
+
 \ExplSyntaxOff

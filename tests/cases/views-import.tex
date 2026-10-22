@@ -1,0 +1,20 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+% views-export.pgfgo: the file that views-forward.tex exports (in its output directory)
+\pgfgoimport{views-export}
+\pgfgoimport[name = other]{views-export.pgfgo}
+\begin{document}
+
+\case{Views of an imported goban, with its own style (roman numbers, triangle): K, "a b" and $x_1$, i and ii}
+\pgfgoview{fwd}{A10} \pgfgoview{fwd}{F2:G4} \pgfgoview{other}{E5:H7}
+
+\case{resume of an imported goban, with another name (the style of this document: arabic numbers, cross)}
+\begin{goban}[13, resume = {other, marks, numbers}, scale = 0.5]\moves*{J7}\end{goban}
+
+\end{document}

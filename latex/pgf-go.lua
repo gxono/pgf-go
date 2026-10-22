@@ -1740,4 +1740,14 @@ function pgfgo.remember_append(name, other)
 	for _, toks in ipairs(memory(other)) do insert(list, toks) end
 end
 
+-- DEJA \tl_set:Nn \<cs> {<TODO EL CODIGO DE LA MEMORIA>} PARA QUE TeX LO EJECUTE.
+function pgfgo.remember_get(name, cs)
+	local all = {token.create("tl_set:Nn"), token.create(cs), token.create(123, 1)}
+	for _, toks in ipairs(memory(name)) do
+		for _, t in ipairs(toks) do insert(all, t) end
+	end
+	insert(all, token.create(125, 2))
+	token.put_next(all)
+end
+
 return pgfgo

@@ -70,6 +70,8 @@
 %	\pgfgo_kernel_remember_replay:n {<nombre>}				EJECUTA EL CODIGO GUARDADO, EN ORDEN.
 %	\pgfgo_kernel_remember_append:nn {<nombre>} {<otro>}
 %		AGREGA A LA MEMORIA <nombre> UNA COPIA DE LO QUE TIENE LA MEMORIA <otro>.
+%	\pgfgo_kernel_remember_get:nN {<nombre>} <tl>
+%		DEJA EN <tl> (LOCAL) TODO EL CODIGO DE ESA MEMORIA, EN ORDEN (VACIO SI NO EXISTE).
 %
 %CAPACIDADES
 %	EL KERNEL GUARDA EN \g_pgfgo_kernel_features_clist LO QUE SABE HACER ADEMAS DE LO ANTERIOR
@@ -203,7 +205,8 @@
 	pgfgo_kernel_remember_push:nn,
 	pgfgo_kernel_remember_clear:n,
 	pgfgo_kernel_remember_replay:n,
-	pgfgo_kernel_remember_append:nn
+	pgfgo_kernel_remember_append:nn,
+	pgfgo_kernel_remember_get:nN
 }
 
 %FUNCIONES DE CADA CAPACIDAD.
@@ -245,7 +248,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \bool_new:N \l_pgfgo_use_i_bool
-\bool_set_true:N \l_pgfgo_use_i_bool
 \bool_new:N \l_pgfgo_goban_partial_bool
 
 

@@ -494,3 +494,53 @@ Como |shell|, pero con piedras mates, sin vetas, como las \emph{yunzi} chinas: d
 		}
 	}
 \end{codeexample}
+
+\subsection{baduktv}
+
+Un tablero claro, de madera lisa, con piedras lisas, una imagen para cada color, sin giro; la sombra difusa es la de |shell|. Como |shell|, necesita pdf\LaTeX\ o Lua\LaTeX\ con salida PDF para la sombra.
+
+\begin{codeexample}[width=4cm]
+	\pgfgoset{profile = baduktv}
+
+	\begin{goban}[partial = A1:G3]
+		\moves*[from = 1]{A:F 3}
+		\stones[w]{A1:2}
+		\stones[b]{B1:2}
+		\stones[n]{C1:2}
+		\stone[w, mark = circle]{D1}
+		\mark[w, circle]{D2}
+		\stone[b, mark = circle]{E1}
+		\mark[b, circle]{E2}
+		\stone[n, mark = circle]{F1}
+		\mark[n, circle]{F2}
+		\mark[w, t-square]{F1}
+		\mark[b, t-circle]{F1}
+		\mark[n, t-square]{F1}
+	\end{goban}
+\end{codeexample}
+
+\subsubsection*{Definición}
+\begin{codeexample}[code only]
+	\pgfgodefineprofile[from = default]{baduktv}{
+		goban = {
+			background = {
+				line = false,
+				fill = {image = {file = baduktv-goban}}
+			}
+		},
+		all = {
+			stone = {
+				shadow = {
+					true,
+					angle = -45,
+					offset = 0.75pt,
+					scale = 1.2,
+					opacity = 0.6,
+					image = {file = pgfgo-shadow.png}
+				}
+			}
+		},
+		black = {stone = {image = {file = baduktv-black.png}}},
+		white = {stone = {image = {file = baduktv-white.png}}}
+	}
+\end{codeexample}

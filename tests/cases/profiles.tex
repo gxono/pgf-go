@@ -48,4 +48,10 @@
 \case{profile keeps size, partial, coordinates and scale (7x7, A1:D4, labels, 0.8) but not the red stones}
 \begin{goban}[7, partial = A1:D4, label, scale = 0.8, stone = {fill = {color = red}}, profile = wain]\moves*{B2,C3}\end{goban}
 
+\case{Image profiles found in img without \textbackslash graphicspath: shell, yunzi, baduktv; a file name without extension}
+{\pgfgoset{profile = shell}\sample}
+{\pgfgoset{profile = yunzi}\sample}
+{\pgfgoset{profile = baduktv}\sample}
+\begin{goban}[5, label = {at = {south, west}}]\stones[b, image = {file = pgfgo-yunzi-black}]{C3}\end{goban}
+
 \end{document}

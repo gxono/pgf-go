@@ -21,6 +21,13 @@
 	\cs_set_eq:NN \pgfgo_mark_current: #1
 }
 
+%LA FUNCION #1 ES UNA FORMA: UN NOMBRE POSIBLE DE \pgfgo_mark_current: (VER \pgfgo_style_save:N).
+\cs_new_protected:Npn \__pgfgo_mark_shape_function:n #1 {
+	\seq_if_in:NnF \g_pgfgo_style_functions_seq {#1} {\seq_gput_right:Nn \g_pgfgo_style_functions_seq {#1}}
+}
+\cs_generate_variant:Nn \__pgfgo_mark_shape_function:n {e}
+\clist_map_inline:nn {pgfgo_mark_hatched_lines:, pgfgo_mark_custom:} {\__pgfgo_mark_shape_function:n {#1}}
+
 %LA CLAVE DE FORMA #1 DE pgfgo/mark, QUE EJECUTA #2 (TAMBIEN LAS DE \pgfgodefinemark).
 \cs_new_protected:Npn \__pgfgo_mark_shape_key:nn #1#2 {
 	\keys_define:nn {pgfgo / mark} {
@@ -29,9 +36,11 @@
 	}
 }
 \cs_new_protected:Npn \__pgfgo_mark_simple_shape:nN #1#2 {
+	\__pgfgo_mark_shape_function:e {\cs_to_str:N #2}
 	\__pgfgo_mark_shape_key:nn {#1} {\cs_set_eq:NN \pgfgo_mark_current: #2}
 }
 \cs_new_protected:Npn \__pgfgo_mark_t_shape:nN #1#2 {
+	\__pgfgo_mark_shape_function:e {\cs_to_str:N #2}
 	\__pgfgo_mark_shape_key:nn {#1} {\__pgfgo_mark_t_shape:N #2}
 }
 
@@ -217,7 +226,6 @@
 \tl_new:N \l__pgfgo_mark_text_size_tl
 \int_new:N \l__pgfgo_mark_text_length_int
 \regex_const:Nn \c__pgfgo_mark_any_regex {.}
-\regex_const:Nn \c__pgfgo_mark_alphanumeric_regex {[a-zA-Z\d]}
 \cs_generate_variant:Nn \regex_count:NnN {NV}
 
 \cs_new_protected:Npn \__pgfgo_mark_text:nnn #1#2#3 {
@@ -250,7 +258,8 @@
 
 \cs_new_protected:Nn\pgfgo_mark_sequence: {
 	\tl_set:Ne \l__pgfgo_mark_text_tl {\pgfgo_players_mark_sequence_format:n{\pgfgo_kernel_sequence_number:}}
-	\regex_count:NVN \c__pgfgo_mark_alphanumeric_regex \l__pgfgo_mark_text_tl \l__pgfgo_mark_text_length_int
+	\pgfgo_players_label_length:NnVN \pgfgo_players_mark_sequence_format:n {\pgfgo_kernel_sequence_number:}
+		\l__pgfgo_mark_text_tl \l__pgfgo_mark_text_length_int
 	\pgfsetcolor{\l_pgfgo_players_mark_label_color_tl}
 	\__pgfgo_mark_text:nnn {\l__pgfgo_mark_text_length_int} {0.7em} {\l__pgfgo_mark_text_tl}
 	\pgfgo_kernel_sequence_step:
@@ -263,13 +272,14 @@
 
 %SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO. CON goban/captured marks = remove, UNA MARCA
 %SOBRE UNA PIEDRA SE GUARDA CON LA PIEDRA (VER pgf-go-stones.sty), PARA QUE DESAPAREZCA SI LA CAPTURAN.
-%#4: EL CODIGO QUE LA DIBUJA AHORA.
+%#4: EL CODIGO QUE LA DIBUJA AHORA. UNA MARCA QUE NO SE VE AVANZA IGUAL LA SECUENCIA (EN UN partial O
+%EN UNA VISTA, LAS LETRAS SON LAS DEL TABLERO ENTERO).
 \cs_new_protected:Npn\__pgfgo_mark_at:nnnn #1#2#3#4 {
-	\pgfgo_kernel_if_visible:nnT {#2} {#3} {
+	\pgfgo_kernel_if_visible:nnTF {#2} {#3} {
 		\bool_lazy_and:nnTF {\l_pgfgo_goban_captures_bool} {\l_pgfgo_goban_captured_marks_bool}
 			{\pgfgo_kernel_board_if_occupied:nnTF {#2} {#3} {\pgfgo_captures_mark:nnn {#1} {#2} {#3}} {#4}}
 			{#4}
-	}
+	} {\pgfgo_mark_step:n {#1}}
 }
 \cs_new_protected:Npn\pgfgo_mark:nnn #1#2#3 {
 	\__pgfgo_mark_at:nnnn {#1} {#2} {#3} {\__pgfgo_mark_draw:nnn {#1} {#2} {#3}}
@@ -421,7 +431,7 @@
 %-----------------------------------MARCAS PROPIAS----------------------------------------------%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\pgfgodefinemark{<nombre>}{<codigo pgf>} O \pgfgodefinemark[image = {file = <archivo>, width = <dim>}]{<nombre>}
+%\pgfgodefinemark{<nombre>}{<codigo pgf>} O \pgfgodefinemark[image = {file = <archivos>, width = <dim>}]{<nombre>}
 %DEFINE UNA MARCA QUE SE USA COMO LAS DEMAS (\marks[<nombre>], players/<jugador>/mark, territory/mark).
 %EL CODIGO SE DIBUJA CENTRADO EN EL PUNTO, CON EL RADIO DE LA PIEDRA COMO UNIDAD DE LAS COORDENADAS SIN
 %UNIDAD, Y CON LOS COLORES pgfgomarkline Y pgfgomarkfill (mark/line Y mark/fill DEL JUGADOR).
@@ -443,9 +453,11 @@
 		\tl_if_empty:NTF \l__pgfgo_mark_define_image_tl
 			{\group_end: \__pgfgo_mark_define_code:nn {#2}}
 			{
+				%EL ANCHO SE MIDE AHORA, CON LA FUENTE DEL TEXTO: EN LA FIGURA LA FUENTE ES \nullfont Y em VALE 0.
 				\cs_gset:cpe {__pgfgo_mark_user_ #2 :} {
 					\exp_not:N \__pgfgo_mark_image:nn
-						{\exp_not:V \l__pgfgo_mark_define_image_tl} {\exp_not:V \l__pgfgo_mark_define_width_tl}
+						{\exp_not:V \l__pgfgo_mark_define_image_tl}
+						{\tl_if_blank:VF \l__pgfgo_mark_define_width_tl {\dim_eval:n {\l__pgfgo_mark_define_width_tl}}}
 				}
 				\group_end:
 				\__pgfgo_mark_define_key:n {#2}
@@ -458,6 +470,7 @@
 }
 
 \cs_new_protected:Npn \__pgfgo_mark_define_key:n #1 {
+	\__pgfgo_mark_shape_function:n {__pgfgo_mark_user_ #1 :}
 	\__pgfgo_mark_shape_key:nn {#1} {\cs_set_eq:Nc \pgfgo_mark_current: {__pgfgo_mark_user_ #1 :}}
 }
 
@@ -476,9 +489,15 @@
 	\endpgfscope
 }
 
-%SIN width, 1.2 VECES EL RADIO DE LA PIEDRA (COMO EL CIRCULO). CON width, POR mark/scale.
+%SIN width, 1.2 VECES EL RADIO DE LA PIEDRA (COMO EL CIRCULO). CON width, POR mark/scale. CON VARIOS
+%ARCHIVOS (#1 ES UNA LISTA), CADA PUNTO ELIGE UNO COMO LAS PIEDRAS: SIEMPRE EL MISMO EN EL MISMO PUNTO.
+\tl_new:N \l__pgfgo_mark_image_file_tl
 \cs_new_protected:Npn \__pgfgo_mark_image:nn #1#2 {
-	\pgfgo_image_load:ne {#1} {
+	\tl_set:Ne \l__pgfgo_mark_image_file_tl {
+		\clist_item:nn {#1}
+			{\pgfgo_image_pick:nnn {\l__pgfgo_mark_x_tl} {\l__pgfgo_mark_y_tl} {\clist_count:n {#1}}}
+	}
+	\pgfgo_image_load:Ve \l__pgfgo_mark_image_file_tl {
 		width = \tl_if_blank:nTF {#2}
 			{\dim_eval:n {1.2 \l_pgfgo_players_stone_radius_dim}}
 			{

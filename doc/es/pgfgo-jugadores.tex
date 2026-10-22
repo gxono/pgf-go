@@ -650,7 +650,7 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/format = \meta{format}}
-	Formato de los números: |arabic|, |alph|, |Alph|, |roman| o |Roman|.
+	Formato de los números: |arabic|, |alph|, |Alph|, |roman|, |Roman| o |kanji|.
 
 	\begin{codeexample}[width=4cm]
 		\pgfgoset{players = {
@@ -681,6 +681,10 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/move/label/format/Roman}
 	Números romanos en mayúscula (I, II, III).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move/label/format/kanji}
+	Números en kanji ({\pgfgokanji 一, 二, …, 十, 十一, …, 百}), como los de |goban/label/columns = kanji|. Necesitan una fuente que los tenga (ver |move/label/format|).
 \end{key}
 
 \begin{key}{/pgfgo/players/white/move/label/forget}
@@ -819,7 +823,20 @@ Para no escribir la ruta completa, hay cuatro comandos:
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/label/format = \meta{format}}
-	Formato de los números de |sequence|: |arabic|, |alph|, |Alph|, |roman| o |Roman|.
+	Formato de los números de |sequence|: |arabic|, |alph|, |Alph|, |roman|, |Roman| o |kanji|.
+
+	Los kanji necesitan una fuente que los tenga, elegida con |label/font| (de las marcas o de las jugadas). Tiene que ser una familia de \LaTeX: con |fontspec|, |\newfontfamily\kanji{ipaexm.ttf}| y |font = \kanji|; sin |fontspec|, con Lua\LaTeX, se puede declarar como en este ejemplo (en el preámbulo). Un |\font| de \TeX{} no sirve, porque no cambia de tamaño.
+
+	\begin{codeexample}[width=4cm]
+		% En el preámbulo:
+		% \DeclareFontFamily{TU}{ipaex}{}
+		% \DeclareFontShape{TU}{ipaex}{m}{n}{<->file:ipaexm.ttf}{}
+		% \DeclareFontShape{TU}{ipaex}{bx}{n}{<->ssub*ipaex/m/n}{}
+		\begin{goban}[3, scale = 1.6]
+			\marks[sequence = {format = kanji, from = 9},
+				label = {font = \fontfamily{ipaex}\selectfont}]{A1, B2, C3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/label/format/arabic}
@@ -840,6 +857,10 @@ Para no escribir la ruta completa, hay cuatro comandos:
 
 \begin{key}{/pgfgo/players/white/mark/label/format/Roman}
 	Números romanos en mayúscula (I, II, III).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark/label/format/kanji}
+	Números en kanji ({\pgfgokanji 一, 二, …, 十, 十一, …, 百}), como los de |goban/label/columns = kanji|. Necesitan una fuente que los tenga (ver |mark/label/format|).
 \end{key}
 
 \begin{key}{/pgfgo/players/white/mark/sequence = \meta{mark sequence options} (default from = 1)}

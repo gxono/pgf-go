@@ -94,7 +94,8 @@
 
 \clist_map_inline:nn {
 	pgf-go-kernel, pgf-go-lang, pgf-go-remember, pgf-go-images, pgf-go-profiles, pgf-go-players, pgf-go-stones,
-	pgf-go-goban, pgf-go-marks, pgf-go-lines, pgf-go-territory, pgf-go-layout, pgf-go-sgf
+	pgf-go-goban, pgf-go-marks, pgf-go-lines, pgf-go-territory, pgf-go-layout, pgf-go-sgf,
+	pgf-go-store
 } {
 	\clist_if_in:NnTF \c__pgfgo_style_modules_clist {#1}
 		{\bool_gset_true:N \g__pgfgo_style_register_bool}
@@ -118,5 +119,6 @@
 \pgfgo_set:e {goban = {size = 9}}
 \pgfgo_profile_use_profile:n {default}
 \pgfgo_profile_save_reset:
+\pgfgo_style_save_initial:
 
 \ExplSyntaxOff

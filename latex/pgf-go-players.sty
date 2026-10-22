@@ -7,6 +7,47 @@
 
 \keys_define:nn {pgfgo} {players .code:n = {\keys_set:nn {pgfgo/players} {#1}}}
 
+%NUMEROS EN KANJI (format = kanji Y LAS COORDENADAS DEL BORDE): 1 A 9, 十 (10), 十一 (11), 二十 (20), ...,
+%百 (100), 二百三 (203); 0 ES 〇. NECESITAN UNA FUENTE QUE LOS TENGA.
+\tl_const:Nn \c__pgfgo_kanji_tl {{一}{二}{三}{四}{五}{六}{七}{八}{九}}
+\cs_new:Npn \pgfgo_int_to_kanji:n #1 {
+	\int_compare:nNnTF {#1} = {0} {〇} {
+		\__pgfgo_kanji_place:nn {\int_div_truncate:nn {#1} {100}} {百}
+		\__pgfgo_kanji_place:nn {\int_mod:nn {\int_div_truncate:nn {#1} {10}} {10}} {十}
+		\int_compare:nNnT {\int_mod:nn {#1} {10}} > {0}
+			{\tl_item:Nn \c__pgfgo_kanji_tl {\int_mod:nn {#1} {10}}}
+	}
+}
+%LA CIFRA #1 DE UN LUGAR #2 (百, 十): NADA SI ES 0, SOLO #2 SI ES 1.
+\cs_new:Npn \__pgfgo_kanji_place:nn #1#2 {
+	\int_compare:nNnT {#1} > {1} {\tl_item:Nn \c__pgfgo_kanji_tl {#1}}
+	\int_compare:nNnT {#1} > {0} {#2}
+}
+%CUANTOS KANJI TIENE #1 ESCRITO ASI.
+\cs_new:Npn \pgfgo_kanji_length:n #1 {
+	\int_eval:n {
+		\int_compare:nNnTF {#1} = {0} {1} {
+			\__pgfgo_kanji_place_length:n {\int_div_truncate:nn {#1} {100}}
+			+ \__pgfgo_kanji_place_length:n {\int_mod:nn {\int_div_truncate:nn {#1} {10}} {10}}
+			+ \int_compare:nNnTF {\int_mod:nn {#1} {10}} > {0} {1} {0}
+		}
+	}
+}
+\cs_new:Npn \__pgfgo_kanji_place_length:n #1 {\int_compare:nNnTF {#1} > {1} {2} {\int_compare:nNnTF {#1} > {0} {1} {0}}}
+
+%LA FUNCION DE UN FORMATO DE NUMEROS (arabic, alph, Alph, roman, Roman, kanji).
+\cs_new:Npn \__pgfgo_players_format_cs:n #1 {\str_if_eq:nnTF {#1} {kanji} {pgfgo_int_to_kanji:n} {int_to_ #1 :n}}
+\cs_generate_variant:Nn \__pgfgo_players_format_cs:n {V}
+%EL LARGO DE UN NUMERO #2 CON EL FORMATO #1 PARA ELEGIR EL TAMANO: LOS CARACTERES ALFANUMERICOS DEL TEXTO
+%#3, O CON kanji, DOS POR KANJI (UN KANJI ES TAN ANCHO COMO DOS CIFRAS).
+\regex_const:Nn \c__pgfgo_players_char_regex {[a-zA-Z\d]}
+\cs_new_protected:Npn \pgfgo_players_label_length:NnnN #1#2#3#4 {
+	\cs_if_eq:NNTF #1 \pgfgo_int_to_kanji:n
+		{\int_set:Nn #4 {2 * \pgfgo_kanji_length:n {#2}}}
+		{\regex_count:NnN \c__pgfgo_players_char_regex {#3} #4}
+}
+\cs_generate_variant:Nn \pgfgo_players_label_length:NnnN {NnVN, NVVN}
+
 \def\pgfgosetplayer#1#2{\pgfgoset{players = {#1 = {#2}}}}
 
 
@@ -448,8 +489,8 @@
 		opacity							.code:n 		= {\tl_set:cn{l_pgfgo_players_ #1 _move_label_opacity_tl}{##1}},
 		opacity							.initial:n	= {1},
 		forget							.code:n			= {\bool_set_false:N \l_pgfgo_goban_remember_move_label_bool},
-		format							.choices:nn	= {arabic, alph, Alph, roman, Roman}
-			{\cs_set_eq:cc {pgfgo_players_ #1 _move_label_format:n} {int_to_ \l_keys_choice_tl :n}},
+		format							.choices:nn	= {arabic, alph, Alph, roman, Roman, kanji}
+			{\cs_set_eq:cc {pgfgo_players_ #1 _move_label_format:n} {\__pgfgo_players_format_cs:V \l_keys_choice_tl}},
 		format							.initial:n	= {arabic},
 	}
 
@@ -519,8 +560,8 @@
 		font			.code:n		 = {\tl_set:cn{l_pgfgo_players_ #1 _mark_label_font_tl}{##1}},
 		%VACIO: EL TAMANO SE AJUSTA SOLO SEGUN LA CANTIDAD DE CARACTERES.
 		font~size	.code:n		 = {\tl_set:cn{l_pgfgo_players_ #1 _mark_label_font_size_tl}{##1}},
-		format		.choices:nn	= {arabic, alph, Alph, roman, Roman}
-			{\cs_set_eq:cc {pgfgo_players_ #1 _mark_sequence_format:n} {int_to_ \l_keys_choice_tl :n}},
+		format		.choices:nn	= {arabic, alph, Alph, roman, Roman, kanji}
+			{\cs_set_eq:cc {pgfgo_players_ #1 _mark_sequence_format:n} {\__pgfgo_players_format_cs:V \l_keys_choice_tl}},
 		format		.initial:n	= {arabic},
 	}
 

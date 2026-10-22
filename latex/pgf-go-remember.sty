@@ -58,6 +58,12 @@
 \seq_new:N \l__pgfgo_remember_hide_seq
 \tl_new:N \l__pgfgo_remember_hide_tl
 \cs_new_protected:Npn \pgfgo_remember_resume:NNNn #1#2#3#4 {
+	\__pgfgo_remember_resume:NNNn #1 #2 #3 {\pgfgo_kernel_remember_replay:n {#4}}
+}
+%LO MISMO CON EL CODIGO #4 DE LA MEMORIA EN LUGAR DE SU NOMBRE: ASI QUEDA UN goban CON resume EN EL .aux
+%O EN UN ARCHIVO DE export (VER pgf-go-store.sty).
+\cs_new_protected:Npn \pgfgo_remember_resume_code:NNNn #1#2#3#4 {\__pgfgo_remember_resume:NNNn #1 #2 #3 {#4}}
+\cs_new_protected:Npn \__pgfgo_remember_resume:NNNn #1#2#3#4 {
 	\seq_push:Ne \l__pgfgo_remember_hide_seq {
 		\__pgfgo_remember_hide_restore:N \l_pgfgo_remember_hide_mark_bool
 		\__pgfgo_remember_hide_restore:N \l_pgfgo_remember_hide_territory_bool
@@ -68,7 +74,7 @@
 	\bool_if:NF #2 {\bool_set_true:N \l_pgfgo_remember_hide_territory_bool}
 	\bool_if:NF #3 {\bool_set_true:N \l_pgfgo_remember_hide_numbers_bool}
 	\bool_set_true:N \l_pgfgo_remember_hide_forgotten_bool
-	\pgfgo_kernel_remember_replay:n {#4}
+	#4
 	\seq_pop:NN \l__pgfgo_remember_hide_seq \l__pgfgo_remember_hide_tl
 	\tl_use:N \l__pgfgo_remember_hide_tl
 }

@@ -114,7 +114,7 @@
 		scale							.tl_set:N		= \l_pgfgo_goban_scale_tl,
 		scale							.initial:n	= {1},
 
-		size							.code:n			= {\pgfgo_kernel_board_size:n{#1}},
+		size							.code:n			= {\pgfgo_kernel_board_size:n{#1} \bool_set_true:N \l__pgfgo_goban_size_bool},
 
 		%EL TAMANO DE LA PARTIDA DE UN ARCHIVO SGF (SZ). SOLO CON kernel = lua.
 		sgf~size					.code:n			= {
@@ -122,6 +122,7 @@
 																				\pgfgo_sgf_with_name:nn {#1} {\pgfgo_kernel_sgf_read:n {#1}}
 																				\int_set_eq:NN \l_pgfgo_goban_size_x_int \l_pgfgo_kernel_sgf_size_x_int
 																				\int_set_eq:NN \l_pgfgo_goban_size_y_int \l_pgfgo_kernel_sgf_size_y_int
+																				\bool_set_true:N \l__pgfgo_goban_size_bool
 																			}{
 																				\pgfgo_kernel_require:n {sgf}
 																			}
@@ -142,7 +143,7 @@
 		use~i					.bool_set:N = \l_pgfgo_use_i_bool,
 
 		use~i					.default:n	= {true},
-		use~i					.initial:n	= {true},
+		use~i					.initial:n	= {false},
 
 
 		%UNA CLAVE DE /pgfgo (stone, players, mark, notes, ...) VALE SOLO PARA ESTE goban; SI NO, ES EL TAMANO.
@@ -154,12 +155,13 @@
 																							{\l_keys_key_str \tl_if_empty:nF {#1} {= {\exp_not:n {#1}}}}
 																					}
 																				}
-																				{\pgfgo_kernel_board_size:V\l_keys_key_str}
+																				{\pgfgo_kernel_board_size:V\l_keys_key_str \bool_set_true:N \l__pgfgo_goban_size_bool}
 																		},
 		}
 	\prg_generate_conditional_variant:Nnn \keys_if_exist:nn {nV} {TF}
 
-	\cs_generate_variant:Nn \pgfgo_kernel_board_size:n {V}
+	\cs_generate_variant:Nn \pgfgo_kernel_board_size:n {V, e}
+	\cs_generate_variant:Nn \prop_item:Nn {NV}
 
 	\keys_define:nn {pgfgo / goban / grid}{
 		false							.code:n			= {\bool_set_false:N \l_pgfgo_goban_grid_bool},
@@ -408,22 +410,11 @@
 		\str_case:nn {#1} {
 			{letters}	{\pgfgo_kernel_column_name:n {#2}}
 			{numbers}	{\int_eval:n {#2}}
-			{kanji}		{\__pgfgo_goban_kanji:e {\int_eval:n {#2}}}
+			{kanji}		{\pgfgo_int_to_kanji:n {#2}}
 		}
 	}
 	\cs_generate_variant:Nn \__pgfgo_goban_label_text:nn {V}
 
-	%NUMEROS EN KANJI: 1 A 9, Y DESPUES 十 (10), 十一 (11), 二十 (20), ... NECESITAN UNA FUENTE QUE LOS TENGA.
-	\tl_const:Nn \c__pgfgo_goban_kanji_tl {{一}{二}{三}{四}{五}{六}{七}{八}{九}{十}}
-	\cs_new:Npn \__pgfgo_goban_kanji:n #1 {
-		\int_compare:nNnT {\int_div_truncate:nn {#1} {10}} > {1}
-			{\tl_item:Nn \c__pgfgo_goban_kanji_tl {\int_div_truncate:nn {#1} {10}}}
-		\int_compare:nNnT {\int_div_truncate:nn {#1} {10}} > {0}
-			{\tl_item:Nn \c__pgfgo_goban_kanji_tl {10}}
-		\int_compare:nNnT {\int_mod:nn {#1} {10}} > {0}
-			{\tl_item:Nn \c__pgfgo_goban_kanji_tl {\int_mod:nn {#1} {10}}}
-	}
-	\cs_generate_variant:Nn \__pgfgo_goban_kanji:n {e}
 
 	%FUENTE DE LAS COORDENADAS DEL BORDE.
 	\cs_new_protected:Nn \__pgfgo_goban_label_font: {
@@ -1054,6 +1045,7 @@
 			}
 			\int_set_eq:NN \l_pgfgo_goban_size_x_int \l_pgfgo_kernel_sgf_size_x_int
 			\int_set_eq:NN \l_pgfgo_goban_size_y_int \l_pgfgo_kernel_sgf_size_y_int
+			\bool_set_true:N \l__pgfgo_goban_size_bool
 			\pgfgo_kernel_sgf_view:nn {\l_pgfgo_goban_sgf_view_from_int} {\l_pgfgo_goban_sgf_view_to_int}
 			\tl_if_empty:NTF \l_pgfgo_kernel_sgf_view_tl {
 				\bool_if:NT \l__pgfgo_goban_sgf_view_bool {
@@ -1138,14 +1130,19 @@
 		\pgfgo_territory_begin:
 		%CADA goban EMPIEZA CON EL TABLERO DEL KERNEL VACIO (Y SIN PRISIONEROS).
 		\pgfgo_kernel_if_feature:nT {captures} {\pgfgo_kernel_board_clear:}
+		\bool_set_false:N \l__pgfgo_goban_size_bool
 		\keys_set:nn {pgfgo / goban} {#1}
-		\pgfgo_kernel_board_init:
 		\tl_if_empty:NF \l_pgfgo_goban_resume_tl {\__pgfgo_goban_resume:}
+		\pgfgo_kernel_board_init:
 		\tl_if_empty:NF \l_pgfgo_goban_name_tl {\__pgfgo_goban_name:n {#1}}
 		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_begin:}
 
 		\__pgfgo_goban_begin:VV \l_pgfgo_goban_size_x_int \l_pgfgo_goban_size_y_int
-		}{\__pgfgo_goban_end:}
+		}{
+			\__pgfgo_goban_end:
+			%AL .aux Y A export (pgf-go-store.sty).
+			\pgfgo_store_end:
+		}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %------------------------------------------VISTAS-----------------------------------------------%
@@ -1156,6 +1153,9 @@
 	\prop_new:N \g__pgfgo_goban_names_prop
 	\prop_new:N \g__pgfgo_goban_names_captures_prop
 	\prop_new:N \g__pgfgo_goban_names_style_prop
+	%EL TAMANO DE CADA goban CON NOMBRE: resume LO USA SI EL goban NO DA EL SUYO (size, sgf size, sgf view).
+	\prop_new:N \g__pgfgo_goban_names_size_prop
+	\bool_new:N \l__pgfgo_goban_size_bool
 	\cs_new_protected:Npn \__pgfgo_goban_name:n #1 {
 		\pgfgo_kernel_remember_clear:V \l_pgfgo_goban_name_tl
 		\tl_if_empty:NF \l__pgfgo_goban_resume_memory_tl
@@ -1163,6 +1163,8 @@
 		\prop_gput:NVn \g__pgfgo_goban_names_prop \l_pgfgo_goban_name_tl {#1}
 		\pgfgo_style_save:N \l__pgfgo_view_style_tl
 		\prop_gput:NVV \g__pgfgo_goban_names_style_prop \l_pgfgo_goban_name_tl \l__pgfgo_view_style_tl
+		\prop_gput:NVe \g__pgfgo_goban_names_size_prop \l_pgfgo_goban_name_tl
+			{\int_use:N \l_pgfgo_goban_size_x_int x \int_use:N \l_pgfgo_goban_size_y_int}
 		\prop_gput:NVe \g__pgfgo_goban_names_captures_prop \l_pgfgo_goban_name_tl {
 			\bool_if:NT \l_pgfgo_goban_captures_bool
 				{captures = \bool_if:NTF \l_pgfgo_goban_captures_fade_bool {fade} {remove}}
@@ -1171,26 +1173,77 @@
 	\cs_generate_variant:Nn \pgfgo_kernel_remember_clear:n {V}
 	\cs_generate_variant:Nn \pgfgo_kernel_remember_append:nn {VV}
 
-	%EL ESTILO DE UN goban CON NOMBRE (PERFILES, \pgfgoset, Y SUS OPCIONES): EL CODIGO QUE VUELVE A PONER LOS
-	%VALORES DE LAS VARIABLES DEL ESTILO (\g_pgfgo_style_vars_seq, VER pgf-go.sty) Y LAS FUNCIONES DEL ESTILO
-	%(FORMATO DE LOS NUMEROS Y DE LAS SECUENCIAS, FORMA DE LA MARCA), QUE SE COPIAN CON OTRO NOMBRE.
+	%EL ESTILO DE UN goban CON NOMBRE (PERFILES, \pgfgoset, Y SUS OPCIONES): EL CODIGO QUE VUELVE AL ESTILO
+	%INICIAL Y PONE LAS VARIABLES DEL ESTILO (\g_pgfgo_style_vars_seq, VER pgf-go.sty) QUE CAMBIARON, Y LAS
+	%FUNCIONES DEL ESTILO (FORMATO DE LOS NUMEROS Y DE LAS SECUENCIAS, FORMA DE LA MARCA) POR SU NOMBRE. ES
+	%TEXTO: VA TAMBIEN AL .aux Y A LOS ARCHIVOS DE export (pgf-go-store.sty).
 	\tl_new:N \l__pgfgo_view_style_tl
-	\int_new:N \g__pgfgo_style_int
 	\cs_new:Npn \__pgfgo_style_player_functions:n #1
 		{pgfgo_players_ #1 _move_label_format:n, pgfgo_players_ #1 _mark_sequence_format:n,}
 	\clist_const:Ne \c__pgfgo_style_functions_clist {
 		\clist_map_function:nN {neutral, black, white} \__pgfgo_style_player_functions:n
 		pgfgo_mark_current:
 	}
+	%LOS NOMBRES QUE PUEDEN TENER ESAS FUNCIONES. pgf-go-marks.sty AGREGA LAS FORMAS DE LAS MARCAS (TAMBIEN
+	%LAS DE \pgfgodefinemark).
+	\seq_new:N \g_pgfgo_style_functions_seq
+	\seq_gset_from_clist:Nn \g_pgfgo_style_functions_seq {
+		int_to_arabic:n, int_to_alph:n, int_to_Alph:n, int_to_roman:n, int_to_Roman:n, pgfgo_int_to_kanji:n
+	}
+	%SI UNA FUNCION NO ES NINGUNA DE ESAS, SE COPIA CON OTRO NOMBRE (SOLO SIRVE EN ESTE DOCUMENTO).
+	\int_new:N \g__pgfgo_style_int
+	\tl_new:N \l__pgfgo_view_style_functions_tl
+	\tl_new:N \l__pgfgo_view_style_function_tl
 	\cs_new_protected:Npn \pgfgo_style_save:N #1 {
-		\int_gincr:N \g__pgfgo_style_int
-		\clist_map_inline:Nn \c__pgfgo_style_functions_clist
-			{\cs_gset_eq:cc {pgfgo~style~\int_use:N \g__pgfgo_style_int ~ ##1} {##1}}
+		\tl_clear:N \l__pgfgo_view_style_functions_tl
+		\clist_map_inline:Nn \c__pgfgo_style_functions_clist {
+			\tl_clear:N \l__pgfgo_view_style_function_tl
+			\seq_map_inline:Nn \g_pgfgo_style_functions_seq {
+				\cs_if_eq:ccT {##1} {####1} {
+					\tl_set:Nn \l__pgfgo_view_style_function_tl {####1}
+					\seq_map_break:
+				}
+			}
+			\tl_if_empty:NT \l__pgfgo_view_style_function_tl {
+				\int_gincr:N \g__pgfgo_style_int
+				\tl_set:Ne \l__pgfgo_view_style_function_tl {pgfgo~style~\int_use:N \g__pgfgo_style_int ~ ##1}
+				\cs_gset_eq:cc {\l__pgfgo_view_style_function_tl} {##1}
+			}
+			\tl_put_right:Ne \l__pgfgo_view_style_functions_tl
+				{\exp_not:N \pgfgo_style_function:nn {##1} {\l__pgfgo_view_style_function_tl}}
+		}
 		\tl_set:Ne #1 {
-			\seq_map_function:NN \g_pgfgo_style_vars_seq \__pgfgo_style_value:n
-			\clist_map_function:NN \c__pgfgo_style_functions_clist \__pgfgo_style_function:n
+			\exp_not:N \pgfgo_style_initial:
+			\seq_map_function:NN \g_pgfgo_style_vars_seq \__pgfgo_style_changed:n
+			\exp_not:V \l__pgfgo_view_style_functions_tl
 		}
 	}
+	\msg_new:nnn {pgfgo} {style-function}
+		{Unknown~style~function~'#1'~(a~mark~defined~with~\iow_char:N\\pgfgodefinemark~in~another~document?).}
+	\cs_new_protected:Npn \pgfgo_style_function:nn #1#2 {
+		\cs_if_exist:cTF {#2} {\cs_set_eq:cc {#1} {#2}} {\msg_warning:nnn {pgfgo} {style-function} {#2}}
+	}
+
+	%EL ESTILO INICIAL (AL TERMINAR DE CARGAR pgf-go.sty): EL VALOR DE CADA VARIABLE, PARA SABER CUALES
+	%CAMBIARON, Y EL CODIGO QUE LAS VUELVE A PONER TODAS.
+	\tl_new:N \g__pgfgo_style_initial_tl
+	\cs_new_protected:Npn \pgfgo_style_save_initial: {
+		\seq_map_inline:Nn \g_pgfgo_style_vars_seq {\__pgfgo_style_save_initial:nN ##1}
+	}
+	\cs_new_protected:Npn \__pgfgo_style_save_initial:nN #1#2 {
+		\str_new:c {g__pgfgo_style_initial_ \cs_to_str:N #2 _str}
+		\str_gset:ce {g__pgfgo_style_initial_ \cs_to_str:N #2 _str} {\__pgfgo_style_value:nN {#1} #2}
+		\tl_gput_right:Ne \g__pgfgo_style_initial_tl {\__pgfgo_style_value:nN {#1} #2}
+	}
+	\cs_generate_variant:Nn \str_gset:Nn {ce}
+	\cs_new_protected:Npn \pgfgo_style_initial: {\tl_use:N \g__pgfgo_style_initial_tl}
+	\cs_new:Npn \__pgfgo_style_changed:n #1 {\__pgfgo_style_changed:nN #1}
+	\cs_new:Npn \__pgfgo_style_changed:nN #1#2 {
+		\str_if_eq:eeF {\__pgfgo_style_value:nN {#1} #2} {\str_use:c {g__pgfgo_style_initial_ \cs_to_str:N #2 _str}}
+			{\__pgfgo_style_value:nN {#1} #2}
+	}
+
+	%EL CODIGO QUE VUELVE A PONER EL VALOR DE LA VARIABLE #2, DE TIPO #1. PARA UNA EXPANSION e.
 	\cs_new:Npn \__pgfgo_style_value:n #1 {\__pgfgo_style_value:nN #1}
 	\cs_new:Npn \__pgfgo_style_value:nN #1#2 {
 		\str_case:nnF {#1} {
@@ -1199,13 +1252,16 @@
 			{dim}		{\exp_not:N \dim_set:Nn \exp_not:N #2 {\dim_use:N #2}}
 			{skip}	{\exp_not:N \skip_set:Nn \exp_not:N #2 {\skip_use:N #2}}
 			{fp}		{\exp_not:N \fp_set:Nn \exp_not:N #2 {\fp_to_tl:N #2}}
+			{str}		{\exp_not:N \str_set:Nn \exp_not:N #2 {\exp_not:V #2}}
+			{seq}		{\exp_not:N \seq_clear:N \exp_not:N #2 \seq_map_tokens:Nn #2 {\__pgfgo_style_item:Nn #2}}
+			{prop}	{\exp_not:N \prop_clear:N \exp_not:N #2 \prop_map_tokens:Nn #2 {\__pgfgo_style_pair:Nnn #2}}
 		}{
 			\exp_not:N \tl_set:Nn \exp_not:N #2 {\exp_not:V #2}
 		}
 	}
-	\cs_new:Npn \__pgfgo_style_function:n #1 {
-		\exp_not:N \cs_set_eq:cc {#1} {pgfgo~style~\int_use:N \g__pgfgo_style_int ~ #1}
-	}
+	\cs_new:Npn \__pgfgo_style_item:Nn #1#2 {\exp_not:N \seq_put_right:Nn \exp_not:N #1 {\exp_not:n {#2}}}
+	\cs_new:Npn \__pgfgo_style_pair:Nnn #1#2#3
+		{\exp_not:N \prop_put:Nnn \exp_not:N #1 {\exp_not:n {#2}} {\exp_not:n {#3}}}
 	\cs_generate_variant:Nn \pgfgo_kernel_remember_push:nn {Vn}
 
 	%resume = {<nombre>, numbers, marks, territory}: EL NOMBRE Y QUE MAS TRAE, ADEMAS DE LAS PIEDRAS.
@@ -1244,6 +1300,9 @@
 			\pgfgo_kernel_remember_append:VV \l__pgfgo_goban_resume_memory_tl \l_pgfgo_goban_resume_tl
 			\bool_if:NF \l_pgfgo_goban_captures_bool
 				{\keys_set:nV {pgfgo / goban} \l__pgfgo_goban_resume_captures_tl}
+			\bool_if:NF \l__pgfgo_goban_size_bool {
+				\pgfgo_kernel_board_size:e {\prop_item:NV \g__pgfgo_goban_names_size_prop \l_pgfgo_goban_resume_tl}
+			}
 		}{
 			\msg_error:nnV {pgfgo} {unknown-view} \l_pgfgo_goban_resume_tl
 		}
@@ -1333,28 +1392,77 @@
 	}
 
 	\msg_new:nnn {pgfgo} {unknown-view} {There~is~no~goban~with~name~=~'#1'.}
+	\msg_new:nnn {pgfgo} {unknown-view-later}
+		{There~is~no~goban~with~name~=~'#1'~(if~it~comes~later,~compile~again).}
+
+	%LO QUE USA UNA VISTA DEL goban #1: SUS OPCIONES, SU ESTILO, SU MEMORIA, SU TAMANO Y SUS CAPTURAS. UN goban
+	%YA DIBUJADO O IMPORTADO; SI NO, EL DEL .aux (UNO QUE VIENE DESPUES, VER pgf-go-store.sty).
+	\tl_new:N \l__pgfgo_view_memory_tl
+	\tl_new:N \l__pgfgo_view_size_tl
+	\tl_new:N \l__pgfgo_view_captures_tl
+	\prg_new_protected_conditional:Npnn \__pgfgo_view_find:n #1 {TF} {
+		\prop_get:NnNTF \g__pgfgo_goban_names_prop {#1} \l__pgfgo_view_options_tl {
+			\prop_get:NnN \g__pgfgo_goban_names_style_prop {#1} \l__pgfgo_view_style_tl
+			\prop_get:NnN \g__pgfgo_goban_names_size_prop {#1} \l__pgfgo_view_size_tl
+			\prop_get:NnN \g__pgfgo_goban_names_captures_prop {#1} \l__pgfgo_view_captures_tl
+			\tl_set:Nn \l__pgfgo_view_memory_tl {#1}
+			\prg_return_true:
+		}{
+			\pgfgo_store_find:nTF {#1} {\prg_return_true:} {\prg_return_false:}
+		}
+	}
+	%PARA pgf-go-store.sty: #1 OPCIONES, #2 ESTILO, #3 NOMBRE DE LA MEMORIA, #4 TAMANO, #5 CAPTURAS.
+	\cs_new_protected:Npn \pgfgo_view_set:nnnnn #1#2#3#4#5 {
+		\tl_set:Nn \l__pgfgo_view_options_tl {#1}
+		\tl_set:Nn \l__pgfgo_view_style_tl {#2}
+		\tl_set:Nn \l__pgfgo_view_memory_tl {#3}
+		\tl_set:Nn \l__pgfgo_view_size_tl {#4}
+		\tl_set:Nn \l__pgfgo_view_captures_tl {#5}
+	}
+
+	%LO QUE GUARDA UN goban CON NOMBRE (MENOS SU MEMORIA): {TAMANO}{CAPTURAS}{OPCIONES}{ESTILO}, EN #2.
+	\cs_new_protected:Npn \pgfgo_goban_name_get:nN #1#2 {
+		\tl_set:Ne #2 {
+			{\prop_item:Nn \g__pgfgo_goban_names_size_prop {#1}}
+			{\prop_item:Nn \g__pgfgo_goban_names_captures_prop {#1}}
+			{\prop_item:Nn \g__pgfgo_goban_names_prop {#1}}
+			{\prop_item:Nn \g__pgfgo_goban_names_style_prop {#1}}
+		}
+	}
+	%UN goban IMPORTADO (\pgfgoimport): QUEDA COMO SI SE HUBIERA DIBUJADO CON EL NOMBRE #1 (PARA resume Y
+	%\pgfgoview). #2 TAMANO, #3 CAPTURAS, #4 OPCIONES, #5 ESTILO, #6 EL CODIGO DE SU MEMORIA.
+	\cs_new_protected:Npn \pgfgo_goban_name_set:nnnnnn #1#2#3#4#5#6 {
+		\pgfgo_kernel_remember_clear:n {#1}
+		\pgfgo_kernel_remember_push:nn {#1} {\exp_not:n {#6}}
+		\prop_gput:Nnn \g__pgfgo_goban_names_size_prop {#1} {#2}
+		\prop_gput:Nnn \g__pgfgo_goban_names_captures_prop {#1} {#3}
+		\prop_gput:Nnn \g__pgfgo_goban_names_prop {#1} {#4}
+		\prop_gput:Nnn \g__pgfgo_goban_names_style_prop {#1} {#5}
+	}
 
 	%\pgfgoview[OPCIONES]{NOMBRE}{PARTE}: EL goban CON ESE NOMBRE COMO QUEDO AL TERMINAR (CON LAS CAPTURAS),
-	%SOLO EN ESA PARTE, PARA USAR EN EL TEXTO.
+	%SOLO EN ESA PARTE, PARA USAR EN EL TEXTO. SI TODAVIA NO HAY UN goban CON ESE NOMBRE: ?? Y UN AVISO.
 	\cs_new_protected:Npn \pgfgo_view:nnn #1#2#3 {
-		\prop_get:NnNTF \g__pgfgo_goban_names_prop {#2} \l__pgfgo_view_options_tl {
+		\__pgfgo_view_find:nTF {#2} {
 			\group_begin:
 				%EL ESTILO DEL goban CON NOMBRE; \pgfgoset{view} Y LAS OPCIONES DE LA VISTA VAN ENCIMA.
-				\prop_get:NnN \g__pgfgo_goban_names_style_prop {#2} \l__pgfgo_view_style_tl
 				\tl_use:N \l__pgfgo_view_style_tl
 				\keys_set:nn {pgfgo / view} {#1}
 				\bool_set:Nn \l_pgfgo_remember_hide_mark_bool {! \l__pgfgo_view_marks_bool}
 				\bool_set:Nn \l_pgfgo_remember_hide_numbers_bool {! \l__pgfgo_view_numbers_bool}
 				\bool_set:Nn \l_pgfgo_remember_hide_territory_bool {! \l__pgfgo_view_territory_bool}
 				\bool_set:Nn \l_pgfgo_remember_hide_forgotten_bool {! \l__pgfgo_view_forgotten_bool}
-				\tl_set:Nn \l_pgfgo_goban_view_tl {#2}
+				\tl_set_eq:NN \l_pgfgo_goban_view_tl \l__pgfgo_view_memory_tl
 				\tl_clear:N \l_pgfgo_goban_name_tl
 				\tl_clear:N \l_pgfgo_goban_resume_tl
 				\__pgfgo_view_range:n {#3}
 				\__pgfgo_view_save:
+				%EL TAMANO Y LAS CAPTURAS PUEDEN VENIR DE resume (QUE EN LA VISTA NO HACE NADA).
 				\use:e {
 					\exp_not:N \begin {goban} [
-						\exp_not:V \l__pgfgo_view_options_tl
+						\exp_not:V \l__pgfgo_view_options_tl,
+						size = {\l__pgfgo_view_size_tl},
+						\exp_not:V \l__pgfgo_view_captures_tl
 						\tl_if_empty:NF \l__pgfgo_view_profile_tl
 							{, profile = {\exp_not:V \l__pgfgo_view_profile_tl}}
 						\exp_not:V \l__pgfgo_view_goban_tl,
@@ -1365,7 +1473,8 @@
 				\__pgfgo_view_restore:
 			\group_end:
 		}{
-			\msg_error:nnn {pgfgo} {unknown-view} {#2}
+			\msg_warning:nnn {pgfgo} {unknown-view-later} {#2}
+			\textbf{??}
 		}
 	}
 	\tl_new:N \l__pgfgo_view_options_tl

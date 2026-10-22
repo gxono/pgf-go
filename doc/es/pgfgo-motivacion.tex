@@ -2,7 +2,7 @@
 
 \subsection{Motivaci\'on}
 
-El siguiente paquete ofrece una colección de macros diseñadas para representar tableros y posiciones de Go. Este proyecto, aunque aún en desarrollo, incorpora funcionalidades que buscan simplificar y agilizar la creación de diagramas relacionados con el juego de Go:
+El siguiente paquete ofrece una colección de macros diseñadas para representar tableros y posiciones de Go. Este proyecto, aunque aún en desarrollo\footnote{Pero, francamente, acabado.}, incorpora funcionalidades que buscan simplificar y agilizar la creación de diagramas relacionados con el juego de Go:
 \begin{itemize}
 	\item Lectura de partidas en SGF: una partida en un tablero, series de diagramas como en los libros, animaciones con botones y problemas con sus soluciones.
 	\item Las reglas del juego, con el kernel en Lua: capturas, notas «N en M» para los kos y cálculo del territorio y del puntaje.
@@ -14,16 +14,16 @@ El siguiente paquete ofrece una colección de macros diseñadas para representar
 	\item Carga de múltiples coordenadas simultáneamente mediante una sintaxis que algunos podrían encontrar familiar.
 \end{itemize}
 
-El desarrollo de \pgfgoname\ surge de la frustración por no encontrar paquetes que satisficieran mis necesidades. Los paquetes que exploré permiten representar tableros en blanco y negro, adecuados para impresión, pero poco prácticos al combinarlos con tecnolog\'ias como |beamer| o en documentos donde se desea una presentación a color.
+El desarrollo de \pgfgoname\ surge de mi frustración en 2021 por no encontrar paquetes que satisficieran mis necesidades. Los paquetes que exploré permiten representar tableros en blanco y negro, adecuados para impresión, pero poco prácticos al combinarlos con tecnolog\'ias como |beamer| o en documentos donde se desea una presentación a color.
 
-Inicialmente, \pgfgoname\ se limitaría a estas tareas; sin embargo, ahora lo concibo más como una interfaz para gestionar estilos y estados, evitando el uso excesivo del formato directo. Esto se reflejará principalmente en la estructura del árbol de \emph{keys}.
+Inicialmente, \pgfgoname\ se limitaría a estas tareas; sin embargo, ha evolucionado mucho desde su publicación hace casi dos a\~nos. Antes lo concib\'ia más como una interfaz para gestionar estilos y estados, evitando el uso excesivo del formato directo\footnote{Esto se refleja principalmente en la estructura del árbol de \emph{keys}}. Ahora, con la integraci\'on del kernel en Lua, lo concibo como una suite completa.
 
 En cuanto al nombre: el dibujo está escrito sobre la capa básica de \pgfname, y el cálculo (coordenadas, jugadas, capturas, territorio, lectura de SGF) lo hace un \emph{kernel} escrito en L3 o en Lua (pág.~\pageref{subsec:kernel}). El entorno |goban|, de todos modos, es un |tikzpicture|, para que los usuarios familiarizados con \tikzname\ puedan aprovechar sus macros dentro del tablero (pág.~\pageref{sec:tablero}).
 
 \subsection{Primeros pasos}
 \label{subsec:primerospasos}
 
-\pgfgoname\ se carga como cualquier paquete. Se recomienda compilar con Lua\LaTeX: con los demás motores, el paquete funciona, pero no puede leer archivos SGF, retirar piedras capturadas ni calcular el territorio solo (pág.~\pageref{subsec:kernel}).
+\pgfgoname\ se carga como cualquier paquete. Se recomienda (mucho) compilar con Lua\LaTeX: con los demás motores, el paquete funciona, pero no puede leer archivos SGF, retirar piedras capturadas ni calcular el territorio solo (pág.~\pageref{subsec:kernel}). Obviamente que si tu intenci\'on en crear tableros disponer posiciones para ense\~nar, entonces puede que no sean caracter\'isticas tan necesarias.
 
 \begin{codeexample}[code only]
 	\documentclass{article}
@@ -37,14 +37,16 @@ En cuanto al nombre: el dibujo está escrito sobre la capa básica de \pgfname, 
 	\end{document}
 \end{codeexample}
 
-El paquete tiene dos opciones: |kernel|, que elige el kernel (pág.~\pageref{subsec:kernel}), y |lang|, el idioma de los textos que escribe (pág.~\pageref{subsec:idiomas}). Todo lo demás se configura con |\pgfgoset| (pág.~\pageref{sec:configuracion}).
+El paquete se puede cargar con dos opciones: |kernel|, que elige el kernel (pág.~\pageref{subsec:kernel}), y |lang|, el idioma de los textos que escribe (pág.~\pageref{subsec:idiomas}). Todo lo demás se configura con |\pgfgoset| (pág.~\pageref{sec:configuracion}).
 
 \subsection{Cómo leer este manual}
 \label{subsec:guia}
 
 El manual tiene tres partes. Esta introducción. Los tutoriales (parte~\ref{part:tutoriales}), en los que \karu\ prepara un artículo, un cuaderno de problemas y unas clases, y aprende el paquete paso a paso: se leen en orden, y cada uno remite a la referencia. Y la referencia (parte~\ref{part:referencia}), que describe cada comando y cada \emph{key}, ordenada por objeto: la configuración, las coordenadas, el tablero, las piedras, las marcas, las reglas del juego, la memoria, SGF y los estilos. Al final, el catálogo muestra los perfiles que trae el paquete.
 
-Quien empieza puede leer los tutoriales de corrido. Quien busca algo puntual puede ir directo a lo que necesita:
+Quien empieza puede leer los tutoriales de corrido. De hecho, mi recomendaci\'on ser\'ia que revisaras primero los tutoriales para tener un pantallazo general de todo. Luego, es sumamente recomendable leer las referencias para ver exactamente todo lo que se puede configurar.
+
+Quien busca algo puntual puede ir directo a lo que necesita:
 \begin{itemize}
 	\item \textbf{Dibujar una partida guardada en SGF}: el tutorial de la pág.~\pageref{tut:primera} y, para la partida entera en diagramas, el de la pág.~\pageref{tut:partida}. La referencia está en la pág.~\pageref{subsec:sgf}.
 	\item \textbf{Dibujar una posición a mano}: el tutorial de la pág.~\pageref{tut:posicion}, y las piedras en la pág.~\pageref{sec:piedras}. Para escribir menos coordenadas (filas, rectángulos, caminos), el tutorial de la pág.~\pageref{tut:abreviar} y la sintaxis completa en la pág.~\pageref{subsec:sintaxis-de-coordenadas}.

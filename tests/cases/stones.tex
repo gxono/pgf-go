@@ -48,8 +48,8 @@
 \end{goban}
 \pgfgoset{players = {white = {stone = {prisoner = {}}}}}
 
-\case{use i = false: J is the 9th column}
-\begin{goban}[9, use i = false, label = {at = south}]\stone[b]{J1}\stones[w]{J2}\end{goban}
+\case{Without use i (the default), J is the 9th column}
+\begin{goban}[9, label = {at = south}]\stone[b]{J1}\stones[w]{J2}\end{goban}
 
 \case{Stone with a mark: white stone with triangle, black stone with circle}
 \begin{goban}[5]\stone[w, mark = triangle]{B2}\stone[b, mark = circle]{D2}\end{goban}

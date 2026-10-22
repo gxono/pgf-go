@@ -26,22 +26,22 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{goban}
 	\end{codeexample}
 	
-	\label{subsec:usei}\begin{key}{/pgfgo/goban/use i=\meta{boolean} (default true, initially true)}
+	\label{subsec:usei}\begin{key}{/pgfgo/goban/use i=\meta{boolean} (default true, initially false)}
 		
-		Permite activar o desactivar el uso de la letra «I» en las coordenadas y etiquetas del tablero. Cuando está desactivada («false»), cualquier referencia a «I» se interpreta como «J».
+		Permite activar o desactivar el uso de la letra «I» en las coordenadas y etiquetas del tablero. Por defecto está desactivada, como es costumbre en el go: las columnas pasan de la «H» a la «J», y cualquier referencia a «I» se interpreta como «J».
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {13, label = {at = north}}}
 			
-			\begin{goban}[label = {at = west}, partial = H1:M3]
+			\begin{goban}[use i, label = {at = west}, partial = H1:M3]
 				\stone[b]{J2}
 			\end{goban}
 			
-			\begin{goban}[use i = false, partial = H1:N3]
+			\begin{goban}[partial = H1:N3]
 				\stone[b]{J2}
 			\end{goban}
 			
-			\begin{goban}[use i = false, label = {at = east}, partial = H1:N3]
+			\begin{goban}[label = {at = east}, partial = H1:N3]
 				\stone[white, mark = {custom = !}] {I2} % Si es I, entonces pasa a J.
 			\end{goban}
 		\end{codeexample}
@@ -913,7 +913,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/columns = \meta{letters, numbers o kanji} (initially letters)}
-		Cómo se escriben las coordenadas de las columnas (arriba y abajo): con letras (como en los comandos, sin la I si |use i = false|), con números o con números en kanji ({\pgfgokanji 一, 二, …, 十, 十一}, …).
+		Cómo se escriben las coordenadas de las columnas (arriba y abajo): con letras (como en los comandos, sin la I salvo con |use i|), con números o con números en kanji ({\pgfgokanji 一, 二, …, 十, 十一}, …).
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/rows = \meta{letters, numbers o kanji} (initially numbers)}

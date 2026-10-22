@@ -1590,6 +1590,9 @@
 \keys_define:nn {pgfgo / sgf~diagrams / caption} {
 	font						.tl_set:N		= \l__pgfgo_sgfdiag_font_tl,
 	font						.initial:n	= {\small},
+	%UN EPIGRAFE MAS ANCHO QUE SU TABLERO (CON columns = auto) SE CORTA A ESTE ANCHO, SI EL TABLERO ES MAS ANGOSTO.
+	min~width			.tl_set:N		= \l__pgfgo_sgfdiag_caption_min_tl,
+	min~width			.initial:n	= {8em},
 }
 
 %font: LA DE LOS COMENTARIOS (VACIA: LA DEL EPIGRAFE). align: left, right, center O justify. root: EL
@@ -1683,6 +1686,7 @@
 \dim_new:N \l__pgfgo_sgfdiag_total_dim
 \bool_new:N \l__pgfgo_sgfdiag_side_bool
 \tl_new:N \l__pgfgo_sgfdiag_caption_tl
+\tl_new:N \l__pgfgo_sgfdiag_caption_code_tl
 \cs_new_protected:Npn \__pgfgo_sgfdiag_draw:nnnn #1#2#3#4 {
 	\tl_set:Nn \l__pgfgo_sgfdiag_caption_tl {#3}
 	\bool_set:Nn \l__pgfgo_sgfdiag_side_bool
@@ -1739,7 +1743,7 @@
 			{\pgfgo_layout_if_fit:F {\dim_set:Nn \l_pgfgo_layout_cell_dim {\box_wd:N \l__pgfgo_sgfdiag_box}}}
 	}
 	\box_gclear:N \g__pgfgo_sgfdiag_side_box
-	\pgfgo_layout_if_grid:TF
+	\pgfgo_layout_if_cells:TF
 		{
 			\__pgfgo_sgfdiag_side_width:n {\l_pgfgo_layout_cell_dim}
 			\tl_set:Nn \l__pgfgo_sgfdiag_align_tl {\pgfgo_layout_par_align:}
@@ -1753,15 +1757,39 @@
 		}
 		{
 			\tl_set:Nn \l__pgfgo_sgfdiag_align_tl {\centering}
-			%EL EPIGRAFE NO SE CORTA: EL DIAGRAMA TIENE EL ANCHO DEL TABLERO O DEL EPIGRAFE, EL MAYOR.
+			%EL DIAGRAMA TIENE EL ANCHO DEL TABLERO. UN EPIGRAFE MAS ANCHO SE CORTA EN LINEAS (COMO EN LA GRILLA),
+			%PERO EL DIAGRAMA NO ES MAS ANGOSTO QUE SU PALABRA MAS LARGA NI QUE caption/min width (SI ENTRA ASI EN
+			%UNA LINEA, NO SE CORTA). EL EPIGRAFE CORTADO ES UN PARRAFO DE LA CELDA (NO UNA CAJA): SUS LINEAS Y LO
+			%QUE SIGUE LLEVAN EL INTERLINEADO DE SIEMPRE.
 			\hbox_set:Nn \l__pgfgo_sgfdiag_caption_box {\l__pgfgo_sgfdiag_font_tl #3}
-			\dim_set:Nn \l__pgfgo_sgfdiag_width_dim
-				{\dim_max:nn {\box_wd:N \l__pgfgo_sgfdiag_box} {\box_wd:N \l__pgfgo_sgfdiag_caption_box}}
+			\dim_set:Nn \l__pgfgo_sgfdiag_width_dim {\box_wd:N \l__pgfgo_sgfdiag_box}
+			\dim_compare:nNnT {\box_wd:N \l__pgfgo_sgfdiag_caption_box} > {\l__pgfgo_sgfdiag_width_dim} {
+				\__pgfgo_sgfdiag_widest_word:n {#3}
+				\__pgfgo_sgfdiag_caption_min:
+				\dim_set:Nn \l__pgfgo_sgfdiag_width_dim {
+					\dim_max:nn {\l__pgfgo_sgfdiag_width_dim} {\dim_max:nn {\g__pgfgo_sgfdiag_word_dim} {\g__pgfgo_sgfdiag_caption_min_dim}}
+				}
+			}
+			\dim_compare:nNnTF {\box_wd:N \l__pgfgo_sgfdiag_caption_box} > {\l__pgfgo_sgfdiag_width_dim}
+				{
+					\box_clear:N \l__pgfgo_sgfdiag_caption_box
+					\tl_set:Nn \l__pgfgo_sgfdiag_caption_code_tl {
+						\group_begin:
+							\__pgfgo_sgfdiag_par_setup:N \l__pgfgo_sgfdiag_width_dim
+							\centering \l__pgfgo_sgfdiag_font_tl #3 \par
+						\group_end:
+					}
+				}
+				{
+					\tl_set:Nn \l__pgfgo_sgfdiag_caption_code_tl {
+						\hbox_to_wd:nn {\l__pgfgo_sgfdiag_width_dim} {\hfil \box_use:N \l__pgfgo_sgfdiag_caption_box \hfil}
+					}
+				}
 			\__pgfgo_sgfdiag_side_width:n {\l__pgfgo_sgfdiag_width_dim}
 			\vbox_set_top:Nn \l__pgfgo_sgfdiag_cell_box {
 				\hbox_to_wd:nn {\l__pgfgo_sgfdiag_width_dim} {\hfil \box_use:N \l__pgfgo_sgfdiag_box \hfil}
 				\skip_vertical:n {0.3em}
-				\hbox_to_wd:nn {\l__pgfgo_sgfdiag_width_dim} {\hfil \box_use:N \l__pgfgo_sgfdiag_caption_box \hfil}
+				\l__pgfgo_sgfdiag_caption_code_tl
 				#4
 			}
 		}
@@ -1769,6 +1797,42 @@
 	%LA CELDA VUELVE A SU ANCHO (LA USAN LA DISPOSICION Y EL DIAGRAMA SIGUIENTE).
 	\bool_lazy_and:nnT {\l__pgfgo_sgfdiag_side_bool} {\pgfgo_layout_if_grid_p:}
 		{\dim_set_eq:NN \l_pgfgo_layout_cell_dim \l__pgfgo_sgfdiag_total_dim}
+}
+
+%EL ANCHO DE LA PALABRA MAS LARGA DEL EPIGRAFE #1 (EN \g__pgfgo_sgfdiag_word_dim): CON \hsize = 0pt CADA
+%PALABRA VA EN SU LINEA (SIN GUIONES); SE SACAN LAS LINEAS DE ABAJO HACIA ARRIBA Y SE MIDE CADA UNA.
+\dim_new:N \g__pgfgo_sgfdiag_word_dim
+\box_new:N \l__pgfgo_sgfdiag_words_box
+\cs_new_protected:Npn \__pgfgo_sgfdiag_widest_word:n #1 {
+	\dim_gzero:N \g__pgfgo_sgfdiag_word_dim
+	\vbox_set:Nn \l__pgfgo_sgfdiag_words_box {
+		\dim_set_eq:NN \hsize \c_zero_dim
+		\int_set:Nn \hyphenpenalty {10000}
+		\int_set:Nn \exhyphenpenalty {10000}
+		\dim_set:Nn \hfuzz {\c_max_dim}
+		\int_set:Nn \hbadness {10000}
+		\noindent \l__pgfgo_sgfdiag_font_tl #1 \par
+		\__pgfgo_sgfdiag_widest_word_loop:
+	}
+}
+%EL ANCHO MINIMO DEL EPIGRAFE CORTADO (EN \g__pgfgo_sgfdiag_caption_min_dim): min width EN LA FUENTE DEL
+%EPIGRAFE, PERO NO MAS QUE EL EPIGRAFE EN UNA LINEA (\l__pgfgo_sgfdiag_caption_box).
+\dim_new:N \g__pgfgo_sgfdiag_caption_min_dim
+\cs_new_protected:Npn \__pgfgo_sgfdiag_caption_min: {
+	\group_begin:
+		\l__pgfgo_sgfdiag_font_tl
+		\dim_gset:Nn \g__pgfgo_sgfdiag_caption_min_dim
+			{\dim_min:nn {\l__pgfgo_sgfdiag_caption_min_tl} {\box_wd:N \l__pgfgo_sgfdiag_caption_box}}
+	\group_end:
+}
+\cs_new_protected:Npn \__pgfgo_sgfdiag_widest_word_loop: {
+	\tex_unskip:D \tex_unpenalty:D \tex_unskip:D
+	\box_set_to_last:N \l_tmpa_box
+	\box_if_empty:NF \l_tmpa_box {
+		\hbox_set:Nn \l_tmpa_box {\hbox_unpack:N \l_tmpa_box}
+		\dim_gset:Nn \g__pgfgo_sgfdiag_word_dim {\dim_max:nn {\g__pgfgo_sgfdiag_word_dim} {\box_wd:N \l_tmpa_box}}
+		\__pgfgo_sgfdiag_widest_word_loop:
+	}
 }
 
 %EL ANCHO DE LOS COMENTARIOS AL COSTADO DE UNA COLUMNA DE ANCHO #1: width, O CON auto LO QUE QUEDA DE LA
@@ -1800,7 +1864,7 @@
 				{\box_use:N \l__pgfgo_sgfdiag_cell_box \skip_horizontal:N \l__pgfgo_sgfdiag_comment_sep_dim \box_use:N \l_tmpb_box}
 				{\box_use:N \l_tmpb_box \skip_horizontal:N \l__pgfgo_sgfdiag_comment_sep_dim \box_use:N \l__pgfgo_sgfdiag_cell_box}
 		}
-		\pgfgo_layout_if_grid:T {
+		\pgfgo_layout_if_cells:T {
 			\hbox_set_to_wd:Nnn \l__pgfgo_sgfdiag_cell_box {\l__pgfgo_sgfdiag_total_dim}
 				{\box_use:N \l__pgfgo_sgfdiag_cell_box \hfil}
 		}
@@ -2287,6 +2351,7 @@
 \tl_new:N \l__pgfgo_sgfprob_title_tl
 \tl_new:N \l__pgfgo_sgfprob_goban_tl
 \tl_new:N \l__pgfgo_sgfprob_font_tl
+\tl_new:N \l__pgfgo_sgfprob_caption_min_tl
 \bool_new:N \l__pgfgo_sgfprob_notes_bool
 \bool_new:N \l__pgfgo_sgfprob_comments_bool
 \tl_new:N \l__pgfgo_sgfprob_comment_font_tl
@@ -2397,6 +2462,8 @@
 \keys_define:nn {pgfgo / sgf~problem / caption} {
 	font								.tl_set:N		= \l__pgfgo_sgfprob_font_tl,
 	font								.initial:n	= {\small},
+	min~width					.tl_set:N		= \l__pgfgo_sgfprob_caption_min_tl,
+	min~width					.initial:n	= {8em},
 }
 \keys_define:nn {pgfgo} {
 	sgf~problem					.code:n			= {\keys_set:nn {pgfgo / sgf~problem} {#1}}
@@ -2606,6 +2673,7 @@
 		\tl_clear:N \l__pgfgo_sgfdiag_last_tl
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_goban_tl \l__pgfgo_sgfprob_goban_tl
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_font_tl \l__pgfgo_sgfprob_font_tl
+		\tl_set_eq:NN \l__pgfgo_sgfdiag_caption_min_tl \l__pgfgo_sgfprob_caption_min_tl
 		\bool_set_eq:NN \l__pgfgo_sgfdiag_notes_bool \l__pgfgo_sgfprob_notes_bool
 		\bool_set_eq:NN \l__pgfgo_sgfdiag_comments_bool \l__pgfgo_sgfprob_comments_bool
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_comment_font_tl \l__pgfgo_sgfprob_comment_font_tl
