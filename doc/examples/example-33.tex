@@ -1,0 +1,26 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=8cm]{standalone}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+
+\pgfgoset{profile = pgfgo, goban = {label = {at = {south, west}}}}
+
+
+\begin{document}
+	% A seki at the top: each group has one eye (A9, J9) and they share E9. In Japanese rules
+	% the eyes of a seki are not territory: \territory{auto} counts them, and a \territory[n]
+	% for each eye makes it neutral.
+
+	\begin{goban}
+		\stones[b]{A8:D8, B9:D9, E7:J7, E1:E6}
+		\stones[w]{E8:J8, F9:H9, A7:D7, D1:D6}
+		\prisoner[w]{G3}
+		\prisoner[b]{B4}
+		\territory[dame]{auto}
+		\territory[n]{A9}
+		\territory[n]{J9}
+	\end{goban}
+
+	\smallskip
+	Black \pgfgoscore{b}, White \pgfgoscore[komi = 6.5]{w}.
+\end{document}

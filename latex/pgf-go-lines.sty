@@ -200,7 +200,7 @@
 }
 %#3 Y #4: {x}{y} DE CADA EXTREMO. SI HAY QUE RECORDARLA, TAMBIEN VA A LA MEMORIA.
 \cs_new_protected:Npn \__pgfgo_lines_draw:nnnn #1#2#3#4 {
-	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_mark_bool {mark}
+	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_mark_bool {#1}
 		{\exp_not:N \pgfgo_line_parsed:nnnnnn {#1} {\exp_not:n {#2}} #3 #4}
 	\pgfgo_line_parsed:nnnnnn {#1} {#2} #3 #4
 }

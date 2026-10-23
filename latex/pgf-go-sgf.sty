@@ -366,8 +366,8 @@
 			{\prop_gput:NVe \g_pgfgo_points_prop \l__pgfgo_captures_key_tl {dead- \l__pgfgo_sgf_mark_tl}}
 	}
 	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_territory_bool {territory}
-		{\exp_not:N \pgfgo_territory_parsed:nnn {#1} {\l__pgfgo_territory_draw_tl} {{#2}{#3}}}
-	\pgfgo_territory_parsed:nVn {#1} \l__pgfgo_territory_draw_tl {{#2}{#3}}
+		{\exp_not:N \pgfgo_territory_parsed:nnnn {#1} {\l__pgfgo_territory_draw_tl} {} {{#2}{#3}}}
+	\pgfgo_territory_parsed:nVnn {#1} \l__pgfgo_territory_draw_tl {} {{#2}{#3}}
 }
 
 \cs_generate_variant:Nn \prop_if_in:NnF {NV}
@@ -412,7 +412,7 @@
 
 %FLECHAS Y LINEAS DEL ARCHIVO (AR, LN): #1 arrow O line, DE (#2,#3) A (#4,#5).
 \cs_new_protected:Npn \__pgfgo_sgf_line:nnnnn #1#2#3#4#5 {
-	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_mark_bool {mark}
+	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_mark_bool {#1}
 		{\exp_not:N \pgfgo_line_parsed:nnnnnn {#1} {} {#2} {#3} {#4} {#5}}
 	\pgfgo_line_parsed:nnnnnn {#1} {} {#2} {#3} {#4} {#5}
 }

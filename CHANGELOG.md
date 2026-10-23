@@ -6,6 +6,14 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- The TikZ coordinate system `go`: inside a `goban`, `(go cs:C3)` is the
+  intersection C3, for `\draw`, `\node` and the other commands of TikZ
+  (`\draw (go cs:B2) rectangle (go cs:D6);`). It can be outside the board
+  (`C0`); a coordinate that is not recognized is the origin, with the
+  warning `go-coordinate`.
+- `view/arrows` and `view/lines` (initially `true`): `\pgfgoview[arrows = false]`
+  does not draw the arrows (`\arrow`, `AR`), and `lines = false` the lines
+  (`\line`, `LN`).
 - `variation` (in `\sgf`, `\sgfcomment`, `\sgfinfo`, `\sgfanimation` and
   `\sgfdiagrams`) can also be the moves of the line from the first one, with
   commas or spaces: `variation = {R16, P17, Q15}`; at each branch, the
@@ -313,6 +321,16 @@ All notable changes to `pgf-go` are listed here.
 
 ### Fixed
 
+- A `goban` with some 2600 marks or more (for example `\territory{auto}` on a
+  board of 52) made LuaLaTeX crash with no message when it shipped out the
+  page: PGF puts each `\pgfonlayer` around what the layer already had, and
+  the boxes were too deeply nested. In a `goban`, each one now goes in its own
+  box, next to the others; the drawing is the same.
+- `\pgfgoscore{n}` was always 0; it is `\pgfgoscore{neutral}`, the number of
+  neutral points, as `n` in `\territory` and `\pgfgoregion`.
+- With `resume`, a `\territory` came back without its options (for example
+  `\territory[w, mark = cross]`): it is drawn with them.
+
 - Installed in the TeX tree (`\usepackage{pgf-go}`), LuaLaTeX did not load
   the Lua kernel: `pgf-go.lua` was looked for in the folder of the document.
   Now it is found with `kpse` (first as a TeX file, the search that found
@@ -388,6 +406,23 @@ All notable changes to `pgf-go` are listed here.
 - The `sgf-charset` and `\moves` messages lost some spaces.
 
 ### Behaviour changes
+
+- The territory is drawn when the `goban` ends. Each point is drawn with the
+  last `\territory` that marked it (with its player and options), so
+  `\territory[n]{A1}` after `\territory{auto}` makes A1 neutral (in the
+  drawing too, and the eyes of a seki can be made neutral that way), and a
+  point with a living stone at the end is neither drawn nor counted. Before,
+  each `\territory` was drawn at once: a stone put later kept its mark and
+  was counted, and two `\territory` on a point drew both. The owner of each
+  point and `\pgfgoregion` are still known at once, inside the `goban`.
+  The records of named gobans (`.aux`, `export`) are version 2: older ones
+  are not used (warning `store-version`).
+- `\pgfgoscore` and `\pgfgoprisoners` with an unknown player (for example
+  `\pgfgoscore{Black}`) are an error (`unknown-score-player`,
+  `unknown-prisoners-player`); they still write 0.
+- `view/marks = false` hides only the marks; the arrows and the lines have
+  their own keys (`view/arrows`, `view/lines`). `resume` with `marks` still
+  brings the three.
 
 - `sgf problem/crop` and `sgf problem/margin` are removed. `\sgfproblem`
   has `partial = auto` (initially) or `false` instead, and the lines around
@@ -520,6 +555,15 @@ All notable changes to `pgf-go` are listed here.
 
 ### Documentation
 
+- `\territory{auto}`: what it cannot know (open positions, gaps in a border,
+  dead stones that are not prisoners, eyes in seki, neutral stones) and that
+  `partial = auto` grows to the territory. When the territory is drawn.
+  `\pgfgoscore{neutral}`, `view/arrows`, `view/lines`. New section "Dibujar
+  con TikZ" (`go cs`).
+- New examples in `doc/examples`: the count of a game with a seki
+  (`example-33`, the eyes made neutral with `\territory[n]`) and TikZ on the
+  board with `go cs`, and views without arrows and lines (`example-34`).
+
 - New examples in `doc/examples`: a sheet of problems from a collection
   (`example-20`, with problems of the Igo Hatsuyoron), a lesson in `beamer`
   (`example-21`), a game of 1940 in diagrams (`example-22`), views in the
@@ -566,6 +610,12 @@ All notable changes to `pgf-go` are listed here.
   (`--`, `-|-`) in the coordinates.
 
 ### Tests
+
+- New cases `territory-auto` (the scope and limits of `\territory{auto}`, with
+  the expected scores; replacing points, stones after it, `resume` with
+  options, unknown players) and `many-marks` (2703 and 2600 marks in one
+  `goban`). New cases `views-arrows-lines` and `go-coordinates` (both
+  engines).
 
 - New cases `partial-auto` (`goban`, both kernels) and `partial-auto-sgf`
   (with captures, `\sgf`, `\sgfdiagrams`, `\sgfanimation` and a view; fixture

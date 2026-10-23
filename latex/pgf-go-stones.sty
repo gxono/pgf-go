@@ -625,12 +625,21 @@
 	\group_end:
 }
 
-%\pgfgoprisoners{black | white} ESCRIBE LOS PRISIONEROS DEL JUGADOR EN EL ULTIMO goban CON CAPTURAS.
+%\pgfgoprisoners{black | white} ESCRIBE LOS PRISIONEROS DEL JUGADOR EN EL ULTIMO goban CON CAPTURAS. CON
+%OTRO JUGADOR, UN ERROR Y 0.
+\msg_new:nnn {pgfgo} {unknown-prisoners-player}
+	{Unknown~player~'#1'~in~\iow_char:N\\pgfgoprisoners~(black,~b,~white~or~w):~the~number~is~0.}
 \NewDocumentCommand \pgfgoprisoners {m} {
 	\pgfgo_kernel_if_feature:nTF {captures}
-		{\exp_args:Ne \pgfgo_kernel_prisoners:n {\str_case:nnF {#1} {{b} {black} {w} {white}} {#1}}}
+		{
+			\str_case:enF {\tl_trim_spaces:n {#1}} {{b} {} {black} {} {w} {} {white} {}}
+				{\msg_error:nnn {pgfgo} {unknown-prisoners-player} {#1}}
+			\exp_args:Ne \pgfgo_kernel_prisoners:n
+				{\str_case:enF {\tl_trim_spaces:n {#1}} {{b} {black} {w} {white}} {\tl_trim_spaces:n {#1}}}
+		}
 		{\pgfgo_kernel_require:n {captures}}
 }
+\cs_generate_variant:Nn \str_case:nnF {e}
 
 %DIBUJA LO QUE QUEDO, AL CERRAR EL goban. CON \l_pgfgo_captures_overlay_bool (ANIMACIONES POR CAPAS) NO
 %DIBUJA NADA: LAS PIEDRAS VAN EN SUS PROPIAS CAPAS.

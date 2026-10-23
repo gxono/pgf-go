@@ -1,0 +1,22 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% PGF puts each \pgfonlayer around what the layer already had. With some
+% 2600 marks in one goban the boxes were so deeply nested that LuaLaTeX
+% crashed (stack overflow) when it shipped out the page, with no message.
+
+\case{\textbackslash territory\{auto\} on a 52 board: 2703 marks}
+\begin{goban}[52, scale = 0.12]\stones[b]{C3}\territory{auto}\end{goban}
+Black: \pgfgoscore{b} (2703).
+
+\case{The same with any marks: 2600 marks on a 25x52 board}
+\begin{goban}[25x52, scale = 0.12]\marks{A1:Z52}\marks[circle]{A1:Z52}\end{goban}
+
+\end{document}

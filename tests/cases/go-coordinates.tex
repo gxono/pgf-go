@@ -1,0 +1,37 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 1
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% The TikZ coordinate system go: (go cs:C3) is the intersection C3.
+
+\case{draw, rectangle, to with bend and a node; spaces around the coordinate; plain numbers (2,3) are B3}
+\begin{goban}[9, label]
+	\stones[b]{C3, D4}\stones[w]{E5, F4}
+	\draw[red, thick, rounded corners] (go cs:B2) rectangle (go cs: E5 );
+	\draw[blue, ->, thick] (go cs:G7) to[bend right] (go cs:F4);
+	\node[fill = white, draw] at (go cs:H8) {here};
+	\draw[green!60!black, ultra thick] (2,3) circle (0.3);
+\end{goban}
+
+\case{Partial board, a 19 board without I (Q16, R17), a rectangular board (J5 is the last corner)}
+\begin{goban}[19, partial = N13:T19, label]
+	\stones[b]{Q16}
+	\draw[red, thick] (go cs:Q16) -- (go cs:R17) -- (go cs:T17);
+\end{goban}
+\begin{goban}[9x5, label]
+	\draw[orange, ultra thick] (go cs:A1) -- (go cs:J5);
+\end{goban}
+
+\case{Outside the board (C0, under column C) / not recognized (1 warning): the origin}
+\begin{goban}[5, label]
+	\node at (go cs:C0) {C0};
+	\draw[red] (go cs:foo) -- (go cs:C3);
+\end{goban}
+
+\end{document}

@@ -21,8 +21,9 @@
 %EL NOMBRE DEL goban QUE SE ESTA DIBUJANDO (name): TODO LO QUE DIBUJA VA A LA MEMORIA DE ESE NOMBRE.
 \tl_new:N \l_pgfgo_goban_name_tl
 
-%GUARDA EL CODIGO #3 EN LA MEMORIA DEL goban CON NOMBRE. #1 FALSO: OLVIDADO. #2 DICE QUE ES (stone, mark
-%O territory): resume Y \pgfgoview PUEDEN NO DIBUJAR LAS MARCAS NI EL TERRITORIO.
+%GUARDA EL CODIGO #3 EN LA MEMORIA DEL goban CON NOMBRE. #1 FALSO: OLVIDADO. #2 DICE QUE ES (stone, mark,
+%arrow, line O territory): resume Y \pgfgoview PUEDEN NO DIBUJAR LAS MARCAS, LAS FLECHAS, LAS LINEAS NI EL
+%TERRITORIO.
 \cs_new_protected:Npn \pgfgo_remember:Nnn #1#2#3 {
 	\tl_if_empty:NF \l_pgfgo_goban_name_tl {
 		\exp_args:NV \pgfgo_kernel_remember_push:nn \l_pgfgo_goban_name_tl {
@@ -36,9 +37,11 @@
 	\str_if_eq:nnTF {#1} {stone} {#2} {\exp_not:N \pgfgo_remember_if:nn {#1} {#2}}
 }
 
-%AL VOLVER A DIBUJAR SE ESCONDEN LAS MARCAS, EL TERRITORIO, LOS NUMEROS DE LAS JUGADAS (VER
+%AL VOLVER A DIBUJAR SE ESCONDEN LAS MARCAS, LAS FLECHAS, LAS LINEAS, EL TERRITORIO, LOS NUMEROS DE LAS JUGADAS (VER
 %\pgfgo_move_parsed:nnn) Y LO OLVIDADO, SEGUN LO QUE PIDAN resume O \pgfgoview.
 \bool_new:N \l_pgfgo_remember_hide_mark_bool
+\bool_new:N \l_pgfgo_remember_hide_arrow_bool
+\bool_new:N \l_pgfgo_remember_hide_line_bool
 \bool_new:N \l_pgfgo_remember_hide_territory_bool
 \bool_new:N \l_pgfgo_remember_hide_numbers_bool
 \bool_new:N \l_pgfgo_remember_hide_forgotten_bool
@@ -52,7 +55,7 @@
 	\group_end:
 }
 
-%resume: VUELVE A DIBUJAR LA MEMORIA #4 SIN LO OLVIDADO, CON LAS MARCAS (#1), EL TERRITORIO (#2) Y LOS
+%resume: VUELVE A DIBUJAR LA MEMORIA #4 SIN LO OLVIDADO, CON LAS MARCAS, FLECHAS Y LINEAS (#1), EL TERRITORIO (#2) Y LOS
 %NUMEROS (#3) SOLO SI SE PIDEN (\c_true_bool O \c_false_bool). LO QUE YA SE ESCONDIA SIGUE ESCONDIDO: UN
 %goban CON name Y resume GUARDA ESTE MISMO CODIGO, Y UNA VISTA SIN MARCAS NO LAS MUESTRA.
 \seq_new:N \l__pgfgo_remember_hide_seq
@@ -66,11 +69,17 @@
 \cs_new_protected:Npn \__pgfgo_remember_resume:NNNn #1#2#3#4 {
 	\seq_push:Ne \l__pgfgo_remember_hide_seq {
 		\__pgfgo_remember_hide_restore:N \l_pgfgo_remember_hide_mark_bool
+		\__pgfgo_remember_hide_restore:N \l_pgfgo_remember_hide_arrow_bool
+		\__pgfgo_remember_hide_restore:N \l_pgfgo_remember_hide_line_bool
 		\__pgfgo_remember_hide_restore:N \l_pgfgo_remember_hide_territory_bool
 		\__pgfgo_remember_hide_restore:N \l_pgfgo_remember_hide_numbers_bool
 		\__pgfgo_remember_hide_restore:N \l_pgfgo_remember_hide_forgotten_bool
 	}
-	\bool_if:NF #1 {\bool_set_true:N \l_pgfgo_remember_hide_mark_bool}
+	\bool_if:NF #1 {
+		\bool_set_true:N \l_pgfgo_remember_hide_mark_bool
+		\bool_set_true:N \l_pgfgo_remember_hide_arrow_bool
+		\bool_set_true:N \l_pgfgo_remember_hide_line_bool
+	}
 	\bool_if:NF #2 {\bool_set_true:N \l_pgfgo_remember_hide_territory_bool}
 	\bool_if:NF #3 {\bool_set_true:N \l_pgfgo_remember_hide_numbers_bool}
 	\bool_set_true:N \l_pgfgo_remember_hide_forgotten_bool

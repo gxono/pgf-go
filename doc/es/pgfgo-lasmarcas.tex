@@ -837,3 +837,21 @@ Las líneas tienen las mismas opciones, salvo |tip|:
 \begin{key}{/pgfgo/line/forget}
 	Como |/pgfgo/arrow/forget|.
 \end{key}
+
+\subsection{Dibujar con Ti\emph{k}Z}
+\label{subsec:tikz}
+
+Un |goban| es un dibujo de Ti\emph{k}Z, así que adentro pueden usarse |\draw|, |\node| y los demás comandos de Ti\emph{k}Z. La unidad es la distancia entre dos líneas del tablero, y |(1,1)| es la esquina de abajo a la izquierda. Lo que se dibuja así va encima de todo, |partial = auto| no lo tiene en cuenta y no se recuerda: |resume| y las vistas no lo traen.
+
+\begin{command}{(go cs:\meta{intersection})}
+	El sistema de coordenadas |go| da la intersección del tablero escrita como en |\arrow| y |\line|: |(go cs:C3)| es C3. Puede estar fuera del tablero, como |(go cs:C0)|, debajo de la columna C. Si la coordenada no se entiende, avisa (|go-coordinate|) y usa el origen, |(0,0)|.
+
+	\begin{codeexample}[]
+		\begin{goban}[9]
+			\stones[b]{C3, D4}\stones[w]{E5, F4}
+			\draw[red, thick, rounded corners] (go cs:B2) rectangle (go cs:E5);
+			\draw[blue, ->, thick] (go cs:G7) to[bend right] (go cs:F4);
+			\node[fill = white, draw] at (go cs:H8) {¿aquí?};
+		\end{goban}
+	\end{codeexample}
+\end{command}

@@ -84,7 +84,7 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 	\end{stylekey}
 
 	\begin{command}{\pgfgoprisoners\marg{player}}
-		Escribe cuántos prisioneros tiene el jugador (|black| o |b|, |white| o |w|) en el último |goban| con |captures|: las piedras del rival que capturaron sus jugadas.
+		Escribe cuántos prisioneros tiene el jugador (|black| o |b|, |white| o |w|) en el último |goban| con |captures|: las piedras del rival que capturaron sus jugadas. Con otro jugador, da un error y escribe 0.
 
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = A1:C3}}
@@ -162,6 +162,8 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 	\begin{command}{\territory\opt{\oarg{options}}\marg{polygon}}
 		Marca como territorio los puntos del polígono que tiene esos vértices (en orden), incluido su borde. No marca los puntos que tienen una piedra viva: los prisioneros cuentan como territorio. Los vértices se escriben como en |\stones|; uno solo marca un punto, y dos, un segmento. Funciona con los dos kernels.
 
+		El territorio se dibuja al terminar el |goban|. Cada punto queda con el último |\territory| que lo marcó, con el jugador y las opciones de ese |\territory| (así, |\territory[n]{A1}| después de otro |\territory| vuelve neutral a A1), y no se dibuja ni se cuenta si al final tiene una piedra viva.
+
 		\begin{codeexample}[width=4.75cm]
 			\begin{goban}[label = {at = {above, left}}]
 		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
@@ -190,6 +192,16 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 				\territory[dame]{auto}
 			\end{goban}
 		\end{codeexample}
+
+		|auto| solo mira qué color toca cada región; no sabe leer la posición. Por eso:
+		\begin{itemize}
+			\item Es para partidas terminadas. En una posición abierta, casi todo el tablero toca los dos colores y es neutral; con piedras de un solo color, todo el tablero es suyo. Si un borde tiene un hueco, el territorio de adentro se junta con el dame y también queda neutral.
+			\item No sabe qué piedras están muertas: hay que ponerlas con |\prisoners|. Una piedra muerta puesta con |\stones| cuenta como viva, y la región que toca queda neutral.
+			\item Los ojos de un grupo en seki cuentan como territorio (en las reglas japonesas no se cuentan). Pueden volverse neutrales después, con un |\territory[n]| para cada uno.
+			\item Las piedras neutrales (sin jugador) ocupan su punto, pero no son de nadie: una región que solo toca piedras neutrales es neutral.
+			\item Busca las regiones con las piedras que hay cuando aparece |\territory|, así que conviene ponerlo al final del |goban|.
+			\item Con |partial = auto|, el tablero crece hasta mostrar todo el territorio (y el dame, con |dame|).
+		\end{itemize}
 	\end{command}
 
 	\begin{key}{/pgfgo/territory/black}
@@ -389,7 +401,7 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 	\end{key}
 
 	\begin{command}{\pgfgoscore\opt{\oarg{options}}\marg{player}}
-		Escribe el puntaje del jugador (|black| o |b|, |white| o |w|) en el último |goban|, con las reglas japonesas: los puntos de su territorio, más las piedras muertas del rival que hay en él, más las piedras que capturó (con |captures|), más el |komi| para las blancas. Un punto marcado dos veces cuenta una sola vez.
+		Escribe el puntaje del jugador (|black| o |b|, |white| o |w|) en el último |goban|, con las reglas japonesas: los puntos de su territorio, más las piedras muertas del rival que hay en él, más las piedras que capturó (con |captures|), más el |komi| para las blancas. Un punto marcado dos veces cuenta una sola vez. Con |neutral| o |n|, escribe la cantidad de puntos neutrales marcados. Con otro jugador, da un error y escribe 0.
 
 		\begin{codeexample}[code only]
 			Negras: \pgfgoscore{black}. Blancas: \pgfgoscore[komi = 6.5]{white}.

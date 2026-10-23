@@ -132,7 +132,27 @@
 	\end{key}
 
 	\begin{key}{/pgfgo/view/marks=\meta{boolean} (default true, initially true)}
-		Con |false|, no dibuja las marcas, las flechas ni las líneas.
+		Con |false|, no dibuja las marcas.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/arrows=\meta{boolean} (default true, initially true)}
+		Con |false|, no dibuja las flechas (|\arrow| y |AR| de |\sgf|).
+	\end{key}
+
+	\begin{key}{/pgfgo/view/lines=\meta{boolean} (default true, initially true)}
+		Con |false|, no dibuja las líneas (|\line| y |LN| de |\sgf|).
+
+		\begin{codeexample}[]
+			\begin{goban}[5, name = tablero-flechas]
+				\stones[b]{B2}\stones[w]{D4}
+				\arrow{B2}{D4}
+				\line{B4}{D2}
+				\marks[triangle]{C3}
+			\end{goban}
+
+			Sin flechas: \pgfgoview[arrows = false]{tablero-flechas}{A1:E5}.
+			Sin líneas ni marcas: \pgfgoview[lines = false, marks = false]{tablero-flechas}{A1:E5}.
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/view/numbers=\meta{boolean} (default true, initially true)}

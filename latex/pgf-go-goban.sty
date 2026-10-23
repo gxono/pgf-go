@@ -840,11 +840,69 @@
 	}
 	\cs_generate_variant:Nn \__pgfgo_goban_tile_point:NNnnnn {NNV}
 
+	%CAPAS. EL \pgfonlayer DE PGF METE LO QUE YA TENIA LA CAPA DENTRO DE LA CAJA NUEVA: CON MILES DE MARCAS
+	%(\territory{auto} EN UN TABLERO GRANDE) EL ANIDAMIENTO DESBORDA LA PILA DE LuaTeX AL ARMAR LA PAGINA,
+	%SIN NINGUN MENSAJE. EN EL goban, CADA \pgfonlayer VA EN SU CAJA, AL LADO DE LAS ANTERIORES; LO DEMAS ES
+	%COMO EN PGF. \__pgfgo_goban_layer_close: CIERRA LA CAJA DE LA CAPA (NADA SI YA SE ESTABA EN ELLA).
+	\cs_new_protected:Npn \__pgfgo_goban_onlayer:n #1 {
+		\pgfutil@ifundefined {pgf@layerbox@#1} {
+			\pgferror {Sorry,~the~requested~layer~'#1'~could~not~be~found.~Maybe~you~misspelled~it?}
+			\cs_set_eq:NN \__pgfgo_goban_layer_close: \prg_do_nothing:
+			\bgroup
+			\begingroup
+		}{
+			\begingroup
+			\tl_set:Nn \pgf@temp {#1}
+			\tl_if_eq:NNTF \pgf@temp \pgfonlayer@name
+				{
+					\cs_set_eq:NN \__pgfgo_goban_layer_close: \prg_do_nothing:
+					\cs_set:Npn \pgf@temp {\bgroup \begingroup}
+				}{
+					\cs_set_eq:NN \pgfonlayer@name \pgf@temp
+					\pgfonlayer@assert@is@active
+					\cs_set_eq:NN \__pgfgo_goban_layer_close: \egroup
+					\cs_set:Npn \pgf@temp {
+						\tex_global:D \tex_setbox:D \cs:w pgf@layerbox@#1 \cs_end: = \tex_hbox:D to 0pt \bgroup
+							\tex_unhbox:D \cs:w pgf@layerbox@#1 \cs_end:
+							\tex_hbox:D to 0pt \bgroup
+								\begingroup
+					}
+				}
+			\pgfsetlinewidth {0.4pt}
+			\pgf@temp
+		}
+	}
+	\cs_new_protected:Npn \__pgfgo_goban_endlayer: {
+				\endgroup
+				\hss
+			\egroup
+		\__pgfgo_goban_layer_close:
+		\endgroup
+	}
+	\cs_new_eq:NN \__pgfgo_goban_layer_close: \prg_do_nothing:
+
+	%EL SISTEMA DE COORDENADAS go DE TikZ: (go cs:B3) ES LA INTERSECCION B3 DEL goban (UNA SOLA, COMO EN
+	%\arrow Y \line; PUEDE ESTAR FUERA DEL TABLERO, COMO C0). SI NO SE ENTIENDE, UN AVISO Y EL ORIGEN.
+	\msg_new:nnn {pgfgo} {go-coordinate}
+		{Coordinate~'#1'~in~(go~cs:#1)~was~not~recognized:~it~is~the~origin~(0,0).}
+	\tikzdeclarecoordinatesystem {go} {\__pgfgo_goban_cs:n {#1}}
+	\cs_new_protected:Npn \__pgfgo_goban_cs:n #1 {
+		\pgfgo_kernel_point:eTF {\tl_trim_spaces:n {#1}}
+			{\exp_after:wN \pgfpointxy \l_pgfgo_kernel_point_tl}
+			{
+				\msg_warning:nne {pgfgo} {go-coordinate} {\tl_trim_spaces:n {#1}}
+				\pgfpointorigin
+			}
+	}
+	\cs_generate_variant:Nn \pgfgo_kernel_point:nTF {e}
+
 	%EMPIEZA EL DIBUJO. #1 Y #2 SON EL TAMANO COMPLETO; LA PARTE VISIBLE YA LA CALCULO \pgfgo_kernel_board_init:.
 	%CON partial = auto, EL TABLERO SE DIBUJA AL CERRAR, CUANDO YA SE SABE QUE PARTE SE USO (SUS CAPAS VAN
 	%DEBAJO IGUAL). EL ENTORNO TERMINA CON \__pgfgo_goban_end:.
 	\cs_new_protected:Npn \__pgfgo_goban_begin:nn #1#2 {
 		\group_begin:
+		\cs_set_eq:cN {pgfonlayer} \__pgfgo_goban_onlayer:n
+		\cs_set_eq:cN {endpgfonlayer} \__pgfgo_goban_endlayer:
 		\pgfsetlayers{
 			pgfgo_layer_goban_border,
 			pgfgo_layer_goban_grid,
@@ -1171,6 +1229,7 @@
 
 	\cs_new_protected:Npn \__pgfgo_goban_end: {
 		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_end:}
+		\pgfgo_territory_finish:
 		%partial = auto: LA PARTE VISIBLE ES LO QUE SE DIBUJO (EL TERRITORIO COMO REGION SE SUMO AL PEDIRLO), Y
 		%RECIEN AHORA SE DIBUJA EL TABLERO.
 		\bool_if:NT \l_pgfgo_goban_partial_auto_bool {
@@ -1407,10 +1466,12 @@
 	}
 	\cs_new:Npn \__pgfgo_goban_resume_bool:N #1 {\bool_if:NTF #1 {\exp_not:N \c_true_bool} {\exp_not:N \c_false_bool}}
 
-	%/pgfgo/view: QUE SE DEJA DE DIBUJAR (marks, numbers, territory = false), SI SE DIBUJA LO OLVIDADO
+	%/pgfgo/view: QUE SE DEJA DE DIBUJAR (marks, arrows, lines, numbers, territory = false), SI SE DIBUJA LO OLVIDADO
 	%(forgotten), A QUE ALTURA (raise) Y LAS OPCIONES DE goban DE LAS VISTAS, QUE VAN DESPUES DE LAS DEL
 	%goban CON NOMBRE.
 	\bool_new:N \l__pgfgo_view_marks_bool
+	\bool_new:N \l__pgfgo_view_arrows_bool
+	\bool_new:N \l__pgfgo_view_lines_bool
 	\bool_new:N \l__pgfgo_view_numbers_bool
 	\bool_new:N \l__pgfgo_view_territory_bool
 	\bool_new:N \l__pgfgo_view_forgotten_bool
@@ -1422,6 +1483,12 @@
 		marks							.bool_set:N	= \l__pgfgo_view_marks_bool,
 		marks							.default:n	= {true},
 		marks							.initial:n	= {true},
+		arrows						.bool_set:N	= \l__pgfgo_view_arrows_bool,
+		arrows						.default:n	= {true},
+		arrows						.initial:n	= {true},
+		lines							.bool_set:N	= \l__pgfgo_view_lines_bool,
+		lines							.default:n	= {true},
+		lines							.initial:n	= {true},
 		numbers						.bool_set:N	= \l__pgfgo_view_numbers_bool,
 		numbers						.default:n	= {true},
 		numbers						.initial:n	= {true},
@@ -1539,6 +1606,8 @@
 				\tl_use:N \l__pgfgo_view_style_tl
 				\keys_set:nn {pgfgo / view} {#1}
 				\bool_set:Nn \l_pgfgo_remember_hide_mark_bool {! \l__pgfgo_view_marks_bool}
+				\bool_set:Nn \l_pgfgo_remember_hide_arrow_bool {! \l__pgfgo_view_arrows_bool}
+				\bool_set:Nn \l_pgfgo_remember_hide_line_bool {! \l__pgfgo_view_lines_bool}
 				\bool_set:Nn \l_pgfgo_remember_hide_numbers_bool {! \l__pgfgo_view_numbers_bool}
 				\bool_set:Nn \l_pgfgo_remember_hide_territory_bool {! \l__pgfgo_view_territory_bool}
 				\bool_set:Nn \l_pgfgo_remember_hide_forgotten_bool {! \l__pgfgo_view_forgotten_bool}

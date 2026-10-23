@@ -1,0 +1,26 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=10cm]{standalone}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+
+\pgfgoset{profile = pgfgo, view = {scale = 0.45}}
+
+
+\begin{document}
+	% Inside a goban, TikZ draws with the intersections of the board: (go cs:C3). The views
+	% can leave out the arrows and the lines of pgf-go.
+
+	\begin{goban}[9, name = plan]
+		\stones[b]{C3, C5, D7, G3}
+		\stones[w]{E3, F5, G6, C7}
+		\draw[red, very thick, rounded corners] (go cs:B2) rectangle (go cs:D6);
+		\node[red, fill = white, draw, font = \small] at (go cs:C4) {moyo};
+		\draw[blue, very thick, ->] (go cs:F5) to[bend right] (go cs:D8);
+		\arrow{G3}{H5}
+		\line{E3}{G6}
+	\end{goban}
+
+	\medskip
+	White runs with \pgfgoview{plan}{E2:H7}; without the arrow and the line, the stones
+	alone: \pgfgoview[arrows = false, lines = false]{plan}{E2:H7}.
+\end{document}

@@ -1,0 +1,38 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\pgfgoset{view = {scale = 1}}
+\begin{document}
+
+% view/marks, view/arrows and view/lines hide each kind on its own; resume
+% with marks brings the three.
+
+\case{The goban: a mark (C3), an arrow (B2 to D4) and a line (B4 to D2)}
+\begin{goban}[5, name = al]
+	\stones[b]{B2}\stones[w]{D4}
+	\arrow{B2}{D4}
+	\line{B4}{D2}
+	\marks[triangle]{C3}
+\end{goban}
+
+\case{View: all / arrows = false / lines = false / marks = false / the three false}
+\pgfgoview{al}{A1:E5}
+\pgfgoview[arrows = false]{al}{A1:E5}
+\pgfgoview[lines = false]{al}{A1:E5}
+\pgfgoview[marks = false]{al}{A1:E5}
+\pgfgoview[arrows = false, lines = false, marks = false]{al}{A1:E5}
+
+\case{resume without marks (only the stones) / with marks (the three)}
+\begin{goban}[5, resume = al]\end{goban}
+\begin{goban}[5, resume = {al, marks}]\end{goban}
+
+\case{A goban with name and resume keeps what it hid: its view has no arrow, line or mark}
+\begin{goban}[5, name = al2, resume = al]\end{goban}
+\pgfgoview{al2}{A1:E5}
+
+\end{document}

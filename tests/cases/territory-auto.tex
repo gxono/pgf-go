@@ -1,0 +1,72 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 2
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\newcommand\score[3]{\quad b \pgfgoscore{b} (#1), w \pgfgoscore{w} (#2), n \pgfgoscore{n} (#3)}
+\pagestyle{empty}
+\pgfgoset{goban = {scale = 0.5}}
+\begin{document}
+
+% What \territory{auto} can and cannot know. The numbers in parentheses are
+% the expected scores.
+
+\case{Open positions: an empty board is neutral; one stone owns the whole board; two colours touch the same region}
+\begin{goban}[5]\territory[dame]{auto}\end{goban}\score{0}{0}{25}
+\begin{goban}[5]\stones[b]{C3}\territory[dame]{auto}\end{goban}\score{24}{0}{0}
+
+\begin{goban}\stones[b]{C3}\stones[w]{G7}\territory[dame]{auto}\end{goban}\score{0}{0}{79}
+
+\case{Closed borders (column E is dame) / a gap in the wall (B5) joins column A to the dame}
+\begin{goban}\stones[b]{D1:9}\stones[w]{F1:9}\territory[dame]{auto}\end{goban}\score{27}{27}{9}
+\begin{goban}[5]\stones[b]{B1:4}\stones[w]{D1:5}\territory[dame]{auto}\end{goban}\score{0}{5}{11}
+
+\case{A dead stone (A3) that is not a prisoner is alive / as a prisoner it counts}
+\begin{goban}[5]\stones[b]{B1:5}\stones[w]{D1:5, A3}\territory[dame]{auto}\end{goban}\score{0}{5}{9}
+\begin{goban}[5]\stones[b]{B1:5}\stones[w]{D1:5}\prisoner[w]{A3}\territory[dame]{auto}\end{goban}\score{6}{5}{5}
+
+\case{Neutral stones take the point but are nobody's: A3 / a neutral wall (C) with only black on one side}
+\begin{goban}[5]\stones[b]{B1:5}\stones[w]{D1:5}\stones{A3}\territory[dame]{auto}\end{goban}\score{4}{5}{5}
+\begin{goban}[5]\stones{C1:5}\stones[b]{A1}\territory[dame]{auto}\end{goban}\score{9}{0}{10}
+
+\case{Seki: the eyes (A1, G1) count as territory; the shared liberties (C1:E1) are neutral}
+\begin{goban}[7x2]\stones[b]{A2:D2, B1}\stones[w]{E2:G2, F1}\territory[dame]{auto}\end{goban}\score{1}{1}{3}
+
+\case{Rectangular board / board of size 2}
+\begin{goban}[7x4]\stones[b]{C1:4}\stones[w]{E1:4}\territory[dame]{auto}\end{goban}\score{8}{8}{4}
+\begin{goban}[2]\stones[b]{A1}\territory{auto}\end{goban}\score{3}{0}{0}
+
+\case{Partial board: the hidden points count / partial = auto grows to the territory}
+\begin{goban}[5, partial = B2:D4]\stones[b]{B1:5}\stones[w]{D1:5}\territory{auto}\end{goban}\score{5}{5}{0}
+\begin{goban}[partial = auto]\stones[b]{A3, B3, C3, C2, C1}\territory{auto}\end{goban}\score{76}{0}{0}
+\begin{goban}[partial = auto]\stones[b]{A3, B3, C3, C2, C1}\stones[w]{A4, B4, C4, D3, D2, D1}\territory{auto}\end{goban}\score{4}{66}{0}
+
+\case{Drawn when the goban ends: a stone after it (A1) takes the point out / a polygon after it replaces A1 (marks, fill, region)}
+\begin{goban}[5]\stones[b]{B1:5}\stones[w]{D1:5}\territory{auto}\stones[w]{A1}\end{goban}\score{4}{5}{0}
+\begin{goban}[5]\stones[b]{B1:5}\stones[w]{D1:5}\territory{auto}\territory[n]{A1}\end{goban}\score{4}{5}{1}
+\begin{goban}[5]\stones[b]{B1:5}\stones[w]{D1:5}\territory[draw = fill]{auto}\territory[n, draw = fill]{A1}\end{goban}\score{4}{5}{1}
+\begin{goban}[5]\stones[b]{B1:5}\stones[w]{D1:5}\territory[draw = region]{auto}\territory[n, draw = region]{A1}\end{goban}\score{4}{5}{1}
+
+\case{Seki: the eyes as neutral points / auto twice is drawn once / the options of each \textbackslash territory}
+\begin{goban}[7x2]\stones[b]{A2:D2, B1}\stones[w]{E2:G2, F1}\territory{auto}\territory[n]{A1}\territory[n]{G1}\end{goban}\score{0}{0}{2}
+\begin{goban}[5]\stones[b]{B1:5}\stones[w]{D1:5}\territory[draw = fill]{auto}\territory[draw = fill]{auto}\end{goban}\score{5}{5}{0}
+\begin{goban}[5]\stones[b]{B1:5}\stones[w]{D1:5}\territory[b]{auto}\territory[w, mark = cross]{auto}\end{goban}\score{5}{5}{0}
+
+\case{resume brings the territory with its options; a stone of the new goban (E1) takes its point out}
+\begin{goban}[5, name = auto-resume]\stones[b]{B1:5}\stones[w]{D1:5}\territory[w, mark = cross]{auto}\end{goban}
+\begin{goban}[5, resume = {auto-resume, territory}]\stones[b]{E1}\end{goban}\score{0}{4}{0}
+
+\case{Captures: without captures the white stone A1 stays / with captures A1 is territory and 1 capture}
+\begin{goban}[5]\stones[b]{B1:5}\stones[w]{D1:5, A1}\moves{A2}\territory{auto}\end{goban}\score{3}{5}{0}
+\begin{goban}[5, captures]\stones[b]{B1:5}\stones[w]{D1:5, A1}\moves{A2}\territory{auto}\end{goban}\score{5}{5}{0}
+
+\case{\textbackslash pgfgoscore\{neutral\} is \textbackslash pgfgoscore\{n\}}
+\begin{goban}[5]\stones[b]{B1:5}\stones[w]{D1:5}\territory[dame]{auto}\end{goban}
+neutral \pgfgoscore{neutral} (5), n \pgfgoscore{n} (5), { n } \pgfgoscore{ n } (5).
+
+\case{An unknown player is an error (2 errors) and 0}
+Black \pgfgoscore{Black} (0), foo \pgfgoprisoners{foo} (0).
+
+\end{document}
