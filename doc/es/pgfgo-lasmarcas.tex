@@ -1,21 +1,23 @@
 \section{Marcas, flechas y líneas}
 \label{sec:marcas}
 
-Las marcas son elementos gráficos que se colocan en las intersecciones del tablero para resaltar posiciones específicas, indicar puntos de interés o numerar secuencias, sin necesidad de añadir piedras. \pgfgoname\ ofrece comandos y opciones versátiles para personalizar estas marcas, desde formas predefinidas hasta etiquetas personalizadas.
+Las marcas van sobre una intersección, con o sin piedra: formas (círculo, triángulo, cruz, \ldots), números en secuencia o cualquier texto.
 
 \begin{command}{\mark\opt{\oarg{options}}\marg{intersection}}
 	
-	Dibuja una marca individual en la intersección especificada (ej. «C3»). Las opciones permiten definir su forma, color y otros atributos.
+	Dibuja una marca en la intersección. Las opciones eligen su forma y su estilo.
 \end{command}
 
 \begin{command}{\marks\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
 	
-	Similar a |\mark|, pero aplica la misma marca a múltiples intersecciones mediante la sintaxis de coordenadas.
+	Como |\mark|, con varias intersecciones (pág.~\pageref{subsec:sintaxis-de-coordenadas}).
 \end{command}
+
+|\mark| y |\marks| son primitivas de \TeX. Para no pisarlas, las macros |\mark| y |\marks| de \pgfgoname\ solo existen dentro del entorno |goban|. Fuera de él siguen siendo las primitivas, de modo que las marcas de página y los encabezados no se ven afectados.
 
 \begin{key}{/pgfgo/mark = \meta{options} (default cross)}
 	
-	Define el tipo de marca a colocar, con una cruz («cross») como valor predeterminado si no se especifica otra opción.
+	La forma de la marca. Sin forma, es una cruz (|cross|).
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -35,7 +37,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/circle}
 	
-	Coloca un círculo hueco como marca.
+	Un círculo.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -55,7 +57,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/triangle}
 	
-	Dibuja un triángulo hueco.
+	Un triángulo.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -75,7 +77,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/square}
 	
-	Coloca un cuadrado hueco.
+	Un cuadrado.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -95,7 +97,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/cross}
 	
-	Dibuja una cruz.
+	Una cruz.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -115,7 +117,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/filled square}
 	
-	Coloca un cuadrado relleno.
+	Un cuadrado relleno.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -135,7 +137,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/filled circle}
 	
-	Dibuja un círculo relleno.
+	Un círculo relleno.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -155,7 +157,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/t-circle}
 	
-	Coloca un círculo pequeño con un borde más grueso, diseñado específicamente para marcar territorios.
+	Un círculo pequeño, con el relleno de las piedras del jugador y el borde de la cuadrícula. Es la marca del territorio de las negras.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -175,7 +177,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/t-square}
 	
-	Dibuja un cuadrado pequeño con borde grueso, similar a «t-circle», usado para señalar territorios.
+	Como |t-circle|, pero cuadrado. Es la marca del territorio de las blancas y de los puntos neutrales.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -195,7 +197,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/hatched lines}
 	
-	Coloca un patrón de líneas cruzadas (tramado).
+	Un tramado de líneas cruzadas.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -240,7 +242,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/sequence/from=\meta{number}}
 	
-	Establece el número inicial de la secuencia de marcas numeradas, permitiendo continuar desde un punto específico en lugar de 1.
+	Número de la primera marca.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -274,7 +276,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/custom=\meta{token list}}
 	
-	Permite definir una marca personalizada usando texto o símbolos (como «!» o «?») e incluso im\'agenes.
+	Una marca con cualquier contenido: un texto, un símbolo («!», «?») o hasta un dibujo.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -374,12 +376,12 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 
 \begin{key}{/pgfgo/mark/line = \meta{options}}
-	Controla el contorno de la marca.
+	Opciones del trazo de la marca.
 \end{key}
 
 
 \begin{key}{/pgfgo/mark/line/color = \meta{color}}
-	Define el color del contorno de la marca.
+	Color del trazo.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -400,7 +402,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/line/width = \meta{dimension}}
 	
-	Ajusta el grosor del contorno de las marcas.
+	Grosor del trazo.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -419,10 +421,12 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 	\end{codeexample}
 \end{key}
 
-
+\begin{key}{/pgfgo/mark/line/opacity = \meta{float} (initially 1)}
+	Opacidad del trazo.
+\end{key}
 
 \begin{key}{/pgfgo/mark/fill = \meta{options} (default true)}
-	Controla el relleno de las marcas rellenas (|filled square|, |filled circle| y |hatched lines|).
+	Relleno de las marcas rellenas (|filled square|, |filled circle| y |hatched lines|) y color |pgfgomarkfill| de las marcas propias (pág.~\pageref{subsec:marcaspropias}).
 \end{key}
 
 \begin{key}{/pgfgo/mark/fill/true}
@@ -435,7 +439,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/fill/color = \meta{color}}
 	
-	Establece el color de relleno de una marca (inicialmente, gris).
+	Color del relleno (inicialmente, gris).
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -453,15 +457,31 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/mark/fill/opacity = \meta{float} (initially 1)}
+	Opacidad del relleno.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {
+			fill = {color = red, opacity = 0.5},
+			line = {opacity = 0.3}}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\marks[w, filled square]{A1, B2}
+			\marks[w, triangle]{C3, A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
 
 \begin{key}{/pgfgo/mark/label = \meta{option}}
-	Controla la apariencia de las etiquetas de las marcas que las tengan.
+	Opciones del texto de las marcas que lo tienen (|sequence| y |custom|).
 \end{key}
 
 
 \begin{key}{/pgfgo/mark/label/color = \meta{color}}
 	
-	Controla el color del texto o símbolo en marcas personalizadas (como con |custom|).
+	Color del texto.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -493,14 +513,31 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/mark/label/format=\meta{options} (initially arabic)}
-	
-	Controla el estilo de numeración de las etiquetas de enumeraci\'on (como |sequence|), con opciones como números arábigos, letras o romanos.
+\begin{key}{/pgfgo/mark/label/font size = \meta{dimension}}
+	Tamaño del texto. Si no se fija, se ajusta según la cantidad de caracteres.
+\end{key}
+
+\label{key:kanji}\begin{key}{/pgfgo/mark/label/format=\meta{options} (initially arabic)}
+
+	Formato de los números de |sequence|: |arabic|, |alph|, |Alph|, |roman|, |Roman| o |kanji|.
+
+	Los kanji necesitan una fuente que los tenga, elegida con |label/font| (de las marcas o de las jugadas). Tiene que ser una familia de \LaTeX: con |fontspec|, |\newfontfamily\kanji{ipaexm.ttf}| y |font = \kanji|; sin |fontspec|, con Lua\LaTeX, se puede declarar como en este ejemplo (en el preámbulo). Un |\font| de \TeX{} no sirve, porque no cambia de tamaño.
+
+	\begin{codeexample}[width=4cm]
+		% En el preámbulo:
+		% \DeclareFontFamily{TU}{ipaex}{}
+		% \DeclareFontShape{TU}{ipaex}{m}{n}{<->file:ipaexm.ttf}{}
+		% \DeclareFontShape{TU}{ipaex}{bx}{n}{<->ssub*ipaex/m/n}{}
+		\begin{goban}[3, scale = 1.6]
+			\marks[sequence = {format = kanji, from = 9},
+				label = {font = \fontfamily{ipaex}\selectfont}]{A1, B2, C3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/mark/label/format/arabic}
 	
-	Usa números arábigos para secuencias.
+	Números arábigos. Es el valor inicial.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -520,7 +557,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/label/format/alph}
 	
-	Usa letras minúsculas para la secuencia.
+	Letras minúsculas.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -540,7 +577,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/label/format/Alph}
 	
-	Usa letras mayúsculas.
+	Letras mayúsculas.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -560,7 +597,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/label/format/roman}
 	
-	Usa números romanos minúsculos.
+	Números romanos en minúscula.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -580,7 +617,7 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/label/format/Roman}
 	
-	Usa números romanos mayúsculos.
+	Números romanos en mayúscula.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -598,11 +635,15 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/mark/label/format/kanji}
+	Números en kanji ({\pgfgokanji 一, 二, …, 十, 十一, …, 百}), como los de |goban/label/columns = kanji|.
+\end{key}
+
 
 
 \begin{key}{/pgfgo/mark/black}
 	
-	Aplica las propiedades del primer jugador (negro) a la marca.
+	La marca es del primer jugador, con su estilo.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -623,12 +664,12 @@ Las marcas son elementos gráficos que se colocan en las intersecciones del tabl
 
 \begin{key}{/pgfgo/mark/white}
 	
-	Aplica las propiedades del segundo jugador (blanco) a la marca.
+	La marca es del segundo jugador, con su estilo.
 \end{key}
 
 \begin{key}{/pgfgo/mark/neutral}
 	
-	Mantiene la marca sin asociarla a ningún jugador.
+	La marca es del jugador neutral.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
@@ -715,7 +756,7 @@ Las flechas y las líneas unen dos intersecciones. Se dibujan encima de las pied
 \end{key}
 
 \begin{key}{/pgfgo/arrow/shorten=\meta{dimension} (initially 0pt)}
-	Acorta los dos extremos, por ejemplo para que la flecha no tape las piedras.
+	Acorta los dos extremos.
 
 	\begin{codeexample}[]
 		\begin{goban}[5]

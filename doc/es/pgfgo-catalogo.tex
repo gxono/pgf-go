@@ -1,7 +1,7 @@
 \section{Catálogo de perfiles}
 \label{sec:catalogo}
 
-Los perfiles que trae \pgfgoname, cada uno con una muestra y con su definición, tal como está en |pgf-go-profiles.sty|. Se usan con |profile| (pág.~\pageref{subsec:perfiles}), y sus definiciones sirven de punto de partida para perfiles propios.
+Los perfiles que trae \pgfgoname, cada uno con una muestra y con su definición, tal como está en |pgf-go-profiles.sty|. Se usan con |profile| (pág.~\pageref{subsec:perfiles}).
 
 \subsection{default}
 
@@ -117,7 +117,7 @@ Los colores |wainshade|, |wainwhite| y |wainblack| son los del perfil |wain|, m�
 	\end{codeexample}
 	
 	
-	Algunas cosas como el grosor de linea, opacidades y dem\'as, deseo que se conserven en todas las piedras, as\'i que copio la plantilla del jugador neutral.
+	Algunas cosas como el grosor de l\'inea, opacidades y dem\'as, deseo que se conserven en todas las piedras, as\'i que copio la plantilla del jugador neutral.
 	
 	\begin{codeexample}[code only]
 		\pgfgodefineplayer[from = pgfgo-neutral]{pgfgo-white}{
@@ -389,7 +389,7 @@ Los colores |wainshade|, |wainwhite| y |wainblack| son los del perfil |wain|, m�
 \subsection{shell}
 \label{subsec:perfilshell}
 
-Un tablero de madera con piedras de pizarra y de concha, dibujados con imágenes (pág.~\pageref{subsec:piedrasimagen}). Las blancas usan cinco imágenes, cada una con sus vetas, y cada piedra está girada un poco, así que no se ven dos iguales; todas tienen una sombra difusa. Las imágenes vienen con \pgfgoname, en la carpeta |img|; los archivos que usa el perfil empiezan con |pgfgo-| y pueden usarse también en perfiles propios. Cada archivo se guarda una sola vez en el PDF, por más piedras que lo usen (pág.~\pageref{subsubsec:imagenespdf}). La sombra necesita pdf\LaTeX\ o Lua\LaTeX\ con salida PDF.
+Un tablero de madera con piedras de pizarra y de concha, dibujados con imágenes (pág.~\pageref{subsec:piedrasimagen}). Las blancas usan cinco imágenes, cada una con sus vetas, y cada piedra está girada un poco, así que no se ven dos iguales; todas tienen una sombra difusa. Las imágenes vienen con \pgfgoname, en la carpeta |img|; los archivos que usa el perfil empiezan con |pgfgo-|. Cada archivo se guarda una sola vez en el PDF, por más piedras que lo usen (pág.~\pageref{subsubsec:imagenespdf}). La sombra necesita pdf\LaTeX\ o Lua\LaTeX\ con salida PDF.
 
 \begin{codeexample}[width=4cm]
 	\pgfgoset{profile = shell}

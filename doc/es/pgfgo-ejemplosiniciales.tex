@@ -58,26 +58,26 @@ Para la introducción del artículo, \karu\ quiere una posición propia, que no 
 	\label{fig:primer-ejemplo}
 \end{figure}
 
-\karu\ empieza por el tablero vacío. Como en el tutorial anterior, todo se dibuja dentro del entorno |goban|. Este entorno controla por defecto el tamaño y el color del tablero, la posición y el tipo de etiquetas, entre otras propiedades. También permite representar tableros parciales.
+\karu\ empieza por el tablero vacío. Como en el tutorial anterior, todo se dibuja dentro del entorno |goban|, que se encarga del tamaño del tablero, su color, sus coordenadas y todo lo que se dibuja encima.
 
 \begin{codeexample}[width=4.4cm]
 \begin{goban}
 \end{goban}
 \end{codeexample}
 
-\karu\ está satisfecho. El entorno proporciona por defecto un tablero de $9\times 9$, que es justo lo que necesita, pero debe añadirle etiquetas laterales. El entorno |goban| no requiere parámetros obligatorios, aunque acepta uno opcional: una lista de |keys| o |key=values| para configurarlo. \karu\ consulta la sección sobre |goban| (pág.~\pageref{sec:tablero}) y decide añadir etiquetas al entorno. Sabe que las \emph{keys} que controlan los objetos del goban se dividen en tres grupos: |grid|, para la cuadrícula central; |background|, para el borde y el relleno del tablero; y |label|, para las etiquetas de las coordenadas. Esta última es la que le interesa. A esta \emph{key}, entre otras opciones, se le puede pasar la \emph{key} |at| para definir la posición de las etiquetas con valores como |above|, |west|, |below|, |right|, |all| o |none|. También se pueden usar puntos cardinales. Como solo quiere etiquetas arriba y a la izquierda del goban, empleará las \emph{keys} |above| y |left|.
+El tablero es de $9\times 9$, justo lo que necesita, pero le faltan las coordenadas en los bordes. Las opciones del |goban| van entre corchetes, y las de cada parte del tablero se agrupan en tres \emph{keys}: |grid|, para la cuadrícula; |background|, para el borde y el relleno, y |label|, para las coordenadas (pág.~\pageref{sec:tablero}). Dentro de |label|, |at| dice en qué lados van: |north|, |south|, |east| y |west| (o |above|, |below|, |right| y |left|), |all| o |none|. \karu\ las quiere arriba y a la izquierda.
 
 \begin{codeexample}[width=4.7cm]
-\begin{goban}[label = {at = {above, left}}]
+\begin{goban}[label = {at = {north, west}}]
 \end{goban}
 \end{codeexample}
 
 \karu\ nota que las columnas pasan de la |H| a la |J|: como es costumbre en el go, \pgfgoname\ omite la «I», tanto en las coordenadas como en las etiquetas laterales. Si alguna vez la necesita, la \emph{key} |goban/use i| (pág.~\pageref{subsec:usei}) la vuelve a poner.
 
-Ahora sí está listo para colocar las piedras. Para ello, \karu\ dispone de varias macros. Empecemos por la más básica: |\stone[options]{intersection}|. Este comando acepta dos parámetros: el primero, opcional, controla la apariencia y los elementos adicionales de las piedras (como marcas); el segundo, obligatorio, es la intersección. \karu\ no necesita convertir las intersecciones a números, ya que puede indicarlas alfanuméricamente. Por defecto, las piedras son neutrales, pero puede elegir al primer jugador pasando la \emph{key} |black| o |b|.
+Ahora sí, las piedras. La más simple es |\stone|, que recibe la intersección, como |D8|, y entre corchetes sus opciones: el jugador, el estilo, una marca. Sin jugador, la piedra es neutral; para las negras, \karu\ escribe |black|, o |b|.
 
 \begin{codeexample}[width=4.8cm]
-\begin{goban}[label = {at = {above, left}}]
+\begin{goban}[label = {at = {north, west}}]
 	\stone[black]{D8}
 	\stone[black]{F8}
 	\stone[b]{E7}
@@ -85,7 +85,7 @@ Ahora sí está listo para colocar las piedras. Para ello, \karu\ dispone de var
 \end{goban}
 \end{codeexample}
 
-\karu\ sospecha que esta no es la mejor opción si necesita añadir 200 piedras o más. Para simplificar la sintaxis, descubre en la documentación la macro |\stones[options]{intersection, intersection, ...}|, que acepta las mismas \emph{keys} opcionales que |\stone|.\footnote{Entre \texttt{\textbackslash stone\{A1\}} y \texttt{\textbackslash stones\{A1\}}, la primera opción es mucho más rápida. Veremos más adelante que hay muchos procesos involucrados en la lectura del parámetro obligatorio de las macros plurales.}
+\karu\ sospecha que esta no es la mejor opción si necesita añadir 200 piedras o más. Encuentra |\stones|, que recibe una lista de intersecciones separadas por comas y acepta las mismas opciones que |\stone|.\footnote{Entre \texttt{\textbackslash stone\{A1\}} y \texttt{\textbackslash stones\{A1\}}, la primera opción es mucho más rápida. Veremos más adelante que hay muchos procesos involucrados en la lectura del parámetro obligatorio de las macros plurales.}
 
 \begin{codeexample}[width=4.8cm]
 \begin{goban}[label = {at = {north, west}}]
@@ -93,7 +93,7 @@ Ahora sí está listo para colocar las piedras. Para ello, \karu\ dispone de var
 \end{goban}
 \end{codeexample}
 
-Para añadir piedras blancas, \karu\ debe incluir la \emph{key} |white| en el comando |\stones|. Sabe que |white| y |black| no se refieren literalmente a los colores blanco y negro, sino al segundo y al primer jugador, respectivamente, y que al aplicar estas \emph{keys} los objetos heredan sus propiedades.
+Las blancas llevan |white|, o |w|. En rigor, |black| y |white| no son colores sino jugadores, el primero y el segundo: cada piedra toma el estilo de su jugador (pág.~\pageref{sec:jugadores}).
 
 \begin{codeexample}[width=4.8cm]
 \begin{goban}[label = {at = {north, west}}]
@@ -102,7 +102,7 @@ Para añadir piedras blancas, \karu\ debe incluir la \emph{key} |white| en el co
 \end{goban}
 \end{codeexample}
 
-Por último, resta aplicar el estilo a su tablero. Para ello, revisa el catálogo (pág.~\pageref{sec:catalogo}) y encuentra un estilo que le gusta: |pgfgo|. Para aplicarlo, consulta la sección correspondiente a los perfiles (pág.~\pageref{subsec:perfiles}) y decide usar la clave |profile|: |\pgfgoset{profile = <name>}|. Así como lo pone en un |\pgfgoset| (o en las opciones de un |goban|), el perfil vale para todos los tableros que siguen.
+Falta el estilo. En el catálogo (pág.~\pageref{sec:catalogo}), \karu\ encuentra uno que le gusta: el perfil |pgfgo|. Lo aplica con |\pgfgoset{profile = pgfgo}| (pág.~\pageref{subsec:perfiles}), y desde ahí vale para todos los tableros que siguen.
 
 \begin{codeexample}[width=4.8cm]
 \pgfgoset{profile = pgfgo}
@@ -113,12 +113,12 @@ Por último, resta aplicar el estilo a su tablero. Para ello, revisa el catálog
 \end{goban}
 \end{codeexample}
 
-Las listas de este tutorial son largas. En el último tutorial (pág.~\pageref{tut:abreviar}), \karu\ aprende a escribirlas más cortas.
+Las listas de este tutorial son largas, y la paciencia de \karu, corta. En el último tutorial (pág.~\pageref{tut:abreviar}), \karu\ aprende a escribirlas más cortas.
 
 \subsection{Movimientos}
 \label{tut:movimientos}
 
-Cuando se desea cargar las piedras en orden o siguiendo la secuencia «negro, blanco, negro, blanco», puede resultar tedioso e innecesario especificar la \emph{key} correspondiente a cada jugador.
+Para explicar cómo empezó una pelea, \karu\ quiere mostrar las piedras en el orden en que se jugaron. Con |\stone|, tendría que indicar el jugador de cada una:
 
 \begin{codeexample}[code only]
 \begin{goban}
@@ -129,10 +129,7 @@ Cuando se desea cargar las piedras en orden o siguiendo la secuencia «negro, bl
 \end{goban}
 \end{codeexample}
 
-Por eso, \pgfgoname\ incluye una macro que facilita este proceso:
-\begin{command}{\moves\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
-\end{command}
-Este comando funciona como |\stones|, pero juega las intersecciones en el orden en que se escriben, alterna automáticamente los colores y numera las jugadas.
+Para eso está |\moves| (pág.~\pageref{subsec:movimientos}): recibe una lista como |\stones|, pero juega las intersecciones en el orden en que se escriben, alterna los colores y numera las jugadas.
 
 \begin{codeexample}[width=5cm]
 \begin{goban}[label = {at = all}]
@@ -140,40 +137,40 @@ Este comando funciona como |\stones|, pero juega las intersecciones en el orden 
 \end{goban}
 \end{codeexample}
 
-Con |numbers = false|, las jugadas se dibujan sin números. Especificar la \emph{key} |black| o |white| solo determina quién es el primer jugador de la secuencia.
+La pelea empezó con una negra en F7, que \karu\ pone con |\stone|. Las jugadas que siguen no las va a comentar: con |numbers = false|, se dibujan sin números. Con |white|, la secuencia empieza con blancas: en |\moves|, |black| y |white| solo dicen quién juega primero.
 
 \begin{codeexample}[width=5cm]
 \begin{goban}[label = {at = all}]
 	\stone[b] {F7}
 	\moves[numbers = false, white]{E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
 		G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
-		I3,I2,I5,H3}
+		J3,J2,J5,H3}
 \end{goban}
 \end{codeexample}
 
-La numeración y el turno continúan de un |\moves| al siguiente, aunque las jugadas anteriores no lleven números. Es posible controlar desde dónde comenzará la numeración con la \emph{key} |from|.
+Las últimas jugadas sí las comenta, así que van con número. La numeración y el turno continúan de un |\moves| al siguiente, aunque las jugadas anteriores no lleven números, y con |from| se elige desde qué número se sigue.
 
 \begin{codeexample}[width=5cm]
 \begin{goban}[label = {at = all}]
 	\moves[numbers = false, white] {E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
 		G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
-		I3,I2,I5,H3}
+		J3,J2,J5,H3}
 	
-	\moves[from = 26]{F6,E5,I4,G6}
-	\moves{H2} % Es negra y etiquetada con 30, sin necesidad de expresarlo.
+	\moves[from = 26]{F6,E5,J4,G6}
+	\moves{H2} % Es blanca y etiquetada con 30, sin necesidad de expresarlo.
 \end{goban}
 \end{codeexample}
 
-En este último ejemplo, se observa que |H2| se colocó con otro |\moves| y, aunque está separado del anterior, es negra y está etiquetada con 30, ya que la última piedra colocada (|G6|) era negra y estaba etiquetada con 29.
+|H2| va en otro |\moves| y, sin indicarlo, es blanca y lleva el 30: la jugada anterior, |G6|, fue la 29, de negras.
 
 \subsection{Tablero parcial y marcas}
 \label{tut:parcial}
 
-En ocasiones, interesa centrarse en una región particular del tablero. Por esta razón, es posible enfocarse en una porción de este.
+Para un ejercicio del artículo, \karu\ quiere mostrar solo una parte del tablero, con dos señales: un círculo en la piedra que está en atari y un «!» en el punto clave.
 
 \begin{figure}[H]
 	\centering
-	\begin{goban}[partial = B2:E4, background = false]
+	\begin{goban}[partial = B2:E4, background = {line = false}]
 		\stones[b] {C2,B3,C4}
 		\stones[w] {D4,E3,D2}
 		\stone[w, mark = {circle, line = {color = red}}] {C3}
@@ -181,7 +178,7 @@ En ocasiones, interesa centrarse en una región particular del tablero. Por esta
 	\end{goban}
 \end{figure}
 
-Para representar este tablero, comenzamos cargando las piedras.
+Empieza, como siempre, por las piedras.
 
 \begin{codeexample}[width=5cm]
 	\begin{goban}
@@ -199,7 +196,7 @@ Con la \emph{key} |partial|, se indica qué parte del tablero mostrar: dos esqui
 	\end{goban}
 \end{codeexample}
 
-Si no quiere buscar las esquinas, con |partial = auto| el tablero elige la parte: la que usa lo que se dibuja, con una línea más alrededor. Un lado que queda a dos líneas o menos del borde llega hasta el borde, como aquí el de abajo y el de la izquierda.
+Si \karu\ no quiere buscar las esquinas, con |partial = auto| el tablero elige la parte: la que usa lo que se dibuja, con una línea más alrededor. Un lado que queda a dos líneas o menos del borde llega hasta el borde, como aquí el de abajo y el de la izquierda.
 
 \begin{codeexample}[]
 	\begin{goban}[partial = auto]
@@ -208,7 +205,7 @@ Si no quiere buscar las esquinas, con |partial = auto| el tablero elige la parte
 	\end{goban}
 \end{codeexample}
 
-\karu\ prefiere el recorte justo, así que sigue con |B2:E4|. Para eliminar la línea del tablero, recurrimos a la \emph{key} |line| del |background| del |goban|.
+\karu\ prefiere el recorte justo, así que sigue con |B2:E4|. En un tablero parcial, el borde del tablero sobra: lo quita con |line = false| en el |background|.
 
 \begin{codeexample}[]
 	\begin{goban}[partial = B2:E4, background = {line = false}]
@@ -217,16 +214,7 @@ Si no quiere buscar las esquinas, con |partial = auto| el tablero elige la parte
 	\end{goban}
 \end{codeexample}
 
-Ahora bien, para colocar marcas contamos con la macro
-\begin{command}{\mark\opt{\oarg{options}}\marg{intersection}}
-\end{command}
-y con su versión plural.
-
-Esta macro es bastante amplia y se encuentra documentada en su página correspondiente. Por el momento, debemos saber dos cosas:
-\begin{itemize}
-	\item La marca para la circunferencia se llama |circle|.
-	\item La marca «!» puede añadirse mediante |custom|.
-\end{itemize}
+Las marcas se ponen con |\mark|, o con |\marks| para varias intersecciones; hay muchas formas (pág.~\pageref{sec:marcas}). A \karu\ le alcanzan dos: |circle|, el círculo, y |custom|, que pone cualquier texto, como «!». Una marca también puede ir en las opciones de la piedra, con |mark|.
 
 \begin{codeexample}[]
 	\begin{goban}[partial = B2:E4, background = {line = false}]
@@ -237,7 +225,7 @@ Esta macro es bastante amplia y se encuentra documentada en su página correspon
 	\end{goban}
 \end{codeexample}
 
-Podemos cambiar el color de la línea de una marca mediante la \emph{key} |mark/line/color|.
+Para que el círculo se distinga, \karu\ lo pinta de rojo, con |line/color| de la marca.
 
 \begin{codeexample}[]
 	\begin{goban}[partial = B2:E4, background = {line = false}]
@@ -301,7 +289,7 @@ Para mostrar hacia dónde corren los grupos, \karu\ usa |\arrow|, que une dos in
 	\end{goban}
 \end{codeexample}
 
-|\line| dibuja una línea sin punta: sirve, por ejemplo, para separar el lado que quedará para cada jugador. Acepta las mismas \emph{keys} de trazo que |\arrow|, como |dash|.
+|\line| es como |\arrow|, pero sin punta, y acepta las mismas \emph{keys} de trazo, como |dash|.
 
 \begin{codeexample}[width=4.8cm]
 	\begin{goban}[partial = A1:G7, label = {at = {north, west}}]
@@ -429,97 +417,16 @@ El ko sigue: negras amenazan (5), blancas responden (6) y negras retoman en D3 (
 	\begin{goban}[7, captures, notes]
 		\stones[b]{B3, C2, C4}
 		\stones[w]{C3, D2, D4, E3}
-		\moves{D3, G6, G5, C3, A6, A5, D3}
+		\moves{D3, G6, G5, C3, A6, A5, D3} % Y así hasta que alguien se canse.
 	\end{goban}
 
 	\pgfgomovenotes.
 \end{codeexample}
 
-\subsection{El final del juego: territorio}
-\label{tut:territorio}
-
-\begin{figure}[H]
-	\centering
-	\pgfgoset{profile = wain}
-	\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A5,A6,B1,B2,B3,B4,B5,C1,C4,D1,D2,D5,D7,E2,E5,E7,E9,F4,F5,F6,F7,F8,F9,G5,G6,G7,H6,H8,I7}
-		\stones[w] {A7,B6,B8,C2,C3,C5,C6,C7,C8,D3,D4,D6,D8,D9,E3,E4,E6,E8,F1,F2,F3,G4,H2,H3,H5,I5,I6}
-		\prisoners[b]{H1,I1,I2}
-		\prisoner[white] {A1}
-
-		\marks[b, t-circle] {A1,A2,A3,A4,G8,G9,H9,I9,I8,H7}
-		\marks[w, t-square] {A9,B9,C9,A8,B7,H4,I4,I3,I2,I1,H1,G1,G2,G3}
-		\mark[neutral, t-square] {E1}
-	\end{goban}
-\end{figure}
-
-Para terminar el artículo, \karu\ quiere mostrar cómo se cuenta una partida. Parte de la posición final. Como tiene muchas piedras y va a dibujarla varias veces, le da un nombre al tablero con |name|: así, los tableros siguientes pueden empezar con esa posición mediante |resume|, sin repetir las coordenadas (pág.~\pageref{tut:variantes}).
-
-\begin{codeexample}[]
-	\pgfgoset{profile = wain}
-
-	\begin{goban}[label = {at = {above, left}}, name = final]
-		\stones[b] {A5,A6,B1,B2,B3,B4,B5,C1,C4,D1,D2,D5,D7,E2,E5,
-			E7,E9,F4,F5,F6,F7,F8,F9,G5,G6,G7,H6,H8,I7}
-		\stones[w] {A7,B6,B8,C2,C3,C5,C6,C7,C8,D3,D4,D6,D8,D9,E3,
-			E4,E6,E8,F1,F2,F3,G4,H2,H3,H5,I5,I6}
-	\end{goban}
-\end{codeexample}
-
-Lo siguiente será identificar las piedras prisioneras: las que están muertas y se retiran al contar. Los prisioneros se pueden marcar mediante la \emph{key} |prisoner| o mediante la macro
-\begin{command}{\prisoner\opt{\oarg{options}}\marg{intersection}}
-\end{command}
-que cuenta también con su versión plural. \karu\ guarda también este tablero, con otro nombre.
-
-\begin{codeexample}[width=4.75cm]
-	\pgfgoset{profile = wain}
-
-	\begin{goban}[label = {at = {above, left}},
-		resume = final, name = final2]
-		\stones[b, prisoner]{H1, I1, I2} % Equivalente a \prisoners[b]{...}
-		\prisoner[w] {A1} % Equivalente a \stone[w, prisoner]{...}
-	\end{goban}
-\end{codeexample}
-
-Ahora definamos los territorios. Esto se puede hacer de muchas maneras. En particular, hay dos implementadas con seguridad: la marca |t-square| y la marca |t-circle|. Estas marcas toman siempre como relleno el color de relleno de la piedra a la que pertenecen y como color y grosor de borde los de la cuadrícula.
-
-\begin{codeexample}[width=4.75cm]
-	\pgfgoset{profile = wain}
-
-	\begin{goban}[label = {at = {above, left}}, resume = final2]
-		\marks[b, t-circle]{A1, A2, A3, A4, G8, G9, H9, I9, I8, H7}
-		\marks[w, t-square]{A9, B9, C9, A8, B7, H4, I4, I3, I2, I1,
-			H1, G1, G2, G3}
-		\marks[t-square, fill = {color = red}] {E1} % No se rellena de rojo, porque toma el color de neutral
-	\end{goban}
-\end{codeexample}
-
-Otra forma es |\territory| (pág.~\pageref{subsec:territorio}). Con un polígono, marca los puntos de esa región que no tienen una piedra viva; con |auto| y el kernel en Lua, busca solo el territorio de cada jugador. |\pgfgoscore| escribe el puntaje.
-
-\begin{codeexample}[width=4.75cm]
-	\pgfgoset{profile = wain}
-
-	\begin{goban}[label = {at = {above, left}}, resume = final2]
-		\territory[dame]{auto}
-	\end{goban}
-
-	Negras: \pgfgoscore{black}. Blancas: \pgfgoscore[komi = 6.5]{white}.
-\end{codeexample}
-
-Para el artículo, \karu\ prefiere que el territorio se vea como una mancha de color y no punto por punto. Con |draw = region|, el territorio de cada color es un solo polígono, cuyos lados van por las líneas del tablero.
-
-\begin{codeexample}[width=4.75cm]
-	\pgfgoset{profile = wain}
-
-	\begin{goban}[label = {at = {above, left}}, resume = final2]
-		\territory[draw = region]{auto}
-	\end{goban}
-\end{codeexample}
-
 \subsection{Una partida entera}
 \label{tut:partida}
 
-Para el final del artículo, \karu\ quiere comentar una partida larga: la primera entre Lee Sedol y AlphaGo, de 2016, guardada en |lee.sgf|, que llama |lee|. Como en el primer tutorial (pág.~\pageref{tut:primera}), no hace falta escribir sus 186 jugadas: \pgfgoname\ las lee del archivo (pág.~\pageref{subsec:sgf}).
+El artículo también comenta una partida larga: la primera entre Lee Sedol y AlphaGo, de 2016, guardada en |lee.sgf|, que llama |lee|. Como en el primer tutorial (pág.~\pageref{tut:primera}), no hace falta escribir sus 186 jugadas: \pgfgoname\ las lee del archivo (pág.~\pageref{subsec:sgf}).
 
 Lo primero son los datos de la partida, que |\sgfinfo| toma de la raíz del archivo.
 
@@ -574,7 +481,7 @@ El epígrafe y el resultado están en castellano porque el documento usa |babel|
 \subsection{Variantes: recordar un tablero}
 \label{tut:variantes}
 
-En los comentarios, \karu\ suele mostrar qué habría pasado con otra jugada. Copiar la posición en cada diagrama es tedioso y propenso a errores: si cambia una piedra, hay que cambiarla en todos. Con |name|, un |goban| guarda todo lo que dibuja, y con |resume| otro |goban| empieza con esa posición (pág.~\pageref{subsec:recordar}).
+En los comentarios, \karu\ suele mostrar qué habría pasado con otra jugada. Copiar la posición en cada diagrama es tedioso y propenso a errores: si cambia una piedra, hay que cambiarla en todos (hablo por experiencia). En la pelea, \karu\ le dio un nombre a un tablero con |name| para mostrarlo en el texto. Ese tablero guarda todo lo que dibuja, y con |resume| otro |goban| empieza con esa posición (pág.~\pageref{subsec:recordar}).
 
 \begin{codeexample}[]
 	\pgfgoset{goban = {5, partial = A1:E4}}
@@ -642,32 +549,83 @@ Un tablero con nombre también sirve para comparar estilos. Antes de elegir el p
 	\begin{goban}[resume = {estilos, marks}, profile = simple] \end{goban}
 \end{pgfgolayout}
 
-\subsection{Un diccionario de josekis}
-\label{tut:josekis}
+\subsection{El final del juego: territorio}
+\label{tut:territorio}
 
-En la clase siguiente, \karu\ quiere explicar las respuestas a la aproximación baja al punto 4-4. Las secuencias conocidas de la apertura en una esquina, los \emph{josekis}, suelen guardarse en un SGF con forma de diccionario: un árbol con una rama por cada jugada posible, comentarios en las que importan y letras en las jugadas que pueden seguir. \karu\ arma uno pequeño, |josekis.sgf|, y lo llama |josekis|.
+\begin{figure}[H]
+	\centering
+	\pgfgoset{profile = wain}
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A5,A6,B1,B2,B3,B4,B5,C1,C4,D1,D2,D5,D7,E2,E5,E7,E9,F4,F5,F6,F7,F8,F9,G5,G6,G7,H6,H8,J7}
+		\stones[w] {A7,B6,B8,C2,C3,C5,C6,C7,C8,D3,D4,D6,D8,D9,E3,E4,E6,E8,F1,F2,F3,G4,H2,H3,H5,J5,J6}
+		\prisoners[b]{H1,J1,J2}
+		\prisoner[white] {A1}
 
-Primero, la posición: las dos primeras jugadas, con las letras de las respuestas. El tablero es de $19\times19$, pero todo pasa en una esquina; con |partial = auto| (pág.~\pageref{tut:parcial}), el |goban| muestra solo la parte que usa lo que dibuja, también las letras.
+		\marks[b, t-circle] {A1,A2,A3,A4,G8,G9,H9,J9,J8,H7}
+		\marks[w, t-square] {A9,B9,C9,A8,B7,H4,J4,J3,J2,J1,H1,G1,G2,G3}
+		\mark[neutral, t-square] {E1}
+	\end{goban}
+\end{figure}
+
+Para terminar el artículo, \karu\ quiere mostrar cómo se cuenta una partida. Parte de la posición final. Como tiene muchas piedras y va a dibujarla varias veces, la guarda con |name|, como las variantes del tutorial anterior, y los tableros siguientes empiezan con |resume|, sin repetir las coordenadas.
 
 \begin{codeexample}[]
-	\pgfgodefinesgf{josekis}{josekis.sgf}
+	\pgfgoset{profile = wain}
 
-	\begin{goban}[sgf size = josekis, partial = auto]
-		\sgf[to = 2]{josekis}
+	\begin{goban}[label = {at = {above, left}}, name = final]
+		\stones[b] {A5,A6,B1,B2,B3,B4,B5,C1,C4,D1,D2,D5,D7,E2,E5,
+			E7,E9,F4,F5,F6,F7,F8,F9,G5,G6,G7,H6,H8,J7}
+		\stones[w] {A7,B6,B8,C2,C3,C5,C6,C7,C8,D3,D4,D6,D8,D9,E3,
+			E4,E6,E8,F1,F2,F3,G4,H2,H3,H5,J5,J6}
 	\end{goban}
 \end{codeexample}
 
-Para las respuestas, \karu\ elige la línea con |variation|. En un diccionario hay tantas ramas que es más cómodo dar las jugadas de la línea, desde la primera, que buscar su número: |variation = {Q16, R14}| (pág.~\pageref{subsec:sgf}). Con |variations|, |\sgfdiagrams| dibuja además, cada una en su diagrama, las variantes con comentarios que se apartan de esa línea, y con |from = 3|, solo las que nacen en la jugada 3 o después: las respuestas, y no la invasión en el 3-3, que es otra jugada 2. Con |partial = auto|, todos los diagramas muestran la misma parte del tablero.
+Lo siguiente son los prisioneros: las piedras muertas, que se retiran al contar. Se dibujan con |\prisoner| y |\prisoners|, o con la \emph{key} |prisoner| de |\stone| y |\stones| (pág.~\pageref{sec:piedras}). \karu\ guarda también este tablero, con otro nombre: con |name| y |resume| en el mismo |goban|, como en las variantes.
 
-\begin{codeexample}[code only]
-	\sgfdiagrams[variation = {Q16, R14}, variations = {commented, from = 3},
-		partial = auto, comments, layout = {columns = 3, fit}]{josekis}
+\begin{codeexample}[width=4.75cm]
+	\pgfgoset{profile = wain}
+
+	\begin{goban}[label = {at = {above, left}},
+		resume = final, name = final2]
+		\stones[b, prisoner]{H1, J1, J2} % Equivalente a \prisoners[b]{...}
+		\prisoner[w] {A1} % Equivalente a \stone[w, prisoner]{...}
+	\end{goban}
 \end{codeexample}
 
-\sgfdiagrams[variation = {Q16, R14}, variations = {commented, from = 3},
-	partial = auto, comments, layout = {columns = 3, fit}]{josekis}
+Ahora, el territorio. Una forma es marcar cada punto con |t-square| o |t-circle|. Estas marcas toman siempre como relleno el color de relleno de la piedra a la que pertenecen y como color y grosor de borde los de la cuadrícula.
 
-El primer diagrama es la línea elegida, hasta el final. Las jugadas de cada variante se numeran desde 1, y el epígrafe dice en qué jugada se aparta. En un diccionario grande, cada jugada trae letras en las que pueden seguir; con |marks = false|, los diagramas no las dibujan.
+\begin{codeexample}[width=4.75cm]
+	\pgfgoset{profile = wain}
+
+	\begin{goban}[label = {at = {above, left}}, resume = final2]
+		\marks[b, t-circle]{A1, A2, A3, A4, G8, G9, H9, J9, J8, H7}
+		\marks[w, t-square]{A9, B9, C9, A8, B7, H4, J4, J3, J2, J1,
+			H1, G1, G2, G3}
+		\marks[t-square, fill = {color = red}] {E1} % No se rellena de rojo, porque toma el color de neutral
+	\end{goban}
+\end{codeexample}
+
+Otra forma es |\territory| (pág.~\pageref{subsec:territorio}). Con un polígono, marca los puntos de esa región que no tienen una piedra viva; con |auto| y el kernel en Lua, busca solo el territorio de cada jugador. |\pgfgoscore| escribe el puntaje.
+
+\begin{codeexample}[width=4.75cm]
+	\pgfgoset{profile = wain}
+
+	\begin{goban}[label = {at = {above, left}}, resume = final2]
+		\territory[dame]{auto}
+	\end{goban}
+
+	Negras: \pgfgoscore{black}. Blancas: \pgfgoscore[komi = 6.5]{white}.
+\end{codeexample}
+
+Para el artículo, \karu\ prefiere que el territorio se vea como una mancha de color y no punto por punto. Con |draw = region|, el territorio de cada color es un solo polígono, cuyos lados van por las líneas del tablero.
+
+\begin{codeexample}[width=4.75cm]
+	\pgfgoset{profile = wain}
+
+	\begin{goban}[label = {at = {above, left}}, resume = final2]
+		\territory[draw = region]{auto}
+	\end{goban}
+\end{codeexample}
 
 \subsection{Un cuaderno de problemas}
 \label{tut:problemas}
@@ -700,12 +658,12 @@ Algunos problemas no están en ningún archivo, y \karu\ los dibuja a mano, con 
 	\begin{pgfgolayout}[columns = 3, fit]
 		\sgfproblem[title = Problema 1, solutions = false]{problema}
 		\begin{goban}[19, partial = A16:F19]
-			\stones[b]{A:C16, D17, E18:19}
-			\stones[w]{A:C17, D18:19}
+			\stones[b]{A16, B16, C16, D17, E18, E19}
+			\stones[w]{A17, B17, C17, D18, D19}
 		\end{goban}
 		\begin{goban}[19, partial = A16:F19]
-			\stones[b]{A:C17, D18:19}
-			\stones[w]{A:C18, C19}
+			\stones[b]{A17, B17, C17, D18, D19}
+			\stones[w]{A18, B18, C18, C19}
 		\end{goban}
 	\end{pgfgolayout}
 \end{codeexample}
@@ -713,19 +671,19 @@ Algunos problemas no están en ningún archivo, y \karu\ los dibuja a mano, con 
 \begin{pgfgolayout}[columns = 3, fit]
 	\sgfproblem[title = Problema 1, solutions = false]{problema}
 	\begin{goban}[19, partial = A16:F19]
-		\stones[b]{A:C16, D17, E18:19}
-		\stones[w]{A:C17, D18:19}
+		\stones[b]{A16, B16, C16, D17, E18, E19}
+		\stones[w]{A17, B17, C17, D18, D19}
 	\end{goban}
 	\begin{goban}[19, partial = A16:F19]
-		\stones[b]{A:C17, D18:19}
-		\stones[w]{A:C18, C19}
+		\stones[b]{A17, B17, C17, D18, D19}
+		\stones[w]{A18, B18, C18, C19}
 	\end{goban}
 \end{pgfgolayout}
 
 \subsection{Un tablero de madera: un perfil con imágenes}
 \label{tut:madera}
 
-Para la portada del cuaderno, \karu\ quiere un tablero que se parezca a uno de verdad: madera, piedras con volumen y blancas con vetas. Los perfiles del catálogo dibujan las piedras como círculos; para esto hacen falta imágenes (PNG, JPG o PDF). \pgfgoname\ trae algunas, en la carpeta |img|, y \karu\ empieza con ellas: una foto de madera, |pgfgo-board.jpg|, una piedra negra de pizarra, |pgfgo-shell-black.png|, y cinco blancas de concha, |pgfgo-shell-white-1.png| a |pgfgo-shell-white-5.png|. Se usan por su nombre, desde cualquier documento; las imágenes propias se usan igual, como con |\includegraphics|.
+Para la portada del cuaderno, \karu\ quiere un tablero que se parezca a uno de verdad, ya que el presupuesto no da para uno de kaya: madera, piedras con volumen y blancas con vetas. Los perfiles del catálogo dibujan las piedras como círculos; para esto hacen falta imágenes (PNG, JPG o PDF). \pgfgoname\ trae algunas, en la carpeta |img|, y \karu\ empieza con ellas: una foto de madera, |pgfgo-board.jpg|, una piedra negra de pizarra, |pgfgo-shell-black.png|, y cinco blancas de concha, |pgfgo-shell-white-1.png| a |pgfgo-shell-white-5.png|. Se usan por su nombre, desde cualquier documento; las imágenes propias se usan igual, como con |\includegraphics|.
 
 \begin{figure}[H]
 	\centering
@@ -844,7 +802,7 @@ Con cinco imágenes, todavía puede verse alguna repetida. |rotate| gira cada pi
 		pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
 		pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}
 
-Un perfil casi igual, con una sombra difusa y sin el borde del tablero, viene con \pgfgoname: |shell| (pág.~\pageref{subsec:perfilshell}); con |profile = shell| no hace falta definir nada. También está |yunzi|, con piedras mates. Las definiciones del catálogo sirven de punto de partida para cambiar, por ejemplo, la madera por otra foto.
+Un perfil casi igual, con una sombra difusa y sin el borde del tablero, viene con \pgfgoname: |shell| (pág.~\pageref{subsec:perfilshell}); con |profile = shell| no hace falta definir nada. También está |yunzi|, con piedras mates. Sus definiciones están en el catálogo.
 
 Un perfil vale para todo lo que dibuja \pgfgoname, también para los diagramas de un SGF. Así queda la partida de Lee Sedol y AlphaGo en madera, con un diagrama cada 50 jugadas y la numeración reiniciada en cada uno.
 
@@ -886,7 +844,7 @@ Un perfil vale para todo lo que dibuja \pgfgoname, también para los diagramas d
 	\end{document}
 \end{codeexample}
 
-Para repasar la partida entera, en cambio, le alcanzan los diagramas del apéndice, uno por diapositiva. Con |per frame|, |\sgfdiagrams| pone cada diagrama en su propia diapositiva del |frame|, con su epígrafe (pág.~\pageref{subsec:disposicion}). Fuera de |beamer|, |per page| hace lo mismo con las páginas.
+Para repasar la partida entera, en cambio, le alcanzan los diagramas de Lee Sedol y AlphaGo del artículo (pág.~\pageref{tut:partida}), uno por diapositiva. Con |per frame|, |\sgfdiagrams| pone cada diagrama en su propia diapositiva del |frame|, con su epígrafe (pág.~\pageref{subsec:disposicion}). Fuera de |beamer|, |per page| hace lo mismo con las páginas.
 
 \begin{codeexample}[code only]
 	\begin{frame}{Lee Sedol contra AlphaGo}
@@ -927,6 +885,33 @@ En un PDF para leer en pantalla, en cambio, prefiere una animación: |\sgfanimat
 	\sgfanimation[to = 40, fps = 4, goban = {captures, scale = 0.5},
 		animate = {controls, loop}]{lee}
 \end{center}
+
+\subsection{Un diccionario de josekis}
+\label{tut:josekis}
+
+Para otra clase, \karu\ quiere explicar las respuestas a la aproximación baja al punto 4-4. Las secuencias conocidas de la apertura en una esquina, los \emph{josekis}\footnote{Aprenderlos es fácil; olvidarlos, como pide el proverbio, cuesta más.}, suelen guardarse en un SGF con forma de diccionario: un árbol con una rama por cada jugada posible, comentarios en las que importan y letras en las jugadas que pueden seguir. \karu\ arma uno pequeño, |josekis.sgf|, y lo llama |josekis|.
+
+Primero, la posición: las dos primeras jugadas, con las letras de las respuestas. El tablero es de $19\times19$, pero todo pasa en una esquina; con |partial = auto| (pág.~\pageref{tut:parcial}), el |goban| muestra solo la parte que usa lo que dibuja, también las letras.
+
+\begin{codeexample}[]
+	\pgfgodefinesgf{josekis}{josekis.sgf}
+
+	\begin{goban}[sgf size = josekis, partial = auto]
+		\sgf[to = 2]{josekis}
+	\end{goban}
+\end{codeexample}
+
+Para las respuestas, \karu\ elige la línea con |variation|. En un diccionario hay tantas ramas que es más cómodo dar las jugadas de la línea, desde la primera, que buscar su número: |variation = {Q16, R14}| (pág.~\pageref{subsec:sgf}). Con |variations|, |\sgfdiagrams| dibuja además, cada una en su diagrama, las variantes con comentarios que se apartan de esa línea, y con |from = 3|, solo las que nacen en la jugada 3 o después: las respuestas, y no la invasión en el 3-3, que es otra jugada 2. Con |partial = auto|, todos los diagramas muestran la misma parte del tablero.
+
+\begin{codeexample}[code only]
+	\sgfdiagrams[variation = {Q16, R14}, variations = {commented, from = 3},
+		partial = auto, comments, layout = {columns = 3, fit}]{josekis}
+\end{codeexample}
+
+\sgfdiagrams[variation = {Q16, R14}, variations = {commented, from = 3},
+	partial = auto, comments, layout = {columns = 3, fit}]{josekis}
+
+El primer diagrama es la línea elegida, hasta el final. Las jugadas de cada variante se numeran desde 1, y el epígrafe dice en qué jugada se aparta. En un diccionario grande, cada jugada trae letras en las que pueden seguir; con |marks = false|, los diagramas no las dibujan.
 
 \subsection{Otros idiomas}
 \label{tut:idiomas}
@@ -973,9 +958,9 @@ Para grupos más grandes, hay caminos que doblan en ángulo recto. \verb+A6 |- B
 	\pgfgoset{profile = wain}
 
 	\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
-		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|-H5, H2:3, F1|-C3, C2, D:E4, G4}
-		\prisoners[b]{H1-|I2}
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, J7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, J6|-H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|J2}
 		\prisoner[w] {A1}
 		\territory[dame]{auto}
 	\end{goban}
@@ -987,7 +972,7 @@ Entre dos intersecciones que no están en la misma fila ni en la misma columna, 
 	\begin{goban}[label = {at = {north, west}}]
 		\stones[w]{D4 -|- F6 -- G6}
 		\stones[b]{C4, D3, D5 -- F7, E3 -- G5}
-		\arrow{G6}{J8}
+		\arrow{G6}{J8} % Blancas corren. No por mucho.
 	\end{goban}
 \end{codeexample}
 

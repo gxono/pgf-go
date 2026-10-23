@@ -1,49 +1,49 @@
 \section{Configuración}
 \label{sec:configuracion}
 
-La macro |\pgfgoset{...}| permite definir configuraciones generales para el paquete. Es equivalente a |\keys_set:nn{pgfgo}{...}|, lo que implica que utiliza el sistema de claves de LaTeX3 para establecer opciones de manera estructurada y jerárquica. Esta macro resulta especialmente útil para personalizar el comportamiento global del paquete, como el aspecto del tablero, las piedras o los movimientos, sin necesidad de repetir configuraciones en cada entorno individual. Por ejemplo, un usuario podría definir colores personalizados para los jugadores o ajustar el diseño del tablero de forma que se aplique a todos los diagramas del documento. También sirve como una puerta al formato directo.\footnote{Úsese con discreción\dots no como los pies de página.}
+|\pgfgoset{...}| fija opciones para todo lo que sigue: el aspecto del tablero, de las piedras, de las jugadas, etc. Es equivalente a |\keys_set:nn{pgfgo}{...}|. También sirve como una puerta al formato directo.\footnote{Úsese con discreción\dots no como los pies de página.}
 
 \begin{command}{\pgfgoset\marg{options}}
 \end{command}
 
 \begin{key}{/pgfgo/goban = \meta{goban options}}
-	Establece opciones generales para el tablero. Esto incluye propiedades como el tamaño, el color de fondo, la visibilidad de las líneas de la cuadrícula o las etiquetas de coordenadas. Por ejemplo, se puede usar para crear tableros parciales o modificar el estilo visual del borde.
+	Opciones del tablero (pág.~\pageref{sec:tablero}): el tamaño, la cuadrícula, el fondo, las coordenadas, etc.
 \end{key}
 
 \begin{key}{/pgfgo/stone = \meta{stone options}}
-	Define opciones generales para las piedras, como su color de relleno, contorno o marcas predeterminadas. Es útil para establecer un estilo consistente en todas las piedras de un documento (neutrales, blancas o negras).
+	Opciones de las piedras de los tres jugadores (pág.~\pageref{sec:piedras}). Es lo mismo que |\pgfgoset{players = {all = {stone = {...}}}}|.
 \end{key}
 
 \begin{key}{/pgfgo/move = \meta{move options}}
-	Establece opciones generales para los movimientos, como el formato de sus números. Es lo mismo que |\pgfgoset{players = {all = {move = {...}}}}|, salvo |numbers| (pág.~\pageref{subsec:movimientos}), que vale para todas las jugadas.
+	Opciones de las jugadas, como el formato de sus números. Es lo mismo que |\pgfgoset{players = {all = {move = {...}}}}|, salvo |numbers| (pág.~\pageref{subsec:movimientos}), que vale para todas las jugadas.
 \end{key}
 
 \begin{key}{/pgfgo/mark = \meta{mark options}}
-	Establece opciones generales para las marcas: la forma por defecto de |\marks| (|\pgfgoset{mark = {triangle}}|) y el estilo de las marcas de los tres jugadores (|line|, |fill|, |label|, |sequence| y |scale|). |\pgfgoset{mark = {line = {color = red}}}| es lo mismo que |\pgfgoset{players = {all = {mark = {line = {color = red}}}}}|.
+	Opciones de las marcas: la forma por defecto de |\marks| (|\pgfgoset{mark = {triangle}}|) y el estilo de las marcas de los tres jugadores (|line|, |fill|, |label|, |sequence| y |scale|). |\pgfgoset{mark = {line = {color = red}}}| es lo mismo que |\pgfgoset{players = {all = {mark = {line = {color = red}}}}}|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation = \meta{sgf animation options}}
-	Opciones de todas las |\sgfanimation| del documento (pág.~\pageref{subsec:sgf}).
+	Opciones de todas las |\sgfanimation| del documento (pág.~\pageref{subsec:sgfanimacion}).
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams = \meta{sgf diagrams options}}
-	Opciones de todas las |\sgfdiagrams| del documento (pág.~\pageref{subsec:sgf}).
+	Opciones de todas las |\sgfdiagrams| del documento (pág.~\pageref{subsec:sgfdiagramas}).
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem = \meta{sgf problem options}}
-	Opciones de todos los |\sgfproblem| del documento (pág.~\pageref{subsec:sgf}).
+	Opciones de todos los |\sgfproblem| del documento (pág.~\pageref{subsec:sgfproblemas}).
 \end{key}
 
 \begin{key}{/pgfgo/sgf comment = \meta{sgf comment options}}
-	Opciones de todos los |\sgfcomment| del documento (pág.~\pageref{subsec:sgf}).
+	Opciones de todos los |\sgfcomment| del documento (pág.~\pageref{subsec:sgfdatos}).
 \end{key}
 
 \begin{key}{/pgfgo/sgf info = \meta{sgf info options}}
-	Opciones de todos los |\sgfinfo| del documento (pág.~\pageref{subsec:sgf}).
+	Opciones de todos los |\sgfinfo| del documento (pág.~\pageref{subsec:sgfdatos}).
 \end{key}
 
 \begin{key}{/pgfgo/sgf annotations = \meta{texts}}
-	Los textos de las anotaciones de los archivos SGF (pág.~\pageref{subsec:sgf}).
+	Los textos de las anotaciones de los archivos SGF (pág.~\pageref{subsec:sgfdatos}).
 \end{key}
 
 \begin{key}{/pgfgo/arrow = \meta{arrow options}}
@@ -63,7 +63,7 @@ La macro |\pgfgoset{...}| permite definir configuraciones generales para el paqu
 \end{key}
 
 \begin{key}{/pgfgo/players = \meta{players options}}
-	Permite definir opciones para cada jugador (incluidas las neutrales). Esta \emph{key} actúa como un contenedor que engloba configuraciones específicas para los jugadores negro, blanco y neutral, facilitando la personalización según las reglas o preferencias del usuario. Todas las opciones disponibles y cómo personalizar estilos de piedras se detallan en la sección de jugadores y perfiles (pág.~\pageref{sec:jugadores}).
+	Opciones de cada jugador: el negro, el blanco y el neutral (pág.~\pageref{sec:jugadores}).
 \end{key}
 
 \begin{codeexample}[]
@@ -96,7 +96,7 @@ La macro |\pgfgoset{...}| permite definir configuraciones generales para el paqu
 	\end{goban}
 \end{codeexample}
 
-Los entornos |goban| posteriores heredan estas configuraciones, aunque pueden sobrescribirse localmente si es necesario. Las opciones de un |goban| aceptan, además de las del tablero, las de |\pgfgoset|, que valen solo para ese tablero: |\begin{goban}[9, stone = {radius = 4pt}, mark = {line = {color = red}}]|.
+Los |goban| que siguen heredan estas opciones, y cada uno puede cambiarlas. Las opciones de un |goban| aceptan, además de las del tablero, las de |\pgfgoset|, que valen solo para ese tablero: |\begin{goban}[9, stone = {radius = 4pt}, mark = {line = {color = red}}]|.
 
 \label{subsec:prender}Muchas \emph{keys} prenden o apagan algo: la cuadrícula, el fondo, las coordenadas, el borde y el relleno de las piedras, sus sombras y sus brillos, etc. Todas siguen la misma regla:
 \begin{itemize}
@@ -114,7 +114,7 @@ Las excepciones son las \emph{keys} cuyo valor es el contenido mismo, como |part
 	\item |expl3|: escrito en L3. Funciona con cualquier motor, y es el que se usa por defecto con los demás.
 \end{itemize}
 
-Ambos producen exactamente los mismos diagramas. El kernel en Lua, además, sabe hacer tres cosas que el otro no: las capturas (pág.~\pageref{subsec:capturas}), el cálculo del territorio con |\territory{auto}| (pág.~\pageref{subsec:territorio}) y la lectura de partidas en SGF (pág.~\pageref{subsec:sgf}). Este manual está compilado con el kernel en Lua.
+Ambos producen exactamente los mismos diagramas\footnote{O eso dicen los tests.}. El kernel en Lua, además, sabe hacer tres cosas que el otro no: las capturas (pág.~\pageref{subsec:capturas}), el cálculo del territorio con |\territory{auto}| (pág.~\pageref{subsec:territorio}) y la lectura de partidas en SGF (pág.~\pageref{subsec:sgf}). Este manual está compilado con el kernel en Lua.
 
 \begin{key}{/pgfgo/package/kernel = \meta{expl3 o lua} (initially lua con Lua\LaTeX, expl3 con los demás motores)}
 	Opción del paquete que elige el kernel. Solo hace falta para usar |expl3| con Lua\LaTeX. Solo puede darse al cargar \pgfgoname; no se puede cambiar con |\pgfgoset|. Si se pide |kernel = lua| con pdf\LaTeX, el paquete avisa y usa |expl3|. Con |expl3|, |captures|, |\territory{auto}| y |\sgf| producen un error.
@@ -189,7 +189,7 @@ Por defecto, los textos están en el idioma que fijan babel o polyglossia, y lo 
 \end{command}
 
 \begin{command}{\pgfgodefinelanguage\marg{idioma}\marg{textos}}
-	Agrega un idioma, o cambia textos de uno que ya existe. Los textos que falten se toman del inglés. En los textos del resultado, |\pgfgowinner| es el nombre del ganador y |\pgfgopoints| la diferencia (pág.~\pageref{subsec:sgf}).
+	Agrega un idioma, o cambia textos de uno que ya existe. Los textos que falten se toman del inglés. En los textos del resultado, |\pgfgowinner| es el nombre del ganador y |\pgfgopoints| la diferencia (pág.~\pageref{subsec:sgfdiagramas}).
 
 	\begin{codeexample}[code only]
 		\pgfgodefinelanguage{es}{black = Negro, white = Blanco,
@@ -204,7 +204,3 @@ Por defecto, los textos están en el idioma que fijan babel o polyglossia, y lo 
 		\pgfgolanguagealias{castellano}{es}
 	\end{codeexample}
 \end{command}
-
-\subsection{\texttt{\textbackslash mark}, \texttt{\textbackslash marks} y \texttt{\textbackslash sgf} fuera de \texttt{goban}}
-
-|\mark| y |\marks| son primitivas de \TeX. Para no pisarlas, las macros |\mark| y |\marks| de \pgfgoname\ solo existen dentro del entorno |goban|. Fuera de él siguen siendo las primitivas, de modo que las marcas de página y los encabezados no se ven afectados. |\sgf| tampoco existe fuera de |goban|.

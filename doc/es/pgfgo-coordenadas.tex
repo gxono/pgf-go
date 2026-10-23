@@ -1,13 +1,13 @@
 \section{Sintaxis de coordenadas}
 \label{subsec:sintaxis-de-coordenadas}
 
-Algo que distingue a \pgfgoname\ de otros paquetes es la posibilidad de introducir coordenadas con diversas sintaxis, ofreciendo flexibilidad para representar posiciones en el tablero de manera intuitiva. 
+Algo que distingue a \pgfgoname\ de otros paquetes es la posibilidad de introducir coordenadas con diversas sintaxis:
 \begin{itemize}
 	\item Posibilidad de tener múltiples entradas separando con comas.
 	\item Posibilidad de eliminar piedras agregando el grupo sustractivo despu\'es de un <<;>>.
 \end{itemize}
 
-Estas formas solo funcionan en los comandos plurales (|\stones|, |\marks|, |\prisoners|); |\stone|, |\mark| y |\prisoner| reciben una sola intersección. |\moves| las acepta todas salvo los grupos sustractivos, y avisa si no tienen un orden fijo (pág.~\pageref{subsec:orden-coordenadas}). Sin embargo, por motivos de rendimiento y consistencia, se han restringido algunas libertades que en un comienzo no estaban. Por ejemplo, para referirse a una intersección, la coordenada alfabética debe escribirse en mayúsculas y sin espacios. Así, la intersección B5 debe ingresarse como |B5|, y no como |B 5|, |B  5| o |b5|, ya que los espacios entre letra y número no son válidos en este contexto. Las restricciones se explicarán en cada caso.
+Estas formas solo funcionan en los comandos plurales (|\stones|, |\marks|, |\prisoners|); |\stone|, |\mark| y |\prisoner| reciben una sola intersección. |\moves| las acepta todas salvo los grupos sustractivos, y avisa si no tienen un orden fijo (pág.~\pageref{subsec:orden-coordenadas}). La escritura tiene algunas restricciones. Por ejemplo, para referirse a una intersección, la coordenada alfabética debe escribirse en mayúsculas y sin espacios. Así, la intersección B5 debe ingresarse como |B5|, y no como |B 5|, |B  5| o |b5|, ya que los espacios entre letra y número no son válidos en este contexto. Las restricciones se explicarán en cada caso.
 
 
 Cuando \pgfgoname\ tiene que leer el argumento de las coordenadas se puede encontrar con algo como esto
@@ -15,13 +15,13 @@ Cuando \pgfgoname\ tiene que leer el argumento de las coordenadas se puede encon
 	|\stones{|{\color{red}|<item>, <item>, |\dots;} {\color{blue} |<item>, <item>, |\dots; }{\color{red} \dots}|}|
 \end{center}
 
-Lo primero que intentar\'a hacer es dividir el argumento entre los |;| y construir dos grupos: el grupo aditivo y el grupo sustractivo. El grupo aditivo es el encargado de a\~nadir piedras mediante nuestra sintaxis. El grupo sustractivo es el encargado de eliminarlas. Estos grupos alternan automáticamente al colocar un |;|. Esto se ve con mas detalle en la subsecci\'on correspondiente. Si no se coloca un |;|, \pgfgoname\ a\~nadir\'a todas las piedras al grupo aditivo. Se pueden a\~nadir varias piedras o varios grupos separados por |,|. En conjunto, todo esto provee una interfaz para crear grupos complejos con pocos \emph{tokens};
+Lo primero que intentar\'a hacer es dividir el argumento entre los |;| y construir dos grupos: el grupo aditivo y el grupo sustractivo. El grupo aditivo es el encargado de a\~nadir piedras mediante nuestra sintaxis. El grupo sustractivo es el encargado de eliminarlas. Estos grupos alternan automáticamente al colocar un |;|. Esto se ve con m\'as detalle en la subsecci\'on correspondiente. Si no se coloca un |;|, \pgfgoname\ a\~nadir\'a todas las piedras al grupo aditivo. Se pueden a\~nadir varias piedras o varios grupos separados por |,|. En conjunto, todo esto provee una interfaz para crear grupos complejos con pocos \emph{tokens};
 
 \begin{codeexample}[width=0pt]
 	\pgfgoset{profile = pgfgosmooth}
 	
-	\begin{goban}[17, partial = A1:Q5, label = {at = {north, west}}]
-		\stones[b]{*;B,D,H,L,Q2,P,F2:4,J2rK5,N[1:2,4];B3}
+	\begin{goban}[17, partial = A1:R5, label = {at = {north, west}}]
+		\stones[b]{*;B,D,H,M,R2,Q,F2:4,K2rL5,O[1:2,4];B3}
 	\end{goban}
 \end{codeexample}
 
@@ -137,15 +137,15 @@ La sintaxis de segmentos permite crear rangos entre coordenadas para insertar pi
 	\end{goban}
 \end{codeexample}
 
-Por ejemplo, |A:E 7:8| crea un rectángulo que abarca las columnas de A a E en las filas 7 y 8, mientras que |I:G 9:2| desciende de I9 a G2. Aunque funcional, esta sintaxis puede resultar menos intuitiva, lo que lleva a los operadores más específicos que veremos más adelante.
+Por ejemplo, |A:E 7:8| crea un rectángulo que abarca las columnas de A a E en las filas 7 y 8, mientras que |I:G 9:2| desciende de I9 a G2. Funciona, pero los operadores que veremos más adelante son más claros.
 
 
 \sssseccion{Productos Cartesianos}
-	En este contexto, el producto cartesiano es una extensi\'on m\'as poderosa de los segmentos, pero a su vez, una generalizaci\'on a todas las notaciones antes presentadas. La idea detr\'as de esto es la siguiente: Supongamos que queremos ingresar un grupo de piedras sobre la columna A: |A1:3, A5, A7:8|. Hasta el momento no hab\'ia forma mas sencilla de escribir esto. Pero todas repiten A al comienzo: ?`qu\'e tal si en lugar de escribirla tres veces la escribimos solo una? Algo como
+	En este contexto, el producto cartesiano es una extensi\'on m\'as poderosa de los segmentos, pero a su vez, una generalizaci\'on a todas las notaciones antes presentadas. La idea detr\'as de esto es la siguiente: Supongamos que queremos ingresar un grupo de piedras sobre la columna A: |A1:3, A5, A7:8|. Hasta el momento no hab\'ia forma m\'as sencilla de escribir esto. Pero todas repiten A al comienzo: ?`qu\'e tal si en lugar de escribirla tres veces la escribimos solo una? Algo como
 	\begin{center}
 		|A[1:3, 5, 7:8]|
 	\end{center}
-	En este caso, el interprete va a distribuir el A de la izquierda para cada uno de los elementos de la derecha.
+	En este caso, el int\'erprete va a distribuir el A de la izquierda para cada uno de los elementos de la derecha.
 	
 	Los elementos de la lista de la derecha no necesariamente tienen que estar formados por n\'umeros. Si se tiene algo como esto |A:D 5:7, A1:2, A3, A:G9| tambi\'en se puede reescribir as\'i
 	\begin{center}
@@ -163,7 +163,7 @@ Por ejemplo, |A:E 7:8| crea un rectángulo que abarca las columnas de A a E en l
 	\begin{codeexample}[width=4cm]
 		\begin{goban}
 			\stones[b]{[A, D:F][2, 5, 7:9]}
-			\marks[b]{A2, A5, A7:9, D:F2, D:F5, D:F 7:9} %<- lo que lee el interprete.
+			\marks[b]{A2, A5, A7:9, D:F2, D:F5, D:F 7:9} %<- lo que lee el int\'erprete.
 		\end{goban}
 	\end{codeexample}
 
@@ -177,7 +177,7 @@ donde los corchetes no pueden anidarse.
 
 Esto puede combinarse tambi\'en con algunos operadores que veremos a continuaci\'on para crear nodos en los caminos.
 
-Hasta aquí hemos visto formas que no pueden combinarse con otras en un mismo elemento y que, por lo tanto, \textbf{deben} separarse por comas. Ahora veremos operadores que unen dos intersecciones con un camino y que pueden encadenarse entre sí, ofreciendo mayor flexibilidad para patrones complejos.
+Hasta aquí hemos visto formas que no pueden combinarse con otras en un mismo elemento y que, por lo tanto, \textbf{deben} separarse por comas. Ahora veremos operadores que unen dos intersecciones con un camino y que pueden encadenarse entre sí.
 
 \sssseccion{Horizontal--Vertical y Vertical--Horizontal}
 
@@ -260,7 +260,7 @@ Los rectángulos también se encadenan, para crear patrones más complejos.
 	\end{goban}
 \end{codeexample}
 
-En este caso, |I8 r G6 r I4| encadena dos rectángulos de contorno, mientras que \verb+A1:E3 r A6 |- E9 -- E8+ combina un rectángulo relleno, un contorno, un recorrido «vertical--horizontal» y una línea, mostrando la potencia del encadenamiento. Las formas que van solas (|*|, |L|, |N|, |L:L|, |N:N| y |L:L N:N|) no se encadenan.
+En este caso, |I8 r G6 r I4| encadena dos rectángulos de contorno, mientras que \verb+A1:E3 r A6 |- E9 -- E8+ combina un rectángulo relleno, un contorno, un recorrido «vertical--horizontal» y una línea. Las formas que van solas (|*|, |L|, |N|, |L:L|, |N:N| y |L:L N:N|) no se encadenan.
 
 \sssseccion{El orden de las intersecciones}
 \label{subsec:orden-coordenadas}
@@ -300,7 +300,7 @@ Esto puede lograrse con los operadores ya vistos, dividiendo el patrón en varia
 	\end{goban}
 \end{codeexample}
 
-Pero también podemos imaginar que partimos de un rectángulo completo al que le hemos quitado las piedras marcadas, ofreciendo una perspectiva más conceptual:
+Pero también podemos imaginar que partimos de un rectángulo completo al que le hemos quitado las piedras marcadas:
 
 \begin{figure}[H]
 	\centering
@@ -326,9 +326,9 @@ De esto tratan los grupos aditivos y sustractivos. Un grupo aditivo añade inter
 	\end{goban}
 \end{codeexample}
 
-En esta secuencia, primero se dibuja un rectángulo completo (|A1:E6|), luego se elimina el segmento vertical |A 1:2|, y finalmente se quita el recorrido \verb+C6 |- E3+. Esto resulta en el mismo diagrama que el ejemplo inicial, pero con un enfoque más compacto.
+En esta secuencia, primero se dibuja un rectángulo completo (|A1:E6|), luego se elimina el segmento vertical |A 1:2|, y finalmente se quita el recorrido \verb+C6 |- E3+. El resultado es el diagrama del principio.
 
-La ventaja de este sistema es que permite realizar ajustes cuando sea necesario. A veces, un patrón aditivo es ideal salvo por una o dos piedras; en esos casos, podemos eliminarlas con un grupo sustractivo sin rehacer todo el diseño.
+A veces, un patrón es ideal salvo por una o dos piedras: con un grupo sustractivo se quitan sin rehacer todo.
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}]
@@ -336,9 +336,9 @@ La ventaja de este sistema es que permite realizar ajustes cuando sea necesario.
 	\end{goban}
 \end{codeexample}
 
-Aquí, |B:D 5| elimina un segmento horizontal en la fila 5, y |C2| quita una piedra específica, ajustando el rectángulo inicial.
+Aquí, |B:D 5| elimina un segmento horizontal en la fila 5, y |C2| quita una piedra.
 
-Recordemos que los grupos aditivos y sustractivos pueden encadenarse, separándolos con |;|, lo que permite alternar entre añadir y quitar elementos en una sola línea tantas veces como se desee.
+Los grupos aditivos y sustractivos se alternan con cada |;|, tantas veces como se quiera.
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}, partial = A1:E6]

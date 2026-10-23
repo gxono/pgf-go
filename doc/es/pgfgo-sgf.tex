@@ -183,7 +183,7 @@ En los ejemplos, los archivos se usan por su nombre (pág.~\pageref{subsec:sgfno
 \end{key}
 
 \begin{key}{/pgfgo/sgf/last mark = \meta{mark options} o |false| (initially false)}
-	Marca la última jugada que se muestra, con las opciones de una marca (|circle|, |triangle|, |custom = ...|, etc.). Un pase no se marca, y tampoco un punto que el archivo ya marca ni una jugada con número (el número ya dice cuál es la última): sirve con |numbers = false|.
+	Marca la última jugada que se muestra, con las opciones de una marca (|circle|, |triangle|, |custom = ...|, etc.). Un pase no se marca, y tampoco un punto que el archivo ya marca ni una jugada con número (el número ya dice cuál es la última): en la práctica, marca algo con |numbers = false|.
 
 	\begin{codeexample}[]
 		\begin{goban}[sgf size = variantes]
@@ -279,7 +279,7 @@ En los ejemplos, los archivos se usan por su nombre (pág.~\pageref{subsec:sgfno
 \end{key}
 
 \begin{key}{/pgfgo/sgf info/move = \meta{number} (initially 0)}
-	La propiedad de esa jugada: la de su nodo y la de los nodos sin jugada que lo siguen. Con |0|, la de la raíz (y los nodos anteriores a la primera jugada). Sirve, por ejemplo, para el tiempo que le queda a cada jugador en las partidas de KGS y OGS, |BL| y |WL| (en segundos): |\sgfinfo[move = 120]{partida}{WL}|.
+	La propiedad de esa jugada: la de su nodo y la de los nodos sin jugada que lo siguen. Con |0|, la de la raíz (y los nodos anteriores a la primera jugada). Por ejemplo, el tiempo que le queda a Blancas en la jugada 120 de una partida de KGS u OGS (|WL|, en segundos): |\sgfinfo[move = 120]{partida}{WL}|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf info/variation = \meta{números} (initially la línea principal)}
@@ -568,7 +568,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/marks = \meta{boolean} (default true, initially true)}
-	Como |/pgfgo/sgf/marks|: cada diagrama muestra las marcas, flechas y líneas de su última jugada. Con |marks = false| no se dibujan; sirve, por ejemplo, para un diccionario de josekis que marca con letras las jugadas que pueden seguir.
+	Como |/pgfgo/sgf/marks|: cada diagrama muestra las marcas, flechas y líneas de su última jugada. Con |marks = false| no se dibujan.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/notes = \meta{boolean} (default true, initially true)}
@@ -612,7 +612,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/variations = \meta{variations options} (default commented)}
-	Dibuja también las variantes de la partida, cada una en su diagrama, después del diagrama donde nace su primera jugada: «Diagrama 3a», «Diagrama 3b»... Las jugadas de cada variante se numeran desde 1, y el epígrafe dice qué jugada reemplaza la primera (|variation title|). Las anteriores se ven sin número, como estaban. Las opciones dicen cuáles se dibujan, y se suman: |variations = {commented, 5}|. Además de las de abajo, cualquier otra cosa es el camino de una variante, como en |variation| (|2|, |2.3.1|, o sus jugadas entre llaves y separadas por espacios: |{R16 P17 Q15}|): esa se dibuja siempre, a cualquier profundidad. Los |1| del final no cambian la línea: |2.3.1| es la misma que |2.3|. Si el archivo no la tiene, se produce un aviso. Sus comentarios y notas se escriben como los de los demás diagramas. Con |variation|, las variantes son las que se apartan de esa línea (también la principal): así se dibujan las respuestas a partir de una posición de un diccionario de josekis.
+	Dibuja también las variantes de la partida, cada una en su diagrama, después del diagrama donde nace su primera jugada: «Diagrama 3a», «Diagrama 3b»... Las jugadas de cada variante se numeran desde 1, y el epígrafe dice qué jugada reemplaza la primera (|variation title|). Las anteriores se ven sin número, como estaban. Las opciones dicen cuáles se dibujan, y se suman: |variations = {commented, 5}|. Además de las de abajo, cualquier otra cosa es el camino de una variante, como en |variation| (|2|, |2.3.1|, o sus jugadas entre llaves y separadas por espacios: |{R16 P17 Q15}|): esa se dibuja siempre, a cualquier profundidad. Los |1| del final no cambian la línea: |2.3.1| es la misma que |2.3|. Si el archivo no la tiene, se produce un aviso. Sus comentarios y notas se escriben como los de los demás diagramas. Con |variation|, las variantes son las que se apartan de esa línea (también la principal).
 
 	\begin{codeexample}[]
 		\sgfdiagrams[step = 2, to = 3, variations = all, goban = {scale = 0.5}]{variantes}
@@ -624,7 +624,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{stylekey}
 
 \begin{stylekey}{/pgfgo/sgf diagrams/variations/commented}
-	Las que tienen algún comentario (|C|) en sus jugadas propias. Es lo que hace |variations| a secas: en las partidas comentadas, las demás suelen ser exploraciones sin explicación.
+	Las que tienen algún comentario (|C|) en sus jugadas propias. Es lo que hace |variations| a secas.
 \end{stylekey}
 
 \begin{stylekey}{/pgfgo/sgf diagrams/variations/all}
@@ -636,7 +636,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/variations/from = \meta{number} (initially 1)}
-	Desde qué jugada dibujan |commented| y |all|: solo las variantes que nacen en esa jugada o después. Con |variation|, sirve para dibujar solo las respuestas a una posición, sin las alternativas a las jugadas que llevan a ella.
+	Desde qué jugada dibujan |commented| y |all|: solo las variantes que nacen en esa jugada o después.
 
 	\begin{codeexample}[code only]
 		\sgfdiagrams[variation = {Q16, R14}, variations = {commented, from = 3}]{josekis}
@@ -709,7 +709,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/comments/height = \meta{dimension} o none (initially none)}
-	Altura máxima de los comentarios de un diagrama, debajo o al costado. Lo que no entra va después de los diagramas, como con |after|, con el epígrafe del diagrama como encabezado. Sirve para los comentarios muy largos, que estiran la fila de la grilla.
+	Altura máxima de los comentarios de un diagrama, debajo o al costado. Lo que no entra va después de los diagramas, como con |after|, con el epígrafe del diagrama como encabezado.
 
 	\begin{codeexample}[code only]
 		\sgfdiagrams[step = 30, layout = {columns = 2},
@@ -742,7 +742,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/partial = \meta{auto o false} (initially false)}
-	Con |auto|, donde no hay vista del archivo, cada diagrama muestra solo la parte del tablero que usan las líneas que se dibujan (la de |variation| y las de |variations|), como |/pgfgo/goban/partial = auto|. Es la misma en todos los diagramas, también en los de las variantes. Sirve, por ejemplo, para un joseki de un archivo con muchas ramas por todo el tablero.
+	Con |auto|, donde no hay vista del archivo, cada diagrama muestra solo la parte del tablero que usan las líneas que se dibujan (la de |variation| y las de |variations|), como |/pgfgo/goban/partial = auto|. Es la misma en todos los diagramas, también en los de las variantes.
 
 	\begin{codeexample}[code only]
 		\sgfdiagrams[partial = auto, variations]{joseki}
@@ -822,7 +822,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/solutions = \meta{boolean} (default true, initially true)}
-	Dibuja las variantes. Con |solutions = false|, queda solo el enunciado, para poner las soluciones en otro lugar (por ejemplo, con |statement = false| al final del capítulo).
+	Dibuja las variantes. Con |solutions = false|, queda solo el enunciado; las soluciones van en otro lugar, con |statement = false|.
 
 	\begin{codeexample}[code only]
 		\sgfproblem[solutions = false, title = Problema 2]{problema}
@@ -966,104 +966,3 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 			layout = {columns = 6, fit}]{coleccion.sgf}
 	\end{codeexample}
 \end{key}
-
-\subsection{Disposición de los diagramas}
-\label{subsec:disposicion}
-
-|\sgfdiagrams| y |\sgfproblem| dibujan varios diagramas. Por defecto van en el párrafo, uno al lado del otro, y pasan a la línea siguiente cuando no entran. Con |columns|, van en una grilla de columnas del mismo ancho: cada fila es una línea aparte (la página puede cortarse entre filas), los tableros de una fila quedan alineados arriba y una fila incompleta deja vacías las últimas columnas. Con |fit|, además, los tableros se escalan para llenar el ancho de su columna.
-
-\begin{codeexample}[code only]
-	\sgfdiagrams[step = 2, to = 6, layout = {columns = 3, fit}]{partida}
-\end{codeexample}
-
-\sgfdiagrams[step = 2, to = 6, layout = {columns = 3, fit}]{partida}
-
-\begin{stylekey}{/pgfgo/layout = \meta{layout options}}
-	Opciones de la disposición para todo el documento, por ejemplo |\pgfgoset{layout = {columns = 3, fit}}|. Para un solo comando, |/pgfgo/sgf diagrams/layout| y |/pgfgo/sgf problem/layout|; también para todo el documento, |\pgfgoset{sgf diagrams = {layout = {...}}}|.
-\end{stylekey}
-
-\begin{key}{/pgfgo/layout/columns = \meta{number o auto} (initially auto)}
-	Cantidad de columnas de la grilla. Con |auto|, los diagramas van en el párrafo, sin grilla.
-\end{key}
-
-\begin{key}{/pgfgo/layout/width = \meta{dimension} o |natural| (initially \texttt{\string\linewidth})}
-	Ancho de la grilla. Si es menor que el de la línea, la grilla se centra. Cada columna mide lo que queda al restarle los |column sep| a |width|, repartido entre las columnas; un tablero más angosto queda en su columna según |align|, así que entre dos tableros hay más espacio que |column sep|.
-
-	Con |natural|, la grilla se ajusta a los diagramas: las columnas tienen el ancho del diagrama más ancho (con su epígrafe, que se corta como sin grilla, ver |caption/min width|) y entre dos tableros del mismo ancho queda exactamente |column sep|. La grilla mide eso por la cantidad de columnas (o de diagramas, si son menos) y se centra en la línea; si es más ancha que la línea, se sale del margen. Los diagramas se dibujan todos juntos al final (o al terminar cada grupo de |per page| o |per frame|). |fit| no sirve con |natural|: el paquete avisa y los tableros quedan con su escala.
-
-	\begin{codeexample}[code only]
-		\begin{pgfgolayout}[columns = 2, width = natural, column sep = 0em, row sep = 0em]
-			\begin{goban}[partial = A9:E5, scale = 0.5]\stone[b]{C7}\end{goban}
-			\begin{goban}[partial = E9:I5, scale = 0.5]\stone[w]{G7}\end{goban}
-			\begin{goban}[partial = A1:E5, scale = 0.5]\stone[b]{C3}\end{goban}
-			\begin{goban}[partial = E1:I5, scale = 0.5]\stone[w]{G3}\end{goban}
-		\end{pgfgolayout}
-	\end{codeexample}
-
-	\begin{pgfgolayout}[columns = 2, width = natural, column sep = 0em, row sep = 0em]
-		\begin{goban}[partial = A9:E5, scale = 0.5]\stone[b]{C7}\end{goban}
-		\begin{goban}[partial = E9:I5, scale = 0.5]\stone[w]{G7}\end{goban}
-		\begin{goban}[partial = A1:E5, scale = 0.5]\stone[b]{C3}\end{goban}
-		\begin{goban}[partial = E1:I5, scale = 0.5]\stone[w]{G3}\end{goban}
-	\end{pgfgolayout}
-\end{key}
-
-\begin{key}{/pgfgo/layout/column sep = \meta{dimension} (initially 1em)}
-	Espacio entre columnas.
-\end{key}
-
-\begin{key}{/pgfgo/layout/row sep = \meta{skip} (initially \texttt{\string\medskipamount})}
-	Espacio entre filas.
-\end{key}
-
-\begin{key}{/pgfgo/layout/fit = \meta{boolean} (default true, initially false)}
-	Escala cada tablero para que llene el ancho de su columna; reemplaza el |scale| del tablero. Las líneas no cambian de grosor. En |\sgfdiagrams| y |\sgfproblem|, todos los tableros usan la escala que llena la columna con el primero, así las piedras tienen el mismo tamaño en todos. Si con esa escala un tablero no entra en la columna (un problema más ancho que el primero, por ejemplo), solo ese tablero se achica hasta llenarla. Solo con |columns|, y no con |width = natural|.
-\end{key}
-
-\begin{key}{/pgfgo/layout/per page = \meta{number} o |false| (initially 0)}
-	Cada \meta{number} diagramas, empieza una página nueva (con |\newpage|): con |per page = 1|, un diagrama por página. En la grilla, una fila a medias se dibuja antes del corte; conviene que \meta{number} sea un múltiplo de |columns|. Con |0| o |false|, no hay cortes. En |\sgfproblem| con |statement = alone|, el enunciado cuenta como un diagrama.
-
-	\begin{codeexample}[code only]
-		\sgfdiagrams[step = 50, layout = {columns = 2, fit, per page = 4}]{lee}
-	\end{codeexample}
-\end{key}
-
-\begin{key}{/pgfgo/layout/per frame = \meta{number} o |false| (default 1, initially 0)}
-	Dentro de un |frame| de |beamer|, cada \meta{number} diagramas pasan a la diapositiva siguiente: con |per frame| sola, un diagrama por diapositiva, cada uno con su epígrafe. Los diagramas usan |\only<+>|, así que se suman a las demás capas del |frame|: después de un |\pause|, el primer diagrama va en la diapositiva siguiente. Fuera de |beamer|, el paquete avisa y la \emph{key} no se usa. En |beamer|, si también hay |per page|, vale |per frame|.
-
-	\begin{codeexample}[code only]
-		\begin{frame}{La partida}
-			\sgfdiagrams[step = 50, goban = {scale = 0.6}, layout = {per frame}]{lee}
-		\end{frame}
-	\end{codeexample}
-\end{key}
-
-\begin{key}{/pgfgo/layout/align = \meta{center, left o right} (initially center)}
-	Dónde va cada diagrama dentro de su columna, con su epígrafe y sus notas. Los comentarios van siempre alineados a la izquierda.
-
-	\begin{codeexample}[code only]
-		\sgfdiagrams[step = 2, to = 6, layout = {columns = 2, width = 0.6\linewidth,
-			column sep = 3em, row sep = 2em, align = left}]{partida}
-	\end{codeexample}
-
-	\sgfdiagrams[step = 2, to = 6, layout = {columns = 2, width = 0.6\linewidth,
-		column sep = 3em, row sep = 2em, align = left}]{partida}
-\end{key}
-
-\begin{environment}{{pgfgolayout}\opt{\oarg{layout options}}}
-	Dispone en una grilla los |goban| que contiene, y los diagramas de los |\sgfdiagrams| y |\sgfproblem| que contiene, en el orden en que aparecen. Así se pueden juntar en una grilla tableros dibujados a mano y diagramas de distintos archivos. Las opciones son las de |/pgfgo/layout|; las opciones |layout| de los comandos de adentro no se usan. Adentro no debe haber texto, solo los tableros y los comandos. Con |fit|, cada |goban| se dibuja varias veces para medirlo: su contenido no debe tener efectos fuera del tablero (por ejemplo, contadores que aumentan).
-
-	\begin{codeexample}[code only]
-		\begin{pgfgolayout}[columns = 4, fit]
-			\begin{goban}[5]\stones[b]{C3}\end{goban}
-			\begin{goban}[5]\stones[w]{C3}\end{goban}
-			\sgfdiagrams[step = 5]{partida}
-		\end{pgfgolayout}
-	\end{codeexample}
-\end{environment}
-
-\begin{pgfgolayout}[columns = 4, fit]
-	\begin{goban}[5]\stones[b]{C3}\end{goban}
-	\begin{goban}[5]\stones[w]{C3}\end{goban}
-	\sgfdiagrams[step = 5]{partida}
-\end{pgfgolayout}

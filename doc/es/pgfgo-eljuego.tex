@@ -196,7 +196,7 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 		|auto| solo mira qué color toca cada región; no sabe leer la posición. Por eso:
 		\begin{itemize}
 			\item Es para partidas terminadas. En una posición abierta, casi todo el tablero toca los dos colores y es neutral; con piedras de un solo color, todo el tablero es suyo. Si un borde tiene un hueco, el territorio de adentro se junta con el dame y también queda neutral.
-			\item No sabe qué piedras están muertas: hay que ponerlas con |\prisoners|. Una piedra muerta puesta con |\stones| cuenta como viva, y la región que toca queda neutral.
+			\item No sabe qué piedras están muertas (a veces los jugadores tampoco): hay que ponerlas con |\prisoners|. Una piedra muerta puesta con |\stones| cuenta como viva, y la región que toca queda neutral.
 			\item Los ojos de un grupo en seki cuentan como territorio (en las reglas japonesas no se cuentan). Pueden volverse neutrales después, con un |\territory[n]| para cada uno.
 			\item Las piedras neutrales (sin jugador) ocupan su punto, pero no son de nadie: una región que solo toca piedras neutrales es neutral.
 			\item Busca las regiones con las piedras que hay cuando aparece |\territory|, así que conviene ponerlo al final del |goban|.

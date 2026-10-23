@@ -23,7 +23,7 @@ En cuanto al nombre: el dibujo está escrito sobre la capa básica de \pgfname, 
 \subsection{Primeros pasos}
 \label{subsec:primerospasos}
 
-\pgfgoname\ se carga como cualquier paquete. Se recomienda (mucho) compilar con Lua\LaTeX: con los demás motores, el paquete funciona, pero no puede leer archivos SGF, retirar piedras capturadas ni calcular el territorio solo (pág.~\pageref{subsec:kernel}). Obviamente que si tu intenci\'on en crear tableros disponer posiciones para ense\~nar, entonces puede que no sean caracter\'isticas tan necesarias.
+\pgfgoname\ se carga como cualquier paquete. Recomiendo (mucho) compilar con Lua\LaTeX: con los demás motores, el paquete funciona, pero no puede leer archivos SGF, retirar piedras capturadas ni calcular el territorio solo (pág.~\pageref{subsec:kernel}). Obviamente, si tu intenci\'on es crear tableros y disponer posiciones para ense\~nar, puede que no sean caracter\'isticas tan necesarias.
 
 \begin{codeexample}[code only]
 	\documentclass{article}
@@ -42,11 +42,11 @@ El paquete se puede cargar con dos opciones: |kernel|, que elige el kernel (pág
 \subsection{Cómo leer este manual}
 \label{subsec:guia}
 
-El manual tiene tres partes. Esta introducción. Los tutoriales (parte~\ref{part:tutoriales}), en los que \karu\ prepara un artículo, un cuaderno de problemas y unas clases, y aprende el paquete paso a paso: se leen en orden, y cada uno remite a la referencia. Y la referencia (parte~\ref{part:referencia}), que describe cada comando y cada \emph{key}, ordenada por objeto: la configuración, las coordenadas, el tablero, las piedras, las marcas, las reglas del juego, la memoria, SGF y los estilos. Al final, el catálogo muestra los perfiles que trae el paquete.
+El manual tiene tres partes: esta introducción; los tutoriales (parte~\ref{part:tutoriales}), en los que \karu\ prepara un artículo, un cuaderno de problemas y unas clases, y aprende el paquete en el camino; y la referencia (parte~\ref{part:referencia}), con cada comando y cada \emph{key}, ordenada por objeto. Al final, el catálogo muestra los perfiles que trae el paquete.
 
-Quien empieza puede leer los tutoriales de corrido. De hecho, mi recomendaci\'on ser\'ia que revisaras primero los tutoriales para tener un pantallazo general de todo. Luego, es sumamente recomendable leer las referencias para ver exactamente todo lo que se puede configurar.
+Mi recomendaci\'on ser\'ia que revisaras primero los tutoriales, de corrido, para tener un pantallazo general de todo. Luego, es sumamente recomendable leer la referencia para ver exactamente todo lo que se puede configurar.
 
-Quien busca algo puntual puede ir directo a lo que necesita:
+Para algo puntual:
 \begin{itemize}
 	\item \textbf{Dibujar una partida guardada en SGF}: el tutorial de la pág.~\pageref{tut:primera} y, para la partida entera en diagramas, el de la pág.~\pageref{tut:partida}. La referencia está en la pág.~\pageref{subsec:sgf}.
 	\item \textbf{Dibujar una posición a mano}: el tutorial de la pág.~\pageref{tut:posicion}, y las piedras en la pág.~\pageref{sec:piedras}. Para escribir menos coordenadas (filas, rectángulos, caminos), el tutorial de la pág.~\pageref{tut:abreviar} y la sintaxis completa en la pág.~\pageref{subsec:sintaxis-de-coordenadas}.
@@ -66,4 +66,4 @@ Quien busca algo puntual puede ir directo a lo que necesita:
 	\item \textbf{Escribir en otro idioma}: el tutorial de la pág.~\pageref{tut:idiomas}, y la referencia en la pág.~\pageref{subsec:idiomas}.
 \end{itemize}
 
-Una regla que conviene conocer desde el principio: las \emph{keys} que prenden o apagan algo (la cuadrícula, el fondo, las sombras, \ldots) se prenden solas o con |true|, se apagan con |false|, y dar solo opciones no las prende (pág.~\pageref{subsec:prender}).
+Una regla general: las \emph{keys} que prenden o apagan algo (la cuadrícula, el fondo, las sombras, \ldots) se prenden solas o con |true|, se apagan con |false|, y dar solo opciones no las prende (pág.~\pageref{subsec:prender}).

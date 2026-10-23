@@ -1,7 +1,7 @@
 \section{El tablero}
 \label{sec:tablero}
 
-Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el que se renderizan tanto el goban (la cuadrícula del juego) como los elementos que contiene: piedras, etiquetas de coordenadas y otra información relevante. Este entorno está diseñado para ser flexible y personalizable, permitiendo a los usuarios adaptar su apariencia y funcionalidad según las necesidades del diagrama, ya sea para representar partidas completas, secciones específicas o incluso añadir anotaciones visuales.
+Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula, el fondo, las coordenadas y todo lo que se dibuja encima.
 
 \begin{environment}{{goban}\opt{\oarg{options}}}
 	
@@ -12,14 +12,14 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{goban}
 	\end{codeexample}
 	
-	Dado que el tablero es la única macro que utiliza la capa de TikZ, cada intersección puede ser accedida mediante su coordenada alfanumérica (como en \pgfname) o mediante valores numéricos en el sistema de coordenadas de \tikzname. Esto permite combinar la sintaxis intuitiva del Go con las capacidades gráficas de TikZ, lo que resulta especialmente útil para añadir elementos personalizados, como flechas o marcas, directamente sobre el tablero.
+	|goban| es un |tikzpicture|, así que adentro se puede dibujar con \tikzname. Cada intersección es un punto de su sistema de coordenadas, con A1 en |(1,1)|, o se escribe como en los comandos, con |(go cs:A1)| (pág.~\pageref{subsec:tikz}).
 	
 	\begin{codeexample}[width=5.85cm]
-		\begin{goban}[19, partial = J1:S9,
+		\begin{goban}[19, partial = K1:T9,
 			label = {at = {north, east}}]
-			\stones[b] {K8,R8,Q5,R5,O4,Q4,L3,O3,M2,N2}
-			\mark[black, circle] {K8}
-			\stones[white] {K6,R4,R3,P3,N1,O2,Q2}
+			\stones[b] {L8,S8,R5,S5,P4,R4,M3,P3,N2,O2}
+			\mark[black, circle] {L8}
+			\stones[white] {L6,S4,S3,Q3,O1,P2,R2}
 			
 			\tikzset{flecha/.style = {-{latex[]}, line width = 2pt, blue}}
 			\draw[flecha] (12,8)--(17,8);
@@ -28,7 +28,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\label{subsec:usei}\begin{key}{/pgfgo/goban/use i=\meta{boolean} (default true, initially false)}
 		
-		Permite activar o desactivar el uso de la letra «I» en las coordenadas y etiquetas del tablero. Por defecto está desactivada, como es costumbre en el go: las columnas pasan de la «H» a la «J», y cualquier referencia a «I» se interpreta como «J».
+		Usa la letra «I» en las coordenadas y en las etiquetas del tablero. Por defecto no se usa, como es costumbre en el go: las columnas pasan de la «H» a la «J», y cualquier referencia a «I» se interpreta como «J».
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {13, label = {at = north}}}
@@ -60,6 +60,16 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 	
+	\begin{key}{/pgfgo/goban/sgf size=\meta{file}}
+		Toma el tamaño del tablero de una partida SGF (su propiedad |SZ|). Solo con el kernel en Lua (pág.~\pageref{subsec:kernel}).
+
+		\begin{codeexample}[]
+			\begin{goban}[sgf size = variantes, label = {at = {north, west}}]
+				\sgf{variantes}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
 	\begin{key}{/pgfgo/goban/sgf view=\meta{file}}
 		Como |sgf size| y, si el archivo tiene vista (|VW|), muestra solo esa parte del tablero, como |partial|. La vista puede cambiar durante la partida; se usa la de la jugada |sgf view move|.
 	\end{key}
@@ -74,19 +84,9 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/sgf size=\meta{file}}
-		Toma el tamaño del tablero de una partida SGF (su propiedad |SZ|). Solo con el kernel en Lua (pág.~\pageref{subsec:kernel}).
-
-		\begin{codeexample}[]
-			\begin{goban}[sgf size = variantes, label = {at = {north, west}}]
-				\sgf{variantes}
-			\end{goban}
-		\end{codeexample}
-	\end{key}
-
 	\begin{key}{/pgfgo/goban/scale=\meta{float} (initially 1)}
 		
-		Controla la escala global del tablero, afectando tanto las dimensiones generales como el grosor de ciertos elementos (como el «line width» de las líneas).
+		Escala del tablero: las medidas y también el grosor de las líneas.
 		
 		\begin{codeexample}[width=5.5cm]
 			\begin{goban}[2, scale = 2]
@@ -105,20 +105,20 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\subsection{Cuadrícula}
 	
-	La cuadrícula se refiere a las líneas centrales que forman las intersecciones del tablero.
+	La cuadrícula son las líneas del tablero.
 	
 	\begin{key}{/pgfgo/goban/grid=\meta{options} (default true)}
-		Controla el comportamiento y la apariencia de las líneas centrales del tablero. Este conjunto de opciones permite modificar su visibilidad, color, grosor y separación, ofreciendo un alto grado de personalización.
+		Opciones de la cuadrícula.
 	\end{key}
 	
 	\begin{stylekey}{/pgfgo/goban/grid/true}
 
-		Vuelve a activar las líneas centrales después de un |grid = false| (por ejemplo, uno global hecho con |\pgfgoset|).
+		Vuelve a dibujar la cuadrícula después de un |grid = false| (por ejemplo, uno global hecho con |\pgfgoset|).
 	\end{stylekey}
 
 	\begin{stylekey}{/pgfgo/goban/grid/false}
 		
-		Desactiva las líneas centrales, dejando visibles solo el borde y las piedras.
+		Quita la cuadrícula y los puntos de estrella.
 		
 		\begin{codeexample}[]
 			\begin{goban}[3]
@@ -136,7 +136,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{stylekey}
 	
 	\begin{key}{/pgfgo/goban/grid/line=\meta{options} (default true)}
-		Permite controlar las líneas de la cuadrícula.
+		Opciones de las líneas de la cuadrícula.
 	\end{key}
 
 	\begin{stylekey}{/pgfgo/goban/grid/line/true}
@@ -155,7 +155,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/grid/line/color =\meta{color} (initially black)}
 		
-		Permite cambiar el color de las líneas de la cuadrícula.
+		Color de las líneas de la cuadrícula.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -172,7 +172,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/grid/line/opacity =\meta{float} (initially 1)}
 		
-		Establece la opacidad de las líneas de la cuadrícula, desde 0 (transparente) hasta 1 (opaco).
+		Opacidad de las líneas de la cuadrícula.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -189,7 +189,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/grid/line/width =\meta{dimension} (initially 0.55pt)}
 		
-		Define el grosor de las líneas de la cuadrícula.
+		Grosor de las líneas de la cuadrícula.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -205,15 +205,15 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/grid/x sep =\meta{dimension} (initially 1.25em)}
-		Establece la separación entre las líneas verticales, ajustando el ancho de las columnas del tablero.
+		Separación entre las líneas verticales.
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/grid/y sep =\meta{dimension} (initially 1.25em)}
-		Establece la separación entre las líneas horizontales, ajustando la altura de las filas.
+		Separación entre las líneas horizontales.
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/grid/sep =\meta{dimension} (initially 1.25em)}
-		Define simultáneamente la separación vertical y horizontal de las líneas, asegurando un espaciado uniforme en ambas direcciones. Es una opción conveniente para mantener proporciones equilibradas.
+		Las dos separaciones a la vez.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, grid = {x sep = 1.8em}]
@@ -371,20 +371,20 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\subsection{Borde}
 	
-	El borde del tablero es el contorno que enmarca la cuadrícula y las piedras, proporcionando un límite visual claro. Por defecto, está activo, tiene un fondo blanco y un contorno negro.
+	El fondo del tablero es el rectángulo que va debajo de la cuadrícula, con su relleno y su borde. Por defecto, el relleno es blanco y el borde, negro.
 	
 	\begin{key}{/pgfgo/goban/background=\meta{options} (default true)}
-		Controla las propiedades del borde del tablero, como su visibilidad, color, grosor y forma, permitiendo una personalización detallada.
+		Opciones del fondo y del borde.
 	\end{key}
 	
 	\begin{stylekey}{/pgfgo/goban/background/true}
 
-		Vuelve a activar el fondo y el borde del tablero después de un |background = false|.
+		Vuelve a dibujar el fondo y el borde después de un |background = false|.
 	\end{stylekey}
 
 	\begin{stylekey}{/pgfgo/goban/background/false}
 		
-		Desactiva completamente el borde del tablero, eliminando tanto el contorno como el relleno. Esto es útil para diagramas minimalistas o cuando el fondo del documento ya proporciona el contraste necesario.
+		Quita el fondo: el relleno y el borde.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -400,12 +400,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{stylekey}
 	
 	\begin{key}{/pgfgo/goban/background/fill=\meta{options} (default true)}
-		Controla las opciones relacionadas con el relleno del fondo del tablero.
+		Opciones del relleno.
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/background/fill=\meta{boolean} (initially true)}
 		
-		Determina si el relleno del fondo del tablero está activo. Si se desactiva, el área dentro del borde será transparente, mostrando solo el contorno (si está habilitado).
+		Con |false|, el fondo es transparente y queda solo el borde.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -422,7 +422,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/background/fill/color =\meta{color} (initially white)}
 		
-		Define el color de relleno del tablero.
+		Color del relleno.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -439,7 +439,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/background/fill/opacity =\meta{float} (initially 1)}
 		
-		Controla la opacidad del relleno, desde 0 (transparente) hasta 1 (opaco).
+		Opacidad del relleno.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -517,7 +517,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image/rotate =\meta{ángulo}, |random| o \meta{mínimo}|:|\meta{máximo} (initially 0)}
-		Gira la imagen en cuartos de vuelta: el ángulo se redondea a 0, 90, 180 o 270 grados, para que la imagen girada siga ocupando su lugar sin dejar huecos. Con 90 o 270, el ancho y el alto se intercambian: con |cover| la imagen mantiene la proporción, pero una baldosa de ancho |width| que no es cuadrada queda estirada. Con |random| o un rango, como en |stone/image/rotate| (pág.~\pageref{subsec:piedrasimagen}), cada baldosa tiene su propio giro, siempre el mismo: así se nota menos la repetición.
+		Gira la imagen en cuartos de vuelta: el ángulo se redondea a 0, 90, 180 o 270 grados, para que la imagen girada siga ocupando su lugar sin dejar huecos. Con 90 o 270, el ancho y el alto se intercambian: con |cover| la imagen mantiene la proporción, pero una baldosa de ancho |width| que no es cuadrada queda estirada. Con |random| o un rango, como en |stone/image/rotate| (pág.~\pageref{subsec:piedrasimagen}), cada baldosa tiene su propio giro, siempre el mismo.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, background = {fill = {image = {file = pgfgo-board.jpg, rotate = 90}}}]
@@ -533,11 +533,11 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\end{stylekey}
 
 	\begin{key}{/pgfgo/goban/background/line=\meta{options} (default true)}
-		Controla las opciones de la línea de contorno del fondo.
+		Opciones del borde.
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/background/line=\meta{boolean} (initially true)}
-		Activa o desactiva la línea del borde.
+		Dibuja (|true|) o quita (|false|) el borde.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -554,7 +554,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/background/line/color =\meta{color} (initially black)}
 		
-		Define el color de la línea del borde, permitiendo distinguirlo del fondo o de las líneas de la cuadrícula.
+		Color del borde.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -571,7 +571,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/background/line/opacity =\meta{float} (initially 1)}
 		
-		Ajusta la opacidad de la línea del borde.
+		Opacidad del borde.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -588,7 +588,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/background/line/width =\meta{dimension} (initially 0.75pt)}
 		
-		Controla el grosor de la línea del borde.
+		Grosor del borde.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -605,7 +605,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/background/rounded corners =\meta{dimension} (initially 0pt)}
 		
-		Ajusta el redondeo de las esquinas del borde, desde 0pt (esquinas rectas) hasta valores mayores para un efecto más suave y estilizado. 
+		Radio de las esquinas del fondo. Con |0pt|, son rectas.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = A1:C3}}
@@ -623,7 +623,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/background/rounded corners/outer =\meta{dimension} (initially 0pt)}
 		
-		Ajusta solamente el redondeo de las esquinas exteriores del borde. 
+		Solo el de las esquinas exteriores.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = A1:C3}}
@@ -641,7 +641,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/background/rounded corners/inner =\meta{dimension} (initially 0pt)}
 		
-		Ajusta solamente el redondeo de las esquinas interiores del tablero (solo visibles en tableros parciales). 
+		Solo el de las esquinas interiores (se ven en los tableros parciales).
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = A1:C3}}
@@ -658,7 +658,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/background/sep =\meta{dimension} (initially 0.825em)}
 		
-		Define la separación entre la cuadrícula y el borde, basada por defecto en el radio de las piedras multiplicado por 1.5. Este ajuste asegura que las piedras cercanas al borde no se superpongan con él.
+		Separación entre la cuadrícula y el borde. Por defecto, 1.5 veces el radio de las piedras.
 		
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
@@ -733,7 +733,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	\subsection{Tablero parcial}
 	\label{subsec:parcial}
 	
-	En muchas ocasiones, no es necesario representar un tablero completo, sino solo una sección rectangular, ya sea por limitaciones de espacio, para enfocar la atención en una zona específica o para simplificar la creación de diagramas. El entorno |goban| incluye la \emph{key} |partial|, que define esta región con dos vértices opuestos de un rectángulo, sin importar el orden en que se especifiquen. Por ejemplo, |partial = A1:D3| es equivalente a |partial = D3:A1|.
+	Muchas veces no hace falta el tablero completo, sino solo una parte. La \emph{key} |partial| la define con dos esquinas opuestas de un rectángulo, en cualquier orden. Por ejemplo, |partial = A1:D3| es equivalente a |partial = D3:A1|.
 	
 	\begin{figure}[H]
 		\centering
@@ -763,14 +763,14 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 			\node[anchor=north, xshift=15em] {
 				\tikz{
 					\node[inner sep=0] (Y) {
-						\begin{goban}[label = {at = {north, west}}, partial = I9:D6]
+						\begin{goban}[label = {at = {north, west}}, partial = J9:D6]
 						\end{goban}
-					};	
+					};
 					\node[align = left, anchor=north, inner sep=0, yshift=-1em] at (Y.south){
-						{\color{blue}|partial = D9:I6|}\\
-						{\color{blue}|partial = I6:D9|}\\
-						{\color{red} |partial = D6:I9|}\\
-						{\color{red} |partial = I9:D6|}\\
+						{\color{blue}\texttt{partial = D9:J6}}\\
+						{\color{blue}\texttt{partial = J6:D9}}\\
+						{\color{red} \texttt{partial = D6:J9}}\\
+						{\color{red} \texttt{partial = J9:D6}}\\
 					};
 				}
 			};
@@ -788,8 +788,8 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 			\draw[flecha] (1,1)--(4,3); % Desde A1 hasta D3
 		\end{goban}
 		
-		\begin{goban}[partial = A9:I6]
-			\draw[flecha] (1,9)--(9,6); % Desde A9 hasta I6
+		\begin{goban}[partial = A9:J6]
+			\draw[flecha] (1,9)--(9,6); % Desde A9 hasta J6
 		\end{goban}
 		
 		\begin{goban}[partial = E2:B4]
@@ -813,10 +813,10 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\subsection{Etiquetas del tablero}
 	
-	Las etiquetas son los indicadores alfanuméricos (letras y números) que aparecen en los lados del tablero para identificar las intersecciones.
+	Las etiquetas son las coordenadas que se escriben a los lados del tablero.
 	
 	\begin{key}{/pgfgo/goban/label=\meta{options} (default true)}
-		Controla las propiedades de las etiquetas, como su ubicación y formato.
+		Opciones de las etiquetas.
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/label/true}
@@ -835,41 +835,41 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/label/at =\meta{options}}
 		
-		Define en qué lados del tablero aparecen las etiquetas. Las opciones incluyen combinaciones de posiciones cardinales o valores predefinidos como «all» o «none».
+		En qué lados del tablero van las etiquetas: uno o varios puntos cardinales, |all| o |none|.
 		
 		\begin{stylekey}{/pgfgo/goban/label/at/all}
 			
-			Muestra etiquetas en todos los lados del tablero (norte, sur, este y oeste).
+			En los cuatro lados.
 		\end{stylekey}
 		
 		\begin{stylekey}{/pgfgo/goban/label/at/none}
 			
-			Equivale a |label=false|, eliminando todas las etiquetas.
+			Lo mismo que |label = false|.
 		\end{stylekey}
 		
 		\begin{stylekey}{/pgfgo/goban/label/at/east}
-			Coloca etiquetas solo en el lado derecho (números verticales).
+			A la derecha (los números).
 		\end{stylekey}
 		\begin{stylekey}{/pgfgo/goban/label/at/right}
 			Equivalente a |east|.
 		\end{stylekey}
 		
 		\begin{stylekey}{/pgfgo/goban/label/at/north}
-			Coloca etiquetas solo en la parte superior (letras horizontales).
+			Arriba (las letras).
 		\end{stylekey}
 		\begin{stylekey}{/pgfgo/goban/label/at/above}
 			Equivalente a |north|.
 		\end{stylekey}
 		
 		\begin{stylekey}{/pgfgo/goban/label/at/south}
-			Coloca etiquetas solo en la parte inferior (letras horizontales).
+			Abajo (las letras).
 		\end{stylekey}
 		\begin{stylekey}{/pgfgo/goban/label/at/below}
 			Equivalente a |south|.
 		\end{stylekey}
 		
 		\begin{stylekey}{/pgfgo/goban/label/at/west}
-			Coloca etiquetas solo en el lado izquierdo (números verticales).
+			A la izquierda (los números).
 		\end{stylekey}
 		\begin{stylekey}{/pgfgo/goban/label/at/left}
 			Equivalente a |west|.
@@ -889,7 +889,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially el tamaño de la fuente actual)}
 
-		Ajusta el tamaño de la fuente de las etiquetas.
+		Tamaño de la fuente de las etiquetas.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {south, west}}]
@@ -902,7 +902,7 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 
 	\begin{key}{/pgfgo/goban/label/font = \meta{font commands} (initially \texttt{\string\sffamily})}
 
-		Establece la fuente de las etiquetas.
+		Fuente de las etiquetas.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {south, west}, font = \bfseries}]
@@ -912,12 +912,12 @@ Cuando hablamos de «tablero», nos referimos a un entorno o \emph{scope} en el 
 	
 	\begin{key}{/pgfgo/goban/label/sep = \meta{dimension} (initially 0.35cm)}
 		
-		Controla la distancia entre las etiquetas y el borde del tablero.
+		Distancia entre las etiquetas y el borde del tablero.
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/label/color = \meta{color} (initially black)}
 		
-		Define el color del texto de las etiquetas.
+		Color de las etiquetas.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {south, west}, color = red, sep = 0.6cm}]

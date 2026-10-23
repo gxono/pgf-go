@@ -1,17 +1,17 @@
 \section{Piedras, jugadas y prisioneros}
 \label{sec:piedras}
 
-Las piedras son los elementos fundamentales. En \pgfgoname, se proporcionan comandos y opciones para dibujarlas de manera flexible, permitiendo personalizar su apariencia y comportamiento según las necesidades del diagrama.
+Las piedras se dibujan con |\stone| y |\stones|; las jugadas, con |\moves|, y los prisioneros, con |\prisoner| y |\prisoners|.
 
 \subsection{Piedras}
 
 \begin{command}{\stone\opt{\oarg{options}}\marg{intersection}}
-	Este comando dibuja una piedra individual en la intersección especificada. El argumento obligatorio es la coordenada (ej. «C2»), mientras que las opciones opcionales permiten ajustar su estilo, como color, tamaño o marca. Si no se indica el jugador (|b|, |w| o |n|), la piedra es \emph{neutral}.
+	Dibuja una piedra en la intersección (por ejemplo, |C2|). Las opciones cambian su estilo: el color, el tamaño, una marca, etc. Si no se indica el jugador (|b|, |w| o |n|), la piedra es \emph{neutral}.
 \end{command}
 
 
 \begin{command}{\stones\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
-	Similar a |\stone|, pero permite colocar múltiples piedras con la sintaxis correspondiente (pág.~\pageref{subsec:sintaxis-de-coordenadas}). Si no se indica el jugador, las piedras también son \emph{neutrales}: para piedras negras hay que escribir |\stones[b]{...}|.
+	Como |\stone|, pero con varias intersecciones, escritas con la sintaxis de coordenadas (pág.~\pageref{subsec:sintaxis-de-coordenadas}). Si no se indica el jugador, las piedras también son \emph{neutrales}: para piedras negras hay que escribir |\stones[b]{...}|.
 \end{command}
 
 Las piedras, marcas y etiquetas que caen fuera de la región visible de un tablero parcial no se dibujan. Una coordenada que no existe en el tablero (por ejemplo, |E9| en un tablero de 5$\times$5) se ignora y produce una advertencia.
@@ -19,13 +19,37 @@ Las piedras, marcas y etiquetas que caen fuera de la región visible de un table
 Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone = {...}}|. Esto es equivalente a |\pgfgoset{players = {all = {stone = {...}}}}|.
 
 
-\begin{key}{/pgfgo/stone/fill = \meta{options}}
-	Controla las opciones de relleno de una piedra.
+\begin{key}{/pgfgo/stone/fill = \meta{options} (default true)}
+	Opciones del relleno de la piedra.
+\end{key}
+
+\begin{key}{/pgfgo/stone/fill/true}
+	Dibuja el relleno.
+\end{key}
+
+\begin{key}{/pgfgo/stone/fill/false}
+	No dibuja el relleno.
+
+	\begin{codeexample}[]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {5, partial = B2:D4}}
+
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+
+		% Lo que se ve en la figura es lo que queda de la piedra: sombras y brillos.
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w, fill = false]{B4}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 
 \begin{key}{/pgfgo/stone/fill/color = \meta{color}}	
-	Define el color de relleno de una piedra.
+	Color del relleno.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -44,7 +68,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/fill/opacity = \meta{float} (initially 1)}
 	
-	Controla la opacidad del relleno de la piedra, desde 0 (transparente) hasta 1 (opaco).
+	Opacidad del relleno.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -62,13 +86,36 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 \end{key}
 
 
-\begin{key}{/pgfgo/stone/line = \meta{option} (initially true)}
-	Controla las opciones de la frontera de una piedra.
+\begin{key}{/pgfgo/stone/line = \meta{option} (default true, initially true)}
+	Opciones del borde de la piedra.
+\end{key}
+
+\begin{key}{/pgfgo/stone/line/true}
+	Dibuja el borde.
+
+	\begin{codeexample}[]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {5, partial = B2:D4}}
+
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w]{B4}
+		\end{goban}
+
+		\begin{goban}
+			\stones[b]{C2,D3}
+			\stone[w, line = true]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/line/false}
+	No dibuja el borde.
 \end{key}
 
 \begin{key}{/pgfgo/stone/line/color = \meta{color} (initially black)}
 	
-	Establece el color del borde de la piedra, que por defecto es negro para todas las piedras.
+	Color del borde.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -87,7 +134,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/line/opacity = \meta{float} (initially 1)}
 	
-	Define la opacidad del borde de la piedra, permitiendo hacerlo más sutil o transparente.
+	Opacidad del borde.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -106,7 +153,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/line/width = \meta{dimension} (initially 0.7pt)}
 	
-	Controla el grosor del borde de la piedra.
+	Grosor del borde.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -125,7 +172,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/radius = \meta{dimension} (initially 5.5pt)}
 	
-	Establece el tamaño de la piedra mediante su radio.
+	Radio de la piedra.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -144,7 +191,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/scale = \meta{float} (initially 1)}
 	
-	Define un factor de escala que afecta todos los elementos de la piedra (radio, borde, marcas), manteniendo sus proporciones.
+	Escala la piedra entera: el radio, el borde y las marcas.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
@@ -157,7 +204,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/black}
 	
-	Asigna a la piedra las características del primer jugador (negro por defecto), incluyendo color de relleno y borde. Sin |black| (o |b|), |\stone| y |\stones| dibujan piedras neutrales.
+	La piedra es del primer jugador, con su estilo. Sin |black| (o |b|), |\stone| y |\stones| dibujan piedras neutrales.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -176,12 +223,12 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/b}
 	
-	Abreviatura de «black», con idéntica funcionalidad.
+	Abreviatura de |black|.
 \end{key}
 
 \begin{key}{/pgfgo/stone/white}
 	
-	Asigna a la piedra las características del segundo jugador (blanco por defecto), con relleno blanco y borde negro.
+	La piedra es del segundo jugador, con su estilo.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -200,7 +247,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/w}
 	
-	Abreviatura de «white», con la misma funcionalidad.
+	Abreviatura de |white|.
 \end{key}
 
 \begin{key}{/pgfgo/stone/neutral}
@@ -221,7 +268,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 \end{key}
 
 \begin{key}{/pgfgo/stone/shadow = \meta{options} (default true)}
-	Sombra de la piedra, dibujada debajo: |true|, |false|, |angle|, |offset|, |opacity|, |color|, |scale| e |image|. Sin |image| tiene la silueta de la piedra; con |image|, es una imagen propia (tal cual, o solo su forma con |silhouette|). Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}).
+	Sombra de la piedra, dibujada debajo. Por defecto tiene la silueta de la piedra: el círculo, o la forma de la imagen si la piedra es una imagen (|image|). Con |shadow/image|, la sombra es una imagen propia. En los dos casos se corre |offset| hacia |angle| y se agranda |scale| veces.
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -233,8 +280,172 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/stone/shadow/true}
+	Dibuja la sombra.
+\end{key}
+
+\begin{key}{/pgfgo/stone/shadow/false}
+	No dibuja la sombra.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {white = {stone = {shadow = false}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shadow/angle = \meta{float} (initially 0)}
+	Hacia dónde cae la sombra, en grados: con |0|, a la derecha; con |-45|, abajo a la derecha. No gira la forma de la sombra.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {white = {stone = {shadow = {angle = 225}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shadow/offset = \meta{dimension} (initially 1pt)}
+	Cuánto se corre la sombra respecto del centro de la piedra, en la dirección |angle|.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {white = {stone = {shadow = {offset = 0.125cm}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shadow/opacity = \meta{float} (initially 0.5)}
+	Opacidad de la sombra (también la de la sombra con imagen).
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {white = {stone = {shadow = {offset = 0.125cm, opacity = 0.1}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shadow/color = \meta{color} (initially black)}
+	El color de la sombra. Una sombra con imagen tiene sus propios colores, salvo con |image/silhouette|.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		\pgfgoset{players = {white = {stone = {shadow = {color = blue, offset = 0.1cm}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shadow/scale = \meta{float} (initially 1)}
+	Agranda (o achica) la sombra respecto de la piedra. Una sombra más grande que la piedra la hace parecer más alta. También agranda la sombra con imagen.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{goban = {partial = A1:C3, scale = 2}}
+
+		\begin{goban}
+			\stone[b, shadow = {true, angle = -45}]{A1}
+			\stone[b, shadow = {true, angle = -45,
+				scale = 1.3}]{C2}
+			\stone[w, shadow = {true, offset = 0pt,
+				scale = 1.3, color = red}]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shadow/image = \meta{options}}
+	Una sombra propia: una imagen con transparencia (PNG o PDF), centrada en la piedra y dibujada tal cual en lugar de la silueta, por ejemplo una sombra difusa. Se corre y se agranda como la silueta (|angle|, |offset|, |scale|) y usa |opacity|, pero no |color|. No gira con la imagen de la piedra (|stone/image/rotate|), así que cae siempre hacia el mismo lado. Cada archivo se guarda una sola vez en el PDF.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{goban = {partial = A1:C3, scale = 2}}
+		\pgfgoset{stone = {shadow = {true, angle = -45,
+			offset = 1.5pt, opacity = 0.8,
+			image = {file = pgfgo-shadow.png, width = 13pt}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shadow/image/file = \meta{file}}
+	El archivo de la imagen. Se busca como con |\includegraphics|.
+\end{key}
+
+\begin{key}{/pgfgo/stone/shadow/image/width = \meta{dimension} (initially el diámetro de la piedra)}
+	El ancho de la imagen; el alto mantiene la proporción.
+\end{key}
+
+\begin{key}{/pgfgo/stone/shadow/image/rotate = \meta{ángulo} (initially 0)}
+	Gira la imagen de la sombra, igual en todas las piedras.
+\end{key}
+
+\begin{key}{/pgfgo/stone/shadow/image/silhouette = \meta{boolean} (default true, initially false)}
+	Usa solo la forma de la imagen (su transparencia), pintada con |shadow/color|, en lugar de la imagen tal cual. Necesita pdf\LaTeX\ o Lua\LaTeX\ con salida PDF; con otros motores la sombra no se dibuja y aparece un aviso.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{goban = {partial = A1:C3, scale = 2}}
+		\pgfgoset{stone = {shadow = {true, angle = -45,
+			offset = 2pt, color = blue,
+			image = {file = star.pdf, width = 16pt,
+				rotate = 18, silhouette}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{stylekey}{/pgfgo/stone/shadow/image/false}
+	Quita la imagen: vuelve la silueta de la piedra.
+\end{stylekey}
+
 \begin{key}{/pgfgo/stone/shine = \meta{options} (default true)}
-	Brillo de la piedra, dibujado encima: |true|, |false|, |angle|, |opacity|, |color| e |image|. Las opciones se describen en la referencia de jugadores (pág.~\pageref{subsec:jugadores}).
+	Brillo de la piedra, dibujado encima de ella, sea un círculo o una imagen.
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -244,8 +455,89 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 			\stone[w, shine = {true, color = gray}]{B4}
 		\end{goban}
 	\end{codeexample}
+\end{key}
 
-	Con |image|, el brillo es una imagen con transparencia (PNG o PDF), centrada en la piedra (tal cual, o solo su forma, del color del brillo, con |silhouette|). Si la piedra también es una imagen, el brillo se dibuja encima y no gira con ella: las piedras pueden tener vetas giradas al azar (|rotate = random|) y la luz siempre del mismo lado.
+\begin{key}{/pgfgo/stone/shine/true}
+	Dibuja el brillo.
+\end{key}
+
+\begin{key}{/pgfgo/stone/shine/false}
+	No dibuja el brillo.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {black = {stone = {shine = false}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shine/angle = \meta{float} (initially 0)}
+	Gira el brillo dibujado. Con |0|, la luz viene de arriba a la izquierda.
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {black = {stone = {shine = {angle = 45}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shine/opacity = \meta{float} (initially 1)}
+	Opacidad del brillo (también la del brillo con imagen).
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+
+		\pgfgoset{players = {black = {stone = {shine = {opacity = 0.5}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shine/color = \meta{color} (initially gray!50!white)}
+	Color del brillo dibujado.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{profile = pgfgosmooth}
+		\pgfgoset{goban = {partial = A1:C3}}
+		\pgfgoset{players = {black = {stone = {shine = {color = red}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shine/image = \meta{options}}
+	Un brillo propio: una imagen con transparencia (PNG o PDF), centrada en la piedra, en lugar del brillo dibujado. Si la piedra también es una imagen, el brillo se dibuja encima y no gira con ella (|stone/image/rotate|): las piedras pueden tener vetas giradas al azar y la luz siempre del mismo lado. Cada archivo se guarda una sola vez en el PDF.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
@@ -254,6 +546,44 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 		\end{goban}
 	\end{codeexample}
 \end{key}
+
+\begin{key}{/pgfgo/stone/shine/image/file = \meta{file}}
+	El archivo de la imagen. Se busca como con |\includegraphics|.
+\end{key}
+
+\begin{key}{/pgfgo/stone/shine/image/width = \meta{dimension} (initially el diámetro de la piedra)}
+	El ancho de la imagen; el alto mantiene la proporción.
+\end{key}
+
+\begin{key}{/pgfgo/stone/shine/image/rotate = \meta{ángulo} (initially 0)}
+	Gira la imagen del brillo, igual en todas las piedras.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, partial = B2:D4]
+			\stones[w, image = {file = pgfgo-yunzi-white-1.png},
+				shine = {true, image = {file = shine.png, width = 0.3cm, rotate = 90}}]{B2, C2, D2, B3, C3, D3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/shine/image/silhouette = \meta{boolean} (default true, initially false)}
+	Usa solo la forma de la imagen (su transparencia), pintada con |shine/color|, en lugar de la imagen tal cual. Necesita pdf\LaTeX\ o Lua\LaTeX\ con salida PDF; con otros motores el brillo no se dibuja y aparece un aviso.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{goban = {partial = A1:C3, scale = 2}}
+		\pgfgoset{players = {black = {stone = {shine = {true,
+			color = red, image = {file = shine.png, silhouette}}}}}}
+
+		\begin{goban}
+			\stones[b]{B1,C2}
+			\stone[w]{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{stylekey}{/pgfgo/stone/shine/image/false}
+	Quita la imagen: vuelve el brillo dibujado.
+\end{stylekey}
 
 
 \label{subsec:piedrasimagen}\begin{key}{/pgfgo/stone/image = \meta{options}}
@@ -288,7 +618,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 \end{key}
 
 \begin{key}{/pgfgo/stone/image/file = \meta{file \opt{, file, ...}}}
-	El archivo de la imagen. Con varios archivos, cada piedra usa uno, elegido por su posición: una piedra en un punto muestra siempre la misma imagen, en todos los diagramas. Sirve para variar el aspecto de las piedras, por ejemplo las vetas de las blancas.
+	El archivo de la imagen. Con varios archivos, cada piedra usa uno, elegido por su posición: una piedra en un punto muestra siempre la misma imagen, en todos los diagramas.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
@@ -302,7 +632,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 \end{key}
 
 \begin{key}{/pgfgo/stone/image/rotate = \meta{ángulo}, |random| o \meta{mínimo}|:|\meta{máximo} (initially 0)}
-	Gira la imagen \meta{ángulo} grados, en sentido antihorario. Con |random|, cada piedra se gira un ángulo distinto, elegido por su posición: una piedra en un punto queda siempre igual, en todos los diagramas y en todos los cuadros de una animación. Sirve para que las vetas de una misma imagen no se vean repetidas. La sombra gira con la imagen, pero sigue cayendo hacia el mismo lado.
+	Gira la imagen \meta{ángulo} grados, en sentido antihorario. Con |random|, cada piedra se gira un ángulo distinto, elegido por su posición: una piedra en un punto queda siempre igual, en todos los diagramas y en todos los cuadros de una animación. La sombra gira con la imagen, pero sigue cayendo hacia el mismo lado.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
@@ -311,7 +641,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 		\end{goban}
 	\end{codeexample}
 
-	Con un rango \meta{mínimo}|:|\meta{máximo}, el ángulo se elige igual que con |random|, pero entre \meta{mínimo} y \meta{máximo} grados (|random| es lo mismo que |0:360|). Sirve para imágenes que no se pueden girar del todo, como una piedra con luz de un lado.
+	Con un rango \meta{mínimo}|:|\meta{máximo}, el ángulo se elige igual que con |random|, pero entre \meta{mínimo} y \meta{máximo} grados (|random| es lo mismo que |0:360|).
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
@@ -339,7 +669,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/mark = \meta{mark keys}}
 	
-	Coloca una marca sobre la piedra (ej. triángulo, círculo). Las marcas pueden personalizarse ulteriormente con otras claves, como color o tamaño.
+	Una marca sobre la piedra, con las opciones de |\mark| (pág.~\pageref{sec:marcas}): |mark = triangle|, |mark = {circle, line = {color = red}}|.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -375,19 +705,32 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 \begin{key}{/pgfgo/stone/prisoner=\meta{prisoner options} (default fill opacity = 0.5)}
 	
-	Caracteriza a una piedra como prisionera, típicamente con una opacidad reducida (0.5 por defecto) para indicar que ha sido capturada. Pueden añadirse otras opciones para personalizar su apariencia: se aplican después del estilo de los prisioneros (|/pgfgo/prisoner| y |/pgfgo/players/white/stone/prisoner|).
-	
+	La piedra es un prisionero: por defecto, con el relleno a media opacidad. Las opciones que se agreguen se aplican después del estilo de los prisioneros (|/pgfgo/prisoner| y el del jugador).
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b, prisoner]{C2,D3}
 			\stone[white]{B4}
+		\end{goban}
+	\end{codeexample}
+
+	En las opciones de un jugador (|\pgfgoset{players = {white = {stone = {prisoner = ...}}}}|), es el estilo de sus prisioneros: los de |\prisoner|, |\prisoners| y la \emph{key} |prisoner| de |\stone| y |\stones|, y las piedras capturadas con |captures = fade|. Se aplica después de la opacidad de relleno 0.5 y de |/pgfgo/prisoner|, y antes de las opciones de la piedra. Las demás piedras del jugador no cambian.
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = B2:D4}}
+		\pgfgoset{players = {white = {stone = {prisoner = {line = {color = red}}}}}}
+
+		\begin{goban}
+			\stones[w]{B3}
+			\prisoner[b]{C3}
+			\prisoner[w]{D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -397,7 +740,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 Con pdf\LaTeX\ o Lua\LaTeX\ (con salida PDF), cada imagen (de las piedras, el fondo, la cuadrícula, los hoshi, las marcas, el brillo o la sombra) se guarda en el PDF una sola vez, la primera vez que se usa; después, en todo el documento, cada piedra o baldosa que la usa solo la nombra. Una partida dibujada con |profile = shell| guarda la madera, las seis piedras y la sombra una vez, aunque tenga cientos de piedras repartidas en muchos diagramas. Girar una imagen (|rotate|) no agrega otra copia, y la sombra con la forma de la imagen (también con |silhouette|) usa la misma copia. Lo que sí agrega una copia es otro tamaño: la misma imagen con otro |width|, o en tableros con otro |scale| (por ejemplo, con |fit|), se guarda una vez por cada tamaño. Con otros motores (Xe\LaTeX, o salida DVI), la imagen se incluye cada vez que se usa, y el PDF crece con cada piedra.
 
-Las piedras dibujadas, sin imagen, no se guardan así: cada una es un círculo y unas pocas instrucciones de dibujo, casi lo mismo que nombrar una copia guardada. Para piedras vectoriales más elaboradas (degradados, vetas dibujadas), conviene hacerlas en un PDF y usarlo con |stone/image|: un PDF es una imagen vectorial, se ve nítido con cualquier escala y se guarda una sola vez, como las demás imágenes.
+Las piedras dibujadas, sin imagen, no se guardan así: cada una es un círculo y unas pocas instrucciones de dibujo, casi lo mismo que nombrar una copia guardada. Una piedra vectorial más elaborada (degradados, vetas dibujadas) puede hacerse en un PDF y usarse con |stone/image|: se ve nítida con cualquier escala y se guarda una sola vez, como las demás imágenes.
 
 
 
@@ -406,11 +749,9 @@ Las piedras dibujadas, sin imagen, no se guardan así: cada una es un círculo y
 \subsection{Movimientos}
 \label{subsec:movimientos}
 
-|\moves| representa secuencias de jugadas alternando automáticamente entre negro y blanco. Sus opciones deciden si las jugadas llevan número y personalizan las piedras asociadas.
-
 \begin{command}{\moves\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
 
-	Dibuja piedras como parte de una secuencia de jugadas, alternando colores automáticamente (negro, blanco, negro, etc.) y con su número (|numbers|). Las jugadas son una secuencia: se juegan en el orden en que se escriben y una intersección puede repetirse (por ejemplo, para retomar un ko con |captures|). Acepta la sintaxis de |\stones| (pág.~\pageref{subsec:sintaxis-de-coordenadas}) y juega cada elemento en su orden (pág.~\pageref{subsec:orden-coordenadas}): un camino (|A1 -- A3 -- C3|) va de su primer punto al último, y un segmento, del primer extremo al segundo (|C:A 4| va de C4 a A4; |C5:1|, de C5 a C1). Lo que no tiene un recorrido fijo (rectángulos, |r|, columnas y filas enteras, |*|) se juega igual, con un aviso. Los grupos sustractivos (|;|) dan error: |\moves| solo agrega jugadas.
+	Juega las intersecciones en el orden en que se escriben, alternando negras y blancas, y las numera (|numbers|). Una intersección puede repetirse (por ejemplo, para retomar un ko con |captures|). Acepta la sintaxis de |\stones| (pág.~\pageref{subsec:sintaxis-de-coordenadas}) y juega cada elemento en su orden (pág.~\pageref{subsec:orden-coordenadas}): un camino (|A1 -- A3 -- C3|) va de su primer punto al último, y un segmento, del primer extremo al segundo (|C:A 4| va de C4 a A4; |C5:1|, de C5 a C1). Lo que no tiene un recorrido fijo (rectángulos, |r|, columnas y filas enteras, |*|) se juega igual, con un aviso. Los grupos sustractivos (|;|) dan error: |\moves| solo agrega jugadas.
 
 	\begin{codeexample}[]
 		\begin{goban}[5]
@@ -451,7 +792,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 
 \begin{key}{/pgfgo/move/black}
 	
-	Establece que la secuencia de movimientos comienza con el jugador negro, útil para forzar el inicio de una jugada en diagramas específicos.
+	La secuencia empieza con negras.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -470,7 +811,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 
 \begin{key}{/pgfgo/move/white}
 	
-	Establece que la secuencia comienza con el jugador blanco, alterando el orden natural de las jugadas.
+	La secuencia empieza con blancas.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -497,7 +838,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 
 \begin{key}{/pgfgo/move/from = \meta{number}}
 	
-	Define el número inicial de una secuencia numerada de movimientos, permitiendo continuar desde un punto específico en lugar de empezar en 1.
+	Número de la primera jugada de la secuencia.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -516,12 +857,25 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 
 \begin{key}{/pgfgo/move/label = \meta{options}}
 	
-	Controla las propiedades de las etiquetas numéricas en los movimientos estrellados, como tamaño, color o formato.
+	Opciones de los números de las jugadas.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {move = {label = {
+			color = red, font = \itshape, font size = 6pt, opacity = 0.6}}}}}
+
+		\begin{goban}[3]
+			\moves{A1, B2, C3, A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/font = \meta{font commands} (initially \texttt{\string\bfseries})}
+	Fuente de los números.
 \end{key}
 
 \begin{key}{/pgfgo/move/label/font size=\meta{dimension} (initially automático)}
 
-	Ajusta el tamaño de la fuente de las etiquetas, permitiendo adaptarlas al tamaño de las piedras o al diseño general. Si no se indica, el tamaño se ajusta solo según la cantidad de cifras del número.
+	Tamaño de los números. Si no se indica, se ajusta solo según la cantidad de cifras.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -540,12 +894,12 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 
 \begin{key}{/pgfgo/move/label/format = \meta{options} (initially arabic)}
 	
-	Define el estilo de numeración de las etiquetas.
+	Formato de los números: |arabic|, |alph|, |Alph|, |roman|, |Roman| o |kanji|.
 \end{key}
 
 \begin{key}{/pgfgo/move/label/format/arabic}
 	
-	Usa números arábigos, el formato por defecto para las etiquetas de movimientos.
+	Números arábigos. Es el valor inicial.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -564,7 +918,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 
 \begin{key}{/pgfgo/move/label/format/alph}
 	
-	Usa letras minúsculas para las etiquetas.
+	Letras minúsculas.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -584,7 +938,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 
 \begin{key}{/pgfgo/move/label/format/Alph}
 	
-	Usa letras mayúsculas.
+	Letras mayúsculas.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -604,7 +958,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 
 \begin{key}{/pgfgo/move/label/format/roman}
 	
-	Usa números romanos minúsculos.
+	Números romanos en minúscula.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -624,7 +978,7 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 
 \begin{key}{/pgfgo/move/label/format/Roman}
 	
-	Usa números romanos mayúsculos.
+	Números romanos en mayúscula.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -642,9 +996,13 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/move/label/format/kanji}
+	Números en kanji ({\pgfgokanji 一, 二, …, 十, 十一, …, 百}), como los de |goban/label/columns = kanji|. Necesitan una fuente que los tenga, elegida con |label/font| (ver |/pgfgo/mark/label/format|, pág.~\pageref{key:kanji}).
+\end{key}
+
 \begin{key}{/pgfgo/move/label/color = \meta{color}}
 	
-	Define el color de las etiquetas.
+	Color de los números.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -659,6 +1017,10 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 			\moves[label = {color = blue}]{D3}
 		\end{goban}
 	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/label/opacity = \meta{float} (initially 1)}
+	Opacidad de los números.
 \end{key}
 
 \begin{key}{/pgfgo/move/label/forget}
@@ -688,21 +1050,21 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 
 \subsection{Prisioneros}
 
-\pgfgoname\ ofrece comandos específicos para representar prisioneros, generalmente con una opacidad reducida para distinguirlas de las piedras activas.
+Los prisioneros son piedras capturadas que siguen en el tablero; por defecto se dibujan translúcidos.
 
 \begin{command}{\prisoner\opt{\oarg{options}}\marg{intersection}}
 	
-	Dibuja una piedra prisionera en una intersección específica, con opciones para personalizar su estilo.
+	Dibuja un prisionero en la intersección. Acepta las opciones de |\stone|.
 \end{command}
 
 \begin{command}{\prisoners\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
 	
-	Coloca múltiples piedras prisioneras en una sola línea, eficiente para mostrar grupos capturados.
+	Como |\prisoner|, con varias intersecciones.
 \end{command}
 
 \begin{key}{/pgfgo/prisoner=\meta{stone options} (default fill opacity = 0.5)}
 	
-	Define las características de las piedras prisioneras, con una opacidad de relleno de 0.5 por defecto para indicar su estado. Pueden aplicarse otras opciones de |\stone|, como color o tamaño. Vale para los prisioneros de los tres jugadores; el estilo de cada uno (|/pgfgo/players/white/stone/prisoner|) va después.
+	Estilo de los prisioneros: por defecto, el relleno con opacidad 0.5. Acepta las opciones de |\stone|. Vale para los prisioneros de los tres jugadores; el estilo de cada uno (|stone/prisoner| en las opciones del jugador) va después.
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
