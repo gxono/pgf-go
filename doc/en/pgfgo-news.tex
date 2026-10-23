@@ -1,0 +1,81 @@
+\section{What's new}
+\label{sec:novedades}
+
+
+\begin{itemize}
+	\item \pgfgoversion:
+		\begin{itemize}
+			\item Kernel and rules of the game:
+				\begin{itemize}
+					\item The computations (coordinates, numbering of moves, memory, etc.) have been separated from the drawing. They are done by a \emph{kernel}, chosen with the package option |kernel| (p.~\pageref{subsec:kernel}). Besides the kernel written in L3, a kernel written in Lua has been added, which is the default with Lua\LaTeX.
+					\item With the Lua kernel, captures have been added (|captures|, p.~\pageref{subsec:capturas}). With |captured marks = remove|, the marks on a captured stone go with it, and |\pgfgoprisoners| counts the prisoners of each player.
+					\item ``N at M'' notes have been added for numbered moves on points already played (|notes| and |\pgfgomovenotes|, p.~\pageref{subsec:notas}). The numbered passes of an SGF are noted as ``N: pass'' (|notes/pass|).
+					\item |\territory|, which marks the territory (with a polygon, or by itself with |auto| and the Lua kernel), and |\pgfgoscore|, which counts the points (p.~\pageref{subsec:territorio}), have been added. With |draw = region|, the territory of each color is a single polygon, and |\pgfgoregion| gives its measures.
+				\end{itemize}
+			\item Named boards and views:
+				\begin{itemize}
+					\item A |goban| with |name| keeps everything it draws, and another one starts with that board with |resume| (p.~\pageref{subsec:recordar}). |resume| brings the stones; |numbers|, |marks| and |territory| bring the rest. With |name| and |resume| in the same |goban|, variations are built.
+					\item |\pgfgoview| draws a point or part of a named board in the middle of the text (p.~\pageref{subsec:vistas}), with the options of |view| (|marks|, |arrows|, |lines|, |numbers|, |territory|, |forgotten|, |raise|, |profile|).
+					\item A view can come before its |goban|, like |\ref| (p.~\pageref{subsec:vistas-antes}), and a board can be used in another document with |export| and |\pgfgoimport| (p.~\pageref{subsec:exportar}).
+				\end{itemize}
+			\item SGF:
+				\begin{itemize}
+					\item With the Lua kernel, |\sgf| reads games in SGF (p.~\pageref{subsec:sgftablero}): variations (|variation|), marks of the file (|marks|), the numbering of |MN| and |restart|, and the size of the board taken from the file (|sgf size|).
+					\item Collections of games (|game|), the view (|VW|, |sgf view|), figures (|FG|) in |\sgfdiagrams|, variations as letters (|variations|), |PL| and files in Latin-1.
+					\item The numbering asked for by |PM| (|numbers| and |restart = auto|), and the view (|VW|) when it changes during the game (|sgf view move|; |\sgfdiagrams| and |\sgfanimation| use it by themselves). |step| accepts a list, and |restart = {from = |\meta{n}|}| numbers each stretch from \meta{n}.
+					\item |variation = {R16, P17, pass}|: the variation can also be given with its moves, from the first one.
+					\item Files in GBK, Big5, Shift\_JIS, EUC-JP and EUC-KR are read (|CA| or |sgf charset|). If the font lacks the Chinese, Japanese or Korean characters of a text of the file, the package warns.
+					\item Names for the files, with |\pgfgodefinesgf| (p.~\pageref{subsec:sgfnombres}): the path, the game and the charset are written only once.
+					\item The information of the game (|\sgfinfo|, also of a move with |move|). The names of the nodes and the annotations (|TE|, |BM|, |GB|, etc.) are written with the comments. |\sgfcomment| writes the comment of a move, and |chat = false| removes the chat of the servers (p.~\pageref{subsec:sgfdatos}).
+					\item |\sgfdiagrams| draws a game as a series of diagrams, as in books (p.~\pageref{subsec:sgfdiagramas}). It writes the comments below each diagram, beside it or after all of them (|comments|), and the result, in words, and the score below the last one (|result|). With |variations|, it also draws the variations, each in its own diagram.
+					\item |last mark| marks the last move, and |to = last| goes to the end.
+					\item |\sgfproblem| has been added, which draws a problem (tsumego): the statement and one diagram for each variation of the solution, with its comments (p.~\pageref{subsec:sgfproblemas}). With |game = 1:20|, a problem sheet from a collection; with |verdict|, the caption says whether the variation is right.
+					\item With the |animate| package, |\sgfanimation| steps through a game with buttons (p.~\pageref{subsec:sgfanimacion}). It builds the animation in layers (|layers|): each stone is drawn only once, and the PDF of a long game takes much less space.
+				\end{itemize}
+			\item Drawing:
+				\begin{itemize}
+					\item Arrows and lines have been added (|\arrow| and |\line|, p.~\pageref{subsec:flechas}), with |dash|, |shorten|, |bend| and |tips|, and the mark |dim|. |\sgf| also draws |AR|, |LN|, |SL| and |DD|.
+					\item The board draws the star points (|hoshi|, p.~\pageref{subsec:hoshi}).
+					\item The coordinates of the border can be letters, numbers or kanji on each axis, counted from either side (|columns|, |rows|, |style = japanese|, etc.).
+					\item |partial = auto| shows only the part of the board used by what is drawn (p.~\pageref{subsec:parcial}); also in |\sgfdiagrams|, |\sgfanimation| and |\sgfproblem|.
+					\item Images (PNG, JPG or PDF) on the stones (|stone/image|, p.~\pageref{subsec:piedrasimagen}), on the background and the grid of the board, on the star points and on the marks. With several files, each point always uses the same one, and |rotate| turns each stone or tile. Each image is kept only once in the PDF (p.~\pageref{subsubsec:imagenespdf}).
+					\item Shadows and shines of your own (|shadow/image| and |shine/image|), and |shadow/scale| and |shadow/color|.
+					\item Marks of your own, with PGF code or with an image (|\pgfgodefinemark|, p.~\pageref{subsec:marcaspropias}), and |mark/scale|.
+					\item Numbers in kanji for the moves and the marks (|format = kanji|).
+					\item Opacity of the stroke and of the fill of the marks, of the numbers of the moves, of the images of the stones and of the star points.
+					\item The \tikzname\ coordinate system |go|: |(go cs:C3)| (p.~\pageref{subsec:tikz}).
+				\end{itemize}
+			\item Styles and profiles:
+				\begin{itemize}
+					\item Profiles are \emph{keys} (p.~\pageref{subsec:perfiles}): |profile|, |goban profile|, |players profile| and |players/|\meta{player}|/profile|. Before they are applied, the board and the players go back to the initial style. |\pgfgodefineprofile| defines a whole profile at once.
+					\item Three new profiles: |simple|, and |shell| and |yunzi|, with images (p.~\pageref{subsec:perfilshell}): a wooden board with slate and shell stones, or matte ones. The images come with the package, next to its |.sty| files, and are used by their name.
+					\item The same rule for the \emph{keys} that turn something on or off (p.~\pageref{subsec:prender}).
+					\item The options of a |goban| accept those of |\pgfgoset|, only for that board, and |\pgfgoset{mark = {...}}| also sets the style of the marks of the three players.
+				\end{itemize}
+			\item Layout: |layout| and the |pgfgolayout| environment lay out the diagrams in a grid of columns, with |fit|, |width = natural|, |per page| and |per frame| (p.~\pageref{subsec:disposicion}).
+			\item Languages: the texts of the package are translated into ten languages and follow |babel| or |polyglossia|; |lang|, |\pgfgotext|, |\pgfgodefinelanguage| and |\pgfgolanguagealias| (p.~\pageref{subsec:idiomas}).
+			\item Coordinates:
+				\begin{itemize}
+					\item Lines in any direction and stairs: |A1 -- E6| (in any direction), \verb+A1 -|- E6+ and \verb+A1 |-| E6+.
+					\item Rectangles are written |A1:C3|, as in |partial|, and stretches and rectangles are chained with the operators.
+					\item |\moves| accepts every form of |\stones| and plays each one in its order (p.~\pageref{subsec:orden-coordenadas}); |\moves| and |\marks[sequence]| warn if they have no fixed order.
+				\end{itemize}
+			\item Behavior changes (the full list, with the old names of the \emph{keys}, is in |CHANGELOG.md|):
+				\begin{itemize}
+					\item |\moves| numbers its moves; |numbers = false| leaves them without a number. |\move|, |\move*| and |\moves*| have been removed.
+					\item |\stones| without a player draws neutral stones, like |\stone|.
+					\item The only way to remember a board is |name| and |resume|; |goban/remember|, |goban/forget| and |resume| without a name have been removed.
+					\item |\pgfgouseprofile| and the other |\pgfgouse...| have been removed; now |\pgfgoset{profile = wain}| is used.
+					\item The operator |R| has been removed (|A1 R C3| is |A1:C3|), and |:--:|, \verb+:-|:+ and \verb+:|-:+ are now |--|, \verb+-|-+ and \verb+|-|+.
+					\item The territory is drawn when the |goban| ends, with the last |\territory| that marked each point.
+					\item A move number is never covered by a label of the file (|LB|) or by |last mark|.
+				\end{itemize}
+		\end{itemize}
+	\item 0.2025.10.13: Bug fixes. Each |goban| starts at move 1 with Black, |\mark| and |\marks| only exist inside |goban|, and what falls outside a partial board is no longer drawn. The full list is in the file |CHANGELOG.md|.
+	\item 0.2025.03.10:
+		\begin{itemize}
+			\item The \emph{keys} |inner| and |outer| have been added for the \emph{rounded corner} of the board.
+			\item Three new coordinate operators have been added: |*| for every intersection, |L| for the whole column of coordinate L and |N| for the whole row of coordinate N.
+		\end{itemize}
+	\item 0.2025.03.07: First release.
+\end{itemize}

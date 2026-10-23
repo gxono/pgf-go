@@ -1,0 +1,245 @@
+\section{Remembering boards and views}
+\label{sec:memoria}
+
+	\subsection{Remembering a board}
+	\label{subsec:recordar}
+	A named |goban| keeps everything it draws (stones, moves, marks, arrows, lines and territory, also what comes from |\sgf|), together with its options. Another |goban| can start with that board as it was left, with |resume|, and |\pgfgoview| shows it in the text (p.~\pageref{subsec:vistas}).
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = B2:D4}}
+
+		\begin{goban}[name = board1]
+			\stones[b]{C2,D3}
+			\moves[w]{B4}
+		\end{goban}
+
+		\begin{goban}[resume = board1]
+			\moves{C3} % Goes on with 2 (Black).
+		\end{goban}
+
+		\begin{goban}[resume = {board1, numbers}]
+			\moves{C3}
+		\end{goban}
+	\end{codeexample}
+
+	\begin{key}{/pgfgo/goban/name=\meta{name}}
+		Keeps with that name everything drawn in this |goban|, together with its options. The name is free (for example, |gob:board1|). Another |goban| with the same name replaces it.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/resume=\meta{name, options}}
+		Starts the |goban| with the board that has that name, as it was at the end (with the captures resolved: if that |goban| used |captures|, this one does too). The numbering and the turn go on from there. By default it brings only the stones, without numbers, marks or territory; the options ask for the rest. The size is that of that board, unless this |goban| gives its own (|size|, a number, |sgf size| or |sgf view|; one set before with |\pgfgoset| does not count); the other options of the board (|partial|, coordinates) are given in each |goban|. If there is no |goban| with that name, an error is given.
+
+		With |name| and |resume| in the same |goban| (in any order), the new name keeps what it brought, as it was drawn, plus its own, and the board of |resume| does not change: that is how variations are built. With the same name in both, the |goban| keeps adding to that board.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = B2:D4}}
+
+			\begin{goban}[name = base]
+				\stones[b]{C2,D3}
+				\stones[w]{C3}
+			\end{goban}
+
+			\begin{goban}[name = variation1, resume = base]
+				\moves[w]{D2}
+			\end{goban}
+
+			\begin{goban}[name = variation2, resume = base]
+				\moves[w]{B3}
+			\end{goban}
+
+			\begin{goban}[resume = {variation1, numbers}]
+				\moves{B4}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/resume/numbers=\meta{boolean} (default true, initially false)}
+		Also brings the numbers of the moves.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/resume/marks=\meta{boolean} (default true, initially false)}
+		Also brings the marks, the arrows and the lines.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/resume/territory=\meta{boolean} (default true, initially false)}
+		Also brings the territory.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = B2:D4}}
+
+			\begin{goban}[name = saved]
+				\stones[b]{C2:4}
+				\moves[w]{D3}
+				\marks[triangle]{B3}
+				\territory[b]{B2, B4}
+			\end{goban}
+
+			\begin{goban}[resume = saved]
+			\end{goban}
+
+			\begin{goban}[resume = {saved, numbers, marks, territory}]
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	So that |resume| does not bring a stone, a move, a mark, an arrow or a territory, it is drawn with the option |forget| (|\stone[forget]{C3}|, |\marks[forget, circle]{A1}|, \ldots); with |label = forget|, a move comes without its number even if |numbers| is asked for. What is forgotten stays kept: |\pgfgoview| shows it with |forgotten|.
+
+	\subsection{Views in the text}
+	\label{subsec:vistas}
+	A named |goban| keeps everything it draws. Afterwards, |\pgfgoview| shows part of that board, as it was at the end (with the captures resolved), in the middle of a paragraph: a single stone or a box.
+
+	\begin{codeexample}[]
+		\begin{goban}[5, name = board1, captures]
+			\stones[b]{B3, C2, C4}
+			\stones[w]{D2, D4, E3}
+			\moves[w]{C3, D3}
+		\end{goban}
+
+		Black at D3 \pgfgoview{board1}{D3} captures White at C3 \pgfgoview{board1}{C3}.
+		The ko: \pgfgoview{board1}{B2:E4}.
+	\end{codeexample}
+
+	\begin{command}{\pgfgoview\opt{\oarg{options}}\marg{name}\marg{part}}
+		Draws the intersection or the rectangle (written as in |partial|) of the |goban| with that name, as it was at the end. By default everything the |goban| drew in that part is seen (stones, numbers of the moves, marks, arrows and territory) with the background and the coordinates of that |goban|, at the size of the text and centered at the height of the lowercase letters. The options are those of |/pgfgo/view|, which remove the marks, the numbers or the territory, or add what was forgotten, and also any option of |goban|, which is applied after those of the named |goban|: that way the background, the coordinates, the grid or the star points are removed, or the style of the stones, the marks and the board is changed (|players|, |stone|, |mark|, |grid|, |background|, \ldots).
+
+		The view uses the style that |goban| had when it was drawn (the profile, what was set with |\pgfgoset| and its options), even if it changes later. On top go the profile of the views (|view/profile|), |\pgfgoset{view = ...}| and the options of the view.
+
+		The |goban| can come after the view (p.~\pageref{subsec:vistas-antes}) or from another document (p.~\pageref{subsec:exportar}).
+
+		A view changes nothing of what the last |goban| keeps: |\pgfgoscore|, |\pgfgoprisoners| and |\pgfgomovenotes| still speak of it, and what each named |goban| keeps stays the same.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, name = board2]
+				\stones[b]{B2, C3}
+				\moves[w]{C2, D3}
+				\marks[b, triangle]{C3}
+			\end{goban}
+
+			\pgfgoview{board2}{B2:D3}
+			\pgfgoview[marks = false, numbers = false]{board2}{B2:D3}
+			\pgfgoview[label = false, grid = false]{board2}{B2:D3}
+			\pgfgoview[background = false]{board2}{B2:D3}
+		\end{codeexample}
+	\end{command}
+
+	\begin{key}{/pgfgo/view=\meta{options}}
+		Options for every view, with |\pgfgoset|. The options of |goban| that are not of |/pgfgo/view| are added to those the views bring: |scale = 0.8|.
+
+		\begin{codeexample}[]
+			\pgfgoset{view = {background = false, scale = 1}}
+			Without background and larger: \pgfgoview{board2}{C3}.
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/view/marks=\meta{boolean} (default true, initially true)}
+		With |false|, does not draw the marks.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/arrows=\meta{boolean} (default true, initially true)}
+		With |false|, does not draw the arrows (|\arrow| and |AR| of |\sgf|).
+	\end{key}
+
+	\begin{key}{/pgfgo/view/lines=\meta{boolean} (default true, initially true)}
+		With |false|, does not draw the lines (|\line| and |LN| of |\sgf|).
+
+		\begin{codeexample}[]
+			\begin{goban}[5, name = board-arrows]
+				\stones[b]{B2}\stones[w]{D4}
+				\arrow{B2}{D4}
+				\line{B4}{D2}
+				\marks[triangle]{C3}
+			\end{goban}
+
+			Without arrows: \pgfgoview[arrows = false]{board-arrows}{A1:E5}.
+			Without lines or marks: \pgfgoview[lines = false, marks = false]{board-arrows}{A1:E5}.
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/view/numbers=\meta{boolean} (default true, initially true)}
+		With |false|, does not draw the numbers of the moves.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/territory=\meta{boolean} (default true, initially true)}
+		With |false|, does not draw the territory.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/forgotten=\meta{boolean} (default true, initially false)}
+		Also draws what was drawn with |forget| (p.~\pageref{subsec:recordar}).
+
+		\begin{codeexample}[]
+			\begin{goban}[5, name = board3]
+				\stones[b]{B2, C3}
+				\stone[w, forget]{D3}
+			\end{goban}
+
+			\pgfgoview{board3}{B2:D3}
+			\pgfgoview[forgotten]{board3}{B2:D3}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/view/raise=\meta{dimension} (initially 0.5ex)}
+		At what height above the baseline of the text the center of the view is.
+
+		\begin{codeexample}[]
+			Text \pgfgoview[raise = 0pt]{board2}{C3}
+			text \pgfgoview{board2}{C3}
+			text \pgfgoview[raise = 1.5ex]{board2}{C3}.
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/view/profile=\meta{name} (initially false)}
+		A profile for the views (p.~\pageref{subsec:perfiles}), for example |simple|. It goes after the style of the named |goban| and before the other options of the view. With |false|, the view uses the style of the |goban| as it is.
+
+		\begin{codeexample}[]
+			\pgfgoview{board1}{B2:E4}
+			\pgfgoview[profile = simple]{board1}{B2:E4}
+			\pgfgoview[profile = wain]{board1}{B2:E4}
+		\end{codeexample}
+	\end{key}
+
+	\subsection{Views before the board}
+	\label{subsec:vistas-antes}
+	A view can come before the |goban| it shows, like a reference with |\ref|: the |goban| is kept in the |.aux| file and the view uses it in the next compilation. The first time the view is |??| and there is a warning; if the |goban| changes afterwards, another warning asks to compile again. If two |goban| environments have the same name, a view that comes before both shows the first one.
+
+	\begin{codeexample}[]
+		Further down, the white stone at C3 \pgfgoview{board4}{C3} is in atari.
+		\begin{goban}[5, name = board4]
+			\stones[b]{B3, C2, C4}
+			\stones[w]{C3}
+			\marks[sequence]{D3}
+		\end{goban}
+	\end{codeexample}
+
+	\subsection{Using a board in another document}
+	\label{subsec:exportar}
+	A named |goban| can be saved in a file and used in another document, with its stones, numbers, marks, territory and style.
+
+	\begin{key}{/pgfgo/goban/export=\meta{file}}
+		When it ends, the |goban| is written to that file (if it has no extension, |.pgfgo|), for |\pgfgoimport|. It needs |name|. For security, \TeX\ only writes inside the folder of the document: the file goes with a relative name, such as |boards/ko|.
+
+		\begin{codeexample}[code only]
+			\begin{goban}[19, name = ko, export = ko]
+				...
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{command}{\pgfgoimport\opt{\oarg{options}}\marg{file}}
+		Brings the |goban| of an |export| file (without an extension, |.pgfgo|), as if it had been drawn in this document: it can be used with |\pgfgoview| and with |resume|. It can be used in the preamble.
+
+		\begin{codeexample}[code only]
+			\pgfgoimport{ko}
+			\pgfgoimport[name = other ko]{ko}
+			...
+			The ko of \pgfgoview{ko}{Q16:S18}.
+			\begin{goban}[resume = {other ko, marks}]
+				\moves[numbers = false]{R17}
+			\end{goban}
+		\end{codeexample}
+
+		A mark defined with |\pgfgodefinemark| has to be defined in this document too; otherwise, there is a warning.
+	\end{command}
+
+	\begin{key}{/pgfgo/import/name=\meta{name}}
+		The name of the imported |goban|. Without |name|, the one it had.
+	\end{key}

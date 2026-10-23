@@ -17,7 +17,7 @@
 \usepackage{../../latex/pgf-go}
 %LOS ARCHIVOS SGF DE LOS EJEMPLOS, POR SU NOMBRE (LOS TUTORIALES Y EL CAPITULO SGF LOS PRESENTAN).
 \pgfgodefinesgf{partida}{partida.sgf}
-\pgfgodefinesgf{lee}{lee.sgf}
+\pgfgodefinesgf{lee}{../examples/lee.sgf}
 \pgfgodefinesgf{variantes}{variantes.sgf}
 \pgfgodefinesgf{problema}{problema.sgf}
 \pgfgodefinesgf{josekis}{josekis.sgf}
@@ -43,10 +43,13 @@
 \colorlet{tablero3}{blue!10!green!10}
 \definecolor{tablero4}{HTML}{9B8465}
 
-\def\pgfgoversion{\leavevmode\hbox{0.2026.10.14}}
+\def\pgfgoversion{\leavevmode\hbox{0.2026.10.23}}
 \def\twodigits#1{\ifnum#1<10 0\fi\the#1}
 
 
+
+%LAS LINEAS CON CODIGO EN EL TEXTO SE ESTIRAN EN LUGAR DE SALIRSE DEL MARGEN.
+\setlength{\emergencystretch}{3em}
 
 \begin{document}
 	\title{\Huge\bfseries pgf-go\\[1em]

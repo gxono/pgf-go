@@ -11,9 +11,8 @@ Usage:
                                            contains one of these words
     python tests/run_tests.py --update     accept the current output as the
                                            new reference images
-    python tests/run_tests.py --manuals    also compare the manuals (for now only
-                                           the Spanish one: see MANUALS in
-                                           check_docs.py)
+    python tests/run_tests.py --manuals    also compare the manuals (see MANUALS
+                                           in check_docs.py)
     python tests/run_tests.py --kernel expl3
                                            compile everything with lualatex and
                                            kernel = expl3 (lualatex uses lua by
@@ -151,7 +150,7 @@ def compile_document(doc, engine, outdir):
         # images of the profiles) in one folder, first in the TeX path.
         texmf = outdir / "texmf"
         texmf.mkdir()
-        for file in [*(ROOT / "latex").iterdir(), *(ROOT / "img").glob("pgfgo-*")]:
+        for file in (ROOT / "latex").iterdir():
             shutil.copy2(file, texmf / file.name)
         env = dict(os.environ, TEXINPUTS=str(texmf) + os.pathsep)
     for _ in range(doc.passes):
@@ -287,7 +286,7 @@ def main():
     parser.add_argument("--update", action="store_true",
                         help="replace the reference images with the current output")
     parser.add_argument("--manuals", action="store_true",
-                        help="also compile and compare the manuals (for now only the Spanish one)")
+                        help="also compile and compare the manuals")
     parser.add_argument("--kernel", choices=["expl3", "lua"],
                         help="compile with this compute kernel (lualatex only) and "
                              "compare with the same references")

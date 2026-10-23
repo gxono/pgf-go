@@ -1,0 +1,79 @@
+% engines: lualatex
+% expect-warnings: 5
+% expect-errors: 0
+%
+% SGF files at the limits, in extreme/: empty files, odd spacing, line ends and
+% encodings, old property names, TeX special characters in every text, passes,
+% the largest board, rectangular boards, a game of 1200 moves, a tree 300 levels
+% deep, 200 variations of one move and a collection of 50 games.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\newcommand\game[2][]{\begin{goban}[sgf size = extreme/#2, scale = 0.4, #1]\sgf{extreme/#2}\end{goban}}
+\pgfgodefinesgf{tex}{extreme/tex-specials.sgf}
+\pagestyle{empty}
+\begin{document}
+
+\case{(;) is an empty 19x19 board / a root without moves (9x9)}
+\game{empty.sgf}\game{root-only.sgf}
+
+\case{Spaces and line breaks everywhere, garbage after the game: 7x7, AB on A7, B6, C5; moves D4, E3, F2}
+\game[scale = 0.7]{whitespace.sgf}
+
+\case{CRLF: "linea 1 linea 2" and "a b" / UTF-8 with BOM: PB is Ñoño / FF[3] with long names (GaMe, SiZe, PlayerBlack, White): PB is Viejo, moves C3, D2, B4}
+\game[scale = 0.7]{crlf.sgf} [\sgfcomment{extreme/crlf.sgf}{0}] [\sgfcomment{extreme/crlf.sgf}{2}]
+\game[scale = 0.7]{bom.sgf} [\sgfinfo{extreme/bom.sgf}{PB}]
+\game[scale = 0.7]{old-ff3.sgf} [\sgfinfo{extreme/old-ff3.sgf}{PB}]
+
+\case{Brackets, parentheses and semicolons inside values: "a (b) ; c [d] (e;f)" and ")"}
+Comments: [\sgfcomment{extreme/brackets.sgf}{0}] [\sgfcomment{extreme/brackets.sgf}{1}]
+
+\case{TeX special characters as text: PB, PW, GN and every comment, also in the captions of \textbackslash sgfdiagrams}
+PB = [\sgfinfo{tex}{PB}], PW = [\sgfinfo{tex}{PW}], GN = [\sgfinfo{tex}{GN}], RE = [\sgfinfo{tex}{RE}]
+
+0: [\sgfcomment{tex}{0}]
+
+1: [\sgfcomment{tex}{1}] 2: [\sgfcomment{tex}{2}] 3: [\sgfcomment{tex}{3}] 4: [\sgfcomment{tex}{4}] 5: [\sgfcomment{tex}{5}]
+
+\sgfdiagrams[comments, step = 2, goban = {scale = 0.5}]{tex}
+
+\case{LB labels with special characters: \# A9, \$ I1, \% A1, \& I9, \_ C7, \textasciitilde{} G3, ] C3, \{ G7}
+\game[scale = 0.7]{labels.sgf}
+
+\case{Passes: B[] and W[tt] on 19x19 are passes (stones only on the four corners) / on 21x21, tt is U2 (black 1) and uu is V1 (white 2)}
+\game{passes.sgf}\game{tt-21.sgf}
+
+\case{Moves outside a 9x9 board (jj, zz): two warnings; E5 and J1 are drawn}
+\game[scale = 0.7]{outside.sgf}
+
+\case{Three moves on C3: without captures, the three are drawn and black 3 is on top / with captures, two warnings, and black 3 stays}
+\game[scale = 0.7]{occupied.sgf}\game[scale = 0.7, captures]{occupied.sgf}
+
+\case{SZ[52]: moves on the four corners and two in the middle; AB in the middle and in the middle of the top side}
+\game[scale = 0.25]{size-52.sgf}
+
+\case{SZ[1] / SZ[7:13] (7 wide) / SZ[13:7] (13 wide): a stone on each corner and one more}
+\game{size-1.sgf}\game{size-7x13.sgf}\game{size-13x7.sgf}
+
+\case{AB[aa:ss] fills the board; AE removes K10 and white 1 plays there and captures 360 stones}
+\game[captures]{fill-all.sgf}
+
+\case{1200 moves on the same 361 points again and again (without captures, no warnings): each point keeps its first number / from = 1100: only the numbers from 1100}
+\game{long-1200.sgf}
+\begin{goban}[19, scale = 0.4]\sgf[from = 1100]{extreme/long-1200.sgf}\end{goban}
+
+\case{300 nested variations: the main line goes to the last one, and its comment is "n300" / 200 variations of move 1: the 200th is on L10, "var 200"}
+\game{deep-nest.sgf} [\sgfcomment{extreme/deep-nest.sgf}{300}]
+\begin{goban}[19, scale = 0.4]\sgf[variation = 200]{extreme/wide-tree.sgf}\end{goban}
+[\sgfcomment[variation = 200]{extreme/wide-tree.sgf}{1}]
+
+\case{Collection of 50 games: game 50 (black on F4, "Partida 50") / game 51 does not exist: one warning, game 1 (B9)}
+\begin{goban}[9, scale = 0.4]\sgf[game = 50]{extreme/collection-50.sgf}\end{goban}
+\begin{goban}[9, scale = 0.4]\sgf[game = 51]{extreme/collection-50.sgf}\end{goban}
+[\sgfinfo[game = 50]{extreme/collection-50.sgf}{GN}]
+
+\case{A comment of 600 words, in \textbackslash footnotesize}
+{\footnotesize\sgfcomment{extreme/huge-comment.sgf}{1}\par}
+
+\end{document}

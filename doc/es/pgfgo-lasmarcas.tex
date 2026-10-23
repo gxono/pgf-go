@@ -237,7 +237,7 @@ Las marcas van sobre una intersección, con o sin piedra: formas (círculo, tri�
 \end{key}
 
 \begin{key}{/pgfgo/mark/sequence/format = \meta{format}}
-	Activa la secuencia y elige el formato de los números. Es lo mismo que |sequence, label = {format = ...}| (ver |label/format|).
+	Activa la secuencia y elige el formato de los números. Es lo mismo que |sequence| con |label = {format = ...}| (ver |label/format|).
 \end{key}
 
 \begin{key}{/pgfgo/mark/sequence/from=\meta{number}}
@@ -317,7 +317,7 @@ Las marcas van sobre una intersección, con o sin piedra: formas (círculo, tri�
 			\pgfpathclose
 			\pgfusepath{fill, stroke}}
 		\pgfgodefinemark{barra}{\draw (-0.5,-0.5) -- (0.5,0.5);}
-		\pgfgodefinemark[image = {file = star.pdf}]{estrella}
+		\pgfgodefinemark[image = {file = pgfgo-star.pdf}]{estrella}
 
 		\begin{goban}[5, partial = B2:D4]
 			\stones[b]{C2,D3}
@@ -349,8 +349,8 @@ Las marcas van sobre una intersección, con o sin piedra: formas (círculo, tri�
 	El ancho de la imagen; el alto mantiene la proporción. Sin esta \emph{key}, la marca es del tamaño del círculo (|circle|), y cambia con el radio de las piedras.
 
 	\begin{codeexample}[]
-		\pgfgodefinemark[image = {file = star.pdf}]{estrella}
-		\pgfgodefinemark[image = {file = star.pdf, width = 0.6em}]{estrellita}
+		\pgfgodefinemark[image = {file = pgfgo-star.pdf}]{estrella}
+		\pgfgodefinemark[image = {file = pgfgo-star.pdf, width = 0.6em}]{estrellita}
 
 		\begin{goban}[5, partial = B2:D4]
 			\stones[b]{C2,D3}

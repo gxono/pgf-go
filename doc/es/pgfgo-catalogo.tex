@@ -389,7 +389,7 @@ Los colores |wainshade|, |wainwhite| y |wainblack| son los del perfil |wain|, m�
 \subsection{shell}
 \label{subsec:perfilshell}
 
-Un tablero de madera con piedras de pizarra y de concha, dibujados con imágenes (pág.~\pageref{subsec:piedrasimagen}). Las blancas usan cinco imágenes, cada una con sus vetas, y cada piedra está girada un poco, así que no se ven dos iguales; todas tienen una sombra difusa. Las imágenes vienen con \pgfgoname, en la carpeta |img|; los archivos que usa el perfil empiezan con |pgfgo-|. Cada archivo se guarda una sola vez en el PDF, por más piedras que lo usen (pág.~\pageref{subsubsec:imagenespdf}). La sombra necesita pdf\LaTeX\ o Lua\LaTeX\ con salida PDF.
+Un tablero de madera con piedras de pizarra y de concha, dibujadas con las imágenes que trae \pgfgoname\ (pág.~\pageref{subsec:piedrasimagen}). Cada piedra blanca usa una de cinco imágenes, con un pequeño giro. La sombra necesita pdf\LaTeX\ o Lua\LaTeX\ con salida PDF.
 
 \begin{codeexample}[width=4cm]
 	\pgfgoset{profile = shell}
@@ -408,17 +408,6 @@ Un tablero de madera con piedras de pizarra y de concha, dibujados con imágenes
 		\mark[w, t-square]{F1}
 		\mark[b, t-circle]{F1}
 		\mark[n, t-square]{F1}
-	\end{goban}
-\end{codeexample}
-
-Como todos los perfiles, define también los jugadores |shell-neutral|, |shell-black| y |shell-white|: con |players profile = shell|, las piedras de pizarra y concha van sobre el tablero que se esté usando.
-
-\begin{codeexample}[width=4cm]
-	\pgfgoset{players profile = shell}
-
-	\begin{goban}[partial = A1:G3]
-		\stones[w]{A1:2, C3, E1}
-		\stones[b]{B1:2, C2, D1, F2}
 	\end{goban}
 \end{codeexample}
 
@@ -525,7 +514,7 @@ Un tablero claro, de madera lisa, con piedras lisas, una imagen para cada color,
 		goban = {
 			background = {
 				line = false,
-				fill = {image = {file = baduktv-goban}}
+				fill = {image = {file = pgfgo-baduktv-goban.png}}
 			}
 		},
 		all = {
@@ -540,7 +529,7 @@ Un tablero claro, de madera lisa, con piedras lisas, una imagen para cada color,
 				}
 			}
 		},
-		black = {stone = {image = {file = baduktv-black.png}}},
-		white = {stone = {image = {file = baduktv-white.png}}}
+		black = {stone = {image = {file = pgfgo-baduktv-black.png}}},
+		white = {stone = {image = {file = pgfgo-baduktv-white.png}}}
 	}
 \end{codeexample}

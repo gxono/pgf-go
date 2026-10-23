@@ -3,7 +3,7 @@
 
 Reads the keys defined with \\keys_define in latex/*.sty and the user
 commands, and compares them with the key, stylekey, command and environment
-entries of each manual in MANUALS (for now only doc/es). It reports keys or commands that
+entries of each manual in MANUALS (doc/es and doc/en). It reports keys or commands that
 are not documented, and documented ones that do not exist.
 
 In the paths of \\keys_define, "players/#1" (or ##1) and \\l__pgfgo_item_tl
@@ -27,9 +27,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 BS = "\\"
 
-# The manuals that are checked (doc/<lang>). Only the Spanish one is kept up
-# to date for now; add "en" when the English manual is rewritten.
-MANUALS = ("es",)
+# The manuals that are checked (doc/<lang>).
+MANUALS = ("es", "en")
 
 # Not documented on purpose.
 UNDOCUMENTED = {

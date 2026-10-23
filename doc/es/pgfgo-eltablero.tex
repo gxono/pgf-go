@@ -232,11 +232,11 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		Dibuja una imagen en lugar de las líneas de la cuadrícula, con la opacidad de |grid/line/opacity|. Con |partial| se ve la parte que corresponde. Los puntos de estrella se siguen dibujando (ver |hoshi|).
 
 		\begin{codeexample}[]
-			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false]
+			\begin{goban}[9, grid = {image = {file = pgfgo-grid.png}}, hoshi = false]
 				\stones[b]{C3}\stone[w]{D4}
 			\end{goban}
 
-			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false, partial = C3:G7]
+			\begin{goban}[9, grid = {image = {file = pgfgo-grid.png}}, hoshi = false, partial = C3:G7]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -245,7 +245,8 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		El archivo de la imagen. Con varios archivos y |fit = tile|, cada baldosa usa uno, elegido por su lugar en la malla: siempre el mismo en cada lugar, en todos los diagramas. Con |fit = stretch|, se usa el primero.
 
 		\begin{codeexample}[]
-			\begin{goban}[5, grid = {image = {file = {cell.png, tile.png}, fit = tile}}, hoshi = false]
+			\begin{goban}[5, hoshi = false,
+				grid = {image = {file = {pgfgo-cell.png, pgfgo-tile.png}, fit = tile}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -254,7 +255,7 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		Con |stretch|, la imagen se estira desde A1 hasta la esquina opuesta del tablero completo, así que las líneas exteriores tienen que estar en los bordes de la imagen. Con |tile|, se dibuja una vez en cada casilla de la cuadrícula (entre cuatro intersecciones), estirada al tamaño de la casilla: con la imagen de un cuadrado se arma todo el tablero.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, grid = {image = {file = cell.png, fit = tile}}, hoshi = false]
+			\begin{goban}[9, grid = {image = {file = pgfgo-cell.png, fit = tile}}, hoshi = false]
 				\stones[b]{C3}\stone[w]{D4}
 			\end{goban}
 		\end{codeexample}
@@ -264,7 +265,7 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		Con |fit = tile|, la malla en la que se repite la imagen, sobre el área que va de A1 a la esquina opuesta del tablero completo; cada imagen se estira al tamaño de su celda. Un solo número vale para las dos direcciones. Sin esta \emph{key}, hay una imagen por casilla.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, grid = {image = {file = cell.png, fit = tile, tiles = 4}}, hoshi = false]
+			\begin{goban}[9, grid = {image = {file = pgfgo-cell.png, fit = tile, tiles = 4}}, hoshi = false]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -340,7 +341,7 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		Dibuja una imagen en cada punto de estrella, en lugar del círculo.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, hoshi = {image = {file = hoshi.png}, radius = 3pt}]
+			\begin{goban}[9, hoshi = {image = {file = pgfgo-hoshi.png}, radius = 3pt}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -357,10 +358,10 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		Gira la imagen, como |stone/image/rotate| (pág.~\pageref{subsec:piedrasimagen}): con |random| o un rango, cada punto con un ángulo distinto, siempre el mismo.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, hoshi = {image = {file = hoshi.png, width = 8pt}}]
+			\begin{goban}[9, hoshi = {image = {file = pgfgo-hoshi.png, width = 8pt}}]
 			\end{goban}
 
-			\begin{goban}[9, hoshi = {image = {file = hoshi.png, width = 8pt, rotate = 45}}]
+			\begin{goban}[9, hoshi = {image = {file = pgfgo-hoshi.png, width = 8pt, rotate = 45}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -449,7 +450,8 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[background = {fill = {color = orange!40}, fill = {opacity = 0.5}}, resume = a]
+			\begin{goban}[resume = a,
+				background = {fill = {color = orange!40}, fill = {opacity = 0.5}}]
 			\end{goban}
 		\end{codeexample}
 		
@@ -459,12 +461,15 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		Una imagen de fondo (por ejemplo, la madera de un tablero), sobre el color de relleno y con su misma opacidad. La imagen se ubica según el tablero completo: con |partial| se ve la parte que le corresponde, recortada por el borde y sus esquinas redondeadas. Las marcas sobre puntos vacíos, que tapan la cuadrícula con el color del fondo, muestran la parte de la imagen que hay debajo, y lo mismo hace la marca |dim|. El halo de las flechas y líneas sigue siendo del color del fondo.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, background = {fill = {image = {file = pgfgo-board.jpg}}}]
+			\begin{goban}[9,
+				background = {fill = {image = {file = pgfgo-board.jpg}}}]
 				\stones[b]{C3}\stone[w]{D4}
 				\marks[circle]{E5, C3}
 			\end{goban}
 
-			\begin{goban}[9, background = {fill = {image = {file = pgfgo-board.jpg}}, rounded corners = 6pt}, partial = A1:E5]
+			\begin{goban}[9, partial = A1:E5,
+				background = {fill = {image = {file = pgfgo-board.jpg}},
+					rounded corners = 6pt}]
 				\marks[triangle]{C3}
 			\end{goban}
 		\end{codeexample}
@@ -474,7 +479,9 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		El archivo de la imagen de fondo. Con varios archivos y |fit = tile|, cada baldosa usa uno, elegido por su lugar: siempre el mismo en cada lugar, también con |partial|. Así el tablero no se ve repetido. Las baldosas tienen el tamaño de la primera imagen (o el de su celda, con |tiles|). Con |stretch| y |cover|, se usa el primero.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, background = {fill = {image = {file = {tile.png, cell.png, pgfgo-board.jpg}, fit = tile, width = 1cm}}}]
+			\begin{goban}[9, background = {fill = {image = {
+				file = {pgfgo-tile.png, pgfgo-cell.png, pgfgo-board.jpg},
+				fit = tile, width = 1cm}}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -483,10 +490,12 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		Cómo ocupa la imagen el fondo del tablero completo. |stretch| la estira hasta ocupar todo el fondo, sin mantener la proporción. |cover| la agranda o la achica, manteniendo la proporción, hasta cubrir el fondo, centrada: lo que sobra no se ve. |tile| la repite como baldosas, desde una esquina, un borde o el centro del tablero completo (ver |anchor|).
 
 		\begin{codeexample}[]
-			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}]
+			\begin{goban}[9, background = {fill = {image = {
+				file = pgfgo-tile.png, fit = tile, width = 1cm}}}]
 			\end{goban}
 
-			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}, partial = D4:H8]
+			\begin{goban}[9, partial = D4:H8, background = {fill = {image = {
+				file = pgfgo-tile.png, fit = tile, width = 1cm}}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -495,10 +504,12 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		Con |fit = tile|, desde dónde se ponen las baldosas, en el fondo del tablero completo. Con una esquina (|south west|, |south east|, |north west| o |north east|), en esa esquina queda una baldosa entera. Con un borde (|north|, |south|, |east| o |west|), la primera baldosa queda contra ese borde, centrada a lo largo de él. Con |center|, una baldosa queda en el centro del tablero.
 
 		\begin{codeexample}[]
-			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, anchor = north east}}}]
+			\begin{goban}[5, background = {fill = {image = {
+				file = pgfgo-tile.png, fit = tile, width = 1cm, anchor = north east}}}]
 			\end{goban}
 
-			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, anchor = north}}}]
+			\begin{goban}[5, background = {fill = {image = {
+				file = pgfgo-tile.png, fit = tile, width = 1cm, anchor = north}}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -511,7 +522,8 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		Con |fit = tile|, en lugar de baldosas de ancho |width| desde |anchor|, divide el fondo del tablero completo en esa malla y pone la imagen en cada celda, estirada a su tamaño. Un solo número vale para las dos direcciones.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, background = {fill = {image = {file = cell.png, fit = tile, tiles = 3x3}}}]
+			\begin{goban}[9, background = {fill = {image = {
+				file = pgfgo-cell.png, fit = tile, tiles = 3x3}}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -520,10 +532,12 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		Gira la imagen en cuartos de vuelta: el ángulo se redondea a 0, 90, 180 o 270 grados, para que la imagen girada siga ocupando su lugar sin dejar huecos. Con 90 o 270, el ancho y el alto se intercambian: con |cover| la imagen mantiene la proporción, pero una baldosa de ancho |width| que no es cuadrada queda estirada. Con |random| o un rango, como en |stone/image/rotate| (pág.~\pageref{subsec:piedrasimagen}), cada baldosa tiene su propio giro, siempre el mismo.
 
 		\begin{codeexample}[]
-			\begin{goban}[5, background = {fill = {image = {file = pgfgo-board.jpg, rotate = 90}}}]
+			\begin{goban}[5, background = {fill = {image = {
+				file = pgfgo-board.jpg, rotate = 90}}}]
 			\end{goban}
 
-			\begin{goban}[5, background = {fill = {image = {file = pgfgo-board.jpg, fit = tile, width = 1cm, rotate = random}}}]
+			\begin{goban}[5, background = {fill = {image = {
+				file = pgfgo-board.jpg, fit = tile, width = 1cm, rotate = random}}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -581,7 +595,8 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 				\stone[w]{B4}
 			\end{goban}
 			
-			\begin{goban}[background = {line = {color = red}, line = {opacity = 0.5}}, resume = a]
+			\begin{goban}[resume = a,
+				background = {line = {color = red}, line = {opacity = 0.5}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -651,7 +666,8 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 				\stone[w]{A3}
 			\end{goban}
 			
-			\begin{goban}[background = {rounded corners = {outer = 8pt, inner = 2pt}}, resume = a]
+			\begin{goban}[resume = a,
+				background = {rounded corners = {outer = 8pt, inner = 2pt}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -949,7 +965,8 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		En qué sentido se cuentan las filas. Estas cuatro opciones cambian solo lo que se escribe en el borde: las coordenadas de los comandos (|C3|) siguen siendo las mismas. En un tablero parcial se cuenta desde el borde del tablero completo.
 
 		\begin{codeexample}[]
-			\begin{goban}[5, label = {at = {north, west}, columns = numbers, rows direction = top to bottom}]
+			\begin{goban}[5, label = {at = {north, west}, columns = numbers,
+				rows direction = top to bottom}]
 				\stones[b]{C4}
 			\end{goban}
 		\end{codeexample}

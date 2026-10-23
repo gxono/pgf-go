@@ -1,0 +1,37 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+%
+% Memory at the limits: a chain of 60 gobans, each resuming the one before,
+% and a name with spaces and TeX special characters.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{A chain of 60 gobans: r\textit{n} resumes r\textit{n-1} with numbers and adds one move, from A1 to the right and up (the first one is J9); the last one has moves 1 to 61}
+\begin{goban}[9, name = r0, scale = 0.3]\moves{J9}\end{goban}
+\ExplSyntaxOn
+\int_step_inline:nn {60} {
+	\use:e {
+		\exp_not:N \begin{goban}[name = r#1, resume = {r\int_eval:n {#1 - 1}, numbers}, scale = 0.3]
+		\exp_not:N \moves {
+			\int_case:nn {\int_mod:nn {#1 - 1} {9}} {{0}{A}{1}{B}{2}{C}{3}{D}{4}{E}{5}{F}{6}{G}{7}{H}{8}{J}}
+			\int_eval:n {\int_div_truncate:nn {#1 - 1} {9} + 1}
+		}
+		\exp_not:N \end{goban}
+	}
+	\int_compare:nNnT {\int_mod:nn {#1} {12}} = {0} {\par}
+}
+\ExplSyntaxOff
+
+\case{The last goban again, larger}
+\begin{goban}[resume = {r60, numbers}]\end{goban}
+
+\case{A name with spaces, \& and \textasciitilde: the second goban has the black stone C3 and its own white D4}
+\begin{goban}[9, name = {un nombre raro & ~ 1}, scale = 0.5]\stones[b]{C3}\end{goban}
+\begin{goban}[resume = {un nombre raro & ~ 1}, scale = 0.5]\stones[w]{D4}\end{goban}
+
+\end{document}

@@ -227,7 +227,10 @@ En los ejemplos, los archivos se usan por su nombre (pág.~\pageref{subsec:sgfno
 	Escribe una propiedad de la raíz de la partida, por ejemplo |PB| y |PW| (los jugadores), |RE| (el resultado), |KM| (el komi) o |DT| (la fecha), o con |move| la de una jugada. Si no está, no escribe nada. Se puede usar fuera de |goban|.
 
 	\begin{codeexample}[]
-		\sgfinfo{variantes}{PB} (negras) contra \sgfinfo{variantes}{PW} (blancas), komi \sgfinfo{variantes}{KM}. Resultado: \sgfinfo{variantes}{RE}.
+		\sgfinfo{variantes}{PB} (negras) contra
+		\sgfinfo{variantes}{PW} (blancas),
+		komi \sgfinfo{variantes}{KM}.
+		Resultado: \sgfinfo{variantes}{RE}.
 	\end{codeexample}
 
 	El valor se escribe tal como está en el archivo (con los caracteres escapados ya resueltos y en la codificación de |CA|): |RE| queda como |B+R|, no en palabras. Las propiedades con datos de la partida, según el formato SGF, son:
@@ -745,8 +748,9 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Con |auto|, donde no hay vista del archivo, cada diagrama muestra solo la parte del tablero que usan las líneas que se dibujan (la de |variation| y las de |variations|), como |/pgfgo/goban/partial = auto|. Es la misma en todos los diagramas, también en los de las variantes.
 
 	\begin{codeexample}[code only]
-		\sgfdiagrams[partial = auto, variations]{joseki}
-		\sgfdiagrams[partial = auto, variation = {Q16, R14}, variations = {commented, from = 3}, marks = false]{josekis}
+		\sgfdiagrams[partial = auto, variations]{josekis}
+		\sgfdiagrams[partial = auto, variation = {Q16, R14},
+			variations = {commented, from = 3}, marks = false]{josekis}
 	\end{codeexample}
 \end{key}
 

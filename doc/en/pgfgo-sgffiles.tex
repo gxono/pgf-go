@@ -1,0 +1,971 @@
+\section{Games in SGF}
+\label{subsec:sgf}
+
+SGF is the format almost every Go program uses to save games. With the Lua kernel (p.~\pageref{subsec:kernel}), \pgfgoname\ can read them.
+
+In every command that reads SGF files, the name can have spaces, accents, parentheses and other scripts. The special characters of \TeX\ are written with a backslash: |\sgf{a\&b.sgf}| reads |a&b.sgf|, and the same holds for |\#|, |\%|, |\$|, |\{| and |\}|. Two spaces in a row are read as one, because \TeX\ joins them before \pgfgoname\ sees the name.
+
+Each file is read only once in the whole document, however many commands use it (if it changes during the compilation, it is read again).
+
+\subsection{Names for the files}
+\label{subsec:sgfnombres}
+
+\begin{command}{\pgfgodefinesgf\opt{\oarg{options}}\marg{name}\marg{file}}
+	Gives a name to a game: from then on, \meta{name} works in every place where an SGF file goes (|\sgf|, |\sgfinfo|, |\sgfcomment|, |\sgfdiagrams|, |\sgfproblem|, |\sgfanimation|, |sgf size| and |sgf view|). So the path of the file is written only once, and so is what says which game it is (|game| in a collection, the charset). A name that is not defined is a file, as always; if a name matches that of a file, the name wins. The options of each command win over those of the name: |\sgfinfo[game = 1]{|\meta{name}|}{PB}| reads game 1 even if the name says another one. With |kernel = expl3|, the name is defined but cannot be used, like the SGF commands.
+
+	\begin{codeexample}[]
+		\pgfgodefinesgf{game}{game.sgf}
+
+		\begin{goban}[sgf size = game, scale = 0.6]
+			\sgf[to = 7]{game}
+		\end{goban}
+
+		Move 7: \sgfcomment{game}{7}
+	\end{codeexample}
+\end{command}
+
+\begin{key}{/pgfgo/define sgf/game = \meta{number} (initially that of each command)}
+	In a collection, the game used by the commands with this name, like |/pgfgo/sgf/game|.
+
+	\begin{codeexample}[code only]
+		\pgfgodefinesgf[game = 3]{third}{collection.sgf}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/define sgf/charset = \meta{charset} (initially that of \texttt{sgf charset})}
+	The charset with which the file is read if it is not UTF-8, like |/pgfgo/sgf charset|, only for this name.
+
+	\begin{codeexample}[code only]
+		\pgfgodefinesgf[charset = GBK]{qipu}{games/qipu-without-ca.sgf}
+	\end{codeexample}
+\end{key}
+
+\subsection{A game on a board}
+\label{subsec:sgftablero}
+
+\begin{command}{\sgf\opt{\oarg{options}}\marg{file}}
+
+	Draws on the |goban| the main line of the first game of the file: the initial stones (|AB| and |AW|) as with |\stones|, and the moves as with |\moves|. Variations are not drawn. Passes count for the numbering, but are not drawn (with |goban/notes| they are noted, ``N: pass''). It only exists inside |goban|.
+\end{command}
+
+The stones that the nodes after the first move add (|AB|, |AW|) or remove (|AE|) are applied together with the previous move. Removing stones needs |captures|; without |captures|, |\sgf| warns once and does not remove them.
+
+At the end, the numbering and the turn are ready to continue the game with |\moves|. |\sgf| works with |partial|, |captures|, |name| and |resume|. If the game is for a board of another size, a warning is given. With |kernel = expl3|, |\sgf| gives an error.
+
+In the examples, the files are used by their name (p.~\pageref{subsec:sgfnombres}). |game| is |game.sgf|, a short 9$\times$9 game:
+\begin{verbatim}
+(;GM[1]FF[4]SZ[9]PB[Black]PW[White]C[A short game.]
+;B[ee];W[ef];B[df];W[ce];B[ff];W[gd];B[eg]C[Black captures.];W[dd];B[cf];W[fd])
+\end{verbatim}
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = {north, west}}]
+		\sgf{game} % Without captures, 2 is not removed.
+	\end{goban}
+\end{codeexample}
+
+\begin{codeexample}[width=5cm]
+	\begin{goban}[label = {at = {north, west}}, captures]
+		\sgf{game}
+	\end{goban}
+\end{codeexample}
+
+\begin{key}{/pgfgo/sgf/from = \meta{number} (initially 1)}
+
+	Number of the first numbered move. The previous moves are drawn without a number.
+
+	\begin{codeexample}[width=5cm]
+		\begin{goban}[captures]
+			\sgf[from = 7]{game}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/to = \meta{number} or |last| (initially last)}
+
+	Number of the last move played. The following ones are not drawn. With |last| (or a negative number), up to the last one.
+
+	\begin{codeexample}[width=5cm]
+		\begin{goban}[captures]
+			\sgf[to = 6]{game}
+			\moves{F5} % Goes on with 7 (Black), elsewhere.
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+
+|from| and |to| count the moves of the file. The number shown can be another: the property |MN| of the file changes it (the following moves go on from there), and so does |restart|. In the examples that follow, |variations| is |variations.sgf|, a 7$\times$7 game with two branchings, marks and |MN[10]| on the fourth move of the main line.
+
+\begin{key}{/pgfgo/sgf/variation = \meta{numbers or moves} (initially the main line)}
+	Chooses a variation: at each branching of the game, the given variation is taken, in order (1 is the main one). For example, |variation = 2.1| takes the second variation at the first branching and the first one at the second.
+
+	In a file with many branchings, such as a joseki dictionary, it is easier to give the moves of the line from the first one, separated by commas or spaces: |variation = {R16, P17, Q15}|. At each branching, the variation that plays the next move is taken; a pass is written |pass|. Each intersection is a capital letter and a number, as in |\stone|.
+
+	In both cases, when the list ends, the first variation is followed. If a variation (or a move) does not exist, a warning is given and the first one is followed from there.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations]
+			\sgf[variation = 2]{variations}
+		\end{goban}
+
+		\begin{goban}[sgf size = variations]
+			\sgf[variation = 1.2]{variations}
+		\end{goban}
+
+		\begin{goban}[sgf size = variations]
+			\sgf[variation = {C5, C3}]{variations}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/marks = \meta{boolean} (default true, initially true)}
+	Draws the marks of the file (|TR|, |SQ|, |CR|, |MA|, |SL| and the labels of |LB|), the arrows (|AR|) and the lines (|LN|) of the last node shown, and dims the points of |DD| (which stay dimmed until the next |DD|; p.~\pageref{subsec:flechas}). Each mark takes the color of the stone on that point, so that it is seen, and replaces the number of the move. Labels are the exception: they do not cover a number, so on a numbered stone they are not drawn. The territory of the file (|TB| and |TW|) is drawn like that of |\territory| (p.~\pageref{subsec:territorio}) and counts for |\pgfgoscore|.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations]
+			\sgf[to = 2]{variations}
+		\end{goban}
+
+		\begin{goban}[sgf size = variations]
+			\sgf[to = 2, marks = false]{variations}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/step = \meta{number} or \meta{list of numbers} (initially 100)}
+	The size of the stretches in which |restart| restarts the numbering. With a list, each number is the size of a stretch, and the last one is repeated: with |step = {50, 100}|, the first stretch has 50 moves and the others 100. It is the same \emph{key} as |/pgfgo/sgf diagrams/step|, where each stretch is a diagram.
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart = \meta{restart options} (default true)}
+	From the second stretch of |step| moves on, each one is numbered from 1 (or from |restart/from|), as in books: with |step = 100, restart|, move 101 is shown as 1. The first stretch keeps the numbers of the game. |\sgfanimation| and |\sgfdiagrams| have the same options.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations]
+			\sgf[]{variations}
+		\end{goban}
+
+		\begin{goban}[sgf size = variations]
+			\sgf[step = 3, restart]{variations}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart/true}
+	Restarts the numbering in each stretch.
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart/false}
+	Does not restart it: the moves carry the numbers of the game (with |MN|).
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart/auto}
+	Does what the file asks for with |PM|: with |PM[2]|, the numbering restarts every 100 moves, regardless of |step| (101 is shown as 1); otherwise, it does not restart. It is the initial value.
+\end{key}
+
+\begin{key}{/pgfgo/sgf/restart/from = \meta{number} (initially 1)}
+	The number of the first move of each stretch, from the second on. It also turns |restart| on. With |step = 99| and |restart = {from = 0}|, move 100 is shown as 0, 101 as 1, and so on.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations]
+			\sgf[step = 3, restart = {from = 0}]{variations}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/numbers = \meta{true, false or auto} (default true, initially auto)}
+	With |false|, the moves are drawn without a number. With |auto|, it does what the file asks for with |PM|: with |PM[0]|, they are not numbered. |\sgfdiagrams| has its own \emph{key} |numbers|, and |\sgfproblem| always numbers.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations]
+			\sgf[numbers = false]{variations}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/last mark = \meta{mark options} or |false| (initially false)}
+	Marks the last move shown, with the options of a mark (|circle|, |triangle|, |custom = ...|, etc.). A pass is not marked, nor is a point the file already marks or a move with a number (the number already says which is the last): in practice, it marks something with |numbers = false|.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations]
+			\sgf[numbers = false, last mark = circle]{variations}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf/game = \meta{number} (initially 1)}
+	An SGF file can have several games (a collection). Chooses which one is read; if it does not exist, the first one is read with a warning. It also holds for |\sgfanimation|, |\sgfdiagrams|, |\sgfcomment|, |\sgfinfo| and |sgf size|, which have their own \emph{key} |game|; for the whole document, |\pgfgoset{sgf = {game = 2}}|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf/variations = \meta{none, children, siblings or auto} (default auto, initially none)}
+	Marks with letters the variations of the last move shown: with |children|, the moves that can follow; with |siblings|, the alternatives to that move (the letter replaces its number). |auto| does what the file asks for with |ST|. They are only marked if there is more than one.
+
+	\begin{codeexample}[]
+		\begin{goban}[sgf size = variations]
+			\sgf[to = 1, marks = false, variations = children]{variations}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+|\sgf| also reads |PL| (who plays next: |\moves| goes on with that color) and |CA| (the charset of the file; see |sgf charset|).
+
+\begin{key}{/pgfgo/sgf charset = \meta{charset} (initially auto)}
+	Charset of the SGF files that are not in UTF-8, for every command that reads files. With |auto|, it is the one the file gives with |CA| or, if it gives none, Latin-1 (the SGF default). |Latin-1|, |GBK| (and |GB2312|), |Big5|, |Shift_JIS|, |EUC-JP| and |EUC-KR| are read; the names ignore case and punctuation (|shift-jis| and |EUC_KR| also work). A file that is valid UTF-8 is always read as UTF-8, even if |CA| says otherwise; one in UTF-16 (with the byte order mark at the beginning) is read too.
+
+	Many files from Asian servers do not give their charset; to read them, for example, |\pgfgoset{sgf charset = GBK}|. If a file without |CA| seems to be in one of those charsets, a warning reminds of it. With another charset a warning is given and the file is read as Latin-1: it has to be converted to UTF-8 first, for example with |iconv -f KOI8-R -t UTF-8 game.sgf > game-utf8.sgf|.
+
+	To write the comments in Chinese, Japanese or Korean, the package of that language is also needed: |ctex|, |luatexja| or |luatexko|. Examples 14, 18 and 19 of |doc/examples| show a commented game in each one. Without it, LaTeX only notes the missing characters in the |.log|; so, if the font with which a comment or an |\sgfinfo| is written lacks some Chinese, Japanese or Korean character, a warning is given, once per font. With those packages (or |xeCJK|) this is not checked: they write those characters with another font.
+\end{key}
+
+\begin{key}{/pgfgo/sgf = \meta{sgf options}}
+	Options of every |\sgf| of the document, for example |\pgfgoset{sgf = {variations}}|.
+\end{key}
+
+\subsection{Information and comments}
+\label{subsec:sgfdatos}
+
+\begin{command}{\sgfinfo\opt{\oarg{options}}\marg{file}\marg{property}}
+	Writes a property of the root of the game, for example |PB| and |PW| (the players), |RE| (the result), |KM| (the komi) or |DT| (the date), or with |move| that of a move. If it is not there, it writes nothing. It can be used outside |goban|.
+
+	\begin{codeexample}[]
+		\sgfinfo{variations}{PB} (Black) against
+		\sgfinfo{variations}{PW} (White),
+		komi \sgfinfo{variations}{KM}.
+		Result: \sgfinfo{variations}{RE}.
+	\end{codeexample}
+
+	The value is written as it is in the file (with the escaped characters already resolved and in the charset of |CA|): |RE| stays as |B+R|, not in words. The properties with information about the game, according to the SGF format, are:
+
+	\begin{center}
+		\small
+		\begin{tabular}{lp{6.5cm}l}
+			\emph{Property} & \emph{What it is} & \emph{Example} \\[2pt]
+			|PB|, |PW| & The name of Black and that of White. & |Lee Sedol| \\
+			|BR|, |WR| & The rank of Black and that of White. & |9p| \\
+			|BT|, |WT| & The team of Black and that of White. & \\
+			|RE| & The result: |B+| or |W+| and the points, |R| (resignation), |T| (time) or |F| (forfeit); |0| or |Draw|, a draw; |Void|, no result; |?|, unknown. & |W+3.5| \\
+			|KM| & The komi. & |6.5| \\
+			|HA| & The handicap: how many stones. & |2| \\
+			|DT| & The date, |YYYY-MM-DD| (or several, separated by commas). & |2016-03-09| \\
+			|EV| & The tournament or event. & |Meijin| \\
+			|RO| & The round. & |3 (final)| \\
+			|PC| & The place. & |Tokyo| \\
+			|GN| & The name of the game. & \\
+			|GC| & A comment about the game: the background, the players. & \\
+			|ON| & The opening (fuseki). & |chinese| \\
+			|RU| & The rules. & |Japanese| \\
+			|TM| & The time of each player, in seconds. & |7200| \\
+			|OT| & The overtime (byo-yomi). & |5x30 byo-yomi| \\
+			|SO| & The source: a book, a magazine. & \\
+			|AN| & Who commented on the game. & \\
+			|US| & Who wrote the file. & \\
+			|CP| & The copyright. & \\
+			|AP| & The program that wrote the file and its version. & |CGoban:3| \\
+			|SZ| & The size of the board (|19|, or |19:13| if it is not square). & |19| \\
+			|CA| & The charset of the file. & |UTF-8| \\
+			|FF|, |GM| & The version of the format and the game (|1|: Go). & |4| \\
+		\end{tabular}
+	\end{center}
+
+	Any other property of the root (or of the move, with |move|) works. If it has several values, they are written separated by commas: |\sgfinfo{game}{AB}| writes the black stones put before the start in SGF coordinates, |dd, pp|. The long names of the old versions of the format (|PlayerBlack|) are read as their abbreviation: they are asked for with |PB|.
+\end{command}
+
+\begin{command}{\sgfcomment\opt{\oarg{options}}\marg{file}\marg{move}}
+	Writes the comment of a move of the file (|0|: the one before the first move): the name of the node (|N|), in bold; the annotations of the move (|TE|, |BM|, |DO|, |IT|) and of the position (|GB|, |GW|, |DM|, |UC|); and the comment (|C|). The annotations are written with the texts of |/pgfgo/sgf annotations|. The values (|V|) and the hotspots (|HO|), which are for the game tree, are not written. It can be used outside |goban|. |\sgfanimation| and |\sgfdiagrams| write the comments the same way.
+
+	\begin{codeexample}[]
+		Move 7: \sgfcomment{game}{7}
+	\end{codeexample}
+\end{command}
+
+\begin{key}{/pgfgo/sgf info/game = \meta{number} (initially 1)}
+	Like |/pgfgo/sgf/game|, for |\sgfinfo|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf info/move = \meta{number} (initially 0)}
+	The property of that move: that of its node and that of the nodes without a move that follow it. With |0|, that of the root (and of the nodes before the first move). For example, the time White has left at move 120 of a KGS or OGS game (|WL|, in seconds): |\sgfinfo[move = 120]{game}{WL}|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf info/variation = \meta{numbers} (initially the main line)}
+	With |move|, the line of the move, like |/pgfgo/sgf/variation|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf comment/game = \meta{number} (initially 1)}
+	Like |/pgfgo/sgf/game|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf comment/variation = \meta{numbers} (initially the main line)}
+	Like |/pgfgo/sgf/variation|.
+
+	\begin{codeexample}[]
+		\sgfcomment[variation = 2]{problem}{1}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf comment/annotations = \meta{boolean} (default true, initially true)}
+	Writes the name and the annotations. With |false|, only the comment.
+
+	\begin{codeexample}[]
+		With: \sgfcomment{game}{7}
+		\quad Without: \sgfcomment[annotations = false]{game}{7}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf comment/chat = \meta{boolean} (default true, initially true)}
+	With |false|, removes the chat of the servers from the comment: on OGS, everything after the line ``|-- chat --|'' (what comes before is the comment of the reviewer); on KGS, the lines ``|name [rank]: ...|'' and, if there is any, also the lines ``|name: ...|'' of the same comment (those of the players without a rank). If nothing is left, the move has no comment.
+\end{key}
+
+The texts of the annotations are in the language of the document (p.~\pageref{subsec:idiomas}), and they can be changed for the whole document with |\pgfgoset{sgf annotations = {...}}|, for example |bad move = Mistake|. The emphasized annotations of |DM| and |UC| use the same text.
+
+\begin{key}{/pgfgo/sgf annotations/tesuji = \meta{text} (initially Tesuji or its translation)}
+	Text of |TE|.
+
+	\begin{codeexample}[]
+		\pgfgoset{sgf annotations = {tesuji = Good move}}
+		\sgfcomment{game}{7}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/very good tesuji = \meta{text} (initially Very good tesuji or its translation)}
+	Text of |TE[2]|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/bad move = \meta{text} (initially Bad move or its translation)}
+	Text of |BM|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/very bad move = \meta{text} (initially Very bad move or its translation)}
+	Text of |BM[2]|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/doubtful = \meta{text} (initially Doubtful move or its translation)}
+	Text of |DO|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/interesting = \meta{text} (initially Interesting move or its translation)}
+	Text of |IT|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/good for black = \meta{text} (initially Good for Black or its translation)}
+	Text of |GB|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/very good for black = \meta{text} (initially Very good for Black or its translation)}
+	Text of |GB[2]|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/good for white = \meta{text} (initially Good for White or its translation)}
+	Text of |GW|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/very good for white = \meta{text} (initially Very good for White or its translation)}
+	Text of |GW[2]|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/even = \meta{text} (initially Even position or its translation)}
+	Text of |DM|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf annotations/unclear = \meta{text} (initially Unclear position or its translation)}
+	Text of |UC|.
+\end{key}
+
+\subsection{Animations}
+\label{subsec:sgfanimacion}
+
+\begin{command}{\sgfanimation\opt{\oarg{options}}\marg{file}}
+
+	Steps through the game with the |animate| package: it draws one |goban| per move, and the buttons of |animate| step forward, back or play it. Frame $k$ shows the position after move $k$; frame 0, the position before the first move. It is used outside |goban|. The boards have the size of the game (|SZ|), unless |goban| gives another one. It needs |\usepackage{animate}| and two compilations.
+\end{command}
+
+The animations of |animate| work in Acrobat Reader and in some other viewers (Foxit, PDF-XChange). In the rest only the first frame is seen. These options can be set for the whole document with |\pgfgoset{sgf animation = {...}}|.
+
+\begin{codeexample}[width=5cm]
+	\sgfanimation[comments, goban = {captures}]{game}
+\end{codeexample}
+
+\begin{key}{/pgfgo/sgf animation/from = \meta{number} (initially 0)}
+	First frame.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/to = \meta{number} or |last| (initially last)}
+	Last frame. With |last| (or |-1|), that of the last move.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/fps = \meta{number} (initially 1)}
+	Frames per second when playing.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/goban = \meta{goban options}}
+	Options of each board, as in |\begin{goban}[...]|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/animate = \meta{animate options} (initially controls)}
+	Options of the |animateinline| environment of |animate|, for example |controls, loop|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/numbers = \meta{boolean} (default true, initially false)}
+	Numbers every move, like |\sgf|. Without |numbers|, the moves have no number and the last one is marked.
+
+	\begin{codeexample}[width=5cm]
+		\sgfanimation[from = 6, to = 8, numbers, goban = {captures}]{game}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/last mark = \meta{mark options or false} (initially circle)}
+	Mark of the last move, with the color of whoever played it. With |false|, the last move is not marked. It is not used with |numbers|, nor when the file already marks that point.
+
+	\begin{codeexample}[width=5cm]
+		\sgfanimation[from = 5, to = 7, last mark = triangle, fps = 2,
+			animate = {controls, loop}, goban = {captures}]{game}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/comments = \meta{comments options} (default true)}
+	Shows the comment (|C|) of the move below the board. That of frame 0 is that of the nodes before the first move. It is turned on with |comments| or |comments = true| and off with |false| (the initial value); |height| and |font| do not turn it on: |comments = {true, height = 6em}|.
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf animation/comments/true}
+	Shows the comments.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf animation/comments/false}
+	Does not show the comments. It is the initial value.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf animation/comments/height = \meta{dimension} (initially 4em)}
+	Height of the space for the comments. It is the same in every frame, so that they do not change size.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/comments/font = \meta{font commands} (initially \texttt{\string\small})}
+	Font of the comments.
+
+	\begin{codeexample}[width=5cm]
+		\sgfanimation[from = 7, to = 9, goban = {captures},
+			comments = {true, height = 2.5em, font = \itshape}]{game}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/variation = \meta{numbers} (initially the main line)}
+	Like |/pgfgo/sgf/variation|: the animation goes through the line that leads to that variation.
+
+	\begin{codeexample}[width=5cm]
+		\sgfanimation[variation = 2, numbers]{variations}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/marks = \meta{boolean} (default true, initially true)}
+	Like |/pgfgo/sgf/marks|: each frame shows the marks of its move.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/step = \meta{number} or \meta{list of numbers} (initially 100)}
+	Like |/pgfgo/sgf/step|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart = \meta{restart options} (default true)}
+	Like |/pgfgo/sgf/restart|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart/true}
+	Like |/pgfgo/sgf/restart/true|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart/false}
+	Like |/pgfgo/sgf/restart/false|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart/auto}
+	Like |/pgfgo/sgf/restart/auto|. It is the initial value.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/restart/from = \meta{number} (initially 1)}
+	Like |/pgfgo/sgf/restart/from|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/annotations = \meta{boolean} (default true, initially true)}
+	With |comments|, also writes the name and the annotations of each move, like |\sgfcomment|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/chat = \meta{boolean} (default true, initially true)}
+	With |comments|, like |/pgfgo/sgf comment/chat|: with |false|, without the chat of KGS and OGS.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/game = \meta{number} (initially 1)}
+	Like |/pgfgo/sgf/game|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/view = \meta{boolean} (default true, initially true)}
+	If the file has a view (|VW|), the boards show only that part, like |sgf view|. Every frame has the same board: if the view changes during the game, the board covers the views of every frame (and if in any of them the whole board is seen, the whole board is seen).
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/partial = \meta{auto or false} (initially false)}
+	With |auto|, where the file has no view, the boards show only the part used by the line that is animated (that of |variation|), as in |\sgfdiagrams|. Every frame has the same board.
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/layers = \meta{boolean} (default true, initially true)}
+	Builds the animation in layers: the board is drawn only once, and so is each stone, on a transparency that |animate| shows while the stone is still on the board (with the |timeline| option of |animate|). The only thing drawn in each frame is what changes: the mark of the last move, the marks of the file and the comment. So the PDF grows with the number of moves and not with its square: a game of 200 moves takes less than 1~MB, instead of more than 10~MB, and it also compiles faster. With |layers = false|, each frame is a whole |goban|. The |timeline| is kept in an auxiliary file, |<jobname>-pgfgo-<n>.tln|.
+\end{key}
+
+\subsection{Diagrams as in books}
+\label{subsec:sgfdiagramas}
+
+\begin{command}{\sgfdiagrams\opt{\oarg{options}}\marg{file}}
+	Draws the game as in books: one diagram every |step| moves (1--50, 51--100, etc.). Each diagram starts from the real position, with the previous moves without a number and their captures; the stones captured inside the diagram are not removed (they are removed in the next one). Below each one go its caption and its ``N at M'' notes (p.~\pageref{subsec:notas}). It is used outside |goban|. The options can be set for the whole document with |\pgfgoset{sgf diagrams = {...}}|.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 5, title = Diagram]{game}
+	\end{codeexample}
+\end{command}
+
+\sgfdiagrams[step = 5, title = Diagram]{game}
+
+\begin{key}{/pgfgo/sgf diagrams/step = \meta{number} or \meta{list of numbers} (initially 50)}
+	Number of moves of each diagram. With a list, the first diagram has as many moves as the first number says, the second as many as the second says, and so on; the last number is repeated: with |step = {5, 10, 3}|, the diagrams have 5, 10, 3, 3, 3... moves.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/from = \meta{number} (initially 1)}
+	First move. The diagrams are the same as without |from|, with the same number: only those with moves from |from| on are drawn, and the first one starts at |from|. With |step = 50| and |from = 120|, the first one is ``Diagram 3 (120--150)''.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/to = \meta{number} or |last| (initially last)}
+	Last move. With |last| (or |-1|), the last one of the game.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/numbers = \meta{boolean} (default true, initially true)}
+	With |false|, the moves of each diagram are drawn without a number (the ``N at M'' notes still use the numbers of the game).
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/last mark = \meta{mark options} or |false| (initially false)}
+	Like |/pgfgo/sgf/last mark|, in each diagram.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 5, to = 10, numbers = false, last mark = circle]{game}
+	\end{codeexample}
+
+	\sgfdiagrams[step = 5, to = 10, numbers = false, last mark = circle]{game}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/restart = \meta{restart options} (default true)}
+	Like |/pgfgo/sgf/restart|, with one diagram per stretch: from the second diagram on, each one is numbered from 1 (or from |restart/from|), as some books do. The first diagram keeps the numbers of the game.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = {2, 3}, restart = {from = 0}]{game}
+	\end{codeexample}
+\end{key}
+
+\sgfdiagrams[step = {2, 3}, to = 8, restart = {from = 0}, title = Diagram]{game}
+
+\begin{key}{/pgfgo/sgf diagrams/restart/true}
+	Restarts the numbering in each diagram.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/restart/false}
+	Does not restart it: the moves carry the numbers of the game.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/restart/auto}
+	Like |/pgfgo/sgf/restart/auto|: with |PM[2]|, every 100 moves, regardless of the diagrams. It is the initial value.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/restart/from = \meta{number} (initially 1)}
+	The number of the first move of each diagram, from the second on. It also turns |restart| on. With |step = 99| and |restart = {from = 0}|, the first diagram goes from 1 to 99, and in the second one move 100 is shown as 0, 101 as 1, and so on.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/marks = \meta{boolean} (default true, initially true)}
+	Like |/pgfgo/sgf/marks|: each diagram shows the marks, arrows and lines of its last move. With |marks = false| they are not drawn.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/notes = \meta{boolean} (default true, initially true)}
+	Writes its notes below each diagram: ``N at M'' and the passes, ``N: pass''.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/title = \meta{text} (initially Diagram or its translation)}
+	Word of the caption: ``Diagram 2 (51--100)''.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/caption = \meta{caption options}}
+	Options of the caption and of the notes.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/caption/font = \meta{font commands} (initially \texttt{\string\small})}
+	Font of the caption and of the notes: |caption = {font = \itshape}|.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[from = 6, title = Figure, caption = {font = \itshape},
+			goban = {label = {at = {north, west}}}]{game}
+	\end{codeexample}
+
+	\sgfdiagrams[from = 6, title = Figure, caption = {font = \itshape},
+		goban = {label = {at = {north, west}}}]{game}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/caption/min width = \meta{dimension} (initially 8em)}
+	With |layout = {columns = auto}|, a caption wider than its board is broken into lines at the width of the board. If the board is narrower than this measure (in the font of the caption), it is broken at this measure; it is never broken narrower than its longest word, nor widened beyond its width on one line. In the grid, the caption is broken at the width of the cell.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/goban = \meta{goban options}}
+	Options of each board. By default, the boards have the size of the game and use |captures| and |notes|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/layout = \meta{layout options}}
+	How the diagrams are laid out: options of |/pgfgo/layout| (p.~\pageref{subsec:disposicion}) only for |\sgfdiagrams|. For example, |layout = {columns = 3}|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/variation = \meta{numbers} (initially the main line)}
+	Like |/pgfgo/sgf/variation|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/variations = \meta{variations options} (default commented)}
+	Also draws the variations of the game, each one in its own diagram, after the diagram where its first move starts: ``Diagram 3a'', ``Diagram 3b''... The moves of each variation are numbered from 1, and the caption says which move the first one replaces (|variation title|). The previous ones are seen without a number, as they were. The options say which ones are drawn, and they add up: |variations = {commented, 5}|. Besides the ones below, anything else is the path of a variation, as in |variation| (|2|, |2.3.1|, or its moves in braces and separated by spaces: |{R16 P17 Q15}|): that one is always drawn, at any depth. The |1|'s at the end do not change the line: |2.3.1| is the same as |2.3|. If the file does not have it, a warning is given. Its comments and notes are written like those of the other diagrams. With |variation|, the variations are those that leave that line (the main one too).
+
+	\begin{codeexample}[]
+		\sgfdiagrams[step = 2, to = 3, variations = all, goban = {scale = 0.5}]{variations}
+	\end{codeexample}
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/variations/none}
+	None. It is the initial value, and clears the previous ones.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/variations/commented}
+	Those that have some comment (|C|) in their own moves. It is what plain |variations| does.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/variations/all}
+	All of them.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf diagrams/variations/depth = \meta{number} (initially 1)}
+	To what depth |commented| and |all| draw: |1|, only those that leave the line that is drawn (the main one, or that of |variation|); |2|, also the variations of those, and so on. Those of a variation go after it, and their caption says which of its moves they replace.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/variations/from = \meta{number} (initially 1)}
+	From which move |commented| and |all| draw: only the variations that start at that move or later.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[variation = {Q16, R14}, variations = {commented, from = 3}]{josekis}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/variation title = \meta{text} (initially ``variation at'' and the number, or its translation)}
+	What goes in parentheses in the caption of a variation: ``Diagram 3a (variation at 26)''. |\pgfgovariationmove| is the number of the move it replaces.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments = \meta{comments options} (default true)}
+	Writes below each diagram the comments of its moves, like |\sgfcomment|, each one with the number of the move. It is turned on with |comments| or |comments = true| and off with |false| (the initial value); the other options do not turn it on: |comments = {true, align = justify}|. So |\pgfgoset{sgf diagrams = {comments = {font = \itshape}}}| sets the style of the whole document without turning the comments on.
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/comments/true}
+	Writes the comments.
+\end{stylekey}
+\begin{stylekey}{/pgfgo/sgf diagrams/comments/false}
+	Does not write the comments. It is the initial value.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/font = \meta{font commands} (initially that of the caption)}
+	Font of the comments. Without this option, that of |caption/font|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/align = \meta{left, right, center or justify} (initially left)}
+	Alignment of the comments in the width of the diagram. With |justify|, a narrow diagram gets large spaces between the words.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/root = \meta{boolean} (default true, initially false)}
+	Also writes the comment of the root (that of the nodes before the first move), without a number, before those of the diagram that starts at move 1.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 10, comments = {true, root, font = \itshape}]{game}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/number = \meta{text} (initially \texttt{\string\textbf\{\#1\}:\string~})}
+	What goes before each comment; |#1| is the number of the move, the one seen on the board (with |restart|, the restarted one). For example, |number = {Move~#1.~}|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/separator = \meta{text} (initially one paragraph per comment)}
+	What goes between the comments. With the initial value, each one goes in its own paragraph; with |separator = {\quad}|, they run on.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 10, comments = {true, number = {\textbf{#1}.~}, separator = {~}}]{game}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/position = \meta{below, right, left or after} (initially below)}
+	Where the comments go: below the caption, beside the diagram, as in books of commented games, or with |after| all together after the diagrams, across the page, each group with the caption of its diagram as a heading (they can break across pages). Beside, they start at the height of the top border of the board; the caption, the notes and the result go on below the board.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 10, comments = {true, position = right}]{game}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/width = \meta{dimension} or auto (initially auto)}
+	Width of the comments beside. With |auto|, what is left: outside the grid, the rest of the line (each diagram goes on its own line); in the grid (|layout = {columns = ...}|), the rest of the cell, and with |fit| the board takes half of the cell and the comments the other half. With a dimension, in the grid the board takes what is left of the cell.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/sep = \meta{dimension} (initially 1em)}
+	Space between the diagram and the comments beside it.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 10, layout = {columns = 2, fit},
+			comments = {true, position = left, sep = 2em}]{game}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/comments/height = \meta{dimension} or none (initially none)}
+	Maximum height of the comments of a diagram, below or beside. What does not fit goes after the diagrams, as with |after|, with the caption of the diagram as a heading.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 30, layout = {columns = 2},
+			comments = {true, height = 6\baselineskip}]{game}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/annotations = \meta{boolean} (default true, initially true)}
+	With |comments|, also writes the name and the annotations of each move.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 10, comments]{game}
+		\sgfdiagrams[step = 10, comments, annotations = false]{game}
+	\end{codeexample}
+
+	\sgfdiagrams[step = 10, comments]{game}
+	\sgfdiagrams[step = 10, comments, annotations = false]{game}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/chat = \meta{boolean} (default true, initially true)}
+	With |comments|, like |/pgfgo/sgf comment/chat|: with |false|, without the chat of KGS and OGS. A move that only had chat left does not appear.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/figures = \meta{boolean} (default true, initially true)}
+	If the file marks figures (|FG|), each figure is a diagram, with its name as the caption, instead of one every |step| moves.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/view = \meta{boolean} (default true, initially true)}
+	If the file has a view (|VW|), each diagram shows only that part, like |sgf view|. If the view changes during the game, each diagram covers the views of its moves.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/partial = \meta{auto or false} (initially false)}
+	With |auto|, where the file has no view, each diagram shows only the part of the board used by the lines that are drawn (that of |variation| and those of |variations|), like |/pgfgo/goban/partial = auto|. It is the same in every diagram, also in those of the variations.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[partial = auto, variations]{josekis}
+		\sgfdiagrams[partial = auto, variation = {Q16, R14},
+			variations = {commented, from = 3}, marks = false]{josekis}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/game = \meta{number} (initially 1)}
+	Like |/pgfgo/sgf/game|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/result = \meta{result options} (default true)}
+	Writes below the last diagram, if it reaches the end of the game, the result (|RE|) and, if the file marks the territory (|TB|, |TW|), the score of each player: ``Result: Black wins by 0.5 points (Black 6, White 5.5)''. The score is counted as with |\pgfgoscore| (p.~\pageref{subsec:territorio}), with the komi of the file (|KM|). It is turned off with |result = false|; |title| and |format| do not turn it on.
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/result/true}
+	Writes the result. It is the initial value.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf diagrams/result/false}
+	Does not write the result.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf diagrams/result/title = \meta{text} (initially Result or its translation)}
+	Word before the result.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/result/format = \meta{text or raw} (initially text)}
+	How the result is written. |text|: in words, in the language of the document (p.~\pageref{subsec:idiomas}), ``Black wins by resignation''; |raw|: as it is in the file, ``B+R''. With |text|, |0| or |Draw| (a draw), |Void| (no result), |?| (unknown) and |B+| or |W+| followed by nothing, by the difference, by |R| or |Resign|, by |T| or |Time|, or by |F| or |Forfeit| are understood. Any other result is written as it is.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/black name = \meta{text} (initially Black or its translation)}
+	Name of Black in the score and in the result.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/white name = \meta{text} (initially White or its translation)}
+	Name of White in the score and in the result.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[result = {title = Final, format = raw}]{variations}
+		\sgfdiagrams[black name = Ann, white name = Bob]{variations}
+	\end{codeexample}
+
+	\sgfdiagrams[result = {title = Final, format = raw}]{variations}
+	\sgfdiagrams[black name = Ann, white name = Bob]{variations}
+\end{key}
+
+\begin{command}{\pgfgowinner}
+	In the texts of the result (|\pgfgodefinelanguage|), the name of the winner: |black name| or |white name|.
+\end{command}
+
+\begin{command}{\pgfgovariationmove}
+	In the caption of a variation (|variation title|) and in its text in each language (|variation at|), the number of the move it replaces.
+\end{command}
+
+\begin{command}{\pgfgopoints}
+	In the texts of the result, the difference in points, as it is in the file.
+\end{command}
+
+\subsection{Problems}
+\label{subsec:sgfproblemas}
+
+\begin{command}{\sgfproblem\opt{\oarg{options}}\marg{file}}
+	Draws a problem (tsumego). First, the statement: the initial position with its marks, who plays (|PL|, or the color of the first move) and the comment at the beginning. Then, one diagram for each line of the tree of the file (each variation of the solution, right or wrong), numbered from 1, with its ``N at M'' notes and the comments and annotations of its moves, which usually say whether the variation is right. The diagrams are drawn like those of |\sgfdiagrams|. If the file has no view (|VW|), only the part of the board the problem uses is shown. It is used outside |goban|. The options can be set for the whole document with |\pgfgoset{sgf problem = {...}}|. In the examples, |problem| is |problem.sgf|, a life-and-death problem: the right move and two wrong ones, with their comments.
+
+	\begin{codeexample}[code only]
+		\sgfproblem[title = Problem 1, variation title = Line,
+			black to play = Black plays]{problem}
+	\end{codeexample}
+\end{command}
+
+\sgfproblem[title = Problem 1, variation title = Line,
+	black to play = Black plays]{problem}
+
+\begin{key}{/pgfgo/sgf problem/statement = \meta{true, false or alone} (default true, initially true)}
+	Draws the statement. With |alone|, the statement goes alone on its row, centered, and the variations below.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/solutions = \meta{boolean} (default true, initially true)}
+	Draws the variations. With |solutions = false|, only the statement remains; the solutions go elsewhere, with |statement = false|.
+
+	\begin{codeexample}[code only]
+		\sgfproblem[solutions = false, title = Problem 2]{problem}
+	\end{codeexample}
+
+	\sgfproblem[solutions = false, title = Problem 2]{problem}
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/title = \meta{text} (initially empty)}
+	Beginning of the caption of the statement: ``Problem 1: Black to play''. With several games (|game = 1:20|), it is followed by the number of each one; empty, it is |Problem| or its translation: ``Problem 7: Black to play''. The solutions also say which problem they belong to: ``Problem 7: Variation 1''.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/to play = \meta{auto, black, white or none} (initially auto)}
+	Who plays, for the caption of the statement. With |auto|, what |PL| says or, if it is not there, the color of the first move; if there is neither, it is not said. Many collections do not say it in the file: |to play = black|. With |none|, the caption does not say it.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/verdict = \meta{boolean} (default true, initially false)}
+	The caption of each solution says whether it is right or wrong (``Variation 2 (wrong)''), with the texts |correct| and |wrong| of the language. It is decided with the annotations of the line: the last |GB| or |GW| (the position is good for Black or for White), according to who plays; if there is none, the first move with |TE| or |BM| (the odd moves belong to whoever plays: a |BM| of theirs is a mistake, one of the opponent is not); otherwise, the word |RIGHT| in a comment, as in the files of goproblems.com. If there is none of that, it says nothing.
+
+	\begin{codeexample}[]
+		\sgfproblem[verdict, statement = false, comments = false,
+			goban = {scale = 0.5}]{problem}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/variation title = \meta{text} (initially Variation or its translation)}
+	Word of the caption of each variation: ``Variation 2''.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/black to play = \meta{text} (initially Black to play or its translation)}
+	Text of the statement when Black plays.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/white to play = \meta{text} (initially White to play or its translation)}
+	Text of the statement when White plays.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments = \meta{comments options} (default true)}
+	Writes the comment at the beginning below the statement and those of each variation below its diagram, like |/pgfgo/sgf diagrams/comments|. Here they are on at the start; they are turned off with |comments = false|. The options are |true|, |false|, |font|, |align|, |number|, |separator|, |position|, |width|, |sep| and |height|, as in |\sgfdiagrams|; |font| and |align| also hold for the comment of the statement.
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf problem/comments/true}
+	Writes the comments. It is the initial value.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf problem/comments/false}
+	Does not write the comments.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf problem/comments/font = \meta{font commands} (initially that of the caption)}
+	Like |/pgfgo/sgf diagrams/comments/font|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/align = \meta{left, right, center or justify} (initially left)}
+	Like |/pgfgo/sgf diagrams/comments/align|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/number = \meta{text} (initially \texttt{\string\textbf\{\#1\}:\string~})}
+	Like |/pgfgo/sgf diagrams/comments/number|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/separator = \meta{text} (initially one paragraph per comment)}
+	Like |/pgfgo/sgf diagrams/comments/separator|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/position = \meta{below, right, left or after} (initially below)}
+	Like |/pgfgo/sgf diagrams/comments/position|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/width = \meta{dimension} or auto (initially auto)}
+	Like |/pgfgo/sgf diagrams/comments/width|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/sep = \meta{dimension} (initially 1em)}
+	Like |/pgfgo/sgf diagrams/comments/sep|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/comments/height = \meta{dimension} or none (initially none)}
+	Like |/pgfgo/sgf diagrams/comments/height|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/annotations = \meta{boolean} (default true, initially true)}
+	With |comments|, also writes the name and the annotations of each move (|TE|, |BM|, etc.).
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/chat = \meta{boolean} (default true, initially true)}
+	With |comments|, like |/pgfgo/sgf comment/chat|: with |false|, without the chat of KGS and OGS.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/notes = \meta{boolean} (default true, initially true)}
+	Writes the ``N at M'' notes of each variation.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/caption = \meta{caption options}}
+	Options of the captions, the notes and the comments.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/caption/font = \meta{font commands} (initially \texttt{\string\small})}
+	Font of the captions, the notes and the comments.
+
+	\begin{codeexample}[code only]
+		\sgfproblem[statement = alone, comments = false, notes = false,
+			caption = {font = \itshape}]{problem}
+	\end{codeexample}
+
+	\sgfproblem[statement = alone, comments = false, notes = false,
+		caption = {font = \itshape}]{problem}
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/caption/min width = \meta{dimension} (initially 8em)}
+	As in |\sgfdiagrams|: with |columns = auto|, the minimum width at which a caption wider than its board is broken (``Problem 3: White to play'' below a small corner).
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/goban = \meta{goban options}}
+	Options of each board, like |/pgfgo/sgf diagrams/goban|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/layout = \meta{layout options}}
+	How the statement and the variations are laid out: options of |/pgfgo/layout| (p.~\pageref{subsec:disposicion}) only for |\sgfproblem|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/view = \meta{boolean} (default true, initially true)}
+	If the file has a view (|VW|) at the beginning, every diagram shows that part.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/partial = \meta{auto or false} (initially auto)}
+	With |auto|, if the view of the file is not used, it shows only the part of the board where there are stones, moves, marks, arrows or lines in some line of the problem, like |/pgfgo/goban/partial = auto|. It is the same in every diagram. The lines added around are changed with |goban = {partial margin = ...}|. With |false|, the whole board is seen.
+
+	\begin{codeexample}[code only]
+		\sgfproblem[solutions = false, goban = {partial margin = 3}]{problem}
+	\end{codeexample}
+
+	\sgfproblem[solutions = false, goban = {partial margin = 3}]{problem}
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/game = \meta{numbers} (initially 1)}
+	Like |/pgfgo/sgf/game|: in a collection, the problem that is drawn. Also several, with numbers and ranges like those of the coordinates: |game = 1:20| or |game = {1:4, 9}|. Then all the statements go first, numbered (|title|), and then the solutions of those that have them. That is how a problem sheet is built:
+
+	\begin{codeexample}[code only]
+		\sgfproblem[game = 1:24, to play = black, comments = false,
+			layout = {columns = 6, fit}]{collection.sgf}
+	\end{codeexample}
+\end{key}

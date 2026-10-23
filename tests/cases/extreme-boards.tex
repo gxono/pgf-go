@@ -1,0 +1,44 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+%
+% Boards at the limits: the smallest sizes, one line, the largest board whose
+% columns have one letter (25), and windows that are reversed, cut by the board
+% or a single point.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{1x1 with labels and a stone / 2x2 with four moves / 1x7 and 7x1 full of stones, a triangle on C1}
+\begin{goban}[1, label = {at = all}]\stones[b]{A1}\end{goban}
+\begin{goban}[2]\moves{A1, B1, A2, B2}\end{goban}
+\begin{goban}[1x7, scale = 0.6]\stones[b]{A1:A7}\end{goban}
+\begin{goban}[7x1, scale = 0.6]\stones[w]{A1:G1}\marks[triangle]{C1}\end{goban}
+
+\case{25x25: the last column is Z (Z1, Z25 and the whole column Z white; A25 black)}
+\begin{goban}[25, scale = 0.4, label = {at = all}]\stones[w]{Z}\stones[b]{A25, Y13}\end{goban}
+
+\case{25x25 with use i: the last column is Y (I1 and Y25 black)}
+\begin{goban}[25, use i, scale = 0.4, label = {at = all}]\stones[b]{I1, Y25}\end{goban}
+
+\case{Rectangular boards: 19x3 and 3x19, without hoshi (an axis of 3 lines has none)}
+\begin{goban}[19x3, scale = 0.5]\end{goban}
+\begin{goban}[3x19, scale = 0.5]\end{goban}
+
+\case{Windows: E5:A1 is A1:E5 / A1:Z25 is cut to the board / E5:E5 is one point / J1:J9 is the last column}
+\begin{goban}[9, partial = E5:A1, label = {at = all}]\stones[b]{C3}\end{goban}
+\begin{goban}[9, partial = A1:Z25, scale = 0.5]\stones[b]{C3}\end{goban}
+\begin{goban}[9, partial = E5:E5, label = {at = all}]\stones[b]{E5}\end{goban}
+\begin{goban}[9, partial = J1:J9, label = {at = all}]\stones[w]{J5}\end{goban}
+
+\case{partial = auto: one stone on A1 / on T19 / margin 100 is the whole board / A1 and T19 are the whole board / margin 0 on two stones}
+\begin{goban}[19, partial = auto, scale = 0.5]\stones[b]{A1}\end{goban}
+\begin{goban}[19, partial = auto, scale = 0.5]\stones[b]{T19}\end{goban}
+\begin{goban}[19, partial = auto, partial margin = 100, scale = 0.3]\stones[b]{K10}\end{goban}
+\begin{goban}[19, partial = auto, scale = 0.3]\stones[b]{A1, T19}\end{goban}
+\begin{goban}[19, partial = auto, partial margin = 0, scale = 0.5]\stones[b]{K10, L11}\end{goban}
+
+\end{document}

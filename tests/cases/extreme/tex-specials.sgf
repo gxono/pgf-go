@@ -1,0 +1,2 @@
+(;GM[1]FF[4]CA[UTF-8]SZ[9]PB[A & B #1 $x$ 100%]PW[_under^score~tilde]GN[{llaves} \\textbf{no}]RE[W+R]C[Root: # $ % & ~ _ ^ \\ { } \] \: < > | " ` '
+\\par \\def\\x{y} \\end{document}];B[ee]C[%comentario que no debe comerse el resto];W[gc]C[{ abre sin cerrar];B[cg]C[} cierra sin abrir];W[gg]C[\\csname relax\\endcsname \\iffalse];B[cc]C[ñandú, cigüeña, Ærøskøbing])

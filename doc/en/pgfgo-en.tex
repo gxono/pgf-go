@@ -10,17 +10,25 @@
 
 
 
-
-
-
 \input{../pgfgo.cfg}
 \input{../pgfgo-preamble.tex}
 
 \usepackage{animate}
 \usepackage{../../latex/pgf-go}
+%LOS ARCHIVOS SGF DE LOS EJEMPLOS, POR SU NOMBRE (LOS TUTORIALES Y EL CAPITULO SGF LOS PRESENTAN).
+\pgfgodefinesgf{game}{game.sgf}
+\pgfgodefinesgf{lee}{../examples/lee.sgf}
+\pgfgodefinesgf{variations}{variations.sgf}
+\pgfgodefinesgf{problem}{../examples/problem.sgf}
+\pgfgodefinesgf{josekis}{../examples/joseki.sgf}
 %LOS KANJI DEL TEXTO (VER label/style).
 \font\pgfgokanji = {file:ipaexm.ttf} at 9pt
+%LA MISMA FUENTE COMO FAMILIA, PARA format = kanji (VER mark/label/format).
+\DeclareFontFamily{TU}{ipaex}{}
+\DeclareFontShape{TU}{ipaex}{m}{n}{<->file:ipaexm.ttf}{}
+\DeclareFontShape{TU}{ipaex}{bx}{n}{<->ssub*ipaex/m/n}{}
 \def\pgfgoname{\textsc{pgfgo}}
+\def\karu{K\={a}ru}
 
 \usepackage[english]{babel}
 
@@ -35,16 +43,17 @@
 \colorlet{tablero3}{blue!10!green!10}
 \definecolor{tablero4}{HTML}{9B8465}
 
-
-\def\version{\leavevmode\hbox{0.\the\year.\twodigits\month.\twodigits\day}}
-\def\twodigits#1{\ifnum#1<10 0\fi\the#1}
+\def\pgfgoversion{\leavevmode\hbox{0.2026.10.23}}
 
 
+
+%LAS LINEAS CON CODIGO EN EL TEXTO SE ESTIRAN EN LUGAR DE SALIRSE DEL MARGEN.
+\setlength{\emergencystretch}{3em}
 
 \begin{document}
 	\title{\Huge\bfseries pgf-go\\[1em]
 		\normalsize
-		
+
 		\begin{center}
 			\pgfgoset{profile = pgfgosmooth}
 			\begin{goban}[partial = B2:E3]
@@ -52,34 +61,45 @@
 				\stones[white] {B2,C3,D3}
 				\mark[w, custom = {36}]{B2}
 				\mark[custom = {a}] {E2}
-				
+
 				\marks[circle, line = {color = red!80!black}] {C3,D3}
-				
+
 			\end{goban}
 		\end{center}
-		
-		\large Manual for version~\version}
+
+		\large Manual for version~\pgfgoversion}
 		\author{Jonat\'an Perren Hug\\
 		\texttt{jonatan.perren@gmail.com}
 		}
-	
+
 	\maketitle
-	
-	
-	
+
+
+
 	\label{table-of-contents}
 	\tableofcontents
-		
-	
-	\clearpage 
 
+	\clearpage
+
+	\part{Introduction}
 	\input{pgfgo-introduction}
+
+	\part{Tutorials}\label{part:tutoriales}
 	\input{pgfgo-initialexamples}
-	\input{pgfgo-keystone}
+
+	\part{Reference}\label{part:referencia}
+	\input{pgfgo-settings}
+	\input{pgfgo-coordinates}
 	\input{pgfgo-board}
 	\input{pgfgo-stones}
 	\input{pgfgo-marks}
-	\input{pgfgo-examples}
+	\input{pgfgo-game}
+	\input{pgfgo-memory}
+	\input{pgfgo-sgffiles}
+	\input{pgfgo-layout}
+	\input{pgfgo-players}
 	\input{pgfgo-catalog}
-	\input{pgfgo-definitions}
+
+	\appendix
+	\input{pgfgo-news}
 \end{document}

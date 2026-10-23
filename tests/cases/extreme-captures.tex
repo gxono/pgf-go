@@ -1,0 +1,57 @@
+% engines: lualatex
+% expect-warnings: 1
+% expect-errors: 0
+%
+% Captures at the limits: a group of 360 stones, a suicide of the whole board,
+% four groups at once, a snapback, a ko taken 30 times and the smallest boards.
+% The numbers in parentheses are what the commands must write.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\newcommand\prisonerscount{prisoners: black \pgfgoprisoners{b}, white \pgfgoprisoners{w}}
+\pagestyle{empty}
+\begin{document}
+
+\case{19x19 full of black stones but K10: white 1 on K10 captures 360; then all the board is white territory}
+\begin{goban}[19, scale = 0.35, captures]\stones[b]{*; K10}\moves[w]{K10}\territory{auto}\end{goban}
+\prisonerscount{} (0, 360), score: black \pgfgoscore{b} (0), white \pgfgoscore{w} (720)
+
+\case{5x5 full of black stones but C3: black 1 on C3 is a suicide of 25 stones; the board is empty}
+\begin{goban}[5, captures]\stones[b]{*; C3}\moves{C3}\end{goban}
+\prisonerscount{} (0, 25)
+
+\case{1x1: black 1 is a suicide / 2x1: white 2 captures black 1 / captures = fade on the same}
+\begin{goban}[1, captures]\moves{A1}\end{goban}
+\begin{goban}[2x1, captures]\moves{A1, B1}\end{goban}
+\begin{goban}[2x1, captures = fade]\moves{A1, B1}\end{goban}
+
+\case{Black 1 on C3 captures four white stones (four groups) at once}
+\begin{goban}[5, captures]\stones[w]{C2, B3, D3, C4}\stones[b]{C1, B2, D2, A3, E3, B4, D4, C5}\moves{C3}\end{goban}
+\prisonerscount{} (4, 0)
+
+\case{Snapback: black 1 throws in at A1, white 2 takes it, black 3 at 1 takes three stones}
+\begin{goban}[5, captures, notes]\stones[w]{A2, B2}\stones[b]{A3, B3, C2, C1}\moves{A1, B1, A1}\end{goban}
+notes: [\pgfgomovenotes] (3 at 1), \prisonerscount{} (3, 1)
+
+\case{A ko taken 30 times: 30 (black) has taken C3 last, so the board shows 2 on D3 and C3 is empty}
+\begin{goban}[5, captures, notes]\stones[b]{B3, C2, C4}\stones[w]{D2, D4, E3}
+	\moves[w]{C3, D3, C3, D3, C3, D3, C3, D3, C3, D3, C3, D3, C3, D3, C3, D3,
+		C3, D3, C3, D3, C3, D3, C3, D3, C3, D3, C3, D3, C3, D3}
+\end{goban}
+
+notes: [\pgfgomovenotes]
+
+\prisonerscount{} (15, 14)
+
+\case{361 moves fill a 19x19 board (one warning: * has no fixed order) / the two diagonals with captures, the second without K10 (41 moves, no stone touches another)}
+\begin{goban}[19, scale = 0.5]\moves{*}\end{goban}
+\begin{goban}[19, scale = 0.5, captures]\moves{A1 -- T19, T1 -- L9, J11 -- A19}\end{goban}
+
+\case{Move numbers of up to three characters fit in the stone: 99, 100, 999 / iii, xii, ccc / z, aa, zz}
+\begin{goban}[5]\moves[from = 99]{A1, B1}\moves[from = 999]{C1}
+	\moves[from = 3, label = {format = roman}]{A3}\moves[from = 12, label = {format = roman}]{B3}\moves[from = 300, label = {format = roman}]{C3}
+	\moves[from = 26, label = {format = alph}]{A5, B5}\moves[from = 702, label = {format = alph}]{C5}
+\end{goban}
+
+\end{document}

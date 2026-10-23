@@ -1,0 +1,41 @@
+% engines: lualatex
+% expect-warnings: 12
+% expect-errors: 0
+%
+% The coordinate syntax pushed to its limits. White stones with a sequence show
+% the points and their order; black stones show only the points.
+% With --kernel expl3, the expl3 kernel must give the same points in the same order.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\newcommand\Path[2][7]{\begin{goban}[#1, scale = 0.45]\stones[w]{#2}\marks[sequence]{#2}\end{goban}\hspace{2pt}}
+\newcommand\Set[2][7]{\begin{goban}[#1, scale = 0.45]\stones[b]{#2}\end{goban}\hspace{2pt}}
+\pagestyle{empty}
+\begin{document}
+
+\case{Groups: *;* (empty) / ;* (empty) / ;;* (full) / *;*;* (full) / *;A1;;A1 (all but A1: the third group is empty and the fourth subtracts) / nothing / ,,, / spaces around A1 / ; alone}
+\Set{*;*}\Set{;*}\Set{;;*}\Set{*;*;*}\Set{*;A1;;A1}\Set{}\Set{,,,}\Set{ , A1 , }\Set{;}
+
+\case{Rectangles: A1:A1 and A1 r A1 (one point) / G7:A1 and A1:G7 (full) / A1 r G7 (border) / A1 r B2 / A1 r A7 (column A) / a grid minus its inside}
+\Set{A1:A1}\Set{A1 r A1}\Set{G7:A1}\Set{A1:G7}\Set{A1 r G7}\Set{A1 r B2}\Set{A1 r A7}\Set{[A:G][1:7]; [B:F][2:6]}
+
+\case{Order: G7:1 down / A:G4 right / G:A4 left / -| that does not turn (A7, G1, A1) / a closed loop / a zigzag of lines}
+\Path{G7:1}\Path{A:G4}\Path{G:A4}\Path{A1 -| A7}\Path{A1 -| G1}\Path{A1 -| A1}\Path{A1 |- G7 -| A1}\Path{A1 -- G7 -- A7 -- G1}
+
+\case{Stairs of one point / one row / one column; a line and its reverse (each point once); brackets with a reversed range; reversed letters}
+\Path{D4 -|- D4}\Path{A1 -|- G2}\Path{A1 |-| B7}\Path{A1 -- G7, G7 -- A1}\Path{A[1:3,5,7:6]}\Path{[G:E,A]7}
+
+\case{19x19: the two long diagonals, the two long stairs, a line that goes nowhere, a zigzag of four lines}
+\Path[19]{A1 -- T19}\Path[19]{T1 -- A19}\Path[19]{A1 -|- T19}\Path[19]{A19 |-| T1}
+
+\Path[19]{K10 -- K10 -- K10}\Path[19]{A1 -- B19 -- C1 -- D19 -- E1}
+
+\case{19x19: everything minus the inside plus K10 / everything minus everything plus K10 / everything minus the edges plus what is there / four nested borders}
+\Set[19]{A1:T19; [B:S][2:18]; K10}\Set[19]{A1:T19; A1:T19; K10}\Set[19]{*; A, T, 1, 19; [C:R][3:17]}\Set[19]{A1 r T19, B2 r S18, C3 r R17, D4 r Q16}
+
+\case{A01 is A1 (no warning); A[] and []1 are empty (no warning); twelve warnings and empty boards: A0, A8, H1 (outside), A1:A, A1 -, A1 --, -- A1, A1 -|, [A1, A1], A1 r, A1:B2:C3}
+\Set{A01}\Set{A[]}\Set{[]1}
+\Set{A0}\Set{A8}\Set{H1}\Set{A1:A}\Set{A1 -}\Set{A1 --}\Set{-- A1}\Set{A1 -| }\Set{[A1}\Set{A1]}\Set{A1 r}\Set{A1:B2:C3}
+
+\end{document}

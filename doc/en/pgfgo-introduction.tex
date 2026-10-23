@@ -1,46 +1,71 @@
-\section{Introduction}
+\section{Overview}
 
 \subsection{Motivation}
 
-The following package offers a collection of macros designed to represent Go boards and positions, fully implemented in \pgfname. This project, although still under development, incorporates innovative features aimed at simplifying and streamlining the creation of Go-related diagrams:
+The following package offers a collection of macros designed to represent Go boards and positions. This project, although still under development\footnote{But, frankly, finished.}, incorporates features aimed at simplifying and streamlining the creation of Go diagrams:
 \begin{itemize}
-	\item Profile management for boards and players.
+	\item Reading games in SGF: a game on one board, series of diagrams as in books, animations with buttons, and problems with their solutions.
+	\item The rules of the game, with the Lua kernel: captures, ``N at M'' notes for kos, and the computation of territory and score.
+	\item Visual profiles for boards and players, which can use images: wood in the background, slate and shell stones.
+	\item Named boards, to follow a variation from a saved position or to show part of a board in the middle of a paragraph.
+	\item Marks, arrows and lines, and marks of your own.
+	\item A grid to lay out diagrams of the same size.
+	\item The texts of the package translated into several languages, and border coordinates in the Western, Japanese or Chinese style.
 	\item Loading multiple coordinates simultaneously using a syntax that some might find familiar.
 \end{itemize}
 
-The development of \pgfgoname\ stems from frustration with not finding packages that met my needs. The packages I explored allow for the representation of black-and-white boards, suitable for printing, but impractical when combined with technologies like |beamer| or in documents where a color presentation is desired.
+The development of \pgfgoname\ stems from my frustration in 2021 with not finding packages that met my needs. The packages I explored allow for the representation of black-and-white boards, suitable for printing, but impractical when combined with technologies like |beamer| or in documents where a color presentation is desired.
 
-Initially, \pgfgoname\ was intended to be limited to these tasks; however, I now envision it more as an interface for managing styles and states, avoiding excessive use of direct formatting. This will be reflected primarily in the structure of the \emph{keys} tree.
+Initially, \pgfgoname\ was intended to be limited to these tasks; however, it has evolved a lot since it was published almost two years ago. I used to see it more as an interface for managing styles and states, avoiding excessive use of direct formatting\footnote{This is reflected mainly in the structure of the \emph{keys} tree.}. Now, with the Lua kernel, I see it as a complete suite.
 
-Regarding the name, although the macros are implemented in \pgfname\ and L3, the board is built on |\tikzpicture| so that users familiar with this environment can take advantage of its macros.
+Regarding the name: the drawing is written on the basic layer of \pgfname, and the computations (coordinates, moves, captures, territory, reading SGF) are done by a \emph{kernel} written in L3 or in Lua (p.~\pageref{subsec:kernel}). The |goban| environment is, all the same, a |tikzpicture|, so that users familiar with \tikzname\ can use its macros on the board (p.~\pageref{sec:tablero}).
 
-\subsection{What’s New}
+In this version, I used LLMs to translate into English the documentation I wrote in Spanish. This let me focus more on the language I handle best. They were also used to support other languages in the texts of the package (such as the captions).
 
+\subsection{First steps}
+\label{subsec:primerospasos}
+
+\pgfgoname\ is loaded like any other package. I recommend (strongly) compiling with Lua\LaTeX: with the other engines the package works, but it cannot read SGF files, remove captured stones or find the territory by itself (p.~\pageref{subsec:kernel}). Obviously, if your intention is to create boards and set up positions for teaching, these features may not be that necessary.
+
+\begin{codeexample}[code only]
+	\documentclass{article}
+	\usepackage{pgf-go}
+
+	\begin{document}
+		\begin{goban}
+			\stones[b]{C3, D4}
+			\stones[w]{E5}
+		\end{goban}
+	\end{document}
+\end{codeexample}
+
+The package can be loaded with two options: |kernel|, which chooses the kernel (p.~\pageref{subsec:kernel}), and |lang|, the language of the texts it writes (p.~\pageref{subsec:idiomas}). Everything else is set with |\pgfgoset| (p.~\pageref{sec:configuracion}).
+
+\subsection{How to read this manual}
+\label{subsec:guia}
+
+The manual has three parts: this introduction; the tutorials (part~\ref{part:tutoriales}), in which \karu\ prepares an article, a problem book and some lessons, and learns the package along the way; and the reference (part~\ref{part:referencia}), with every command and every \emph{key}, ordered by object. At the end, the catalog shows the profiles that come with the package.
+
+My recommendation would be to go through the tutorials first, in one go, to get an overall picture of everything. Then it is highly recommended to read the reference to see exactly everything that can be configured.
+
+For something specific:
 \begin{itemize}
-	\item \version:
-	\begin{itemize}
-			\item The computations (coordinates, move numbers, memory, etc.) have been separated from the drawing. They are done by a \emph{kernel}, chosen with the package option |kernel| (p.~\pageref{subsec:kernel}). Besides the kernel written in L3, a kernel written in Lua has been added, which is the default with Lua\LaTeX.
-			\item With the Lua kernel, captures (|captures|, p.~\pageref{subsec:captures}) and SGF games (|\sgf|, p.~\pageref{subsec:sgf}) have been added. With the |animate| package, |\sgfanimation| steps through a game with buttons.
-			\item "N at M" notes have been added for numbered moves on points already played (|notes| and |\pgfgomovenotes|, p.~\pageref{subsec:notes}).
-			\item SGF: variations (|variation|), the marks of the file (|marks|), the game information (|\sgfinfo|), numbering with |MN| and |restart|, and the board size taken from the file (|sgf size|).
-			\item SGF: collections of games (|game|), the view (|VW|, |sgf view|), figures (|FG|) in |\sgfdiagrams|, variations as letters (|variations|), |PL| and Latin-1 files.
-			\item SGF: node names and annotations (|TE|, |BM|, |GB|, etc.) are written with the comments. |\sgfcomment| writes the comment of a move, and |\sgfdiagrams| can write the comments below each diagram (|comments|).
-			\item Arrows and lines (|\arrow| and |\line|, p.~\pageref{subsec:arrows}) and the |dim| mark have been added. |\sgf| also draws |AR|, |LN|, |SL| and |DD|.
-			\item The board draws the star points (|hoshi|, p.~\pageref{subsec:hoshi}).
-			\item |\territory|, which marks the territory (with a polygon, or by itself with |auto| and the Lua kernel), and |\pgfgoscore|, which counts the points, have been added.
-			\item |\sgfanimation| builds the animation by layers (|layers|): every stone is drawn only once, and the PDF of a long game is much smaller.
-			\item With |captured marks = remove|, the marks on a captured stone go with it.
-			\item |\pgfgoprisoners|, which counts the prisoners of each player, and |\sgfdiagrams|, which draws a game as a series of diagrams, as books do, have been added.
-			\item |\sgfproblem|, which draws a problem (tsumego): the statement and one diagram for each variation of the solution, with its comments, has been added.
-			\item SGF: the numbering that |PM| asks for (|numbers| and |restart = auto|), and the view (|VW|) when it changes during the game (|sgf view move|; |\sgfdiagrams| and |\sgfanimation| use it by themselves). |\sgfdiagrams| writes the result and the score below the last diagram (|result|).
-			\item The coordinates on the border can be letters, numbers or kanji on each axis, counted from either side (|columns|, |rows|, |style = japanese|, etc.).
-			\item SGF: files in GBK, Big5, Shift\_JIS, EUC-JP and EUC-KR are read (|CA| or |sgf charset|).
-	\end{itemize}
-	\item 0.2025.10.13: Bug fixes. Each |goban| starts at move 1 with Black, |\mark| and |\marks| only exist inside |goban|, and what falls outside a partial board is no longer drawn. The full list is in the file |CHANGELOG.md|.
-	\item 0.2025.03.10:
-	\begin{itemize}
-			\item The \emph{keys} |inner| and |outer| have been added for the \emph{rounded corner} of the board.
-			\item Three new coordinate operators have been added: |*| for all intersections, |L| for vertical lines, and |N| for horizontal lines.
-	\end{itemize}
-	\item 0.2025.03.07: First release.
+	\item \textbf{Drawing a game saved in SGF}: the tutorial on p.~\pageref{tut:primera} and, for the whole game in diagrams, the one on p.~\pageref{tut:partida}. The reference is on p.~\pageref{subsec:sgf}.
+	\item \textbf{Drawing a position by hand}: the tutorial on p.~\pageref{tut:posicion}, and the stones on p.~\pageref{sec:piedras}. To write fewer coordinates (rows, rectangles, paths), the tutorial on p.~\pageref{tut:abreviar} and the complete syntax on p.~\pageref{subsec:sintaxis-de-coordenadas}.
+	\item \textbf{Numbering moves}: the tutorial on p.~\pageref{tut:movimientos}, and |\moves| on p.~\pageref{subsec:movimientos}.
+	\item \textbf{Showing only part of the board or marking points}: the tutorial on p.~\pageref{tut:parcial}; |partial| on p.~\pageref{subsec:parcial}, and the marks on p.~\pageref{sec:marcas}.
+	\item \textbf{Arrows, lines and letters}: the tutorial on p.~\pageref{tut:pelea}, and the reference on p.~\pageref{subsec:flechas}.
+	\item \textbf{Showing a stone or part of the board inside the text}: the end of the tutorial on p.~\pageref{tut:pelea}, and |\pgfgoview| on p.~\pageref{subsec:vistas}. For a view before its board, or of a board from another document, pp.~\pageref{subsec:vistas-antes} and~\pageref{subsec:exportar}.
+	\item \textbf{Captures, kos and ``N at M'' notes}: the tutorial on p.~\pageref{tut:ko}, and the reference on p.~\pageref{sec:juego}.
+	\item \textbf{Marking the territory and counting the points}: the tutorial on p.~\pageref{tut:territorio}, and |\territory| and |\pgfgoscore| on p.~\pageref{subsec:territorio}.
+	\item \textbf{Saving a board and going on from it, for example to show variations}: the tutorial on p.~\pageref{tut:variantes}, and |name| and |resume| on p.~\pageref{subsec:recordar}.
+	\item \textbf{Josekis from a dictionary in SGF}: the tutorial on p.~\pageref{tut:josekis}, and |variation| and |variations| on p.~\pageref{subsec:sgf}.
+	\item \textbf{Problems (tsumego) with their solutions}: the tutorial on p.~\pageref{tut:problemas}, and |\sgfproblem| on p.~\pageref{subsec:sgfproblemas}.
+	\item \textbf{Laying out several diagrams in a grid}: the tutorials on pp.~\pageref{tut:partida} and~\pageref{tut:problemas}, and |layout| and |pgfgolayout| on p.~\pageref{subsec:disposicion}.
+	\item \textbf{Changing the style of every board}: the end of the tutorial on p.~\pageref{tut:posicion} and the catalog (p.~\pageref{sec:catalogo}). To change a detail, |\pgfgoset| (p.~\pageref{sec:configuracion}) and the \emph{keys} of each object; to save a style of your own with a name, the profiles (p.~\pageref{subsec:perfiles}).
+	\item \textbf{Using images on the board and on the stones}: the tutorial on p.~\pageref{tut:madera}; the background and the grid on p.~\pageref{sec:tablero}, and the stones on p.~\pageref{subsec:piedrasimagen}.
+	\item \textbf{Slides and animations}: the tutorial on p.~\pageref{tut:diapositivas}, and |\sgfanimation| on p.~\pageref{subsec:sgfanimacion}.
+	\item \textbf{Writing in another language}: the tutorial on p.~\pageref{tut:idiomas}, and the reference on p.~\pageref{subsec:idiomas}.
 \end{itemize}
+
+A general rule: the \emph{keys} that turn something on or off (the grid, the background, the shadows, \ldots) are turned on alone or with |true|, turned off with |false|, and giving only options does not turn them on (p.~\pageref{subsec:prender}).

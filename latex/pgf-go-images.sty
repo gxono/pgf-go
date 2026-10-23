@@ -1,4 +1,4 @@
-\ProvidesFile{pgf-go-images.sty}[2026/10/13 v0.2026.10.13 pgf-go: images]
+\ProvidesFile{pgf-go-images.sty}[2026/10/23 v0.2026.10.23 pgf-go: images]
 \ExplSyntaxOn
 
 %IMAGENES (PNG, JPG O PDF) DE LAS PIEDRAS, EL FONDO, LA CUADRICULA, LOS HOSHI Y LAS MARCAS.
@@ -77,13 +77,13 @@
 	\dim_set:Nn \l_pgfgo_image_height_dim {\box_ht:N \l__pgfgo_image_box + \box_dp:N \l__pgfgo_image_box}
 }
 
-%LAS IMAGENES DE LOS PERFILES (pgfgo-board.jpg, ...) ESTAN EN LA CARPETA img, AL LADO DE LA CARPETA DE
-%pgf-go.sty (POR EJ. \usepackage{../../latex/pgf-go}). UN ARCHIVO QUE NO SE ENCUENTRA (NI EN LA CARPETA DEL
-%DOCUMENTO NI EN EL PATH DE TEX) SE BUSCA AHI; SI TAMPOCO ESTA, QUEDA COMO ESTA (\includegraphics LO BUSCA
-%EN \graphicspath). INSTALADO, \c__pgfgo_path_tl ESTA VACIO Y LAS IMAGENES SE ENCUENTRAN EN EL PATH DE TEX.
-%EN img SE PRUEBA EL NOMBRE TAL CUAL Y CON LAS EXTENSIONES DE \c__pgfgo_image_extensions_clist (COMO HACE
+%LAS IMAGENES DE LOS PERFILES (pgfgo-board.jpg, ...) ESTAN EN LA CARPETA DE pgf-go.sty (POR EJ.
+%\usepackage{../../latex/pgf-go}). UN ARCHIVO QUE NO SE ENCUENTRA (NI EN LA CARPETA DEL DOCUMENTO NI EN EL
+%PATH DE TEX) SE BUSCA AHI; SI TAMPOCO ESTA, QUEDA COMO ESTA (\includegraphics LO BUSCA EN \graphicspath).
+%INSTALADO, \c__pgfgo_path_tl ESTA VACIO Y LAS IMAGENES SE ENCUENTRAN EN EL PATH DE TEX. EN ESA CARPETA SE
+%PRUEBA EL NOMBRE TAL CUAL Y CON LAS EXTENSIONES DE \c__pgfgo_image_extensions_clist (COMO HACE
 %\includegraphics CON UN NOMBRE SIN EXTENSION).
-\tl_const:Ne \c__pgfgo_image_dir_tl {\tl_if_empty:NF \c__pgfgo_path_tl {\c__pgfgo_path_tl /../img/}}
+\tl_const:Ne \c__pgfgo_image_dir_tl {\tl_if_empty:NF \c__pgfgo_path_tl {\c__pgfgo_path_tl /}}
 \clist_const:Nn \c__pgfgo_image_extensions_clist {{}, .pdf, .png, .jpg, .jpeg}
 \tl_new:N \l__pgfgo_image_path_tl
 \cs_new_protected:Npn \__pgfgo_image_locate:n #1 {

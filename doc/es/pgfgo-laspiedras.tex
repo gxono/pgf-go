@@ -355,7 +355,8 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 			\stone[w]{A3}
 		\end{goban}
 
-		\pgfgoset{players = {white = {stone = {shadow = {offset = 0.125cm, opacity = 0.1}}}}}
+		\pgfgoset{players = {white = {stone = {
+			shadow = {offset = 0.125cm, opacity = 0.1}}}}}
 
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -370,7 +371,8 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	\begin{codeexample}[width=4cm]
 		\pgfgoset{profile = pgfgosmooth}
 		\pgfgoset{goban = {partial = A1:C3}}
-		\pgfgoset{players = {white = {stone = {shadow = {color = blue, offset = 0.1cm}}}}}
+		\pgfgoset{players = {white = {stone = {
+			shadow = {color = blue, offset = 0.1cm}}}}}
 
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -430,7 +432,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 		\pgfgoset{goban = {partial = A1:C3, scale = 2}}
 		\pgfgoset{stone = {shadow = {true, angle = -45,
 			offset = 2pt, color = blue,
-			image = {file = star.pdf, width = 16pt,
+			image = {file = pgfgo-star.pdf, width = 16pt,
 				rotate = 18, silhouette}}}}
 
 		\begin{goban}
@@ -542,7 +544,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
 			\stones[w, image = {file = pgfgo-yunzi-white-1.png, rotate = random},
-				shine = {true, image = {file = shine.png}}]{B2, C2, D2, B3, C3, D3}
+				shine = {true, image = {file = pgfgo-shine.png}}]{B2, C2, D2, B3, C3, D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -561,7 +563,8 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
 			\stones[w, image = {file = pgfgo-yunzi-white-1.png},
-				shine = {true, image = {file = shine.png, width = 0.3cm, rotate = 90}}]{B2, C2, D2, B3, C3, D3}
+				shine = {true, image = {file = pgfgo-shine.png, width = 0.3cm,
+					rotate = 90}}]{B2:D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -572,7 +575,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	\begin{codeexample}[width=4cm]
 		\pgfgoset{goban = {partial = A1:C3, scale = 2}}
 		\pgfgoset{players = {black = {stone = {shine = {true,
-			color = red, image = {file = shine.png, silhouette}}}}}}
+			color = red, image = {file = pgfgo-shine.png, silhouette}}}}}}
 
 		\begin{goban}
 			\stones[b]{B1,C2}
@@ -589,18 +592,25 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 \label{subsec:piedrasimagen}\begin{key}{/pgfgo/stone/image = \meta{options}}
 	Dibuja la piedra con una imagen (PNG, JPG o PDF) en lugar del círculo: no se dibujan el relleno ni el borde, y la imagen no tiene por qué ser redonda. Si el brillo (|shine|) está prendido, se dibuja encima de la imagen. La sombra (|shadow|) se dibuja con la forma de la imagen; para eso la imagen tiene que tener transparencia (un PNG con canal alfa o un PDF): la sombra de un JPG es un rectángulo. Un prisionero con imagen se ve translúcido, como cualquier prisionero.
 
-	Los archivos se buscan como con |\includegraphics| (por ejemplo, en las carpetas de |\graphicspath|) y, si no están, entre las imágenes que trae \pgfgoname, en su carpeta |img| (las de los perfiles |shell| y |yunzi|, pág.~\pageref{subsec:perfilshell}). Cada archivo, con cada tamaño, se guarda una sola vez en el PDF, por más piedras que lo usen (pág.~\pageref{subsubsec:imagenespdf}). La sombra con la forma de la imagen necesita pdf\LaTeX\ o Lua\LaTeX\ (con salida PDF); con otros motores la piedra se dibuja sin sombra y con un aviso.
+	Los archivos se buscan como con |\includegraphics| (por ejemplo, en las carpetas de |\graphicspath|) y, si no están, entre las imágenes que trae \pgfgoname, junto a |pgf-go.sty| (las de los perfiles |shell|, |yunzi| y |baduktv|, pág.~\pageref{subsec:perfilshell}). Cada archivo, con cada tamaño, se guarda una sola vez en el PDF, por más piedras que lo usen (pág.~\pageref{subsubsec:imagenespdf}). La sombra con la forma de la imagen necesita pdf\LaTeX\ o Lua\LaTeX\ (con salida PDF); con otros motores la piedra se dibuja sin sombra y con un aviso.
 
 	Un nombre de archivo con coma va entre llaves dobles, |file = {{a,b.png}}|; con llaves simples, la coma separa dos archivos. Como con |\includegraphics|, el nombre no puede tener |&|, |#|, |%|, |$|, |{| ni |}|, ni dos espacios seguidos.
 
-	Las imágenes SVG no se pueden usar directamente: hay que convertirlas antes a PDF, por ejemplo con |inkscape --export-type=pdf piedra.svg| o con |rsvg-convert -f pdf -o piedra.pdf piedra.svg|. Lo mismo vale para el fondo, la cuadrícula, los puntos de estrella y las marcas.
+	Las imágenes SVG no se pueden usar directamente: hay que convertirlas antes a PDF, por ejemplo con Inkscape o con rsvg-convert. Lo mismo vale para el fondo, la cuadrícula, los puntos de estrella y las marcas.
+
+	\begin{codeexample}[code only]
+		inkscape --export-type=pdf piedra.svg
+		rsvg-convert -f pdf -o piedra.pdf piedra.svg
+	\end{codeexample}
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
 
 		\begin{goban}
-			\stones[b, image = {file = pgfgo-yunzi-black.png}, shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
-			\stone[w, image = {file = pgfgo-yunzi-white-1.png}, shadow = {true, angle = -45, offset = 1.5pt}]{B4}
+			\stones[b, image = {file = pgfgo-yunzi-black.png},
+				shadow = {true, angle = -45, offset = 1.5pt}]{C2,D3}
+			\stone[w, image = {file = pgfgo-yunzi-white-1.png},
+				shadow = {true, angle = -45, offset = 1.5pt}]{B4}
 		\end{goban}
 	\end{codeexample}
 

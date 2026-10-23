@@ -55,7 +55,7 @@ not affect the manuals, create them locally with
 
 - `docs/keys` (`check_docs.py`): every key and command defined in
   `latex/*.sty` must be documented in the manuals listed in `MANUALS` in
-  `check_docs.py` (for now only the Spanish one), and every key and command
+  `check_docs.py` (the Spanish and the English one), and every key and command
   documented in a manual must exist. Keys that are not documented on purpose
   are listed in `UNDOCUMENTED` in `check_docs.py`. It can also be run alone:
   `python tests/check_docs.py`. It reads the keys written in `\keys_define`
@@ -81,12 +81,17 @@ not affect the manuals, create them locally with
   - `kernel-fallback.tex` checks that `kernel = lua` falls back to `expl3`
     with a warning under pdfLaTeX, and that `captures` and `\sgf`, which need
     the Lua kernel, raise an error.
+- `extreme-*.tex` push each area to its limits: boards of one line and of
+  25x25, every corner of the coordinate syntax, groups of 360 stones,
+  territory on degenerate polygons, a chain of 60 `resume`, and SGF files
+  (in `cases/extreme/`) that are empty, deeply nested, 1200 moves long, 52x52,
+  or full of TeX special characters.
 - `captures.tex` and `sgf.tex` (with `game.sgf`) render captures and SGF
   games. They use `kernel = lua`, so they only run with LuaLaTeX.
 - `doc/examples/example-*.tex`: the examples shipped with the package. They
   can use the `% passes:` header line.
-- With `--manuals`: the manuals in `MANUALS` (for now only
-  `doc/es/pgfgo-es.tex`).
+- With `--manuals`: the manuals in `MANUALS` (`doc/es/pgfgo-es.tex` and
+  `doc/en/pgfgo-en.tex`).
 
 ## Writing a test document
 
@@ -107,7 +112,7 @@ configure the test:
 Fonts differ slightly between engines, so each engine has its own reference
 images: those of the first engine are in `tests/reference/cases/<name>/`, and
 those of the others are in a subfolder named after the engine.
-With `installed: yes`, the files of `latex/` and the images `img/pgfgo-*` are
+With `installed: yes`, the files of `latex/` (with the images of the profiles) are
 copied to one folder that goes first in `TEXINPUTS`, as in an installation. Then run
 `python tests/run_tests.py --update <name>`, check the images in
 `tests/_build/cases/<name>/<engine>/` and commit the references.

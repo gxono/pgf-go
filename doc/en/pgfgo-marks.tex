@@ -1,30 +1,32 @@
-\section{Marks}
-\label{sec:marks}
+\section{Marks, arrows and lines}
+\label{sec:marcas}
 
-Marks are graphical elements placed at the intersections of the board to highlight specific positions, indicate points of interest, or number sequences without the need to add stones. \pgfgoname\ offers versatile commands and options to customize these marks, ranging from predefined shapes to custom labels.
+Marks go on an intersection, with or without a stone: shapes (circle, triangle, cross, \ldots), numbers in sequence or any text.
 
 \begin{command}{\mark\opt{\oarg{options}}\marg{intersection}}
-	
-	Draws an individual mark at the specified intersection (e.g., "C3"). Options allow defining its shape, color, and other attributes.
+
+	Draws a mark on the intersection. The options choose its shape and its style.
 \end{command}
 
 \begin{command}{\marks\opt{\oarg{options}}\marg{intersection \opt{, intersection, ...}}}
-	
-	Similar to |\mark|, but applies the same mark to multiple intersections using the coordinate syntax.
+
+	Like |\mark|, with several intersections (p.~\pageref{subsec:sintaxis-de-coordenadas}).
 \end{command}
 
+|\mark| and |\marks| are \TeX\ primitives. So as not to override them, the |\mark| and |\marks| macros of \pgfgoname\ only exist inside the |goban| environment. Outside it they are still the primitives, so page marks and headers are not affected.
+
 \begin{key}{/pgfgo/mark = \meta{options} (default cross)}
-	
-	Defines the type of mark to be placed, with a cross ("cross") as the default value if no other option is specified.
-	
+
+	The shape of the mark. Without a shape, it is a cross (|cross|).
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -34,17 +36,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/circle}
-	
-	Places a hollow circle as a mark.
-	
+
+	A circle.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -54,17 +56,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/triangle}
-	
-	Draws a hollow triangle.
-	
+
+	A triangle.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -74,17 +76,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/square}
-	
-	Places a hollow square.
-	
+
+	A square.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -94,17 +96,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/cross}
-	
-	Draws a cross.
-	
+
+	A cross.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -114,17 +116,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/filled square}
-	
-	Places a filled square.
-	
+
+	A filled square.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -134,17 +136,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/filled circle}
-	
-	Draws a filled circle.
-	
+
+	A filled circle.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -154,17 +156,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/t-circle}
-	
-	Places a small circle with a thicker border, specifically designed for marking territories.
-	
+
+	A small circle, with the fill of the stones of the player and the border of the grid. It is the mark of Black's territory.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -174,17 +176,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/t-square}
-	
-	Draws a small square with a thick border, similar to "t-circle," used to mark territories.
-	
+
+	Like |t-circle|, but square. It is the mark of White's territory and of the neutral points.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -194,17 +196,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/hatched lines}
-	
-	Places a pattern of crossed (hatched) lines.
-	
+
+	A hatching of crossed lines.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -214,14 +216,14 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/sequence=\meta{options} (default from = 1)}
-	Allows numbering a series of marks in order.
+	Numbers a series of marks in order. The font, the size and the color of the numbers are chosen with |label| (|label = {font = \bfseries, color = red}|), as the text of |custom|. The marks are numbered in the order of the coordinates (p.~\pageref{subsec:orden-coordenadas}); if they have no fixed order, like a rectangle, |sequence| warns.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 			\marks[sequence]{C3,B3,C4}
-			\marks[sequence = {format = Alph}]{B2,D2,D4}
+			\marks[sequence = {format = Alph}, label = {font = \bfseries}]{B2,D2,D4}
 		\end{goban}
 	\end{codeexample}
 \end{key}
@@ -235,21 +237,21 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/sequence/format = \meta{format}}
-	Turns the sequence on and chooses the number format. It is the same as |sequence, label = {format = ...}| (see |label/format|).
+	Turns the sequence on and chooses the format of the numbers. It is the same as |sequence| with |label = {format = ...}| (see |label/format|).
 \end{key}
 
 \begin{key}{/pgfgo/mark/sequence/from=\meta{number}}
-	
-	Sets the starting number of a numbered mark sequence, allowing continuation from a specific point instead of 1.
-	
+
+	Number of the first mark.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -258,8 +260,11 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
+
+
+
 \begin{key}{/pgfgo/mark/dim}
-	Dims the point: it covers it with the color of the background of the board, translucent, over the stone and the grid. It is what |\sgf| draws for the |DD| property.
+	Dims the point: covers it with the color of the background of the board, translucent, over the stone and the grid. It is what |\sgf| draws for the property |DD|.
 
 	\begin{codeexample}[]
 		\begin{goban}[5]
@@ -270,23 +275,23 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/custom=\meta{token list}}
-	
-	Allows defining a custom mark using text or symbols (e.g., "!" or "?") and even images.
-	
+
+	A mark with any content: a text, a symbol (``!'', ``?'') or even a drawing.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 			\mark[custom = {!}]{C3}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -295,12 +300,13 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
-\label{subsec:custommarks}\begin{command}{\pgfgodefinemark\opt{\oarg{options}}\marg{name}\marg{pgf code}}
-	Defines a new mark, called \meta{name}, which is used like the others: in |\marks|, in the |mark| option of stones and players, and in |\territory|. It is drawn on the same layers as the other marks; on an empty point, it covers the grid with a circle of the color of the background. A mark with the name of another one replaces it.
 
-	The \meta{pgf code} is drawn with the origin on the point. Coordinates without units (those of |\pgfpointxy| and of Ti\emph{k}Z) are measured in stone radii: |(0,0) circle (1)| has the size of the stone. The line color is |mark/line/color| of the player; the fill color, |mark/fill/color|; and the line width, |mark/line/width|. These two colors are also called |pgfgomarkline| and |pgfgomarkfill|. With |mark/scale|, the mark changes its size like the others.
+\label{subsec:marcaspropias}\begin{command}{\pgfgodefinemark\opt{\oarg{options}}\marg{name}\marg{pgf code}}
+	Defines a new mark, called \meta{name}, which is used like the others: in |\marks|, in the option |mark| of the stones and of the players, and in |\territory|. It is drawn in the same layers as the other marks; on an empty point, it covers the grid with a circle of the color of the background. A mark with the name of another one replaces it.
 
-	With |\pgfgodefinemark[image = {file = |\meta{file}|, width = |\meta{dimension}|}]|\marg{name}, without \meta{pgf code}, the mark is an image: see |image| below.
+	The \meta{pgf code} is drawn with the origin at the point. Coordinates without a unit (those of |\pgfpointxy| and those of Ti\emph{k}Z) are measured in stone radii: |(0,0) circle (1)| has the size of the stone. The color of the lines is |mark/line/color| of the player; the fill color, |mark/fill/color|; and the width of the lines, |mark/line/width|. Those two colors are also called |pgfgomarkline| and |pgfgomarkfill|. With |mark/scale|, the mark changes size like the others.
+
+	With |\pgfgodefinemark[image = {file = |\meta{file list}|, width = |\meta{dimension}|}]|\marg{name}, without \meta{pgf code}, the mark is an image (or one of several): see |image| below.
 
 	\begin{codeexample}[]
 		\pgfgodefinemark{diamond}{
@@ -310,14 +316,14 @@ Marks are graphical elements placed at the intersections of the board to highlig
 			\pgfpathlineto{\pgfpointxy{-0.7}{0}}
 			\pgfpathclose
 			\pgfusepath{fill, stroke}}
-		\pgfgodefinemark{slash}{\draw (-0.5,-0.5) -- (0.5,0.5);}
-		\pgfgodefinemark[image = {file = star.pdf}]{star}
+		\pgfgodefinemark{bar}{\draw (-0.5,-0.5) -- (0.5,0.5);}
+		\pgfgodefinemark[image = {file = pgfgo-star.pdf}]{star}
 
 		\begin{goban}[5, partial = B2:D4]
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 			\marks[diamond]{C2, B4, B2}
-			\marks[slash]{D3, C3}
+			\marks[bar]{D3, C3}
 			\marks[star]{D4}
 		\end{goban}
 	\end{codeexample}
@@ -327,29 +333,37 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	The image (PNG, JPG or PDF) of a mark defined with |\pgfgodefinemark|. It is drawn centered on the point; the colors of the marks do not apply.
 \end{key}
 
-\begin{key}{/pgfgo/define mark/image/file = \meta{file}}
-	The file of the image.
+\begin{key}{/pgfgo/define mark/image/file = \meta{file list}}
+	The file of the image, or several separated by commas. With several, each point uses one of them, chosen at random as in |stone/image/file|: the same point always gets the same file.
+
+	\begin{codeexample}[]
+		\pgfgodefinemark[image = {file = {pgfgo-shell-white-1.png, pgfgo-shell-white-3.png, pgfgo-shell-white-5.png}, width = 1em}]{shells}
+
+		\begin{goban}[5, partial = A1:E3]
+			\marks[shells]{A:E 1:3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/define mark/image/width = \meta{dimension} (initially 1.2 stone radii)}
-	The width of the image; the height keeps the proportions. Without this key, the mark has the size of the circle (|circle|), and changes with the radius of the stones.
+	The width of the image; the height keeps the proportion. Without this \emph{key}, the mark has the size of the circle (|circle|), and changes with the radius of the stones.
 
 	\begin{codeexample}[]
-		\pgfgodefinemark[image = {file = star.pdf}]{star}
-		\pgfgodefinemark[image = {file = star.pdf, width = 0.6em}]{starlet}
+		\pgfgodefinemark[image = {file = pgfgo-star.pdf}]{star}
+		\pgfgodefinemark[image = {file = pgfgo-star.pdf, width = 0.6em}]{small star}
 
 		\begin{goban}[5, partial = B2:D4]
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 			\marks[star]{C3, B4}
-			\marks[starlet]{B3, D3}
+			\marks[small star]{B3, D3}
 		\end{goban}
 	\end{codeexample}
 \end{key}
 
 
 \begin{key}{/pgfgo/mark/scale = \meta{float} (initially 1)}
-	The size of the mark compared with the usual one: the shapes, the images and the text.
+	The size of the mark with respect to the usual one: the shapes, the images and the text.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
@@ -362,20 +376,21 @@ Marks are graphical elements placed at the intersections of the board to highlig
 
 
 \begin{key}{/pgfgo/mark/line = \meta{options}}
-	Controls the outline of the mark.
+	Options of the stroke of the mark.
 \end{key}
 
+
 \begin{key}{/pgfgo/mark/line/color = \meta{color}}
-	Defines the outline color of the mark.
-	
+	Color of the stroke.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -384,19 +399,20 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
+
 \begin{key}{/pgfgo/mark/line/width = \meta{dimension}}
-	
-	Adjusts the thickness of the mark’s outline.
-	
+
+	Width of the stroke.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 			\mark[triangle]{C3}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -405,30 +421,34 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/mark/line/opacity = \meta{float} (initially 1)}
+	Opacity of the stroke.
+\end{key}
+
 \begin{key}{/pgfgo/mark/fill = \meta{options} (default true)}
-	Controls the fill of the filled marks (|filled square|, |filled circle| and |hatched lines|).
+	Fill of the filled marks (|filled square|, |filled circle| and |hatched lines|) and color |pgfgomarkfill| of your own marks (p.~\pageref{subsec:marcaspropias}).
 \end{key}
 
 \begin{key}{/pgfgo/mark/fill/true}
-	Filled marks are filled with |fill/color|. It is the initial value.
+	The filled marks are filled with |fill/color|. It is the initial value.
 \end{key}
 
 \begin{key}{/pgfgo/mark/fill/false}
-	Filled marks are not filled, so they are not seen.
+	The filled marks are not filled, so they are not seen.
 \end{key}
 
 \begin{key}{/pgfgo/mark/fill/color = \meta{color}}
-	
-	Sets the fill color of a mark (gray, initially).
-	
+
+	Color of the fill (initially, gray).
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -437,22 +457,40 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/mark/label = \meta{option}}
-	Controls the appearance of labels for marks that have them.
+\begin{key}{/pgfgo/mark/fill/opacity = \meta{float} (initially 1)}
+	Opacity of the fill.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {white = {mark = {
+			fill = {color = red, opacity = 0.5},
+			line = {opacity = 0.3}}}}}
+
+		\begin{goban}[3]
+			\stones[w]{A1}
+			\marks[w, filled square]{A1, B2}
+			\marks[w, triangle]{C3, A3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
+
+\begin{key}{/pgfgo/mark/label = \meta{option}}
+	Options of the text of the marks that have one (|sequence| and |custom|).
+\end{key}
+
+
 \begin{key}{/pgfgo/mark/label/color = \meta{color}}
-	
-	Controls the color of the text or symbol in custom marks (e.g., with |custom|).
-	
+
+	Color of the text.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -462,7 +500,7 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/label/font = \meta{font commands}}
-	Font of the labels of marks (|sequence| and |custom|).
+	Font of the labels of the marks (|sequence| and |custom|).
 
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -475,23 +513,40 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/mark/label/format=\meta{options} (initially arabic)}
-	
-	Controls the numbering style of enumeration labels (e.g., |sequence|), with options such as Arabic numerals, letters, or Roman numerals.
+\begin{key}{/pgfgo/mark/label/font size = \meta{dimension}}
+	Size of the text. If it is not set, it adjusts according to the number of characters.
+\end{key}
+
+\label{key:kanji}\begin{key}{/pgfgo/mark/label/format=\meta{options} (initially arabic)}
+
+	Format of the numbers of |sequence|: |arabic|, |alph|, |Alph|, |roman|, |Roman| or |kanji|.
+
+	Kanji need a font that has them, chosen with |label/font| (of the marks or of the moves). It has to be a \LaTeX\ family: with |fontspec|, |\newfontfamily\kanji{ipaexm.ttf}| and |font = \kanji|; without |fontspec|, with Lua\LaTeX, it can be declared as in this example (in the preamble). A \TeX\ |\font| does not work, because it does not change size.
+
+	\begin{codeexample}[width=4cm]
+		% In the preamble:
+		% \DeclareFontFamily{TU}{ipaex}{}
+		% \DeclareFontShape{TU}{ipaex}{m}{n}{<->file:ipaexm.ttf}{}
+		% \DeclareFontShape{TU}{ipaex}{bx}{n}{<->ssub*ipaex/m/n}{}
+		\begin{goban}[3, scale = 1.6]
+			\marks[sequence = {format = kanji, from = 9},
+				label = {font = \fontfamily{ipaex}\selectfont}]{A1, B2, C3}
+		\end{goban}
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/mark/label/format/arabic}
-	
-	Uses Arabic numerals for sequences.
-	
+
+	Arabic numbers. It is the initial value.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -501,17 +556,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/label/format/alph}
-	
-	Uses lowercase letters for the sequence.
-	
+
+	Lowercase letters.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -521,17 +576,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/label/format/Alph}
-	
-	Uses uppercase letters.
-	
+
+	Uppercase letters.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -541,17 +596,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/label/format/roman}
-	
-	Uses lowercase Roman numerals.
-	
+
+	Lowercase Roman numbers.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -561,17 +616,17 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/label/format/Roman}
-	
-	Uses uppercase Roman numerals.
-	
+
+	Uppercase Roman numbers.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -580,19 +635,25 @@ Marks are graphical elements placed at the intersections of the board to highlig
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/mark/label/format/kanji}
+	Numbers in kanji ({\pgfgokanji 一, 二, …, 十, 十一, …, 百}), like those of |goban/label/columns = kanji|.
+\end{key}
+
+
+
 \begin{key}{/pgfgo/mark/black}
-	
-	Applies the properties of the first player (black) to the mark.
-	
+
+	The mark belongs to the first player, with its style.
+
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
 			\mark[triangle]{C3}
 		\end{goban}
-		
+
 		\begin{goban}
 			\stones[b]{C2,D3}
 			\stone[w]{B4}
@@ -602,13 +663,13 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/white}
-	
-	Applies the properties of the second player (white) to the mark.
+
+	The mark belongs to the second player, with its style.
 \end{key}
 
 \begin{key}{/pgfgo/mark/neutral}
-	
-	Keeps the mark unassociated with any player.
+
+	The mark belongs to the neutral player.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, partial = B2:D4]
@@ -636,14 +697,14 @@ Marks are graphical elements placed at the intersections of the board to highlig
 \end{key}
 
 \begin{key}{/pgfgo/mark/forget}
-	|resume| does not bring this mark, even with |marks| (p.~\pageref{subsec:remember}).
+	|resume| does not bring this mark, even if |marks| is asked for (p.~\pageref{subsec:recordar}).
 \end{key}
 
 
-\subsection{Arrows and Lines}
-\label{subsec:arrows}
+\subsection{Arrows and lines}
+\label{subsec:flechas}
 
-Arrows and lines join two intersections. They are drawn above the stones, with a halo in the color of the background of the board that separates them from the stones and the grid. Like |\mark|, |\arrow| and |\line| only exist inside |goban|: outside, |\line| is still the \LaTeX\ command. |\sgf| draws the arrows (|AR|) and lines (|LN|) of the file.
+Arrows and lines join two intersections. They are drawn on top of the stones, with a halo of the color of the background of the board that separates them from the stones and the grid. Like |\mark|, |\arrow| and |\line| only exist inside |goban|: outside, |\line| is still the \LaTeX\ command. |\sgf| draws the arrows (|AR|) and the lines (|LN|) of the file.
 
 \begin{command}{\arrow\opt{\oarg{options}}\marg{from}\marg{to}}
 	Draws an arrow from one intersection to another.
@@ -691,11 +752,11 @@ Arrows and lines join two intersections. They are drawn above the stones, with a
 \end{key}
 
 \begin{key}{/pgfgo/arrow/dash=\meta{solid, dashed or dotted} (initially solid)}
-	The stroke: solid, dashed or dotted. The halo and the tip are always solid.
+	The stroke: solid, with dashes or with dots. The halo and the tip are always solid.
 \end{key}
 
 \begin{key}{/pgfgo/arrow/shorten=\meta{dimension} (initially 0pt)}
-	Shortens both ends, for example so that the arrow does not cover the stones.
+	Shortens both ends.
 
 	\begin{codeexample}[]
 		\begin{goban}[5]
@@ -708,7 +769,7 @@ Arrows and lines join two intersections. They are drawn above the stones, with a
 \end{key}
 
 \begin{key}{/pgfgo/arrow/bend=\meta{angle} (initially 0)}
-	Draws an arc instead of a straight line: the arrow leaves turned that angle to the left and arrives turned the same, like |bend left| in \tikzname. With a negative angle, it bends to the right.
+	Draws an arc instead of a straight line: the arrow leaves turned that angle to the left and arrives turned the same, like |bend left| of \tikzname. With a negative angle, it bends to the right.
 
 	\begin{codeexample}[]
 		\begin{goban}[5]
@@ -720,7 +781,7 @@ Arrows and lines join two intersections. They are drawn above the stones, with a
 \end{key}
 
 \begin{key}{/pgfgo/arrow/tip=\meta{arrow tip} (initially Stealth)}
-	The tip of the arrow, one of the tips of the |arrows.meta| library of \tikzname, like |Latex| or |Triangle|.
+	The tip of the arrow, one of those of the \tikzname\ library |arrows.meta|, such as |Latex| or |Triangle|.
 \end{key}
 
 \begin{key}{/pgfgo/arrow/tips=\meta{end or both} (initially end)}
@@ -748,7 +809,7 @@ Arrows and lines join two intersections. They are drawn above the stones, with a
 \end{stylekey}
 
 \begin{key}{/pgfgo/arrow/halo/color=\meta{color}}
-	Color of the halo. Without this \emph{key}, it is the color of the background of the board.
+	Color of the halo. Without this \emph{key}, it is that of the background of the board.
 \end{key}
 
 \begin{key}{/pgfgo/arrow/halo/width=\meta{dimension} (initially 0.8pt)}
@@ -765,7 +826,7 @@ Arrows and lines join two intersections. They are drawn above the stones, with a
 \end{key}
 
 \begin{key}{/pgfgo/arrow/forget}
-	|resume| does not bring this arrow, even with |marks|.
+	|resume| does not bring this arrow, even if |marks| is asked for.
 \end{key}
 
 Lines have the same options, except |tip|:
@@ -817,3 +878,21 @@ Lines have the same options, except |tip|:
 \begin{key}{/pgfgo/line/forget}
 	Like |/pgfgo/arrow/forget|.
 \end{key}
+
+\subsection{Drawing with Ti\emph{k}Z}
+\label{subsec:tikz}
+
+A |goban| is a Ti\emph{k}Z picture, so |\draw|, |\node| and the other Ti\emph{k}Z commands can be used inside it. The unit is the distance between two lines of the board, and |(1,1)| is the lower left corner. What is drawn this way goes on top of everything, |partial = auto| does not take it into account and it is not remembered: |resume| and the views do not bring it.
+
+\begin{command}{(go cs:\meta{intersection})}
+	The coordinate system |go| gives the intersection of the board written as in |\arrow| and |\line|: |(go cs:C3)| is C3. It can be outside the board, like |(go cs:C0)|, below column C. If the coordinate is not understood, it warns (|go-coordinate|) and uses the origin, |(0,0)|.
+
+	\begin{codeexample}[]
+		\begin{goban}[9]
+			\stones[b]{C3, D4}\stones[w]{E5, F4}
+			\draw[red, thick, rounded corners] (go cs:B2) rectangle (go cs:E5);
+			\draw[blue, ->, thick] (go cs:G7) to[bend right] (go cs:F4);
+			\node[fill = white, draw] at (go cs:H8) {here?};
+		\end{goban}
+	\end{codeexample}
+\end{command}

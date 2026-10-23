@@ -1,0 +1,264 @@
+\section{Players and profiles}
+\label{sec:jugadores}
+
+Each stone, move and mark belongs to one of three players: the first (|black|), the second (|white|) or the neutral one (|neutral|). Their look is not in each command but in the player: the \emph{keys} tree of each one gathers the options of its stones, its moves, its marks and its territory, which in the previous sections appear under |stone|, |move| and |mark|. Here are the players and, afterwards, the profiles.
+
+\subsection{Players}
+
+The options of the board are changed with |\pgfgoset{goban = {...}}|. Those of the players, with these \emph{keys}:
+
+\begin{key}{/pgfgo/players = \meta{players options}}
+	Options of the players: |neutral|, |black| and |white|. Players are not to be confused with profiles: a profile is loaded into the players, and then these \emph{keys} change them.
+\end{key}
+
+The options of the players can be set all together with the \emph{key} |all|, or separately. The changes made here do not affect the definition of the profiles. That is, if we load the profile |pgfgo| and change the black player, this does not affect the definition of |pgfgo-black|, but the options of the first player itself.
+
+\begin{key}{/pgfgo/players/all = \meta{all player options}}
+	Applies the options to the three players.
+\end{key}
+
+\begin{key}{/pgfgo/players/neutral = \meta{neutral player options}}
+	Options of the neutral player (the stones without a player).
+\end{key}
+
+\begin{key}{/pgfgo/players/black = \meta{first player options}}
+	Options of the first player.
+\end{key}
+
+\begin{key}{/pgfgo/players/white = \meta{second player options}}
+	Options of the second player.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgoset{players = {
+			all = {stone = {line = {color = red}}},
+			neutral = {stone = {fill = {color = yellow}}},
+			black = {stone = {fill = {color = blue!60!black}}}}}
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+			\stone{A3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+To avoid writing the whole path, there are four commands:
+
+\begin{command}{\pgfgosetplayer\marg{player}\marg{player options}}
+	It is the same as |\pgfgoset{players = {<player> = {<player options>}}}|.
+\end{command}
+
+\begin{command}{\pgfgosetallplayers\marg{player options}}
+	Applies the options to the three players. It is the same as |\pgfgoset{players = {all = {...}}}|.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgosetallplayers{stone = {radius = 0.3cm}}
+		\pgfgosetplayer{white}{stone = {fill = {color = orange}}}
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+			\stone{A3}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\begin{command}{\pgfgocopyplayer\marg{target player}\marg{source player}}
+	Copies the current options of |source player| into |target player|.
+
+	\begin{codeexample}[width=3cm]
+		\pgfgocopyplayer{neutral}{white}
+
+		\begin{goban}[partial = A1:C3]
+			\stone{B2} % Neutral, but with the look of White.
+			\stones[b]{A1,C3}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\begin{command}{\pgfgocopyplayers\marg{neutral source}\marg{black source}\marg{white source}}
+	Copies, in this order, |neutral source| into the neutral player, |black source| into the black one and |white source| into the white one (with |\pgfgocopyplayer|). Since the copies are made one after the other, it cannot swap players.
+
+	\begin{codeexample}[width=4cm]
+		\pgfgocopyplayers{neutral}{white}{black}
+		% It does not swap: both are white.
+
+		\begin{goban}[3]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{command}
+
+\label{subsec:jugadores}Each player has the same \emph{keys} tree. Each branch is documented with the object it applies to, without the player in the path: for the white player, |/pgfgo/stone/radius| is |/pgfgo/players/white/stone/radius|. The three branches below, although they mention |white|, hold for the three players.
+
+\begin{key}{/pgfgo/players/white/stone = \meta{stone options}}
+	Options of its stones and of its prisoners (p.~\pageref{sec:piedras}).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/move = \meta{move options}}
+	Options of its moves (p.~\pageref{subsec:movimientos}).
+\end{key}
+
+\begin{key}{/pgfgo/players/white/mark = \meta{mark options}}
+	The style of its marks (p.~\pageref{sec:marcas}). The shape (|triangle|, |custom|, \dots) is not part of the style: it goes in the options of each mark (as in |\marks[w, custom = {?}]{A3}|) or in |/pgfgo/mark|. Inside |\pgfgoset{players = ...}| it gives an error.
+\end{key}
+
+The fourth branch, |territory|, is the style of its territory (p.~\pageref{subsec:territorio}).
+
+
+\subsection{Profiles}
+\label{subsec:perfiles}
+
+Profiles are equivalent to \tikzname\ styles. In short, they save a configuration of board and stones with a name and call it whenever wanted.
+
+\begin{command}{\pgfgodefinegoban\opt{\oarg{options}}\marg{goban name}\marg{goban options}}
+	Gives a name to a group of |goban| options. It has two options.
+
+	\begin{key}{/pgfgo/profiles/goban/from = \meta{goban name}}
+		Defines the goban from a copy of another one.
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[from = gobanA]{gobanB}{...}
+		\end{codeexample}
+
+		A goban can copy itself to add options, although it is not the best alternative.
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[from = gobanB]{gobanB}{...}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/goban/append}
+		Adds options to a goban already defined.
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[append]{gobanB}{...}
+		\end{codeexample}
+		It is equivalent to:
+		\begin{codeexample}[code only]
+			\pgfgodefinegoban[from = gobanB]{gobanB}{...}
+		\end{codeexample}
+	\end{key}
+\end{command}
+
+\begin{command}{\pgfgodefineplayer\opt{\oarg{options}}\marg{player name}\marg{player options}}
+	The same, for a player. Its options are those of |\pgfgodefinegoban|.
+
+	\begin{key}{/pgfgo/profiles/player/from = \meta{player name}}
+		Defines the player from a copy of another one.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/player/append}
+		Extends the options of a player already defined. It is the same as |from = |\meta{player name} with its own name.
+	\end{key}
+\end{command}
+
+\begin{key}{/pgfgo/profile = \meta{name}}
+	Applies the profile |name|: the goban |name| and the players |name-neutral|, |name-black| and |name-white|. It is used in |\pgfgoset|, in the options of a |goban| and in those of a view (p.~\pageref{subsec:vistas}).
+
+	Before applying it, the board and the players go back to the initial style (that of the profile |default|): so a profile does not inherit what it does not define, and a shadow or an image set before is lost. What is not style stays as it was: the size, |partial|, |scale|, where the coordinates go and which they are, |hoshi/at|, the captures and the notes. What comes after the profile is added to it.
+
+	\begin{codeexample}[width=3cm]
+		\pgfgoset{stone = {shadow}}
+		\begin{goban}[3, profile = default]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+	\end{codeexample}
+
+	The goban |name| and the players |name-neutral|, |name-black| and |name-white| must exist. For example, |profile = pgfgo| works because there is a goban called |pgfgo|, and players called |pgfgo-neutral|, |pgfgo-black| and |pgfgo-white|.
+\end{key}
+
+\begin{key}{/pgfgo/goban profile = \meta{goban name}}
+	Applies only the goban |goban name|, after taking the board back to the initial style.
+\end{key}
+
+\begin{key}{/pgfgo/players profile = \meta{name}}
+	Applies only the players |name-neutral|, |name-black| and |name-white|, each one after going back to the initial style.
+
+	\begin{codeexample}[]
+		\begin{goban}[3, goban profile = pgfgo]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+
+		\begin{goban}[3, players profile = pgfgo]
+			\stones[b]{A1, B2}
+			\stones[w]{C3}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/players/black/profile = \meta{player name}}
+	Applies the player |player name| to one of the players (|neutral|, |black| or |white|), after taking it back to the initial style. With |all|, the same one to the three.
+	\begin{codeexample}[code only]
+		\pgfgoset{goban profile = pgfgo, players = {black = {profile = wain-black}}}
+	\end{codeexample}
+\end{key}
+
+\begin{codeexample}[width=3cm]
+	\pgfgodefinegoban{example}{background = {fill = {color = blue!05}}}
+	\pgfgodefineplayer[from = default-neutral]{example-neutral}
+	{stone = {
+			fill = {color = gray},
+			line = {color = magenta!20!black}}
+	}
+
+	\pgfgodefineplayer[from = example-neutral]{example-white}
+	{stone = {fill = {color = yellow}}}
+
+	\pgfgodefineplayer[from = example-neutral]{example-black}
+	{stone = {fill = {color = blue}}}
+
+	\pgfgoset{profile = example}
+
+	\begin{goban}[partial = A1:C3]
+		\moves[numbers = false]{A1:3}
+		\stones[b]{B1,B3,C2}
+		\stones[w]{C1,C3}
+		\stone{B2}
+	\end{goban}
+\end{codeexample}
+
+\begin{command}{\pgfgodefineprofile\opt{\oarg{options}}\marg{name}\marg{profile options}}
+	Defines at once a whole profile for |profile|: the goban |name| and the players |name-neutral|, |name-black| and |name-white|. It is the same as the example above, in a single command.
+
+	\begin{codeexample}[width=3cm]
+		\pgfgodefineprofile[from = default]{example2}{
+			goban = {background = {fill = {color = blue!05}}},
+			all = {stone = {line = {color = magenta!20!black}}},
+			white = {stone = {fill = {color = yellow}}},
+			black = {stone = {fill = {color = blue}}}}
+
+		\pgfgoset{profile = example2}
+
+		\begin{goban}[partial = A1:C3]
+			\moves[numbers = false]{A1:3}
+			\stones[b]{B1,B3,C2}
+			\stones[w]{C1,C3}
+			\stone{B2}
+		\end{goban}
+	\end{codeexample}
+
+	\begin{key}{/pgfgo/profiles/profile/goban = \meta{goban options}}
+		The options of the goban.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/all = \meta{player options}}
+		Options of the three players. They go before those of each one.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/neutral = \meta{player options}}
+		Options of the neutral player.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/black = \meta{player options}}
+		Options of the black player.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/white = \meta{player options}}
+		Options of the white player.
+	\end{key}
+
+	\begin{key}{/pgfgo/profiles/profile/from = \meta{profile name}}
+		Option of the command: each part starts with that of the profile \meta{profile name} (the goban \meta{profile name}, the player \meta{profile name}|-neutral|, etc.).
+	\end{key}
+\end{command}

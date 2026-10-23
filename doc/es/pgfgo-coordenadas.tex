@@ -109,7 +109,8 @@ Los segmentos son grupos de piedras verticales u horizontales explícitamente de
 	\end{goban}
 	
 	\begin{goban}
-		\stones[b]{B 2:4} % Los espacios funcionan entre elementos distintos.
+		% Los espacios funcionan entre elementos distintos.
+		\stones[b]{B 2:4}
 		\stones[w]{C:D 2}
 	\end{goban}
 \end{codeexample}
@@ -131,7 +132,8 @@ La sintaxis de segmentos permite crear rangos entre coordenadas para insertar pi
 
 \begin{codeexample}[width=6cm]
 	\begin{goban}[label = {at = all}]
-		\stones[fill = {color = red}]{A:E 7:8} % El espacio no es obligatorio.
+		% El espacio no es obligatorio.
+		\stones[fill = {color = red}]{A:E 7:8}
 		\stones[fill = {color = blue}]{I:G 9:2}
 		\stones[fill = {color = orange}]{A:B 2:4, F:D 1:3}
 	\end{goban}

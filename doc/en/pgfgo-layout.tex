@@ -1,0 +1,100 @@
+\section{Layout of the diagrams}
+\label{subsec:disposicion}
+
+Several boards can go in a grid: the |goban| environments and the diagrams of |\sgfdiagrams| and |\sgfproblem|, inside the |pgfgolayout| environment, or those of a single |\sgfdiagrams| or |\sgfproblem|, with its \emph{key} |layout|. Without a grid, the diagrams of those commands go in the paragraph, side by side, and move to the next line when they do not fit. With |columns|, they go in a grid of columns of the same width: each row is a separate line (the page can break between rows), the boards of a row are aligned at the top and an incomplete row leaves the last columns empty. With |fit|, the boards are also scaled to fill the width of their column.
+
+\begin{environment}{{pgfgolayout}\opt{\oarg{layout options}}}
+	Lays out in a grid the |goban| environments it contains, and the diagrams of the |\sgfdiagrams| and |\sgfproblem| it contains, in the order in which they appear. The options are those of |/pgfgo/layout|; the |layout| options of the commands inside are not used. There must be no text inside, only the boards and the commands. With |fit|, each |goban| is drawn several times to measure it: its content must have no effects outside the board (for example, counters that increase).
+
+	\begin{codeexample}[code only]
+		\begin{pgfgolayout}[columns = 4, fit]
+			\begin{goban}[5]\stones[b]{C3}\end{goban}
+			\begin{goban}[5]\stones[w]{C3}\end{goban}
+			\sgfdiagrams[step = 5]{game}
+		\end{pgfgolayout}
+	\end{codeexample}
+\end{environment}
+
+\begin{pgfgolayout}[columns = 4, fit]
+	\begin{goban}[5]\stones[b]{C3}\end{goban}
+	\begin{goban}[5]\stones[w]{C3}\end{goban}
+	\sgfdiagrams[step = 5]{game}
+\end{pgfgolayout}
+
+\begin{codeexample}[code only]
+	\sgfdiagrams[step = 2, to = 6, layout = {columns = 3, fit}]{game}
+\end{codeexample}
+
+\sgfdiagrams[step = 2, to = 6, layout = {columns = 3, fit}]{game}
+
+\begin{stylekey}{/pgfgo/layout = \meta{layout options}}
+	Options of the layout for the whole document (for example, |columns = 3, fit|). For a single command, |/pgfgo/sgf diagrams/layout| and |/pgfgo/sgf problem/layout|; also for the whole document, |\pgfgoset{sgf diagrams = {layout = {...}}}|.
+\end{stylekey}
+
+\begin{key}{/pgfgo/layout/columns = \meta{number or auto} (initially auto)}
+	Number of columns of the grid. With |auto|, the diagrams go in the paragraph, without a grid.
+\end{key}
+
+\begin{key}{/pgfgo/layout/width = \meta{dimension} or |natural| (initially \texttt{\string\linewidth})}
+	Width of the grid. If it is less than that of the line, the grid is centered. Each column measures what is left after subtracting the |column sep| from |width|, divided among the columns; a narrower board sits in its column according to |align|, so between two boards there is more space than |column sep|.
+
+	With |natural|, the grid fits the diagrams: the columns have the width of the widest diagram (with its caption, which is broken as without a grid, see |caption/min width|) and between two boards of the same width there is exactly |column sep|. The grid measures that times the number of columns (or of diagrams, if there are fewer) and is centered on the line; if it is wider than the line, it goes into the margin. The diagrams are all drawn together at the end (or at the end of each group of |per page| or |per frame|). |fit| does not work with |natural|: the package warns and the boards keep their scale.
+
+	\begin{codeexample}[code only]
+		\begin{pgfgolayout}[columns = 2, width = natural, column sep = 0em, row sep = 0em]
+			\begin{goban}[partial = A9:E5, scale = 0.5]\stone[b]{C7}\end{goban}
+			\begin{goban}[partial = E9:I5, scale = 0.5]\stone[w]{G7}\end{goban}
+			\begin{goban}[partial = A1:E5, scale = 0.5]\stone[b]{C3}\end{goban}
+			\begin{goban}[partial = E1:I5, scale = 0.5]\stone[w]{G3}\end{goban}
+		\end{pgfgolayout}
+	\end{codeexample}
+
+	\begin{pgfgolayout}[columns = 2, width = natural, column sep = 0em, row sep = 0em]
+		\begin{goban}[partial = A9:E5, scale = 0.5]\stone[b]{C7}\end{goban}
+		\begin{goban}[partial = E9:I5, scale = 0.5]\stone[w]{G7}\end{goban}
+		\begin{goban}[partial = A1:E5, scale = 0.5]\stone[b]{C3}\end{goban}
+		\begin{goban}[partial = E1:I5, scale = 0.5]\stone[w]{G3}\end{goban}
+	\end{pgfgolayout}
+\end{key}
+
+\begin{key}{/pgfgo/layout/column sep = \meta{dimension} (initially 1em)}
+	Space between columns.
+\end{key}
+
+\begin{key}{/pgfgo/layout/row sep = \meta{skip} (initially \texttt{\string\medskipamount})}
+	Space between rows.
+\end{key}
+
+\begin{key}{/pgfgo/layout/fit = \meta{boolean} (default true, initially false)}
+	Scales each board so that it fills the width of its column; it replaces the |scale| of the board. The lines do not change width. In |\sgfdiagrams| and |\sgfproblem|, every board uses the scale that fills the column with the first one, so the stones have the same size in all of them. If with that scale a board does not fit in the column (a problem wider than the first one, for example), only that board is reduced until it fills it. Only with |columns|, and not with |width = natural|.
+\end{key}
+
+\begin{key}{/pgfgo/layout/per page = \meta{number} or |false| (initially 0)}
+	Every \meta{number} diagrams, starts a new page (with |\newpage|): with |per page = 1|, one diagram per page. In the grid, a half row is drawn before the break; \meta{number} is best a multiple of |columns|. With |0| or |false|, there are no breaks. In |\sgfproblem| with |statement = alone|, the statement counts as a diagram.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 50, layout = {columns = 2, fit, per page = 4}]{lee}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/layout/per frame = \meta{number} or |false| (default 1, initially 0)}
+	Inside a |beamer| |frame|, every \meta{number} diagrams move to the next slide: with |per frame| alone, one diagram per slide, each with its caption. The diagrams use |\only<+>|, so they add up to the other overlays of the |frame|: after a |\pause|, the first diagram goes on the next slide. Outside |beamer|, the package warns and the \emph{key} is not used. In |beamer|, if there is also |per page|, |per frame| wins.
+
+	\begin{codeexample}[code only]
+		\begin{frame}{The game}
+			\sgfdiagrams[step = 50, goban = {scale = 0.6}, layout = {per frame}]{lee}
+		\end{frame}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/layout/align = \meta{center, left or right} (initially center)}
+	Where each diagram goes inside its column, with its caption and its notes. The comments are always aligned to the left.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 2, to = 6, layout = {columns = 2, width = 0.6\linewidth,
+			column sep = 3em, row sep = 2em, align = left}]{game}
+	\end{codeexample}
+
+	\sgfdiagrams[step = 2, to = 6, layout = {columns = 2, width = 0.6\linewidth,
+		column sep = 3em, row sep = 2em, align = left}]{game}
+\end{key}

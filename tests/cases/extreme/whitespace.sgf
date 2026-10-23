@@ -1,0 +1,12 @@
+  
+
+ (  ;  GM [1] FF[4]
+ SZ
+[7]  AB[aa]
+[bb]	[cc]
+ ;
+B [dd]  C[ espacios ]
+;W
+[ee] ; B[ff]
+)
+ trailing garbage ) ( ;B[gg] 

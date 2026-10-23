@@ -1,0 +1,52 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+%
+% Territory at the limits. The numbers in parentheses are what the commands
+% must write. draw = region paints every square with a corner in the territory.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\newcommand\region[1]{polygons \pgfgoregion{#1}{polygons}, holes \pgfgoregion{#1}{holes}, vertices \pgfgoregion{#1}{vertices}, area \pgfgoregion{#1}{area}, perimeter \pgfgoregion{#1}{perimeter}}
+\newcommand\checkers{A1,C1,E1,G1,I1,B2,D2,F2,H2,A3,C3,E3,G3,I3,B4,D4,F4,H4,A5,C5,E5,G5,I5,B6,D6,F6,H6,A7,C7,E7,G7,I7,B8,D8,F8,H8,A9,C9,E9,G9,I9}
+\pgfgoset{goban = {scale = 0.5}}
+\pagestyle{empty}
+\begin{document}
+
+\case{A checkerboard: 40 empty points, each one alone, all black / with draw = region, the whole board is one square}
+\begin{goban}[9]\stones[b]{\checkers}\territory{auto}\end{goban}
+black \pgfgoscore{b} (40)
+\begin{goban}[9]\stones[b]{\checkers}\territory[draw = region]{auto}\end{goban}
+\region{b} (1, 0, 4, 64, 32)
+
+\case{A spiral wall: the corridor is black territory}
+\begin{goban}[9]\stones[b]{A1 -| I9 -| A3 -| G7 -| C5 -| E5}\territory[draw = region, line, vertices]{auto}\end{goban}
+black \pgfgoscore{b} (32), white \pgfgoscore{w} (0), neutral \pgfgoscore{n} (0)
+
+\case{Polygons: one point three times / three points in a row / a crossed polygon (marks, fill and region, the same 49 points)}
+\begin{goban}[9]\territory[b]{E5, E5, E5}\end{goban} (\pgfgoscore{b}: 1)
+\begin{goban}[9]\territory[b]{A1, E1, I1}\end{goban} (\pgfgoscore{b}: 9)
+\begin{goban}[9]\territory[b]{A1, I9, I1, A9}\end{goban} (\pgfgoscore{b}: 49)
+\begin{goban}[9]\territory[b, draw = fill]{A1, I9, I1, A9}\end{goban} (\pgfgoscore{b}: 49)
+\begin{goban}[9]\territory[b, draw = region]{A1, I9, I1, A9}\end{goban} (\pgfgoscore{b}: 49)
+
+\case{25x25 split by two columns: black M, white N}
+\begin{goban}[25, scale = 0.3]\stones[b]{M}\stones[w]{N}\territory[draw = fill]{auto}\end{goban}
+black \pgfgoscore{b} (275), white \pgfgoscore{w} (300)
+
+\case{1x1 empty with dame / 1x1 with a stone / 1x5 with a stone in the middle}
+\begin{goban}[1]\territory[dame]{auto}\end{goban} neutral \pgfgoscore{n} (1)
+\begin{goban}[1]\stones[b]{A1}\territory{auto}\end{goban} black \pgfgoscore{b} (0)
+\begin{goban}[1x5]\stones[b]{A3}\territory[draw = region]{auto}\end{goban} black \pgfgoscore{b} (4)
+
+\case{All the board is prisoners: neutral / all but C3, a black stone: black territory and 24 prisoners / all the board is stones: nothing}
+\begin{goban}[5]\prisoners[w]{*}\territory[dame]{auto}\end{goban} black \pgfgoscore{b} (0), neutral \pgfgoscore{n} (25)
+\begin{goban}[5]\prisoners[w]{*; C3}\stones[b]{C3}\territory{auto}\end{goban} black \pgfgoscore{b} (48)
+\begin{goban}[5]\stones[b]{*}\territory[draw = region]{auto}\end{goban} black \pgfgoscore{b} (0), \region{b} (0, 0, 0, 0, 0)
+
+\case{Komi: 1000.5, -7.5 and 0.333333 for white, who has no territory}
+\begin{goban}[5]\stones[b]{C}\territory{auto}\end{goban}
+\pgfgoscore[komi = 1000.5]{w} (1000.5), \pgfgoscore[komi = -7.5]{w} (-7.5), \pgfgoscore[komi = 0.333333]{w} (0.333333)
+
+\end{document}

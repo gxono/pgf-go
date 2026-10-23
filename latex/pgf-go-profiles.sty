@@ -1,4 +1,4 @@
-\ProvidesFile{pgf-go-profiles.sty}[2026/10/13 v0.2026.10.13 pgf-go: profiles]
+\ProvidesFile{pgf-go-profiles.sty}[2026/10/23 v0.2026.10.23 pgf-go: profiles]
 \ExplSyntaxOn
 %UN PERFIL ES UNA LISTA DE CLAVES CON NOMBRE: LOS DE TABLERO VAN EN \g_pgfgo_profile_goban_prop (CLAVES DE
 %/pgfgo/goban) Y LOS DE JUGADOR EN \g_pgfgo_profile_player_prop (CLAVES DE UN JUGADOR DE /pgfgo/players).
@@ -545,7 +545,7 @@
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%SHELL (MADERA, PIZARRA Y CONCHA, CON IMAGENES; LOS ARCHIVOS ESTAN EN img)
+%SHELL (MADERA, PIZARRA Y CONCHA, CON IMAGENES; LOS ARCHIVOS ESTAN JUNTO A pgf-go.sty)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \pgfgodefineprofile[from = default]{shell}{
@@ -580,7 +580,7 @@
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%YUNZI (MADERA Y PIEDRAS MATES, CON IMAGENES; LOS ARCHIVOS ESTAN EN img)
+%YUNZI (MADERA Y PIEDRAS MATES, CON IMAGENES; LOS ARCHIVOS ESTAN JUNTO A pgf-go.sty)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \pgfgodefineprofile[from = shell]{yunzi}{
@@ -606,7 +606,7 @@
 	goban = {
 		background = {
 			line = false,
-			fill = {image = {file = baduktv-goban.png}}
+			fill = {image = {file = pgfgo-baduktv-goban.png}}
 		}
 	},
 	all = {
@@ -621,6 +621,6 @@
 			}
 		}
 	},
-	black = {stone = {image = {file = baduktv-black.png}}},
-	white = {stone = {image = {file = baduktv-white.png}}}
+	black = {stone = {image = {file = pgfgo-baduktv-black.png}}},
+	white = {stone = {image = {file = pgfgo-baduktv-white.png}}}
 }

@@ -1,155 +1,176 @@
-\def\karu{K\={a}ru}
+\section{\karu's boards}
 
-\section{The Boards of \karu}
+\subsection{The first game}
+\label{tut:primera}
 
-\subsection{Board and Stones}
+\karu\ is writing an article to share with their students. They worry about the final size of the PDF and have noticed that diagramming \emph{software} does not offer satisfactory formats or results. So they decide to try \pgfgoname. The first thing they want to show is a short game played in class. It is saved in an SGF file, |game.sgf|: the format in which almost every Go program and server saves games.
 
-\karu\ is writing an article to share with his students. He has noticed that diagramming \emph{software} does not offer satisfactory formats or results. Therefore, he decides to try \pgfgoname\ and starts by representing a game like the one shown in Figure~\ref{fig:first-example}.
+\begin{figure}[H]
+	\centering
+	\begin{goban}[captures, label = {at = {north, west}}]
+		\sgf{game}
+	\end{goban}
+\end{figure}
+
+In \pgfgoname, every diagram is drawn inside the |goban| environment, and inside it, |\sgf| draws the game of the file. Reading SGF files needs Lua\LaTeX\ (p.~\pageref{subsec:kernel}). Since the file will be used many times, \karu\ first gives it a name with |\pgfgodefinesgf| (p.~\pageref{subsec:sgfnombres}): from then on it is called |game|, and if the file moves, it is fixed in one place\footnote{Unfortunately, I implemented it well into the documentation.}.
+
+\begin{codeexample}[width=4.8cm]
+\pgfgodefinesgf{game}{game.sgf}
+
+\begin{goban}
+	\sgf{game}
+\end{goban}
+\end{codeexample}
+
+The moves are numbered, as in books. But with move 7 Black captured the white stone 2, which is still on the board: \pgfgoname\ draws what it is asked to, without applying the rules. With the \emph{key} |captures|, the |goban| removes the captured stones (p.~\pageref{subsec:capturas}). The options of the board are written in brackets, after |\begin{goban}|.
+
+\begin{codeexample}[width=4.8cm]
+\begin{goban}[captures]
+	\sgf{game}
+\end{goban}
+\end{codeexample}
+
+To comment on the game in the text, \karu\ stops it at move 7 with |to|. The file has a comment for that move, and |\sgfcomment| writes it.
+
+\begin{codeexample}[width=4.8cm]
+\begin{goban}[captures]
+	\sgf[to = 7]{game}
+\end{goban}
+
+Move 7: \sgfcomment{game}{7}
+\end{codeexample}
+
+This game is $9\times9$, the size of a |goban| by default. For a game of another size, |sgf size = game| takes the size from the file; \karu\ will do so with a $19\times19$ game on p.~\pageref{tut:partida}. There they will also see how to draw a long game in a series of diagrams.
+
+\subsection{A position by hand}
+\label{tut:posicion}
+
+For the introduction of the article, \karu\ wants a position of their own, which is not in any file: the one in Figure~\ref{fig:primer-ejemplo}. It has to be drawn stone by stone.
 
 \begin{figure}[H]
 	\centering
 	\pgfgoset{profile = pgfgo}
-	\begin{goban}[use i = false, label = {at = {north, west}}]
+	\begin{goban}[label = {at = {north, west}}]
 		\stones[black]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
 		\stones[white]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
 	\end{goban}
 	\caption{}
-	\label{fig:first-example}
+	\label{fig:primer-ejemplo}
 \end{figure}
 
-\karu\ must start with the board. In \pgfgoname, there is currently a single environment where elements can be placed: |goban|. This environment controls by default the size and color of the board, the position and type of labels, among other properties. It also allows partial board representations.
+\karu\ starts with the empty board. As in the previous tutorial, everything is drawn inside the |goban| environment, which takes care of the size of the board, its color, its coordinates and everything drawn on it.
 
 \begin{codeexample}[width=4.4cm]
-	\begin{goban}
-	\end{goban}
+\begin{goban}
+\end{goban}
 \end{codeexample}
 
-\karu\ is satisfied. The environment provides a default $9\times 9$ board, which is exactly what he needs, but he must add side labels. The |goban| environment does not require mandatory parameters, although it accepts an optional one: a list of |keys| or |key=values| for configuration. \karu\ consults the section on |goban| (p.~\pageref{sec:board}) and decides to add labels to the environment. He knows that the \emph{keys} controlling the objects in the goban are divided into three groups: |grid|, for the central grid; |background|, for the border and board fill; and |label|, for coordinate labels. The latter is the one that interests him. This \emph{key}, among other options, can take the \emph{key} |at| to define the label position with values such as |above|, |west|, |below|, |right|, |all|, or |none|. Cardinal points can also be used. Since he only wants labels above and to the left of the goban, he will use the \emph{keys} |above| and |left|.
+The board is $9\times 9$, just what is needed, but the coordinates on the borders are missing. The options of the |goban| go in brackets, and those of each part of the board are grouped in three \emph{keys}: |grid|, for the grid; |background|, for the border and the fill, and |label|, for the coordinates (p.~\pageref{sec:tablero}). Inside |label|, |at| says on which sides they go: |north|, |south|, |east| and |west| (or |above|, |below|, |right| and |left|), |all| or |none|. \karu\ wants them above and on the left.
 
 \begin{codeexample}[width=4.7cm]
-	\begin{goban}[label = {at = {above, left}}]
-	\end{goban}
+\begin{goban}[label = {at = {north, west}}]
+\end{goban}
 \end{codeexample}
 
-\karu\ feels that everything is going well, but he notices that his board includes an |I| instead of omitting it and going directly to |J|. By default, in \pgfgoname, "I" exists and is used both as a coordinate and in the side labels, although it is possible to remove it. There are two ways to do this: setting |goban/use i| to |false| for every board (|\pgfgoset{goban = {use i = false}}|), which would prevent \karu\ from worrying about this throughout the rest of the article, or applying it directly to the board with the same \emph{key} and value.
+\karu\ notices that the columns go from |H| to |J|: as is customary in Go, \pgfgoname\ skips the ``I'', both in the coordinates and in the labels on the sides. If it is ever needed, the \emph{key} |goban/use i| (p.~\pageref{subsec:usei}) brings it back.
+
+Now, the stones. The simplest is |\stone|, which takes the intersection, such as |D8|, and its options in brackets: the player, the style, a mark. Without a player, the stone is neutral; for Black, \karu\ writes |black|, or |b|.
 
 \begin{codeexample}[width=4.8cm]
-	\pgfgoset{goban = {use i = false}}
-	
-	\begin{goban}[label = {at = {above, left}}]
-	\end{goban}
+\begin{goban}[label = {at = {north, west}}]
+	\stone[black]{D8}
+	\stone[black]{F8}
+	\stone[b]{E7}
+	\stone[b]{H7}
+\end{goban}
 \end{codeexample}
 
-Now he is ready to place the stones. For this, \karu\ has several macros. Let’s start with the most basic one: |\stone[options]{intersection}|. This command accepts two parameters: the first, optional, controls the appearance and additional elements of the stones (such as marks); the second, mandatory, is the intersection. \karu\ does not need to convert intersections to numbers since he can specify them alphanumerically. By default, the stones are neutral, but he can choose the first player by passing the \emph{key} |black| or |b|.
+\karu\ suspects this is not the best option for adding 200 stones or more. They find |\stones|, which takes a list of intersections separated by commas and accepts the same options as |\stone|.\footnote{Between \texttt{\textbackslash stone\{A1\}} and \texttt{\textbackslash stones\{A1\}}, the first is much faster. We will see later that many processes are involved in reading the mandatory argument of the plural macros.}
 
 \begin{codeexample}[width=4.8cm]
-	\begin{goban}[label = {at = {above, left}}, use i = false]
-		\stone[black] {D8}
-		\stone[black] {F8}
-		\stone[b] {E7}
-		\stone[b] {H7}
-	\end{goban}
+\begin{goban}[label = {at = {north, west}}]
+	\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+\end{goban}
 \end{codeexample}
 
-\karu\ suspects that this is not the best option if he needs to add 200 stones or more. To simplify the syntax, he finds in the documentation the macro |\stones[options]{intersection, intersection, ...}|, which accepts the same optional \emph{keys} as |\stone|.\footnote{Between \texttt{\textbackslash stone\{A1\}} and \texttt{\textbackslash stones\{A1\}}, the first one is much faster. We will see later that many processes are involved in reading the mandatory argument of the plural macros.}
+The white stones take |white|, or |w|. Strictly speaking, |black| and |white| are not colors but players, the first and the second: each stone takes the style of its player (p.~\pageref{sec:jugadores}).
 
 \begin{codeexample}[width=4.8cm]
-	\begin{goban}[label = {at = {north, west}}, use i = false]
-		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
-	\end{goban}
+\begin{goban}[label = {at = {north, west}}]
+	\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+	\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+\end{goban}
 \end{codeexample}
 
-\karu\ also notices that there is a syntax (p.~\pageref{subsec:coordinate-syntax}) to add several coordinates at once. For example, for a line of stones from C5 to G5, he can write |C:G5| or |C5--G5|.
+The style is missing. In the catalog (p.~\pageref{sec:catalogo}), \karu\ finds one they like: the profile |pgfgo|. They apply it with |\pgfgoset{profile = pgfgo}| (p.~\pageref{subsec:perfiles}), and from there on it holds for every board that follows.
 
 \begin{codeexample}[width=4.8cm]
-	\begin{goban}[label = {at = {north, west}}, use i = false]
-		\stones[b]{B2,E2,J2,C3,D3,G3,H3,E6,G6,C:G5}
-	\end{goban}
+\pgfgoset{profile = pgfgo}
+
+\begin{goban}[label = {at = {north, west}}]
+	\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+	\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+\end{goban}
 \end{codeexample}
 
-To add white stones, \karu\ must include the \emph{key} |white| in the |\stones| command. He knows that |white| and |black| do not literally refer to the colors white and black, but to the second and first player, respectively, and that when these \emph{keys} are applied, the objects inherit their properties.
-
-\begin{codeexample}[width=4.8cm]
-	\begin{goban}[label = {at = {north, west}}, use i = false]
-		\stones[b]{B2,E2,J2,C3,D3,G3,H3,E6,G6,C:G5}
-		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,B4,E4,H2,J3:5}
-	\end{goban}
-\end{codeexample}
-
-Finally, the style of his board remains. For this, he looks through the catalog (p.~\pageref{sec:catalog}) and finds a style he likes: |pgfgo|. To apply it, he reads the section on profiles (p.~\pageref{subsec:profiles}) and decides to use the key |profile|: |\pgfgoset{profile = <name>}|.
-
-\begin{codeexample}[width=4.8cm]
-	\pgfgoset{profile = pgfgo}
-
-	\begin{goban}[label = {at = {north, west}}, use i = false]
-		\stones[b]{B2,E2,J2,C3,D3,G3,H3,E6,G6,C:G5}
-		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,B4,E4,H2,J3:5}
-	\end{goban}
-\end{codeexample}
+The lists of this tutorial are long, and \karu's patience is short. In the last tutorial (p.~\pageref{tut:abreviar}), \karu\ learns to write them shorter.
 
 \subsection{Moves}
+\label{tut:movimientos}
 
-When the stones are to be placed in order, following the sequence "black, white, black, white", it can be tedious and unnecessary to give the \emph{key} of each player.
+To explain how a fight began, \karu\ wants to show the stones in the order in which they were played. With |\stone|, the player of each one would have to be given:
 
 \begin{codeexample}[code only]
-	\begin{goban}
-		\stone[b]	{F7}
-		\stone[w] {E6}
-		\stone[b]	{G3}
-		\stone[w]	{D6}
-	\end{goban}
+\begin{goban}
+	\stone[b]{F7}
+	\stone[w]{E6}
+	\stone[b]{G3}
+	\stone[w]{D6}
+\end{goban}
 \end{codeexample}
 
-That is why \pgfgoname\ includes macros that make this easier. Let’s start with the singular one:
-\begin{command}{\move\opt{\oarg{options}}\marg{intersection}}
-\end{command}
-This command works like |\stone|, but alternates the colors automatically.
+That is what |\moves| is for (p.~\pageref{subsec:movimientos}): it takes a list like |\stones|, but plays the intersections in the order in which they are written, alternates the colors and numbers the moves.
 
 \begin{codeexample}[width=5cm]
-	\begin{goban}[label = {at = all}]
-		\move	{F7}
-		\move	{E6}
-		\move	{G3}
-		\move	{D6}
-	\end{goban}
+\begin{goban}[label = {at = all}]
+	\moves{F7, E6, G3, D6}
+\end{goban}
 \end{codeexample}
 
-The macro |\move|, like |\stone|, has a plural version:
-\begin{command}{\moves\opt{\oarg{options}}\marg{intersection}}
-\end{command}
-In this case, giving the \emph{key} |black| or |white| only sets who is the first player of the sequence.
+The fight began with a black stone at F7, which \karu\ puts with |\stone|. The moves that follow will not be commented on: with |numbers = false|, they are drawn without numbers. With |white|, the sequence starts with White: in |\moves|, |black| and |white| only say who plays first.
 
 \begin{codeexample}[width=5cm]
-	\begin{goban}[label = {at = all}]
-		\stone[b] {F7}
-		\moves[white] {	E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
-			G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
-			I3,I2,I5,H3}
-	\end{goban}
+\begin{goban}[label = {at = all}]
+	\stone[b] {F7}
+	\moves[numbers = false, white]{E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
+		G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
+		J3,J2,J5,H3}
+\end{goban}
 \end{codeexample}
 
-The macros |\move| and |\moves| also have "starred" versions (|\move*| and |\moves*|), which label the moves. The \emph{key} |from| sets the number where the labels start.
+The last moves are commented on, so they get numbers. The numbering and the turn go on from one |\moves| to the next, even if the previous moves have no numbers, and |from| chooses the number to go on from.
 
 \begin{codeexample}[width=5cm]
-	\begin{goban}[label = {at = all}]
-		\moves[white] {	E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
-			G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
-			I3,I2,I5,H3}
+\begin{goban}[label = {at = all}]
+	\moves[numbers = false, white] {E6,G3,D6,F5,E7,E2,F8,E6,D8,D3,
+		G7,C5,C6,D5,B5,G5,B4,B2,H6,C3,
+		J3,J2,J5,H3}
 
-		\moves*[from = 26]{F6,E5,I4,G6}
-		\move* {H2} % Black and labeled 30, without saying so.
-	\end{goban}
+	\moves[from = 26]{F6,E5,J4,G6}
+	\moves{H2} % White and labeled 30, without saying so.
+\end{goban}
 \end{codeexample}
 
-In this last example, |H2| was placed with |\move*| and, although it is separate from |\moves*|, it is black and labeled 30, because the last stone placed (|G6|) was black and labeled 29.
+|H2| is in another |\moves| and, without saying so, it is white and numbered 30: the previous move, |G6|, was 29, by Black.
 
-\subsection{Partial Board and Marks}
+\subsection{Partial board and marks}
+\label{tut:parcial}
 
-Sometimes we want to focus on a particular region of the board. For this reason, it is possible to show only a portion of it.
+For an exercise of the article, \karu\ wants to show only part of the board, with two signs: a circle on the stone in atari and a ``!'' on the key point.
 
 \begin{figure}[H]
 	\centering
-	\begin{goban}[partial = B2:E4, background = false]
+	\begin{goban}[partial = B2:E4, background = {line = false}]
 		\stones[b] {C2,B3,C4}
 		\stones[w] {D4,E3,D2}
 		\stone[w, mark = {circle, line = {color = red}}] {C3}
@@ -157,43 +178,43 @@ Sometimes we want to focus on a particular region of the board. For this reason,
 	\end{goban}
 \end{figure}
 
-To draw this board, we start by placing the stones.
+They start, as always, with the stones.
 
 \begin{codeexample}[width=5cm]
 	\begin{goban}
-		\stones[b] {C2,B3,C4}
-		\stones[w] {D4,E3,D2,C3}
+		\stones[b]{C2,B3,C4}
+		\stones[w]{D4,E3,D2,C3}
 	\end{goban}
 \end{codeexample}
 
-With the \emph{key} |partial|, we can set the range of the board through its \emph{key} |from|. It takes a value of the form |LN to LN|, where each |LN| is one of a pair of opposite vertices of the rectangle.
+The \emph{key} |partial| says which part of the board to show: two opposite corners of the rectangle, separated by a colon, such as |B2:E4| (p.~\pageref{subsec:parcial}).
 
 \begin{codeexample}[]
 	\begin{goban}[partial = B2:E4]
-		\stones[b] {C2,B3,C4}
-		\stones[w] {D4,E3,D2,C3}
+		\stones[b]{C2,B3,C4}
+		\stones[w]{D4,E3,D2,C3}
 	\end{goban}
 \end{codeexample}
 
-To remove the line of the board, we use the \emph{key} |line| of the |background| of the |goban|.
+If \karu\ does not want to look for the corners, with |partial = auto| the board chooses the part: the one used by what is drawn, with one more line around it. A side two lines or less from the edge reaches the edge, like the bottom and the left ones here.
+
+\begin{codeexample}[]
+	\begin{goban}[partial = auto]
+		\stones[b]{C2,B3,C4}
+		\stones[w]{D4,E3,D2,C3}
+	\end{goban}
+\end{codeexample}
+
+\karu\ prefers the tight crop, so they go on with |B2:E4|. On a partial board, the border of the board is too much: it is removed with |line = false| in the |background|.
 
 \begin{codeexample}[]
 	\begin{goban}[partial = B2:E4, background = {line = false}]
-		\stones[b] {C2,B3,C4}
-		\stones[w] {D4,E3,D2,C3}
+		\stones[b]{C2,B3,C4}
+		\stones[w]{D4,E3,D2,C3}
 	\end{goban}
 \end{codeexample}
 
-Now, to place marks we have the macro
-\begin{command}{\mark\opt{\oarg{options}}\marg{intersection}}
-\end{command}
-and its plural version.
-
-This macro is quite broad and is documented on its own page. For now, we need to know two things:
-\begin{itemize}
-	\item The mark for the circle is called |circle|.
-	\item The mark "!" can be added with |custom|.
-\end{itemize}
+Marks are put with |\mark|, or with |\marks| for several intersections; there are many shapes (p.~\pageref{sec:marcas}). Two are enough for \karu: |circle|, the circle, and |custom|, which puts any text, such as ``!''. A mark can also go in the options of the stone, with |mark|.
 
 \begin{codeexample}[]
 	\begin{goban}[partial = B2:E4, background = {line = false}]
@@ -204,7 +225,7 @@ This macro is quite broad and is documented on its own page. For now, we need to
 	\end{goban}
 \end{codeexample}
 
-We can change the line color of a mark with the \emph{key} |mark/line/color|.
+So that the circle stands out, \karu\ paints it red, with |line/color| of the mark.
 
 \begin{codeexample}[]
 	\begin{goban}[partial = B2:E4, background = {line = false}]
@@ -215,83 +236,746 @@ We can change the line color of a mark with the \emph{key} |mark/line/color|.
 	\end{goban}
 \end{codeexample}
 
-\subsection{The End of the Game: Territory}
+\subsection{Explaining a fight: arrows, letters and views}
+\label{tut:pelea}
+
+In the second part of the article, \karu\ wants to explain a fight. For that they need to point out the possible moves with letters, show where each group runs and, in the text, name the stones without making the reader look for them in the diagram.
+
+\begin{figure}[H]
+	\centering
+	\begin{goban}[partial = A1:G7, label = {at = {north, west}}]
+		\stones[b]{C3, D3, E4, C5}
+		\stones[w]{D4, D5, E5, F3}
+		\marks[dim]{F3}
+		\marks[triangle]{D5}
+		\mark[custom = A]{E3}
+		\mark[custom = B]{C4}
+		\arrow{C5}{C7}
+		\arrow[color = red!80!black, bend = 30, shorten = 4pt]{E4}{G5}
+		\line[dash = dashed]{A6}{G6}
+	\end{goban}
+\end{figure}
+
+They start, as always, with the stones. To save space, only the corner is shown, with |partial|.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[partial = A1:G7, label = {at = {north, west}}]
+		\stones[b]{C3, D3, E4, C5}
+		\stones[w]{D4, D5, E5, F3}
+	\end{goban}
+\end{codeexample}
+
+The candidate moves are marked with letters, with |custom|, which accepts any text. The mark |triangle| highlights the stone the text talks about, and |dim| dims the white stone at F3, which no longer matters.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[partial = A1:G7, label = {at = {north, west}}]
+		\stones[b]{C3, D3, E4, C5}
+		\stones[w]{D4, D5, E5, F3}
+		\marks[dim]{F3}
+		\marks[triangle]{D5}
+		\mark[custom = A]{E3}
+		\mark[custom = B]{C4}
+	\end{goban}
+\end{codeexample}
+
+To show where the groups run, \karu\ uses |\arrow|, which joins two intersections (p.~\pageref{subsec:flechas}). The arrow is drawn with a halo of the color of the board, so that it is not mistaken for the grid. With |bend|, the arrow is an arc; with |shorten|, it does not cover the stones at its ends.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[partial = A1:G7, label = {at = {north, west}}]
+		\stones[b]{C3, D3, E4, C5}
+		\stones[w]{D4, D5, E5, F3}
+		\arrow{C5}{C7}
+		\arrow[color = red!80!black, bend = 30, shorten = 4pt]{E4}{G5}
+	\end{goban}
+\end{codeexample}
+
+|\line| is like |\arrow|, but without a tip, and accepts the same stroke \emph{keys}, such as |dash|.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[partial = A1:G7, label = {at = {north, west}}]
+		\stones[b]{C3, D3, E4, C5}
+		\stones[w]{D4, D5, E5, F3}
+		\line[dash = dashed]{A6}{G6}
+	\end{goban}
+\end{codeexample}
+
+Now, the text. \karu\ wants to write ``the black stone at E4'' and show it right there. For that, they give the board a name with |name| and, afterwards, |\pgfgoview| draws part of that board in the middle of the paragraph, as it was at the end (p.~\pageref{subsec:vistas}): a point or a rectangle.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[partial = A1:G7, name = fight]
+		\stones[b]{C3, D3, E4, C5}
+		\stones[w]{D4, D5, E5, F3}
+		\marks[triangle]{D5}
+		\mark[custom = A]{E3}
+	\end{goban}
+\end{codeexample}
+
+\begin{codeexample}[code only]
+	The black stone \pgfgoview{fight}{E4} is cut off from its companions.
+	If Black plays at A, it connects: \pgfgoview{fight}{C3:E5}.
+	Without marks: \pgfgoview[marks = false]{fight}{C3:E5}.
+\end{codeexample}
+
+The black stone \pgfgoview{fight}{E4} is cut off from its companions.
+If Black plays at A, it connects: \pgfgoview{fight}{C3:E5}.
+Without marks: \pgfgoview[marks = false]{fight}{C3:E5}.
+
+The view has the style of the original board, but any option of |goban| can change it: \karu\ prefers to remove the background and the coordinates in every view of the article.
+
+\begin{codeexample}[code only]
+	\pgfgoset{view = {background = false, label = false}}
+
+	The black stone \pgfgoview{fight}{E4} is cut off from its companions.
+	If Black plays at A, it connects: \pgfgoview{fight}{C3:E5}.
+\end{codeexample}
+
+\begingroup
+\pgfgoset{view = {background = false, label = false}}
+
+The black stone \pgfgoview{fight}{E4} is cut off from its companions.
+If Black plays at A, it connects: \pgfgoview{fight}{C3:E5}.
+\endgroup
+
+Sometimes the text talks about a diagram that comes later, or about a figure that \LaTeX\ moves to the next page. A view can also come before its |goban|: as with |\ref|, the |goban| is kept in the |.aux| file and the document has to be compiled twice. The first time, the view is |??| (p.~\pageref{subsec:vistas-antes}).
+
+\begin{codeexample}[code only]
+	The red arrow of the diagram below starts at the black stone \pgfgoview{arrows}{E4}.
+
+	\begin{goban}[partial = A1:G7, name = arrows]
+		\stones[b]{C3, D3, E4, C5}
+		\stones[w]{D4, D5, E5, F3}
+		\arrow{C5}{C7}
+		\arrow[color = red!80!black, bend = 30, shorten = 4pt]{E4}{G5}
+	\end{goban}
+\end{codeexample}
+
+\begingroup
+\pgfgoset{view = {background = false, label = false}}
+
+The red arrow of the diagram below starts at the black stone \pgfgoview{arrows}{E4}.
+
+\begin{goban}[partial = A1:G7, name = arrows]
+	\stones[b]{C3, D3, E4, C5}
+	\stones[w]{D4, D5, E5, F3}
+	\arrow{C5}{C7}
+	\arrow[color = red!80!black, bend = 30, shorten = 4pt]{E4}{G5}
+\end{goban}
+\endgroup
+
+\subsection{A ko: captures and notes}
+\label{tut:ko}
+
+In the first tutorial, |captures| removed a captured stone from a game in SGF. To explain a ko, \karu\ needs the same with moves written by hand: to put them in order and have \pgfgoname\ remove the captured stones.
+
+\begin{figure}[H]
+	\centering
+	\begin{goban}[7, captures, notes]
+		\stones[b]{B3, C2, C4}
+		\stones[w]{C3, D2, D4, E3}
+		\moves{D3, G6, G5, C3, A6, A5, D3}
+	\end{goban}
+
+	\pgfgomovenotes
+\end{figure}
+
+Black takes the ko at D3 (1), White threatens elsewhere (2), Black answers (3) and White takes back (4). With nothing else, the moves are drawn on top of one another and no stone leaves the board.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[7]
+		\stones[b]{B3, C2, C4}
+		\stones[w]{C3, D2, D4, E3}
+		\moves{D3, G6, G5, C3}
+	\end{goban}
+\end{codeexample}
+
+With the \emph{key} |captures| (p.~\pageref{subsec:capturas}), the |goban| keeps count of the liberties and removes each group left without them. The white stone at C3 disappears with move 1, and black 1 with move 4. |\pgfgoprisoners| says how many stones each player captured.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[7, captures]
+		\stones[b]{B3, C2, C4}
+		\stones[w]{C3, D2, D4, E3}
+		\moves{D3, G6, G5, C3}
+	\end{goban}
+
+	Black captured \pgfgoprisoners{b},
+	White \pgfgoprisoners{w}.
+\end{codeexample}
+
+If the captured stones must still be seen, |captures = fade| leaves them as prisoners.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[7, captures = fade]
+		\stones[b]{B3, C2, C4}
+		\stones[w]{C3, D2, D4, E3}
+		\moves{D3, G6, G5, C3}
+	\end{goban}
+\end{codeexample}
+
+The ko goes on: Black threatens (5), White answers (6) and Black takes back at D3 (7), where 1 had already been played. In books, that move is not drawn: ``7 at 1'' is written below the diagram. That is what the \emph{key} |notes| does (p.~\pageref{subsec:notas}), and |\pgfgomovenotes| writes the notes.
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[7, captures, notes]
+		\stones[b]{B3, C2, C4}
+		\stones[w]{C3, D2, D4, E3}
+		\moves{D3, G6, G5, C3, A6, A5, D3} % And so on until someone gets tired.
+	\end{goban}
+
+	\pgfgomovenotes.
+\end{codeexample}
+
+\subsection{A whole game}
+\label{tut:partida}
+
+The article also comments on a long game: the first one between Lee Sedol and AlphaGo, from 2016, saved in |lee.sgf|, which \karu\ calls |lee|. As in the first tutorial (p.~\pageref{tut:primera}), its 186 moves need not be written: \pgfgoname\ reads them from the file (p.~\pageref{subsec:sgf}).
+
+First comes the information of the game, which |\sgfinfo| takes from the root of the file.
+
+\begin{codeexample}[code only]
+	\pgfgodefinesgf{lee}{lee.sgf}
+
+	\sgfinfo{lee}{PB} (Black) against \sgfinfo{lee}{PW} (White),
+	\sgfinfo{lee}{EV}, \sgfinfo{lee}{RO}, \sgfinfo{lee}{DT}.
+	Result: \sgfinfo{lee}{RE}.
+\end{codeexample}
+
+\sgfinfo{lee}{PB} (Black) against \sgfinfo{lee}{PW} (White),
+\sgfinfo{lee}{EV}, \sgfinfo{lee}{RO}, \sgfinfo{lee}{DT}.
+Result: \sgfinfo{lee}{RE}.
+
+|\sgfinfo| writes the result as it is in the file; later, |\sgfdiagrams| writes it in words.
+
+The game is $19\times19$: |sgf size| gives the board the size that the file says. With |to|, \karu\ shows it up to move 30, and with |scale|, makes the board smaller.
+
+\begin{codeexample}[]
+	\begin{goban}[sgf size = lee, captures, scale = 0.6]
+		\sgf[to = 30]{lee}
+	\end{goban}
+\end{codeexample}
+
+To comment on a stretch, \karu\ numbers only the moves from 21 on with |from|: the previous ones are drawn without a number.
+
+\begin{codeexample}[]
+	\begin{goban}[sgf size = lee, captures, scale = 0.6]
+		\sgf[from = 21, to = 30]{lee}
+	\end{goban}
+\end{codeexample}
+
+Then \karu\ wants the whole game, as in books: one diagram every 50 moves, each with its caption and its ``N at M'' notes, and the result at the end. That is what |\sgfdiagrams| does; it is used outside |goban|. With |layout|, the diagrams go in a grid of two columns, and with |fit| they are scaled to fill them (p.~\pageref{subsec:disposicion}). Only the last two are shown here, with |from|.
+
+\begin{codeexample}[code only]
+	\sgfdiagrams[step = 50, from = 101, layout = {columns = 2, fit}]{lee}
+\end{codeexample}
+
+\sgfdiagrams[step = 50, from = 101, layout = {columns = 2, fit}]{lee}
+
+The caption and the result are in English because the document uses |babel| in English (p.~\pageref{subsec:idiomas}). Some books restart the numbering in each diagram; with |restart|, each diagram, from the second one on, is numbered from 1.
+
+\begin{codeexample}[code only]
+	\sgfdiagrams[step = 50, from = 51, to = 150, restart,
+		goban = {label = {at = {north, west}}}, layout = {columns = 2, fit}]{lee}
+\end{codeexample}
+
+\sgfdiagrams[step = 50, from = 51, to = 150, restart,
+	goban = {label = {at = {north, west}}}, layout = {columns = 2, fit}]{lee}
+
+\subsection{Variations: remembering a board}
+\label{tut:variantes}
+
+In comments, \karu\ often shows what would have happened with another move. Copying the position in each diagram is tedious and error-prone: if a stone changes, it has to be changed in all of them (I speak from experience). In the fight, \karu\ gave a board a name with |name| to show it in the text. That board keeps everything it draws, and with |resume| another |goban| starts with that position (p.~\pageref{subsec:recordar}).
+
+\begin{codeexample}[]
+	\pgfgoset{goban = {5, partial = A1:E4}}
+
+	\begin{goban}[name = base]
+		\stones[b]{B2, C3, D2}
+		\stones[w]{B3, C4, D3}
+	\end{goban}
+
+	\begin{goban}[resume = base]
+		\moves[b]{C2, E3}
+	\end{goban}
+
+	\begin{goban}[resume = base]
+		\moves[b]{E3, C2}
+	\end{goban}
+\end{codeexample}
+
+Variations can have a name too, and be continued: with |name| and |resume| in the same |goban|, the new name keeps what it brought plus its own. By default, |resume| brings only the stones; |numbers| brings the numbers too.
+
+\begin{codeexample}[]
+	\pgfgoset{goban = {5, partial = A1:E4}}
+
+	\begin{goban}[name = base]
+		\stones[b]{B2, C3, D2}
+		\stones[w]{B3, C4, D3}
+	\end{goban}
+
+	\begin{goban}[name = variation, resume = base]
+		\moves[b]{E3, C2}
+	\end{goban}
+
+	\begin{goban}[resume = {variation, numbers}]
+		\moves{E4}
+	\end{goban}
+\end{codeexample}
+
+A named board also helps to compare styles. Before choosing the profile of the article, \karu\ draws the same board with several profiles of the catalog (p.~\pageref{sec:catalogo}). To put them side by side, with the same width, they use the |pgfgolayout| environment (p.~\pageref{subsec:disposicion}). With |marks|, |resume| brings the marks too.
+
+\begin{codeexample}[code only]
+	\begin{goban}[5, name = styles]
+		\stones[b]{B2, C3, D2}
+		\stones[w]{B3, C4, D3}
+		\marks[circle]{C2}
+	\end{goban}
+
+	\begin{pgfgolayout}[columns = 4, fit]
+		\begin{goban}[resume = {styles, marks}, profile = pgfgo] \end{goban}
+		\begin{goban}[resume = {styles, marks}, profile = pgfgosmooth] \end{goban}
+		\begin{goban}[resume = {styles, marks}, profile = wain] \end{goban}
+		\begin{goban}[resume = {styles, marks}, profile = simple] \end{goban}
+	\end{pgfgolayout}
+\end{codeexample}
+
+\begin{goban}[5, name = styles]
+	\stones[b]{B2, C3, D2}
+	\stones[w]{B3, C4, D3}
+	\marks[circle]{C2}
+\end{goban}
+
+\begin{pgfgolayout}[columns = 4, fit]
+	\begin{goban}[resume = {styles, marks}, profile = pgfgo] \end{goban}
+	\begin{goban}[resume = {styles, marks}, profile = pgfgosmooth] \end{goban}
+	\begin{goban}[resume = {styles, marks}, profile = wain] \end{goban}
+	\begin{goban}[resume = {styles, marks}, profile = simple] \end{goban}
+\end{pgfgolayout}
+
+\subsection{The end of the game: territory}
+\label{tut:territorio}
 
 \begin{figure}[H]
 	\centering
 	\pgfgoset{profile = wain}
 	\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A5,A6,B1,B2,B3,B4,B5,C1,C4,D1,D2,D5,D7,E2,E5,E7,E9,F4,F5,F6,F7,F8,F9,G5,G6,G7,H6,H8,I7}
-		\stones[w] {A7,B6,B8,C2,C3,C5,C6,C7,C8,D3,D4,D6,D8,D9,E3,E4,E6,E8,F1,F2,F3,G4,H2,H3,H5,I5,I6}
-		\prisoners[b]{H1,I1,I2}
+		\stones[b] {A5,A6,B1,B2,B3,B4,B5,C1,C4,D1,D2,D5,D7,E2,E5,E7,E9,F4,F5,F6,F7,F8,F9,G5,G6,G7,H6,H8,J7}
+		\stones[w] {A7,B6,B8,C2,C3,C5,C6,C7,C8,D3,D4,D6,D8,D9,E3,E4,E6,E8,F1,F2,F3,G4,H2,H3,H5,J5,J6}
+		\prisoners[b]{H1,J1,J2}
 		\prisoner[white] {A1}
 
-		\marks[b, t-circle] {A1,A2,A3,A4,G8,G9,H9,I9,I8,H7}
-		\marks[w, t-square] {A9,B9,C9,A8,B7,H4,I4,I3,I2,I1,H1,G1,G2,G3}
+		\marks[b, t-circle] {A1,A2,A3,A4,G8,G9,H9,J9,J8,H7}
+		\marks[w, t-square] {A9,B9,C9,A8,B7,H4,J4,J3,J2,J1,H1,G1,G2,G3}
 		\mark[neutral, t-square] {E1}
 	\end{goban}
 \end{figure}
 
-Let’s start from the following board:
+To end the article, \karu\ wants to show how a game is counted. They start from the final position. Since it has many stones and will be drawn several times, they keep it with |name|, like the variations of the previous tutorial, and the following boards start with |resume|, without repeating the coordinates.
 
 \begin{codeexample}[]
 	\pgfgoset{profile = wain}
 
-	\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
-		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+	\begin{goban}[label = {at = {above, left}}, name = final]
+		\stones[b] {A5,A6,B1,B2,B3,B4,B5,C1,C4,D1,D2,D5,D7,E2,E5,
+			E7,E9,F4,F5,F6,F7,F8,F9,G5,G6,G7,H6,H8,J7}
+		\stones[w] {A7,B6,B8,C2,C3,C5,C6,C7,C8,D3,D4,D6,D8,D9,E3,
+			E4,E6,E8,F1,F2,F3,G4,H2,H3,H5,J5,J6}
 	\end{goban}
 \end{codeexample}
 
-The next step is to identify the prisoner stones. Prisoners can be marked with the \emph{key} |prisoner| or with the macro
-\begin{command}{\prisoner\opt{\oarg{options}}\marg{intersection}}
-\end{command}
-which also has a plural version.
+Next come the prisoners: the dead stones, which are removed when counting. They are drawn with |\prisoner| and |\prisoners|, or with the \emph{key} |prisoner| of |\stone| and |\stones| (p.~\pageref{sec:piedras}). \karu\ keeps this board too, with another name: with |name| and |resume| in the same |goban|, as in the variations.
 
 \begin{codeexample}[width=4.75cm]
 	\pgfgoset{profile = wain}
 
-	\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
-		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
-
-		\stones[b, prisoner]{H1-|I2} % Same as \prisoners[b] {...}
-		\prisoner[w] {A1} % Same as \stone[w, prisoner] {...}
+	\begin{goban}[label = {at = {above, left}},
+		resume = final, name = final2]
+		\stones[b, prisoner]{H1, J1, J2} % Same as \prisoners[b]{...}
+		\prisoner[w] {A1} % Same as \stone[w, prisoner]{...}
 	\end{goban}
 \end{codeexample}
 
-Now let’s define the territories. This can be done in many ways. In particular, two are implemented for sure: the mark |t-square| and the mark |t-circle|. These marks always take as fill the fill color of the stone they belong to, and as border color and width those of the grid.
+Now, the territory. One way is to mark each point with |t-square| or |t-circle|. These marks always take as fill the fill color of the stone they belong to, and as border color and width those of the grid.
 
 \begin{codeexample}[width=4.75cm]
 	\pgfgoset{profile = wain}
 
-	\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
-		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
-
-		\stones[b, prisoner]{H1-|I2}
-		\prisoner[w] {A1}
-
-		\marks[b, t-circle]{A1:4, G8|-I9, I8, H7}
-		\marks[w, t-square]{G3|-I1|-H4, C9-|A8, B7}
-		\marks[t-square, fill = {color = red}] {E1} % Not filled in red: it takes the neutral color.
+	\begin{goban}[label = {at = {above, left}}, resume = final2]
+		\marks[b, t-circle]{A1, A2, A3, A4, G8, G9, H9, J9, J8, H7}
+		\marks[w, t-square]{A9, B9, C9, A8, B7, H4, J4, J3, J2, J1,
+			H1, G1, G2, G3}
+		\marks[t-square, fill = {color = red}] {E1} % Not filled in red: it takes the color of neutral
 	\end{goban}
 \end{codeexample}
 
-Another way is |\territory| (p.~\pageref{subsec:territory}). With a polygon, it marks the points of that region that have no living stone; with |auto| and the Lua kernel, it finds the territory of each player by itself. |\pgfgoscore| writes the score.
+Another way is |\territory| (p.~\pageref{subsec:territorio}). With a polygon, it marks the points of that region that have no living stone; with |auto| and the Lua kernel, it finds the territory of each player by itself. |\pgfgoscore| writes the score.
 
 \begin{codeexample}[width=4.75cm]
 	\pgfgoset{profile = wain}
 
-	\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
-		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
-
-		\stones[b, prisoner]{H1-|I2}
-		\prisoner[w] {A1}
-
+	\begin{goban}[label = {at = {above, left}}, resume = final2]
 		\territory[dame]{auto}
 	\end{goban}
 
 	Black: \pgfgoscore{black}. White: \pgfgoscore[komi = 6.5]{white}.
 \end{codeexample}
+
+For the article, \karu\ prefers the territory to look like a patch of color and not point by point. With |draw = region|, the territory of each color is a single polygon, whose sides run along the lines of the board.
+
+\begin{codeexample}[width=4.75cm]
+	\pgfgoset{profile = wain}
+
+	\begin{goban}[label = {at = {above, left}}, resume = final2]
+		\territory[draw = region]{auto}
+	\end{goban}
+\end{codeexample}
+
+\subsection{A problem book}
+\label{tut:problemas}
+
+For their students, \karu\ prepares a book of life-and-death problems. Problems are often saved in SGF too: the initial position, who plays and a tree with each variation of the solution, right or wrong, with its comments. |\sgfproblem| draws all of that: first the statement and then one diagram per variation. If the file does not say which part of the board to show, only the part the problem uses is shown, as with |partial = auto|.
+
+\begin{codeexample}[code only]
+	\pgfgodefinesgf{problem}{problem.sgf}
+
+	\sgfproblem[title = Problem 1]{problem}
+\end{codeexample}
+
+\sgfproblem[title = Problem 1]{problem}
+
+In a book, the solutions do not go next to the statement. \karu\ puts the statements in the first part, with |solutions = false|, and the solutions at the end, with |statement = false|.
+
+\begin{codeexample}[code only]
+	\sgfproblem[title = Problem 1, solutions = false]{problem}
+	% ... at the end of the book:
+	\sgfproblem[statement = false, layout = {columns = 4, fit}]{problem}
+\end{codeexample}
+
+\sgfproblem[title = Problem 1, solutions = false]{problem}
+
+\sgfproblem[statement = false, layout = {columns = 4, fit}]{problem}
+
+Some problems are not in any file, and \karu\ draws them by hand, with the same part of the board that |\sgfproblem| shows. Here they write the part, |A16:F19|: with |partial = auto|, each board would show only its own, and they would not match. So that they have the same size as the others, they go together with those of |\sgfproblem| in one |pgfgolayout|, which lays out in a grid every board it contains.
+
+\begin{codeexample}[code only]
+	\begin{pgfgolayout}[columns = 3, fit]
+		\sgfproblem[title = Problem 1, solutions = false]{problem}
+		\begin{goban}[19, partial = A16:F19]
+			\stones[b]{A16, B16, C16, D17, E18, E19}
+			\stones[w]{A17, B17, C17, D18, D19}
+		\end{goban}
+		\begin{goban}[19, partial = A16:F19]
+			\stones[b]{A17, B17, C17, D18, D19}
+			\stones[w]{A18, B18, C18, C19}
+		\end{goban}
+	\end{pgfgolayout}
+\end{codeexample}
+
+\begin{pgfgolayout}[columns = 3, fit]
+	\sgfproblem[title = Problem 1, solutions = false]{problem}
+	\begin{goban}[19, partial = A16:F19]
+		\stones[b]{A16, B16, C16, D17, E18, E19}
+		\stones[w]{A17, B17, C17, D18, D19}
+	\end{goban}
+	\begin{goban}[19, partial = A16:F19]
+		\stones[b]{A17, B17, C17, D18, D19}
+		\stones[w]{A18, B18, C18, C19}
+	\end{goban}
+\end{pgfgolayout}
+
+\subsection{A wooden board: a profile with images}
+\label{tut:madera}
+
+For the cover of the book, \karu\ wants a board that looks like a real one, since the budget does not stretch to a kaya one: wood, stones with volume and white stones with stripes. The profiles of the catalog draw the stones as circles; this needs images (PNG, JPG or PDF). \pgfgoname\ comes with some, next to its |.sty| files, and \karu\ starts with them: a photo of wood, |pgfgo-board.jpg|, a black slate stone, |pgfgo-shell-black.png|, and five white shell stones, |pgfgo-shell-white-1.png| to |pgfgo-shell-white-5.png|. They are used by name, from any document; images of your own are used the same way, as with |\includegraphics|.
+
+\begin{figure}[H]
+	\centering
+	\pgfgodefineprofile[from = default]{wood}{
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
+		all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
+		black = {stone = {image = {file = pgfgo-shell-black.png}}},
+		white = {stone = {image = {file = {
+			pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+			pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}
+	\begin{goban}[profile = wood, label = {at = {north, west}}]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+	\end{goban}
+\end{figure}
+
+They start from the first board of the article. The wood goes in the background of the board, with |background/fill/image| (p.~\pageref{sec:tablero}). By default, the image covers the whole board, cropped if needed; with |fit|, it can be stretched or repeated in tiles.
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgoset{goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}}}
+
+	\begin{goban}[label = {at = {north, west}}]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+	\end{goban}
+\end{codeexample}
+
+The stones of a player are drawn with an image with |stone/image| (p.~\pageref{subsec:piedrasimagen}), in the options of that player. The image takes the place of the circle: neither the fill nor the border is drawn.
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgoset{
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
+		players = {
+			black = {stone = {image = {file = pgfgo-shell-black.png}}},
+			white = {stone = {image = {file = pgfgo-shell-white-1.png}}}}}
+
+	\begin{goban}[label = {at = {north, west}}]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+	\end{goban}
+\end{codeexample}
+
+The black stones look good, but the white ones are all the same, and on a real board each shell stone has its own stripes. With several files in |file|, each stone uses one of them, chosen by its position: a stone on a point always shows the same image, in every diagram.
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgoset{
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
+		players = {
+			black = {stone = {image = {file = pgfgo-shell-black.png}}},
+			white = {stone = {image = {file = {
+				pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+				pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}}
+
+	\begin{goban}[label = {at = {north, west}}]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+	\end{goban}
+\end{codeexample}
+
+For the stones to look as if they rest on the wood, a shadow is missing. |shadow| draws it with the shape of the image (if the image has transparency, as these PNG do). Since it is the same for both players, it goes in |all|. Each file is kept only once in the PDF, however many stones use it.
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgoset{
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
+		players = {
+			all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
+			black = {stone = {image = {file = pgfgo-shell-black.png}}},
+			white = {stone = {image = {file = {
+				pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+				pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}}
+
+	\begin{goban}[label = {at = {north, west}}]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+	\end{goban}
+\end{codeexample}
+
+With five images, a repeated one may still show. |rotate| turns each stone by a different angle, also chosen by its position. These stones have the light at the top left, so \karu\ turns them only a little, between $-15$ and $15$ degrees; the shadow turns with the image, but still falls to the same side.
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgoset{
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
+		players = {
+			all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
+			black = {stone = {image = {file = pgfgo-shell-black.png}}},
+			white = {stone = {image = {file = {
+				pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+				pgfgo-shell-white-4.png, pgfgo-shell-white-5.png},
+				rotate = -15:15}}}}}
+
+	\begin{goban}[label = {at = {north, west}}]
+		\stones[b]{B2,E2,J2,C3,D3,G3,H3,C5,D5,E5,F5,G5,E6,G6}
+		\stones[w]{D8,F8,E7,H7,C6,D6,F6,H6,B5,J5,B4,E4,J4,J3,H2}
+	\end{goban}
+\end{codeexample}
+
+\karu\ will use this style in the whole book, and maybe in other documents. Instead of repeating the |\pgfgoset|, they save it as a profile with |\pgfgodefineprofile| (p.~\pageref{subsec:perfiles}): |goban| holds the options of the board; |all|, those of the three players, and |black| and |white|, those of each one. With |from = default|, each part starts with the profile |default|. Then the profile is used like any other, with the \emph{key} |profile|.
+
+\begin{codeexample}[code only]
+	\pgfgodefineprofile[from = default]{wood}{
+		goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
+		all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
+		black = {stone = {image = {file = pgfgo-shell-black.png}}},
+		white = {stone = {image = {file = {
+			pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+			pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}
+
+	\pgfgoset{profile = wood}
+\end{codeexample}
+
+\pgfgodefineprofile[from = default]{wood}{
+	goban = {background = {fill = {image = {file = pgfgo-board.jpg}}}},
+	all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
+	black = {stone = {image = {file = pgfgo-shell-black.png}}},
+	white = {stone = {image = {file = {
+		pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+		pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}
+
+An almost identical profile, with a soft shadow and without the border of the board, comes with \pgfgoname: |shell| (p.~\pageref{subsec:perfilshell}); with |profile = shell| nothing has to be defined. There is also |yunzi|, with matte stones. Their definitions are in the catalog.
+
+A profile holds for everything that \pgfgoname\ draws, also for the diagrams of an SGF. This is the game of Lee Sedol and AlphaGo on wood, with one diagram every 50 moves and the numbering restarted in each one.
+
+\begin{codeexample}[code only]
+	\pgfgoset{profile = wood}
+
+	\sgfdiagrams[step = 50, restart, layout = {columns = 2, fit}]{lee}
+\end{codeexample}
+
+\begingroup
+\pgfgoset{profile = wood}
+
+\sgfdiagrams[step = 50, restart, layout = {columns = 2, fit}]{lee}
+\endgroup
+
+\subsection{Slides and animations}
+\label{tut:diapositivas}
+
+\karu\ also teaches with slides. A |goban| works inside a |beamer| |frame| as anywhere else, and |\sgf| with |to| shows the game move by move, one slide per move, with its comment beside it.
+
+\begin{codeexample}[code only]
+	\documentclass{beamer}
+	\usepackage{pgf-go}
+
+	\begin{document}
+		\begin{frame}[t]{A short game}
+			\begin{columns}[T]
+				\column{0.5\textwidth}
+					\foreach \k in {1, ..., 10} {
+						\only<\k>{
+							\begin{goban}[sgf size = game, captures, scale = 1.5]
+								\sgf[to = \k]{game}
+							\end{goban}}}
+				\column{0.45\textwidth}
+					\foreach \k in {1, ..., 10} {
+						\only<\k>{\small\sgfcomment{game}{\k}}}
+			\end{columns}
+		\end{frame}
+	\end{document}
+\end{codeexample}
+
+To go over the whole game, on the other hand, the diagrams of Lee Sedol and AlphaGo from the article are enough (p.~\pageref{tut:partida}), one per slide. With |per frame|, |\sgfdiagrams| puts each diagram on its own slide of the |frame|, with its caption (p.~\pageref{subsec:disposicion}). Outside |beamer|, |per page| does the same with pages.
+
+\begin{codeexample}[code only]
+	\begin{frame}{Lee Sedol against AlphaGo}
+		\centering
+		\sgfdiagrams[step = 50, goban = {scale = 0.6}, layout = {per frame}]{lee}
+	\end{frame}
+\end{codeexample}
+
+The slides are another document, but \karu\ does not want to copy the boards of the article. In the article, they add |export| to the |goban| of the fight, which is written to the file |fight.pgfgo|. In the slides, they bring it in with |\pgfgoimport|, with its name and its style, and use it as if it had been drawn there: with |\pgfgoview| or with |resume| (p.~\pageref{subsec:exportar}).
+
+\begin{codeexample}[code only]
+	% In the article:
+	\begin{goban}[partial = A1:G7, name = fight, export = fight]
+		...
+	\end{goban}
+
+	% In the slides:
+	\pgfgoimport{fight}
+	...
+	\begin{frame}{If Black connects}
+		\begin{goban}[resume = {fight, marks}, partial = auto]
+			\moves{E3}
+		\end{goban}
+	\end{frame}
+\end{codeexample}
+
+In a PDF to be read on screen, on the other hand, they prefer an animation: |\sgfanimation| draws one board per move with the |animate| package, and its buttons step forward, back or play the game (p.~\pageref{subsec:sgf}). The profile holds here too. The animation can be seen in Acrobat Reader and in some other viewers; in the rest, only the first frame.
+
+\begin{codeexample}[code only]
+	\pgfgoset{profile = wood}
+
+	\sgfanimation[to = 40, fps = 4, goban = {captures, scale = 0.5},
+		animate = {controls, loop}]{lee}
+\end{codeexample}
+
+\begin{center}
+	\pgfgoset{profile = wood}
+	\sgfanimation[to = 40, fps = 4, goban = {captures, scale = 0.5},
+		animate = {controls, loop}]{lee}
+\end{center}
+
+\subsection{A joseki dictionary}
+\label{tut:josekis}
+
+For another lesson, \karu\ wants to explain the answers to the low approach to the 4-4 point. The known sequences of the opening in a corner, the \emph{josekis}\footnote{Learning them is easy; forgetting them, as the proverb asks, is harder.}, are often saved in an SGF shaped like a dictionary: a tree with a branch for each possible move, comments on the ones that matter and letters on the moves that can follow. \karu\ puts together a small one, |joseki.sgf|, and calls it |josekis|.
+
+\begin{codeexample}[code only]
+	\pgfgodefinesgf{josekis}{joseki.sgf}
+\end{codeexample}
+
+First, the position: the first two moves, with the letters of the answers. The board is $19\times19$, but everything happens in a corner; with |partial = auto| (p.~\pageref{tut:parcial}), the |goban| shows only the part used by what it draws, the letters too.
+
+\begin{codeexample}[]
+	\begin{goban}[sgf size = josekis, partial = auto]
+		\sgf[to = 2]{josekis}
+	\end{goban}
+\end{codeexample}
+
+For the answers, \karu\ chooses the line with |variation|. In a dictionary there are so many branches that it is easier to give the moves of the line, from the first one, than to look for its number: |variation = {Q16, R14}| (p.~\pageref{subsec:sgf}). With |variations|, |\sgfdiagrams| also draws, each in its own diagram, the commented variations that leave that line, and with |from = 3|, only those that start at move 3 or later: the answers, and not the invasion at the 3-3 point, which is another move 2. With |partial = auto|, every diagram shows the same part of the board.
+
+\begin{codeexample}[code only]
+	\sgfdiagrams[variation = {Q16, R14}, variations = {commented, from = 3},
+		partial = auto, comments, layout = {columns = 3, fit}]{josekis}
+\end{codeexample}
+
+\sgfdiagrams[variation = {Q16, R14}, variations = {commented, from = 3},
+	partial = auto, comments, layout = {columns = 3, fit}]{josekis}
+
+The first diagram is the chosen line, to the end. The moves of each variation are numbered from 1, and the caption says at which move it leaves the line. In a large dictionary, each move comes with letters on the points where play can go on; with |marks = false|, the diagrams do not draw them.
+
+\subsection{Other languages}
+\label{tut:idiomas}
+
+A colleague of \karu\ wants to translate the book into French. The texts that \pgfgoname\ writes (the captions, the result, the ``N at M'' notes and the annotations of the comments) follow the language of |babel| or |polyglossia|, also when it changes inside the document: with |\selectlanguage{french}| they are translated by themselves. The language can also be chosen with the \emph{key} |lang| (p.~\pageref{subsec:idiomas}).
+
+\begin{codeexample}[code only]
+	\pgfgoset{lang = fr}
+
+	\sgfdiagrams[step = 5, layout = {columns = 2}]{game}
+	\sgfproblem[solutions = false]{problem}
+\end{codeexample}
+
+\begingroup
+\pgfgoset{lang = fr}
+
+\sgfdiagrams[step = 5, layout = {columns = 2}]{game}
+\sgfproblem[solutions = false]{problem}
+\endgroup
+
+The comment of the problem, ``Black to kill.'', is not translated: it is written that way in the file. Each text of the package can also be changed with its own \emph{key}, in any language: for example, the caption of the diagrams, with |title|.
+
+\begin{codeexample}[code only]
+	\pgfgoset{sgf diagrams = {title = Figure}}
+\end{codeexample}
+
+\subsection{Writing less: the coordinate syntax}
+\label{tut:abreviar}
+
+In all the tutorials, \karu\ wrote the stones one by one. When there are many, \pgfgoname\ allows the lists of |\stones|, |\marks| and |\prisoners| to be shortened (p.~\pageref{subsec:sintaxis-de-coordenadas}). The most useful forms are the stretches of a row or of a column: |C:G5| is row 5, from C to G, and |J3:5| is column J, from 3 to 5. With them, the first board of the article becomes:
+
+\begin{codeexample}[width=4.8cm]
+	\pgfgoset{profile = pgfgo}
+
+	\begin{goban}[label = {at = {north, west}}]
+		\stones[b]{B2, E2, J2, C3, D3, G3, H3, C:G5, E6, G6}
+		\stones[w]{D8, F8, E7, H7, C6, D6, F6, H6, B5, B4, E4, H2, J3:5}
+	\end{goban}
+\end{codeexample}
+
+For larger groups, there are paths that turn at right angles. \verb+A6 |- B5+ goes from A6 down to row 5 and then right to B5: the stones A6, A5 and B5. \verb+E9 -| F4+ goes right first and then down. \verb+D5 -- D7+ is a straight line. Paths can be chained, and with them the final position of the territory tutorial (p.~\pageref{tut:territorio}) fits in two lines:
+
+\begin{codeexample}[width=4.75cm]
+	\pgfgoset{profile = wain}
+
+	\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, J7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, J6|-H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|J2}
+		\prisoner[w] {A1}
+		\territory[dame]{auto}
+	\end{goban}
+\end{codeexample}
+
+Between two intersections that are not on the same row or the same column, |--| is a slanted line: \verb+D5 -- F7+ are D5, E6 and F7. Those stones touch only at the corners; for a connected chain, \verb+-|-+ fills each step, first sideways and then up or down: \verb+D4 -|- F6+ are D4, E4, E5, F5 and F6 (\verb+|-|+ starts with the column). With that, a ladder (\emph{shicho}) is written with its ends:
+
+\begin{codeexample}[width=4.8cm]
+	\begin{goban}[label = {at = {north, west}}]
+		\stones[w]{D4 -|- F6 -- G6}
+		\stones[b]{C4, D3, D5 -- F7, E3 -- G5}
+		\arrow{G6}{J8} % White runs. Not for long.
+	\end{goban}
+\end{codeexample}
+
+There is more: filled rectangles (|A1:C3|) or only their border (|A1 r C3|), whole columns and rows (|D|, |4|), the whole board (|*|) and, after a |;|, stones that are taken out of the list. Everything is in the reference, on p.~\pageref{subsec:sintaxis-de-coordenadas}.

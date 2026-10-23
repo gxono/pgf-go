@@ -47,8 +47,8 @@
 				\end{itemize}
 			\item Estilos y perfiles:
 				\begin{itemize}
-					\item Los perfiles son \emph{keys}: |profile|, |goban profile|, |players profile| y |players/|\meta{jugador}|/profile| (pág.~\pageref{subsec:perfiles}). Antes de aplicarse, el tablero y los jugadores vuelven al estilo inicial. |\pgfgodefineprofile| define un perfil completo de una vez.
-					\item Tres perfiles nuevos: |simple|, y |shell| y |yunzi|, con imágenes (pág.~\pageref{subsec:perfilshell}): un tablero de madera con piedras de pizarra y concha, o mates. Las imágenes vienen con el paquete, en la carpeta |img|, y se usan por su nombre.
+					\item Los perfiles son \emph{keys} (pág.~\pageref{subsec:perfiles}): |profile|, |goban profile|, |players profile| y |players/|\meta{jugador}|/profile|. Antes de aplicarse, el tablero y los jugadores vuelven al estilo inicial. |\pgfgodefineprofile| define un perfil completo de una vez.
+					\item Tres perfiles nuevos: |simple|, y |shell| y |yunzi|, con imágenes (pág.~\pageref{subsec:perfilshell}): un tablero de madera con piedras de pizarra y concha, o mates. Las imágenes vienen con el paquete, junto a sus archivos |.sty|, y se usan por su nombre.
 					\item Una misma regla para las \emph{keys} que prenden o apagan algo (pág.~\pageref{subsec:prender}).
 					\item Las opciones de un |goban| aceptan las de |\pgfgoset|, solo para ese tablero, y |\pgfgoset{mark = {...}}| fija también el estilo de las marcas de los tres jugadores.
 				\end{itemize}
@@ -65,7 +65,7 @@
 					\item |\moves| numera sus jugadas; |numbers = false| las deja sin número. |\move|, |\move*| y |\moves*| se han eliminado.
 					\item |\stones| sin jugador dibuja piedras neutrales, como |\stone|.
 					\item La única forma de recordar un tablero es |name| y |resume|; |goban/remember|, |goban/forget| y |resume| sin nombre se han eliminado.
-					\item |\pgfgouseprofile| y los demás |\pgfgouse...| se han eliminado: |\pgfgoset{profile = wain}|.
+					\item Se han eliminado |\pgfgouseprofile| y los demás |\pgfgouse...|; ahora se usa |\pgfgoset{profile = wain}|.
 					\item El operador |R| se ha eliminado (|A1 R C3| es |A1:C3|), y |:--:|, \verb+:-|:+ y \verb+:|-:+ son ahora |--|, \verb+-|-+ y \verb+|-|+.
 					\item El territorio se dibuja al terminar el |goban|, con el último |\territory| que marcó cada punto.
 					\item Un número de jugada nunca queda tapado por una etiqueta del archivo (|LB|) ni por |last mark|.

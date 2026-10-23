@@ -1,0 +1,359 @@
+\section{Coordinate syntax}
+\label{subsec:sintaxis-de-coordenadas}
+
+Something that sets \pgfgoname\ apart from other packages is the possibility of entering coordinates with several syntaxes:
+\begin{itemize}
+	\item Multiple entries, separated by commas.
+	\item Removing stones by adding the subtractive group after a <<;>>.
+\end{itemize}
+
+These forms only work in the plural commands (|\stones|, |\marks|, |\prisoners|); |\stone|, |\mark| and |\prisoner| take a single intersection. |\moves| accepts all of them except the subtractive groups, and warns if they have no fixed order (p.~\pageref{subsec:orden-coordenadas}). The writing has some restrictions. For example, to refer to an intersection, the alphabetic coordinate must be written in capitals and without spaces. So the intersection B5 must be entered as |B5|, and not as |B 5|, |B  5| or |b5|, since spaces between letter and number are not valid in this context. The restrictions will be explained in each case.
+
+
+When \pgfgoname\ has to read the argument of the coordinates, it may find something like this
+\begin{center}
+	|\stones{|{\color{red}|<item>, <item>, |\dots;} {\color{blue} |<item>, <item>, |\dots; }{\color{red} \dots}|}|
+\end{center}
+
+The first thing it will try to do is split the argument at the |;| and build two groups: the additive group and the subtractive group. The additive group adds stones with our syntax. The subtractive group removes them. These groups alternate automatically with each |;|. This is seen in more detail in the corresponding subsection. If no |;| is given, \pgfgoname\ will add all the stones to the additive group. Several stones or several groups can be added, separated by |,|. Altogether, this provides an interface to create complex groups with few \emph{tokens};
+
+\begin{codeexample}[width=0pt]
+	\pgfgoset{profile = pgfgosmooth}
+
+	\begin{goban}[17, partial = A1:R5, label = {at = {north, west}}]
+		\stones[b]{*;B,D,H,M,R2,Q,F2:4,K2rL5,O[1:2,4];B3}
+	\end{goban}
+\end{codeexample}
+
+
+\subsection{Groups of stones}
+
+\def\sssseccion#1{\vskip0.5em\noindent\textbf{#1}\par}
+
+\sssseccion{All the stones of the board (\emph{Why not?})}
+
+Adds to the corresponding group every \textbf{visible} intersection of the board. That is, on a partial board, only those of the visible region are added. This is worth making clear in case it is used together with |resume|. Its syntax is |*|.
+
+\begin{codeexample}[]
+	\pgfgoset{goban = {5, partial = B2:D4}}
+
+	\begin{goban}[label = {at = {south, west}}]
+		\stones[b]{*}
+	\end{goban}
+\end{codeexample}
+
+
+\sssseccion{Intersection}
+
+Intersections are given by the letter followed by the number, without spaces between the alphabetic and the numeric component: |LN|
+
+\begin{codeexample}[]
+	\pgfgoset{goban = {5, partial = B2:D4}}
+
+	\begin{goban}[label = {at = {south, west}}]
+		\stones[b]{C2, D3}
+		\stone[w]{B4}
+		\stone[w]{B 3} % Not recognized because it has a space.
+	\end{goban}
+\end{codeexample}
+
+In the example, |B 3| is not recognized because of the space, while |B4| is drawn correctly as a white stone.
+
+\sssseccion{Vertical or horizontal lines}
+Lines are groups of vertical or horizontal stones implicitly bounded by the size of the board: a whole column or row.
+
+\begin{itemize}
+	\item For a column (a vertical line), the syntax is |L|: |D| is column D.
+	\item For a row (a horizontal line), the syntax is |N|: |4| is row 4.
+\end{itemize}
+
+\begin{codeexample}[width=6cm]
+	\pgfgoset{goban = {5, partial = B2:D4}}
+
+	\begin{goban}
+		\stones[b]{B2,B3,B4}
+		\stones[fill = {color = red}]{D}
+	\end{goban}
+
+	\begin{goban}
+		\stones[b]{B2,C2,D2}
+		\stones[fill = {color = blue}]{4}
+	\end{goban}
+
+	\begin{goban}
+		%Add the lines C and 3. Then remove C3.
+		\stones[fill = {color = orange}]{C, 3; C3} %CAREFUL: C,3 != C3.
+	\end{goban}
+\end{codeexample}
+
+\sssseccion{Segments}
+
+Segments are groups of vertical or horizontal stones explicitly bounded. Since they go in one direction (only vertical or only horizontal), one of their coordinates stays constant and need not be repeated; only the range of the other is given.
+
+\begin{itemize}
+	\item For horizontal segments, the syntax is |L:LN| or |L:L N|.
+	\item For vertical segments, the syntax is |LN:N| or |L N:N|.
+\end{itemize}
+
+\begin{codeexample}[width=6cm]
+	\pgfgoset{goban = {5, partial = B2:D4}}
+
+	\begin{goban}
+		\stones[b]{B2,B3,B4}
+		\stones[w]{C2,D2}
+	\end{goban}
+
+	\begin{goban}
+		\stones[b]{B2:4}
+		\stones[w]{C:D2}
+	\end{goban}
+
+	\begin{goban}
+		% Spaces work between different elements.
+		\stones[b]{B 2:4}
+		\stones[w]{C:D 2}
+	\end{goban}
+\end{codeexample}
+
+Here, |B2:4| stands for a vertical segment from B2 to B4, while |C:D2| is a horizontal segment from C2 to D2. Segments go from the first end to the second: |H9:2| goes down from H9 to H2 and |E:A2| goes from E2 to A2. They can also be chained with the operators we will see later.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A:E5}
+		\stones[fill = {color = blue}]{H9:2}
+		\stones[fill = {color = orange}]{E:A2}
+		\stones[fill = {color = magenta}]{A:D7, A:C9} % Combined.
+	\end{goban}
+\end{codeexample}
+
+\sssseccion{Rectangle: an artificial consequence}
+
+The segment syntax creates ranges between coordinates to insert stones. I thought it useful to extend it to two ranges, as a first approach to rectangles (although it is not my favorite method, here it is). In this case, the syntax is |L:L N:N| or |L:LN:N|.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		% The space is not required.
+		\stones[fill = {color = red}]{A:E 7:8}
+		\stones[fill = {color = blue}]{I:G 9:2}
+		\stones[fill = {color = orange}]{A:B 2:4, F:D 1:3}
+	\end{goban}
+\end{codeexample}
+
+For example, |A:E 7:8| creates a rectangle that covers the columns from A to E in rows 7 and 8, while |I:G 9:2| goes down from I9 to G2. It works, but the operators we will see later are clearer.
+
+
+\sssseccion{Cartesian products}
+	In this context, the Cartesian product is a more powerful extension of the segments, but at the same time a generalization of all the notations presented so far. The idea behind it is the following: suppose we want to enter a group of stones on column A: |A1:3, A5, A7:8|. So far there was no simpler way to write this. But they all repeat A at the beginning: what if, instead of writing it three times, we write it only once? Something like
+	\begin{center}
+		|A[1:3, 5, 7:8]|
+	\end{center}
+	In this case, the interpreter distributes the A on the left to each of the elements on the right.
+
+	The elements of the list on the right need not be made of numbers. Something like |A:D 5:7, A1:2, A3, A:G9| can also be rewritten as
+	\begin{center}
+		|A[:D 5:7, 1:2, 3, :G9]|
+	\end{center}
+	Of course, nobody abstracts that much when entering coordinates, so this is a mere whim. The only restriction on the content in brackets is that brackets cannot be nested.
+
+	Just as there is a syntax for letters on the left, there is one for numbers on the right, and it works the same way. The expression |A12, C12, E:G12| can be written as |[A,C,E:G]12|.
+
+	There is a third operator which, yes, is more of a whim than anything else: the unrestricted Cartesian product. I will not dwell on it, because it requires a higher degree of abstraction and really has no human use. This operator is a combination of the previous two: the expression |[A,D:F][2,5,7:9]| is read as
+	\begin{center}
+		|A2, A5, A7:9, D:F2, D:F5, D:F 7:9|.
+	\end{center}
+
+	\begin{codeexample}[width=4cm]
+		\begin{goban}
+			\stones[b]{[A, D:F][2, 5, 7:9]}
+			\marks[b]{A2, A5, A7:9, D:F2, D:F5, D:F 7:9} %<- what the interpreter reads.
+		\end{goban}
+	\end{codeexample}
+
+	The Cartesian product syntax can then be used in three different ways:
+\begin{itemize}
+	\item |L[itm1, itm2,...]|.
+	\item |[itm1, itm2,...]N|.
+	\item |[itm1,itm2,...][itm3,itm4,...]|.
+\end{itemize}
+where brackets cannot be nested.
+
+This can also be combined with some of the operators we will see next, to create nodes in the paths.
+
+So far we have seen forms that cannot be combined with others in one element and that, therefore, \textbf{must} be separated by commas. Now we will see operators that join two intersections with a path and that can be chained.
+
+\sssseccion{Horizontal--vertical and vertical--horizontal}
+
+Given two intersections not aligned vertically or horizontally, these commands generate the intersections that connect the first with the second along a ``horizontal--vertical'' or ``vertical--horizontal'' path. This may remind you of the \verb+-|+ operator of TikZ, from which I borrowed the idea. The syntax is \verb+LN -| LN+ (for the first case) or \verb+LN |- LN+ (for the second), with or without spaces. These commands, together with the following ones, can be chained to make stairs or paths of the Manhattan metric.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A1 -| D3}
+		\stones[fill = {color = blue}]{D4 -| A2}
+		\stones[fill = {color = orange}] {A9 -| C7 -| G5} % Chained.
+		\stones[fill = {color = magenta}] {F1 |- I3 -| E4} % Try to guess.
+	\end{goban}
+\end{codeexample}
+
+In this example, \verb+A1 -| D3+ goes horizontally from A1 to D1 and then vertically to D3.
+
+\sssseccion{Lines in any direction}
+
+For any two intersections, |LN -- LN| draws the line of stones closest to the straight line that joins them: one stone per row (or per column, if the line moves sideways more than up or down), the one closest to the straight line. If both intersections are on the same row or column, it is the straight line between them.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A1 -- A5}
+		\stones[fill = {color = blue}] {A1 -- D1}
+		\stones[fill = {color = magenta}] {B9 -- D3}
+		\stones[fill = {color = orange}] {I9 -| F6 -- I6} % Chained.
+	\end{goban}
+\end{codeexample}
+
+When the straight line passes exactly between two intersections, the stone goes on the side of the nearer end, and in the exact middle, on the lower column (or row). So |A1 -- C5| and |C5 -- A1| give the same stones, and the line is symmetric, like the straight line.
+
+\sssseccion{Stairs}
+
+The stones of a slanted line touch only at the corners at each step, as on a diagonal, so in Go they do not form a group. To make them form one, \verb+LN -|- LN+ and \verb+LN |-| LN+ fill each step with the corner of \verb+-|+ (horizontal first) or of \verb+|-+ (vertical first): the result is a connected staircase, as the drawing of the operator suggests. If both intersections are on the same row or column, they give the same straight line as |--|.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A1 -- C7}
+		\stones[fill = {color = blue}]{D1 -|- F7}
+		\stones[fill = {color = orange}]{G1 |-| I7}
+	\end{goban}
+\end{codeexample}
+
+In stairs the order of the ends does matter, as in \verb+-|+ and \verb+|-+.
+
+\sssseccion{Filled and empty rectangles}
+
+The previous syntax for rectangles, |L:L N:N|, is not very intuitive and rather a legacy of the bounded segments. It is more direct to give two diametrically opposite vertices: |LN:LN| fills the rectangle (it is the same writing as that of |partial|) and |LN r LN| draws only its outline. Although the spaces around |r| are not required, I recommend them for readability.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A1:D3}
+		\stones[fill = {color = blue}] {A5 r D8}
+		\stones[fill = {color = orange}] {I8 r G4, H6} % It's alive!
+	\end{goban}
+\end{codeexample}
+
+For example, |A1:D3| fills a rectangle from A1 to D3, while |A5 r D8| draws only the border of a larger rectangle. A rectangle of a single column or a single row is a segment: |A5:A9| is |A5:9|.
+
+\sssseccion{Chaining}
+
+The operators (\verb+-|+, \verb+|-+, |--|, \verb+-|-+, \verb+|-|+ and |r|) can be chained: \verb+A1 -| C3 -- E3+ is \verb+A1 -| C3+ followed by \verb+C3 -- E3+, and C3 appears only once. Between two operators there can be not only an intersection: also a segment (|B5:7|, |A:B3|) or a rectangle (|A1:C3|). Each operator goes from the last point of what comes before to the first of what comes after. So \verb+A2 -| B5:7+ is \verb+A2 -| B5+ followed by |B5:7|, and \verb+B7 -| A:B3+ is \verb+B7 -| A3 -- B3+.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = red}]{A2 -| B5:7}
+		\stones[fill = {color = blue}]{I9 -| D:F6}
+		\stones[fill = {color = orange}]{F1:3 |- I5}
+	\end{goban}
+\end{codeexample}
+
+Rectangles can also be chained, to create more complex patterns.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = orange}] {I8 r G6 r I4} % You guess.
+		\marks[sequence]{I8,G6,I4}
+		\stones[fill = {color = blue!20}] {A1:E3 r A6 |- E9 -- E8} % Wow!
+		\marks[sequence]{A1,E3,A6,E9,E8}
+	\end{goban}
+\end{codeexample}
+
+In this case, |I8 r G6 r I4| chains two outline rectangles, while \verb+A1:E3 r A6 |- E9 -- E8+ combines a filled rectangle, an outline, a ``vertical--horizontal'' path and a line. The forms that go alone (|*|, |L|, |N|, |L:L|, |N:N| and |L:L N:N|) cannot be chained.
+
+\sssseccion{The order of the intersections}
+\label{subsec:orden-coordenadas}
+
+The intersections come out in the order in which they are written: segments go from the first end to the second (|N10:7| goes down from N10 to N7), the operators follow their path and brackets are distributed in place (|D4, B[3:1]| is |D4, B3:1|). That is the order numbered by |\moves| and |sequence|.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[7, label = {at = {south, west}}]
+		\stones[w]{A1 -|- F4}
+		\marks[sequence]{A1 -|- F4}
+	\end{goban}
+
+	\begin{goban}[7, label = {at = {south, west}}]
+		\stones[w]{G7:4 -| D2 -- A2}
+		\marks[sequence = {format = Alph}]{G7:4 -| D2 -- A2}
+	\end{goban}
+\end{codeexample}
+
+Some forms have no fixed path: rectangles (|LN:LN|, |L:L N:N| and |LN r LN|), whole columns and rows, and |*|. |\stones| and |\marks| accept them like the others, but |\marks[sequence]| and |\moves| warn (|unordered-coordinate|), because the order in which they go through them is not chosen by the writer.
+
+\subsection{Additive and subtractive groups}
+
+Suppose we want to draw the following diagram:
+
+\begin{figure}[H]
+	\centering
+	\begin{goban}
+		\stones[b]{A1:E6; C6 |- E3, A 1:2;}
+	\end{goban}
+\end{figure}
+
+This can be done with the operators already seen, splitting the pattern into several parts:
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[fill = {color = orange}] {A6:B3, B2:E1, D4:E6}
+	\end{goban}
+\end{codeexample}
+
+But we can also imagine that we start from a full rectangle from which the marked stones have been removed:
+
+\begin{figure}[H]
+	\centering
+	\begin{goban}
+		\stones[b]{A1:E6}
+		\marks[cross, line = {color = white}]{C6 |- E3, A1:2}
+	\end{goban}
+\end{figure}
+
+That is what additive and subtractive groups are about. An additive group adds intersections to the list, while a subtractive one removes them. By default, the commands always start by processing additive groups, which explains why they draw stones directly. In \pgfgoname, we can alternate between both kinds with |;|.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}, partial = A1:E6]
+		\stones[b]{A1:E6} % Additive group.
+	\end{goban}
+
+	\begin{goban}[label = {at = all}, partial = A1:E6]
+		\stones[b]{A1:E6; A 1:2} % Additive group; subtractive.
+	\end{goban}
+
+	\begin{goban}[label = {at = all}, partial = A1:E6]
+		\stones[b]{A1:E6; A 1:2, C6 |- E3} % Additive group; subtractive.
+	\end{goban}
+\end{codeexample}
+
+In this sequence, first a full rectangle is drawn (|A1:E6|), then the vertical segment |A 1:2| is removed, and finally the path \verb+C6 |- E3+ is taken out. The result is the diagram of the beginning.
+
+Sometimes a pattern is ideal except for one or two stones: a subtractive group removes them without redoing everything.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}]
+		\stones[b]{A1:E6; B:D 5, C2}
+	\end{goban}
+\end{codeexample}
+
+Here, |B:D 5| removes a horizontal segment on row 5, and |C2| removes one stone.
+
+Additive and subtractive groups alternate with each |;|, as many times as needed.
+
+\begin{codeexample}[width=6cm]
+	\begin{goban}[label = {at = all}, partial = A1:E6]
+		\stones[b]{A1:E6} % AD
+	\end{goban}
+
+	\begin{goban}[label = {at = all}, partial = A1:E6]
+		\stones[b]{A1:E6; A1:C4, E6} % AD, SU
+	\end{goban}
+
+	\begin{goban}[label = {at = all}, partial = A1:E6]
+		\stones[b]{A1:E6; A1:C4, E6; A 1:2} % AD, SU, AD
+	\end{goban}
+\end{codeexample}
+
+In this last example, a rectangle is created, two regions are removed (|A1:C4| and |E6|), and then a segment is added (|A 1:2|).

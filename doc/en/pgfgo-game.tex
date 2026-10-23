@@ -1,0 +1,451 @@
+\section{The game: captures, notes and territory}
+\label{sec:juego}
+
+With the Lua kernel, a |goban| can follow the rules of the game: remove the captured stones, note the moves that fall on points already played and count the territory.
+
+	\subsection{Captures}
+	\label{subsec:capturas}
+
+	With the Lua kernel (p.~\pageref{subsec:kernel}), \pgfgoname\ can keep track of the stones on the board and remove those left without liberties, as in a game.
+
+	\begin{key}{/pgfgo/goban/captures=\meta{remove, fade or false} (default remove, initially false)}
+
+		Turns captures on. When a move leaves an opposing group without liberties, that group is removed from the board. If it leaves its own group without liberties (a suicide), that group is removed. Stones put with |\stone| and |\stones| also count; neutral stones and prisoners do not. A move outside a partial board also captures. A move on an occupied point gives a warning, because it is not possible in a game. With |kernel = expl3|, this \emph{key} gives an error.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = A1:C3}}
+
+			\begin{goban}
+				\moves{B1,A1,A2}
+			\end{goban}
+
+			\begin{goban}[captures]
+				\moves{B1,A1,A2} % 3 captures 2.
+			\end{goban}
+		\end{codeexample}
+
+		Since \pgfname\ cannot erase what it has already drawn, with |captures| the stones are drawn when the |goban| ends. So, if the style is changed with |\pgfgoset| inside a |goban| with captures, the change does not reach the stones; the options of each command do.
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/captures/remove}
+
+		The captured stones disappear. It is the same as |captures| or |captures = true|.
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/captures/fade}
+
+		The captured stones stay on the board, drawn as prisoners (with the style of |\prisoner| and of |/pgfgo/prisoner|).
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = A1:E3}}
+
+			\begin{goban}[captures = fade]
+				\stones[w]{C1,D1}
+				\stones[b]{B1,C2,D2}
+				\moves{E1}
+			\end{goban}
+		\end{codeexample}
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/captures/false}
+
+		Turns captures off. It is the initial value.
+	\end{stylekey}
+
+	\begin{key}{/pgfgo/goban/captured marks=\meta{keep or remove} (initially keep)}
+
+		Decides what happens to the marks on a stone when it is captured. It only has an effect with |captures|. Marks on empty points do not change.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = A1:C3, captures}}
+
+			\begin{goban}
+				\stones[w]{A1}\stones[b]{B1}
+				\marks[triangle]{A1}
+				\moves{A2}
+			\end{goban}
+
+			\begin{goban}[captured marks = remove]
+				\stones[w]{A1}\stones[b]{B1}
+				\marks[triangle]{A1}
+				\moves{A2} % the triangle goes with the white stone.
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/captured marks/keep}
+
+		The marks stay on the empty point. It is the initial value.
+	\end{stylekey}
+
+	\begin{stylekey}{/pgfgo/goban/captured marks/remove}
+
+		The marks go with the stone, also with |captures = fade|. Sequences keep their numbering.
+	\end{stylekey}
+
+	\begin{command}{\pgfgoprisoners\marg{player}}
+		Writes how many prisoners the player (|black| or |b|, |white| or |w|) has in the last |goban| with |captures|: the opposing stones captured by its moves. With another player, it gives an error and writes 0.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = A1:C3}}
+
+			\begin{goban}[captures]
+				\moves{B1,A1,A2}
+			\end{goban}
+
+			Black: \pgfgoprisoners{black}. White: \pgfgoprisoners{white}.
+		\end{codeexample}
+	\end{command}
+
+	\subsection{Moves on points already played}
+	\label{subsec:notas}
+
+	In numbered diagrams, when a move falls on a point where there was already a move (for example, when taking back a ko), books do not draw it: the point still shows the first stone and below the diagram it is noted, for example, ``3 at 1''.
+
+	\begin{key}{/pgfgo/goban/notes=\meta{boolean} (default true, initially false)}
+
+		A numbered move on a point where there was already a numbered move of the same |goban| is not drawn: the point still shows the first one, even if it was captured, and ``N at M'' is noted. Only the numbered moves (|\moves| without |numbers = false|) that are seen on the board count. It works with both kernels.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = A2:E4}}
+
+			\begin{goban}[notes]
+				\stones[b]{B3,C2,C4}
+				\stones[w]{D2,D4,E3}
+				\moves[w]{C3}
+				\moves{D3}
+				\moves[from = 3, w]{C3}
+			\end{goban}
+
+			\pgfgomovenotes
+		\end{codeexample}
+	\end{key}
+
+	\begin{command}{\pgfgomovenotes\opt{\oarg{options}}}
+		Writes the notes of the last |goban|, separated by commas. If there are no notes, it writes nothing. The options are those of |/pgfgo/notes|.
+	\end{command}
+
+	\begin{key}{/pgfgo/notes = \meta{options}}
+		Options of |\pgfgomovenotes| for the whole document, for example |\pgfgoset{notes = {at = en}}|.
+	\end{key}
+
+	\begin{key}{/pgfgo/notes/at = \meta{text} (initially at or its translation)}
+		Text between the two numbers.
+	\end{key}
+
+	\begin{key}{/pgfgo/notes/pass = \meta{text} (initially pass or its translation)}
+		A pass of an SGF file (p.~\pageref{subsec:sgf}) counts, but it is not drawn. With |notes|, if it would be numbered, ``N: pass'' is noted, in order with the other notes. The passes that end the game are not noted. This key is the text after the number.
+	\end{key}
+
+	\begin{key}{/pgfgo/notes/separator = \meta{text} (initially a comma and a space)}
+		Text between the notes.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, partial = A2:E4, notes]
+				\stones[b]{B3,C2,C4}
+				\stones[w]{D2,D4,E3}
+				\moves[w]{C3}
+				\moves{D3}
+				\moves[from = 3, w]{C3}
+				\moves{D3}
+			\end{goban}
+
+			\pgfgomovenotes[separator = {; }]
+		\end{codeexample}
+	\end{key}
+
+	\subsection{Territory}
+	\label{subsec:territorio}
+
+	At the end of the game, the territory can be marked by hand with |\marks| (p.~\pageref{sec:marcas}) or with |\territory|, which also counts it.
+
+	\begin{command}{\territory\opt{\oarg{options}}\marg{polygon}}
+		Marks as territory the points of the polygon that has those vertices (in order), including its border. It does not mark the points that have a living stone: prisoners count as territory. The vertices are written as in |\stones|; a single one marks a point, and two, a segment. It works with both kernels.
+
+		The territory is drawn when the |goban| ends. Each point keeps the last |\territory| that marked it, with the player and the options of that |\territory| (so |\territory[n]{A1}| after another |\territory| makes A1 neutral), and it is neither drawn nor counted if at the end it has a living stone.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[b]{A1,A5,B5,B1}
+				\territory[b]{F9,F7,G7,G6,I6,I9}
+				\territory[w]{F1,F4,G4,G5,I5,I1}
+				\territory[w]{A9,A6,C6,C8,D8,D9}
+			\end{goban}
+		\end{codeexample}
+	\end{command}
+
+	\begin{command}{\territory\opt{\oarg{options}}\marg{auto}}
+		With |auto| instead of a polygon, it finds the territory by itself: each region of points without living stones belongs to the color that surrounds it. If both colors touch it (dame, seki) or neither does, it is neutral. Prisoners count as dead stones. Without a player, it marks the territory of both; with |b| or |w|, only that of that player. Only with the Lua kernel (p.~\pageref{subsec:kernel}).
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[dame]{auto}
+			\end{goban}
+		\end{codeexample}
+
+		|auto| only looks at which color each region touches; it cannot read the position. So:
+		\begin{itemize}
+			\item It is for finished games. In an open position, almost the whole board touches both colors and is neutral; with stones of a single color, the whole board is theirs. If a border has a gap, the territory inside joins the dame and is neutral too.
+			\item It does not know which stones are dead (sometimes the players do not either): they have to be put with |\prisoners|. A dead stone put with |\stones| counts as alive, and the region it touches is neutral.
+			\item The eyes of a group in seki count as territory (under Japanese rules they do not). They can be made neutral afterwards, with a |\territory[n]| for each one.
+			\item Neutral stones (without a player) occupy their point, but belong to nobody: a region that only touches neutral stones is neutral.
+			\item It finds the regions with the stones there are when |\territory| appears, so it is best put at the end of the |goban|.
+			\item With |partial = auto|, the board grows to show the whole territory (and the dame, with |dame|).
+		\end{itemize}
+	\end{command}
+
+	\begin{key}{/pgfgo/territory/black}
+		The territory is Black's. It can also be written |b|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/white}
+		The territory is White's. It can also be written |w|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/neutral}
+		Neutral points. It is what a polygon without a player marks. It can also be written |n|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/b}
+		Short for |black|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/w}
+		Short for |white|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/n}
+		Short for |neutral|.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/draw=\meta{marks, fill or region} (initially marks)}
+		With |marks|, each point gets the territory mark of the player. With |fill|, the region is filled under the stones.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[draw = fill]{auto}
+			\end{goban}
+		\end{codeexample}
+
+		With |region|, the territory of each color is a single polygon: each square of the grid that has a corner in the territory is painted (dead stones count as territory). Its sides run along the lines of the board, its vertices are always on intersections, and it reaches the edge of the board. Two zones that touch at a single corner stay separate. All the |\territory| of a color in the same |goban| (also the territory |TB| and |TW| of |\sgf|) form a single region, which is drawn when the |goban| ends with the style of the last one. Neutral points are filled one by one, as with |fill|. The outline and its vertices can be drawn on top, with |line| and |vertices|, and |\pgfgoregion| gives its properties.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[draw = region]{auto}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/dame=\meta{boolean} (default true, initially false)}
+		With |auto|, also marks the neutral points.
+	\end{key}
+
+	\begin{key}{/pgfgo/territory/forget}
+		|resume| does not bring this territory, even if |territory| is asked for (p.~\pageref{subsec:recordar}).
+	\end{key}
+
+	The other options of |\territory| change the style of the player only for that command, like |mark| and |fill| in |\territory[w, mark = {cross}]{auto}|. Without a player, they change that of the three. The style of each player is set with |/pgfgo/players|:
+
+	\begin{key}{/pgfgo/players/black/territory=\meta{territory options}}
+		Style of the territory of each player (|black|, |white| or |neutral|).
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/mark=\meta{mark options} (initially t-circle)}
+		Mark of each point, with |draw = marks|. It is |t-circle| for Black and |t-square| for White and the neutral points.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, mark = {t-square}]{A1, A5, B5, B1}
+				\territory[w]{E1, E5}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill=\meta{fill options} (default true)}
+		Fill, with |draw = fill| and |draw = region|.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/true}
+		Draws the fill. It is the initial value.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/false}
+		Does not draw the fill: with |draw = region| only the outline or the vertices remain.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/color=\meta{color} (initially black)}
+		Color of the fill: |black| for Black, |white!80!black| for White and |gray| for the neutral points.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/opacity=\meta{number} (initially 0.35)}
+		Opacity of the fill: |0.35| for Black and the neutral points, |0.7| for White.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = fill,
+					fill = {color = blue, opacity = 0.5}]{A1, A5, B5, B1}
+				\territory[w, draw = fill]{E1, E5}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line=\meta{line options} (default true)}
+		Outline of the region, with |draw = region|. Alone or with |true|, it draws the outline; options alone do not turn it on.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
+		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
+		\prisoners[b]{H1-|I2}
+		\prisoner[w] {A1}
+
+				\territory[b, draw = region, line,
+					vertices]{auto}
+				\territory[w, draw = region,
+					line = {true, color = red}]{auto}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/true}
+		Draws the outline.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/false}
+		Does not draw the outline. It is the initial value.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/color=\meta{color} (initially black)}
+		Color of the outline: |black| for Black and |white!40!black| for White.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/width=\meta{dimension} (initially 1.2pt)}
+		Width of the outline.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/opacity=\meta{number} (initially 1)}
+		Opacity of the outline and of the vertices.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/line/above=\meta{boolean} (default true, initially true)}
+		With |true|, the outline and the vertices are drawn on top of the stones and the marks. With |false|, under the stones, together with the fill.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = region, fill = false,
+					line = {true, color = red, width = 2pt, opacity = 0.7}]{A1, A5, B5, B1}
+			\end{goban}
+
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = region, fill = false,
+					line = {true, color = red, width = 2pt, opacity = 0.7, above = false}]{A1, A5, B5, B1}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices=\meta{options} (default true)}
+		Points on the vertices of the outline, with |draw = region|, like the star points. They are drawn in the same layer as the outline. Alone or with |true|, it draws them; options alone do not turn them on.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/true}
+		Draws the vertices.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/false}
+		Does not draw the vertices. It is the initial value.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/radius=\meta{dimension} (initially 2pt)}
+		Radius of the points.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/vertices/color=\meta{color}}
+		Color of the points. Without this \emph{key}, they take the color of the outline.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = region,
+					vertices = {true, radius = 3pt, color = red}]{A1, A5, B5, B1}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{command}{\pgfgoscore\opt{\oarg{options}}\marg{player}}
+		Writes the score of the player (|black| or |b|, |white| or |w|) in the last |goban|, under Japanese rules: the points of its territory, plus the dead opposing stones in it, plus the stones it captured (with |captures|), plus the |komi| for White. A point marked twice counts only once. With |neutral| or |n|, it writes the number of neutral points marked. With another player, it gives an error and writes 0.
+
+		\begin{codeexample}[code only]
+			Black: \pgfgoscore{black}. White: \pgfgoscore[komi = 6.5]{white}.
+		\end{codeexample}
+
+		With the board above, it writes ``Black: 11. White: 23.5''.
+	\end{command}
+
+	\begin{key}{/pgfgo/score/komi=\meta{number} (initially 0)}
+		Komi added to White's score. For the whole document: |\pgfgoset{score = {komi = 6.5}}|.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory{auto}
+			\end{goban}
+
+			Black: \pgfgoscore{b}. White: \pgfgoscore[komi = 6.5]{w}.
+		\end{codeexample}
+	\end{key}
+
+	\begin{command}{\pgfgoregion\marg{player}\marg{property}}
+		Writes a property of the region (|draw = region|) of the player (|black| or |b|, |white| or |w|) in the current |goban| or in the last one. It is expandable, so it can be used in a computation or inside the coordinates of |\marks|. The properties are those of the whole outline, even if the board is partial. Without a region, the numbers are 0. The properties are:
+		\begin{itemize}
+			\item |polygons|: the number of outlines, outer ones and holes.
+			\item |outlines|: the number of outer outlines, one for each separate zone.
+			\item |holes|: the number of holes.
+			\item |vertices|: the number of vertices of all the outlines.
+			\item |area|: the number of painted squares.
+			\item |perimeter|: the length of all the outlines, in squares.
+			\item |polygon| \meta{i}: the vertices of outline \meta{i}, as coordinates separated by commas (for example, |A1,D1,D4,A4|). Empty if there are not that many outlines.
+		\end{itemize}
+		Each outline starts at its lowest vertex and, among those, at the leftmost one. Outer outlines go counterclockwise and holes, clockwise. The outlines are sorted by that first vertex, from bottom to top.
+
+		\begin{codeexample}[width=4.75cm]
+			\begin{goban}[label = {at = {above, left}}]
+				\stones[w]{D4:F6}
+				\territory[b, draw = region, line]{B2,B8,H8,H2}
+				\marks[triangle]{\pgfgoregion{b}{polygon 2}}
+			\end{goban}
+
+			Outlines: \pgfgoregion{b}{polygons}
+			(\pgfgoregion{b}{holes} hole).
+			Squares: \pgfgoregion{b}{area}.
+		\end{codeexample}
+	\end{command}

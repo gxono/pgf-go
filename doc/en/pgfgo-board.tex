@@ -1,142 +1,142 @@
-\section{The Board}
-\label{sec:board}
+\section{The board}
+\label{sec:tablero}
 
-When we refer to the "board," we mean an environment or \emph{scope} in which both the goban (the game grid) and its contents—stones, coordinate labels, and other relevant information—are rendered. This environment is designed to be flexible and customizable, allowing users to adapt its appearance and functionality according to the needs of the diagram, whether to represent full games, specific sections, or even add visual annotations.
+When we speak of the ``board'', we mean the |goban| environment: the grid, the background, the coordinates and everything drawn on it.
 
 \begin{environment}{{goban}\opt{\oarg{options}}}
-	
-	Initializes the goban environment. By default, it draws a square 9×9 intersection board with a visible border, white background, and no labels on the sides.
-	
+
+	Starts the goban environment. By default, it draws a square board of 9×9 intersections, with a visible border, a white background and no labels on the sides.
+
 	\begin{codeexample}[width=5cm]
 		\begin{goban}
 		\end{goban}
 	\end{codeexample}
-	
-	Since the board is the only macro that utilizes the TikZ layer, each intersection can be accessed using its alphanumeric coordinate (as in \pgfname) or numeric values in the \tikzname\ coordinate system. This allows combining Go’s intuitive syntax with TikZ’s graphical capabilities, which is especially useful for adding custom elements, such as arrows or marks, directly onto the board.
-	
+
+	|goban| is a |tikzpicture|, so \tikzname\ can be used inside it. Each intersection is a point of its coordinate system, with A1 at |(1,1)|, or it is written as in the commands, with |(go cs:A1)| (p.~\pageref{subsec:tikz}).
+
 	\begin{codeexample}[width=5.85cm]
-		\begin{goban}[19, partial = J1:S9,
+		\begin{goban}[19, partial = K1:T9,
 			label = {at = {north, east}}]
-			\stones[b] {K8,R8,Q5,R5,O4,Q4,L3,O3,M2,N2}
-			\mark[black, circle] {K8}
-			\stones[white] {K6,R4,R3,P3,N1,O2,Q2}
-			
-			\tikzset{flecha/.style = {-{latex[]}, line width = 2pt, blue}}
-			\draw[flecha] (12,8)--(17,8);
+			\stones[b] {L8,S8,R5,S5,P4,R4,M3,P3,N2,O2}
+			\mark[black, circle] {L8}
+			\stones[white] {L6,S4,S3,Q3,O1,P2,R2}
+
+			\tikzset{myarrow/.style = {-{latex[]}, line width = 2pt, blue}}
+			\draw[myarrow] (12,8)--(17,8);
 		\end{goban}
 	\end{codeexample}
-	
-	\label{subsec:usei}\begin{key}{/pgfgo/goban/use i=\meta{boolean} (default true, initially true)}
-		
-		Enables or disables the use of the letter "I" in the board’s coordinates and labels. When disabled ("false"), any reference to "I" is interpreted as "J".
-		
+
+	\label{subsec:usei}\begin{key}{/pgfgo/goban/use i=\meta{boolean} (default true, initially false)}
+
+		Uses the letter ``I'' in the coordinates and in the labels of the board. By default it is not used, as is customary in Go: the columns go from ``H'' to ``J'', and any reference to ``I'' is read as ``J''.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {13, label = {at = north}}}
-			
-			\begin{goban}[label = {at = west}, partial = H1:M3]
+
+			\begin{goban}[use i, label = {at = west}, partial = H1:M3]
 				\stone[b]{J2}
 			\end{goban}
-			
-			\begin{goban}[use i = false, partial = H1:N3]
+
+			\begin{goban}[partial = H1:N3]
 				\stone[b]{J2}
 			\end{goban}
-			
-			\begin{goban}[use i = false, label = {at = east}, partial = H1:N3]
-				\stone[white, mark = {custom = !}] {I2} % If it’s I, it shifts to J.
+
+			\begin{goban}[label = {at = east}, partial = H1:N3]
+				\stone[white, mark = {custom = !}] {I2} % If it is I, it becomes J.
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/size=\meta{nlines or nlines |x| nlines} (initially 9)}
-		
-		Defines the number of vertical and horizontal lines on the board. The word "size" can be omitted, and the value specified directly. If a single integer (e.g., |9|) is provided, the board will be square (9×9). If an expression like |5x3| is used, a rectangular board with 5 columns and 3 rows will be created.
-		
+
+		Sets the number of vertical and horizontal lines of the board. The word ``size'' can be left out and the value given directly. With a single integer (such as |9|), the board is square (9×9). With an expression such as |5x3|, the board is rectangular, with 5 columns and 3 rows.
+
 		\begin{codeexample}[width=6.5cm]
 			\begin{goban}[5]
 			\end{goban}
-			
+
 			\begin{goban}[5x3]
-			\end{goban}
-		\end{codeexample}
-	\end{key}
-	
-	\begin{key}{/pgfgo/goban/sgf view=\meta{file}}
-		Like |sgf size| and, if the file has a view (|VW|), it only shows that part of the board, like |partial|. The view can change during the game; the one of move |sgf view move| is used.
-	\end{key}
-
-	\begin{key}{/pgfgo/goban/sgf view move=\meta{number} (initially 0)}
-		The move whose view |sgf view| uses. A |VW| holds from the move of its node (or from the next one, if the node has no move) until the next |VW|, and |VW[]| shows the whole board again. With 0, it is the view at the start. It can go before or after |sgf view|. |\sgfdiagrams|, |\sgfanimation| and |\sgfproblem| choose the view by themselves.
-
-		\begin{codeexample}[code only]
-			\begin{goban}[sgf view = game.sgf, sgf view move = 120]
-				\sgf[from = 101, to = 120]{game.sgf}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/sgf size=\meta{file}}
-		Takes the size of the board from an SGF game (its |SZ| property). Only with the Lua kernel (p.~\pageref{subsec:kernel}).
+		Takes the size of the board from an SGF game (its property |SZ|). Only with the Lua kernel (p.~\pageref{subsec:kernel}).
 
 		\begin{codeexample}[]
-			\begin{goban}[sgf size = variations.sgf, label = {at = {north, west}}]
-				\sgf{variations.sgf}
+			\begin{goban}[sgf size = variations, label = {at = {north, west}}]
+				\sgf{variations}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/sgf view=\meta{file}}
+		Like |sgf size| and, if the file has a view (|VW|), shows only that part of the board, like |partial|. The view can change during the game; the one of the move |sgf view move| is used.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/sgf view move=\meta{number} (initially 0)}
+		The move from which |sgf view| takes the view. A |VW| holds from the move of its node (or from the next one, if the node has no move) to the next |VW|, and |VW[]| shows the whole board again. With 0, it is the view at the beginning. It can go before or after |sgf view|. |\sgfdiagrams|, |\sgfanimation| and |\sgfproblem| choose the view by themselves.
+
+		\begin{codeexample}[code only]
+			\begin{goban}[sgf view = game, sgf view move = 120]
+				\sgf[from = 101, to = 120]{game}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/scale=\meta{float} (initially 1)}
-		
-		Controls the global scale of the board, affecting both its overall dimensions and the thickness of certain elements (e.g., the "line width" of the lines).
-		
+
+		Scale of the board: the sizes and also the width of the lines.
+
 		\begin{codeexample}[width=5.5cm]
 			\begin{goban}[2, scale = 2]
 				\stone[b, mark]{A1}
 			\end{goban}
-			
+
 			\begin{goban}[2, scale = 1]
 				\stone[b, mark]{A1}
 			\end{goban}
-			
+
 			\begin{goban}[2, scale = 0.5]
 				\stone[b, mark]{A1}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\subsection{Grid}
-	
-	The grid refers to the central lines that form the board’s intersections.
-	
+
+	The grid is the lines of the board.
+
 	\begin{key}{/pgfgo/goban/grid=\meta{options} (default true)}
-		Controls the behavior and appearance of the board’s central lines. This set of options allows modifying their visibility, color, thickness, and spacing, offering a high degree of customization.
+		Options of the grid.
 	\end{key}
-	
+
 	\begin{stylekey}{/pgfgo/goban/grid/true}
 
-		Turns the central lines back on after a |grid = false| (for example, a global one set with |\pgfgoset|).
+		Draws the grid again after a |grid = false| (for example, a global one set with |\pgfgoset|).
 	\end{stylekey}
 
 	\begin{stylekey}{/pgfgo/goban/grid/false}
-		
-		Disables the central lines, leaving only the border and stones visible.
-		
+
+		Removes the grid and the star points.
+
 		\begin{codeexample}[]
 			\begin{goban}[3]
 				\stone[b]{A1}
 				\stone[w]{B2}
 			\end{goban}
-			
+
 			\begin{goban}[3, grid = false]
 				\stone[b]{A1}
 				\stone[w]{B2}
 			\end{goban}
 		\end{codeexample}
-		
+
 		The first board shows the default grid.
 	\end{stylekey}
-	
+
 	\begin{key}{/pgfgo/goban/grid/line=\meta{options} (default true)}
-		Allows controlling the grid lines.
+		Options of the lines of the grid.
 	\end{key}
 
 	\begin{stylekey}{/pgfgo/goban/grid/line/true}
@@ -144,7 +144,7 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{stylekey}
 
 	\begin{stylekey}{/pgfgo/goban/grid/line/false}
-		Does not draw the lines, but draws the star points (unlike |grid = false|).
+		Does not draw the lines, but does draw the star points (unlike |grid = false|).
 
 		\begin{codeexample}[]
 			\begin{goban}[9, grid = {line = false}, hoshi = {radius = 2pt}]
@@ -152,68 +152,68 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 			\end{goban}
 		\end{codeexample}
 	\end{stylekey}
-	
+
 	\begin{key}{/pgfgo/goban/grid/line/color =\meta{color} (initially black)}
-		
-		Allows changing the color of the grid lines.
-		
+
+		Color of the lines of the grid.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[grid = {line = {color = blue}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
+
 			\begin{goban}[grid = {line = {color = red}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/grid/line/opacity =\meta{float} (initially 1)}
-		
-		Sets the opacity of the grid lines, from 0 (transparent) to 1 (opaque).
-		
+
+		Opacity of the lines of the grid.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
+
 			\begin{goban}[grid = {line = {opacity = 0.2}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/grid/line/width =\meta{dimension} (initially 0.55pt)}
-		
-		Defines the thickness of the grid lines.
-		
+
+		Width of the lines of the grid.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
+
 			\begin{goban}[grid = {line = {width = 1.5pt}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/grid/x sep =\meta{dimension} (initially 1.25em)}
-		Sets the spacing between vertical lines, adjusting the width of the board’s columns.
+		Distance between the vertical lines.
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/grid/y sep =\meta{dimension} (initially 1.25em)}
-		Sets the spacing between horizontal lines, adjusting the height of the rows.
+		Distance between the horizontal lines.
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/grid/sep =\meta{dimension} (initially 1.25em)}
-		Simultaneously defines the vertical and horizontal spacing of the lines, ensuring uniform spacing in both directions. This is a convenient option for maintaining balanced proportions.
+		Both distances at once.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, grid = {x sep = 1.8em}]
@@ -229,53 +229,59 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/grid/image =\meta{options}}
-		Draws an image instead of the lines of the grid, with the opacity of |grid/line/opacity|. With |partial|, the corresponding part is shown. The star points are still drawn (see |hoshi|).
+		Draws an image instead of the lines of the grid, with the opacity of |grid/line/opacity|. With |partial| the corresponding part is seen. The star points are still drawn (see |hoshi|).
 
 		\begin{codeexample}[]
-			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false]
+			\begin{goban}[9, grid = {image = {file = pgfgo-grid.png}}, hoshi = false]
 				\stones[b]{C3}\stone[w]{D4}
 			\end{goban}
 
-			\begin{goban}[9, grid = {image = {file = grid.png}}, hoshi = false, partial = C3:G7]
+			\begin{goban}[9, grid = {image = {file = pgfgo-grid.png}}, hoshi = false, partial = C3:G7]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/grid/image/file =\meta{file}}
-		The image file.
+	\begin{key}{/pgfgo/goban/grid/image/file =\meta{file \opt{, file, ...}}}
+		The file of the image. With several files and |fit = tile|, each tile uses one, chosen by its place in the mesh: always the same one in each place, in every diagram. With |fit = stretch|, the first one is used.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, hoshi = false,
+				grid = {image = {file = {pgfgo-cell.png, pgfgo-tile.png}, fit = tile}}]
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/grid/image/fit =\meta{stretch or tile} (initially stretch)}
-		With |stretch|, the image is stretched from A1 to the opposite corner of the whole board, so the outer lines must be on the edges of the image. With |tile|, it is drawn once on each square of the grid (between four intersections), stretched to the size of the square: the image of one square builds the whole board.
+		With |stretch|, the image is stretched from A1 to the opposite corner of the whole board, so the outer lines have to be on the edges of the image. With |tile|, it is drawn once in each square of the grid (between four intersections), stretched to the size of the square: with the image of one square the whole board is built.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, grid = {image = {file = cell.png, fit = tile}}, hoshi = false]
+			\begin{goban}[9, grid = {image = {file = pgfgo-cell.png, fit = tile}}, hoshi = false]
 				\stones[b]{C3}\stone[w]{D4}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/grid/image/tiles =\meta{columns}|x|\meta{rows} (initially one per square)}
-		With |fit = tile|, the mesh in which the image is repeated, over the area from A1 to the opposite corner of the whole board; each image is stretched to the size of its cell. A single number is used for both directions. Without this key, there is one image per square.
+		With |fit = tile|, the mesh in which the image is repeated, over the area that goes from A1 to the opposite corner of the whole board; each image is stretched to the size of its cell. A single number holds for both directions. Without this \emph{key}, there is one image per square.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, grid = {image = {file = cell.png, fit = tile, tiles = 4}}, hoshi = false]
+			\begin{goban}[9, grid = {image = {file = pgfgo-cell.png, fit = tile, tiles = 4}}, hoshi = false]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/grid/image/rotate =\meta{angle}, |random| or \meta{min}|:|\meta{max} (initially 0)}
-		Turns the image, like |background/fill/image/rotate|: in quarter turns and, with |random| or a range, each tile with its own.
+	\begin{key}{/pgfgo/goban/grid/image/rotate =\meta{angle}, |random| or \meta{minimum}|:|\meta{maximum} (initially 0)}
+		Turns the image, like |background/fill/image/rotate|: in quarter turns, and with |random| or a range, each tile with its own.
 	\end{key}
 
 	\begin{stylekey}{/pgfgo/goban/grid/image/false}
 		Removes the image: the lines come back.
 	\end{stylekey}
 
-	\subsection{Star Points}
+	\subsection{Star points}
 	\label{subsec:hoshi}
 
-	The star points (\emph{hoshi}) are drawn on the grid, in its color. By default they are the usual ones: on each side, the fourth line from the edge (the third on boards with fewer than 13 lines); the center if the size is odd; and, from 15 lines on, the middle of the sides. A 19 board has nine, and a 13 or 9 board, five. Boards with fewer than 7 lines have none. Stones cover them.
+	The star points (\emph{hoshi}) are drawn on the grid, with its color. By default they are the usual ones: on each side, the fourth line from the edge (the third on boards of fewer than 13 lines); the center if the size is odd; and, from 15 lines on, the middle of the sides. A 19 board has nine, and a 13 or a 9 board, five. Boards of fewer than 7 lines have none. Stones cover them.
 
 	\begin{key}{/pgfgo/goban/hoshi=\meta{options} (default true)}
 		Options of the star points.
@@ -330,32 +336,32 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/hoshi/image=\meta{options}}
-		Draws an image on each star point instead of the circle.
+		Draws an image on each star point, instead of the circle.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, hoshi = {image = {file = hoshi.png}, radius = 3pt}]
+			\begin{goban}[9, hoshi = {image = {file = pgfgo-hoshi.png}, radius = 3pt}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/hoshi/image/file=\meta{file}}
-		The image file.
+		The file of the image.
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/hoshi/image/width=\meta{dimension} (initially $2 \times$ |radius|)}
-		The width of the image; the height keeps the proportions.
+		The width of the image; the height keeps the proportion.
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/hoshi/image/rotate=\meta{angle}, |random| or \meta{min}|:|\meta{max} (initially 0)}
-		Turns the image, like |stone/image/rotate| (p.~\pageref{subsec:stoneimages}): with |random| or a range, each point gets a different angle, always the same.
+	\begin{key}{/pgfgo/goban/hoshi/image/rotate=\meta{angle}, |random| or \meta{minimum}|:|\meta{maximum} (initially 0)}
+		Turns the image, like |stone/image/rotate| (p.~\pageref{subsec:piedrasimagen}): with |random| or a range, each point with a different angle, always the same.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, hoshi = {image = {file = hoshi.png, width = 8pt}}]
+			\begin{goban}[9, hoshi = {image = {file = pgfgo-hoshi.png, width = 8pt}}]
 			\end{goban}
 
-			\begin{goban}[9, hoshi = {image = {file = hoshi.png, width = 8pt, rotate = 45}}]
+			\begin{goban}[9, hoshi = {image = {file = pgfgo-hoshi.png, width = 8pt, rotate = 45}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -365,155 +371,173 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{stylekey}
 
 	\subsection{Border}
-	
-	The board’s border is the outline that frames the grid and stones, providing a clear visual boundary. By default, it is active, has a white background, and a black outline.
-	
+
+	The background of the board is the rectangle that goes under the grid, with its fill and its border. By default, the fill is white and the border, black.
+
 	\begin{key}{/pgfgo/goban/background=\meta{options} (default true)}
-		Controls the properties of the board’s border, such as its visibility, color, thickness, and shape, allowing detailed customization.
+		Options of the background and of the border.
 	\end{key}
-	
+
 	\begin{stylekey}{/pgfgo/goban/background/true}
 
-		Turns the board’s background and border back on after a |background = false|.
+		Draws the background and the border again after a |background = false|.
 	\end{stylekey}
 
 	\begin{stylekey}{/pgfgo/goban/background/false}
-		
-		Completely disables the board’s border, removing both the outline and fill. This is useful for minimalist diagrams or when the document’s background already provides sufficient contrast.
-		
+
+		Removes the background: the fill and the border.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
+
 			\begin{goban}[background = false, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{stylekey}
-	
+
 	\begin{key}{/pgfgo/goban/background/fill=\meta{options} (default true)}
-		Controls options related to the board’s background fill.
+		Options of the fill.
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/background/fill=\meta{boolean} (initially true)}
-		
-		Determines whether the board’s background fill is active. If disabled, the area inside the border will be transparent, showing only the outline (if enabled).
-		
+
+		With |false|, the background is transparent and only the border remains.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[background = {line = {color = red}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
+
 			\begin{goban}[background = {line = false}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/background/fill/color =\meta{color} (initially white)}
-		
-		Defines the fill color of the board.
-		
+
+		Color of the fill.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[background = {fill = {color = orange!40}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
+
 			\begin{goban}[background = {fill = {color = olive!30}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/background/fill/opacity =\meta{float} (initially 1)}
-		
-		Controls the opacity of the fill, from 0 (transparent) to 1 (opaque).
-		
+
+		Opacity of the fill.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[background = {fill = {color = orange!40}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
-			\begin{goban}[background = {fill = {color = orange!40}, fill = {opacity = 0.5}}, resume = a]
+
+			\begin{goban}[resume = a,
+				background = {fill = {color = orange!40}, fill = {opacity = 0.5}}]
 			\end{goban}
 		\end{codeexample}
-		
+
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/background/fill/image =\meta{options}}
-		A background image (for example, the wood of a board), over the fill color and with its opacity. The image is placed according to the whole board: with |partial|, the corresponding part is shown, clipped by the border and its rounded corners. Marks on empty points, which cover the grid with the color of the background, show the part of the image under them, and so does the |dim| mark. The halo of arrows and lines keeps the color of the background.
+		A background image (for example, the wood of a board), over the fill color and with its same opacity. The image is placed according to the whole board: with |partial| the corresponding part is seen, cut by the border and its rounded corners. The marks on empty points, which cover the grid with the color of the background, show the part of the image underneath, and so does the mark |dim|. The halo of arrows and lines is still the color of the background.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, background = {fill = {image = {file = wood.jpg}}}]
+			\begin{goban}[9,
+				background = {fill = {image = {file = pgfgo-board.jpg}}}]
 				\stones[b]{C3}\stone[w]{D4}
 				\marks[circle]{E5, C3}
 			\end{goban}
 
-			\begin{goban}[9, background = {fill = {image = {file = wood.jpg}}, rounded corners = 6pt}, partial = A1:E5]
+			\begin{goban}[9, partial = A1:E5,
+				background = {fill = {image = {file = pgfgo-board.jpg}},
+					rounded corners = 6pt}]
 				\marks[triangle]{C3}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/fill/image/file =\meta{file}}
-		The file of the background image.
+	\begin{key}{/pgfgo/goban/background/fill/image/file =\meta{file \opt{, file, ...}}}
+		The file of the background image. With several files and |fit = tile|, each tile uses one, chosen by its place: always the same one in each place, also with |partial|. That way the board does not look repeated. The tiles have the size of the first image (or that of their cell, with |tiles|). With |stretch| and |cover|, the first one is used.
+
+		\begin{codeexample}[]
+			\begin{goban}[9, background = {fill = {image = {
+				file = {pgfgo-tile.png, pgfgo-cell.png, pgfgo-board.jpg},
+				fit = tile, width = 1cm}}}]
+			\end{goban}
+		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image/fit =\meta{stretch, cover or tile} (initially cover)}
-		How the image fills the background of the whole board. |stretch| stretches it to fill the whole background, without keeping the proportions. |cover| scales it, keeping the proportions, until it covers the background, centered: what is left over is not shown. |tile| repeats it as tiles, from a corner, a side or the center of the whole board (see |anchor|).
+		How the image fills the background of the whole board. |stretch| stretches it to fill the whole background, without keeping the proportion. |cover| enlarges or reduces it, keeping the proportion, until it covers the background, centered: what is left over is not seen. |tile| repeats it as tiles, from a corner, an edge or the center of the whole board (see |anchor|).
 
 		\begin{codeexample}[]
-			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}]
+			\begin{goban}[9, background = {fill = {image = {
+				file = pgfgo-tile.png, fit = tile, width = 1cm}}}]
 			\end{goban}
 
-			\begin{goban}[9, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm}}}, partial = D4:H8]
+			\begin{goban}[9, partial = D4:H8, background = {fill = {image = {
+				file = pgfgo-tile.png, fit = tile, width = 1cm}}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image/anchor =\meta{position} (initially south west)}
-		With |fit = tile|, where the tiles start, on the background of the whole board. With a corner (|south west|, |south east|, |north west| or |north east|), that corner gets a whole tile. With a side (|north|, |south|, |east| or |west|), the first tile touches that side, centered along it. With |center|, a tile is in the center of the board.
+		With |fit = tile|, where the tiles start, on the background of the whole board. With a corner (|south west|, |south east|, |north west| or |north east|), a whole tile is in that corner. With an edge (|north|, |south|, |east| or |west|), the first tile is against that edge, centered along it. With |center|, a tile is in the center of the board.
 
 		\begin{codeexample}[]
-			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, anchor = north east}}}]
+			\begin{goban}[5, background = {fill = {image = {
+				file = pgfgo-tile.png, fit = tile, width = 1cm, anchor = north east}}}]
 			\end{goban}
 
-			\begin{goban}[5, background = {fill = {image = {file = tile.png, fit = tile, width = 1cm, anchor = north}}}]
+			\begin{goban}[5, background = {fill = {image = {
+				file = pgfgo-tile.png, fit = tile, width = 1cm, anchor = north}}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image/width =\meta{dimension} (initially the natural width)}
-		With |fit = tile|, the width of each tile; the height keeps the proportions.
+		With |fit = tile|, the width of each tile; the height keeps the proportion.
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image/tiles =\meta{columns}|x|\meta{rows}}
-		With |fit = tile|, instead of tiles of width |width| from |anchor|, splits the background of the whole board into that mesh and puts the image on each cell, stretched to its size. A single number is used for both directions.
+		With |fit = tile|, instead of tiles of width |width| from |anchor|, divides the background of the whole board into that mesh and puts the image in each cell, stretched to its size. A single number holds for both directions.
 
 		\begin{codeexample}[]
-			\begin{goban}[9, background = {fill = {image = {file = cell.png, fit = tile, tiles = 3x3}}}]
+			\begin{goban}[9, background = {fill = {image = {
+				file = pgfgo-cell.png, fit = tile, tiles = 3x3}}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/fill/image/rotate =\meta{angle}, |random| or \meta{min}|:|\meta{max} (initially 0)}
-		Turns the image in quarter turns: the angle is rounded to 0, 90, 180 or 270 degrees, so that the turned image still fills its place without gaps. With 90 or 270, the width and the height are swapped: with |cover| the image keeps its proportions, but a tile of width |width| that is not square is stretched. With |random| or a range, as in |stone/image/rotate| (p.~\pageref{subsec:stoneimages}), each tile has its own turn, always the same: the repetition shows less.
+	\begin{key}{/pgfgo/goban/background/fill/image/rotate =\meta{angle}, |random| or \meta{minimum}|:|\meta{maximum} (initially 0)}
+		Turns the image in quarter turns: the angle is rounded to 0, 90, 180 or 270 degrees, so that the turned image still fills its place without leaving gaps. With 90 or 270, the width and the height are swapped: with |cover| the image keeps the proportion, but a tile of width |width| that is not square is stretched. With |random| or a range, as in |stone/image/rotate| (p.~\pageref{subsec:piedrasimagen}), each tile has its own turn, always the same.
 
 		\begin{codeexample}[]
-			\begin{goban}[5, background = {fill = {image = {file = wood.jpg, rotate = 90}}}]
+			\begin{goban}[5, background = {fill = {image = {
+				file = pgfgo-board.jpg, rotate = 90}}}]
 			\end{goban}
 
-			\begin{goban}[5, background = {fill = {image = {file = wood.jpg, fit = tile, width = 1cm, rotate = random}}}]
+			\begin{goban}[5, background = {fill = {image = {
+				file = pgfgo-board.jpg, fit = tile, width = 1cm, rotate = random}}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
@@ -523,208 +547,213 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{stylekey}
 
 	\begin{key}{/pgfgo/goban/background/line=\meta{options} (default true)}
-		Controls the options for the background’s outline.
+		Options of the border.
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/background/line=\meta{boolean} (initially true)}
-		Enables or disables the border line.
-		
+		Draws (|true|) or removes (|false|) the border.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[background = {line = {color = red}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
+
 			\begin{goban}[background = {line = false}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/background/line/color =\meta{color} (initially black)}
-		
-		Defines the color of the border line, allowing it to stand out from the background or grid lines.
-		
+
+		Color of the border.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[background = {line = {color = red}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
+
 			\begin{goban}[background = {line = {color = blue}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/background/line/opacity =\meta{float} (initially 1)}
-		
-		Adjusts the opacity of the border line.
-		
+
+		Opacity of the border.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[background = {line = {color = red}}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
-			\begin{goban}[background = {line = {color = red}, line = {opacity = 0.5}}, resume = a]
+
+			\begin{goban}[resume = a,
+				background = {line = {color = red}, line = {opacity = 0.5}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/background/line/width =\meta{dimension} (initially 0.75pt)}
-		
-		Controls the thickness of the border line.
-		
+
+		Width of the border.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
+
 			\begin{goban}[background = {line = {width = 1.5pt}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/background/rounded corners =\meta{dimension} (initially 0pt)}
-		
-		Adjusts the rounding of the border corners, from 0pt (straight corners) to larger values for a smoother, more stylized effect.
-		
+
+		Radius of the corners of the background. With |0pt|, they are square.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = A1:C3}}
-			
+
 			\begin{goban}[name = a]
 				\stones[b]{B1,C2}
 				\stone[w]{A3}
 			\end{goban}
-			
+
 			\begin{goban}[background = {rounded corners = 10pt}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
+
 	\begin{key}{/pgfgo/goban/background/rounded corners/outer =\meta{dimension} (initially 0pt)}
-		
-		Adjusts only the rounding of the outer corners of the border.
-		
+
+		Only that of the outer corners.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = A1:C3}}
-			
+
 			\begin{goban}[background = {rounded corners = 0pt}, name = a]
 				\stones[b]{B1,C2}
 				\stone[w]{A3}
 			\end{goban}
-			
+
 			\begin{goban}[background = {rounded corners = {outer = 10pt}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
+
 	\begin{key}{/pgfgo/goban/background/rounded corners/inner =\meta{dimension} (initially 0pt)}
-		
-		Adjusts only the rounding of the inner corners of the board (only visible on partial boards).
-		
+
+		Only that of the inner corners (they are seen on partial boards).
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = A1:C3}}
-			
+
 			\begin{goban}[background = {rounded corners = 0pt}, name = a]
 				\stones[b]{B1,C2}
 				\stone[w]{A3}
 			\end{goban}
-			
-			\begin{goban}[background = {rounded corners = {outer = 8pt, inner = 2pt}}, resume = a]
+
+			\begin{goban}[resume = a,
+				background = {rounded corners = {outer = 8pt, inner = 2pt}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/background/sep =\meta{dimension} (initially 0.825em)}
-		
-		Defines the separation between the grid and the border, based by default on the stone radius multiplied by 1.5. This adjustment ensures that stones near the border do not overlap with it.
-		
+
+		Distance between the grid and the border. By default, 1.5 times the radius of the stones.
+
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
-			
+
 			\begin{goban}[background = {sep = 0.625em}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
-			
+
 			\begin{goban}[background = {sep = 1.5em}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
-	\begin{key}{/pgfgo/goban/background/drop shadow=\meta{options} (default true)}
-		Draws a shadow under the board. Without a value, it turns it on.
+
+	\begin{key}{/pgfgo/goban/background/shadow=\meta{options} (default true)}
+		Draws a shadow under the board. Without a value, turns it on.
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 
-			\begin{goban}[background = {drop shadow}, name = a]
+			\begin{goban}[background = {shadow}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 
-			\begin{goban}[background = {drop shadow = {color = blue, opacity = 0.3}}, resume = a]
+			\begin{goban}[background = {shadow = {color = blue, opacity = 0.3}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/drop shadow=\meta{boolean} (initially false)}
+	\begin{key}{/pgfgo/goban/background/shadow=\meta{boolean} (initially false)}
 		Turns the shadow on (|true|) or off (|false|).
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/drop shadow/angle =\meta{float} (initially -45)}
+	\begin{key}{/pgfgo/goban/background/shadow/angle =\meta{float} (initially -45)}
 		Direction of the shadow, in degrees.
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 
-			\begin{goban}[background = {drop shadow}, name = a]
+			\begin{goban}[background = {shadow}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 
-			\begin{goban}[background = {drop shadow = {angle = 45}}, resume = a]
+			\begin{goban}[background = {shadow = {angle = 45}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/drop shadow/offset =\meta{dimension} (initially 1.5pt)}
+	\begin{key}{/pgfgo/goban/background/shadow/offset =\meta{dimension} (initially 1.5pt)}
 		Distance between the board and its shadow.
 		\begin{codeexample}[]
 			\pgfgoset{goban = {5, partial = B2:D4}}
 
-			\begin{goban}[background = {drop shadow}, name = a]
+			\begin{goban}[background = {shadow}, name = a]
 				\stones[b]{C2,D3}
 				\stone[w]{B4}
 			\end{goban}
 
-			\begin{goban}[background = {drop shadow = {offset = 4pt}}, resume = a]
+			\begin{goban}[background = {shadow = {offset = 4pt}}, resume = a]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/drop shadow/opacity =\meta{float} (initially 0.5)}
+	\begin{key}{/pgfgo/goban/background/shadow/opacity =\meta{float} (initially 0.5)}
 		Opacity of the shadow.
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/drop shadow/color =\meta{color} (initially black)}
+	\begin{key}{/pgfgo/goban/background/shadow/color =\meta{color} (initially black)}
 		Color of the shadow.
 	\end{key}
 
-	\subsection{Partial Board}
-	
-	In many cases, it’s not necessary to represent a full board, but rather just a rectangular section—whether due to space constraints, to focus attention on a specific area, or to simplify diagram creation. The |goban| environment includes the \emph{key} |partial|, which defines this region with two opposite vertices of a rectangle, regardless of the order in which they are given. For example, |partial = A1:D3| is equivalent to |partial = D3:A1|.
-	
+	\subsection{Partial board}
+	\label{subsec:parcial}
+
+	Often the whole board is not needed, only a part. The \emph{key} |partial| sets it with two opposite corners of a rectangle, in any order. For example, |partial = A1:D3| is equivalent to |partial = D3:A1|.
+
 	\begin{figure}[H]
 		\centering
-		
+
 		\begin{tikzpicture}
 			\node[anchor=north] (X) {
 				\begin{goban}[label = {at = {north, west}}]
@@ -732,66 +761,80 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 					\coordinate (B) at (9,9);
 					\coordinate (C) at (A|-B);
 					\coordinate (D) at (A-|B);
-					
-					\tikzset{punto/.style = {circle, fill = #1, draw, inner sep=0.25em, fill opacity=0.5, anchor=center}}
-					
-					\node[punto = red] at (A){};
-					\node[punto = red] at (B){};
-					\node[punto = blue] at (C){};
-					\node[punto = blue] at (D){};
-					
+
+					\tikzset{dot/.style = {circle, fill = #1, draw, inner sep=0.25em, fill opacity=0.5, anchor=center}}
+
+					\node[dot = red] at (A){};
+					\node[dot = red] at (B){};
+					\node[dot = blue] at (C){};
+					\node[dot = blue] at (D){};
+
 					\draw[red, {latex}-{latex}, shorten <=5pt, shorten >= 5pt] (A)--(B);
 					\draw[blue, {latex}-{latex}, shorten <=5pt, shorten >= 5pt] (C)--(D);
-					
+
 					\node[fit=(A)(B), draw, inner sep=0.6em, rounded corners, line width=1pt, fill opacity=0.1, fill=orange] {};
 				\end{goban}
 			};
-			
+
 			\node[anchor=north, xshift=15em] {
 				\tikz{
 					\node[inner sep=0] (Y) {
-						\begin{goban}[label = {at = {north, west}}, partial = I9:D6]
+						\begin{goban}[label = {at = {north, west}}, partial = J9:D6]
 						\end{goban}
-					};	
+					};
 					\node[align = left, anchor=north, inner sep=0, yshift=-1em] at (Y.south){
-						{\color{blue}|partial = D9:I6|}\\
-						{\color{blue}|partial = I6:D9|}\\
-						{\color{red} |partial = D6:I9|}\\
-						{\color{red} |partial = I9:D6|}\\
+						{\color{blue}\texttt{partial = D9:J6}}\\
+						{\color{blue}\texttt{partial = J6:D9}}\\
+						{\color{red} \texttt{partial = D6:J9}}\\
+						{\color{red} \texttt{partial = J9:D6}}\\
 					};
 				}
 			};
 		\end{tikzpicture}
 	\end{figure}
-	
-	\begin{key}{/pgfgo/goban/partial=\meta{intersection}|:|\meta{intersection} or |false|}
-		Shows only a part of the board: the rectangle that has those two intersections as opposite corners, in any order. It can also be written |partial = {B2, D4}| or |partial = {B2 to D4}|. With |false|, it shows the whole board again (for example, after a global |partial| set with |\pgfgoset|).
+
+	\begin{key}{/pgfgo/goban/partial=\meta{intersection}|:|\meta{intersection}, |auto| or |false|}
+		Shows only part of the board: the rectangle that has those two intersections as opposite corners, in any order. It can also be written |partial = {B2, D4}| or |partial = {B2 to D4}|. With |auto|, the board chooses the part: the one used by the stones, moves, marks, arrows, lines and territories that are drawn, with |partial margin| more lines. What is drawn directly with \tikzname\ does not count. With |false|, the whole board is shown again (for example, after a global |partial| set with |\pgfgoset|).
 	\end{key}
-	
+
 	\begin{codeexample}[]
-		\tikzset{flecha/.style = {-{latex[]}, line width = 1pt, red}}
-		
+		\tikzset{myarrow/.style = {-{latex[]}, line width = 1pt, red}}
+
 		\begin{goban}[partial = A1:D3]
-			\draw[flecha] (1,1)--(4,3); % From A1 to D3
+			\draw[myarrow] (1,1)--(4,3); % From A1 to D3
 		\end{goban}
-		
-		\begin{goban}[partial = A9:I6]
-			\draw[flecha] (1,9)--(9,6); % From A9 to I6
+
+		\begin{goban}[partial = A9:J6]
+			\draw[myarrow] (1,9)--(9,6); % From A9 to J6
 		\end{goban}
-		
+
 		\begin{goban}[partial = E2:B4]
-			\draw[flecha] (5,2)--(2,4); % From E2 to B4
+			\draw[myarrow] (5,2)--(2,4); % From E2 to B4
 		\end{goban}
 	\end{codeexample}
-	
-	\subsection{Board Labels}
-	
-	Labels are the alphanumeric indicators (letters and numbers) that appear on the sides of the board to identify intersections.
-	
-	\begin{key}{/pgfgo/goban/label=\meta{options} (default true)}
-		Controls the properties of the labels, such as their position and format.
+
+	\begin{key}{/pgfgo/goban/partial margin=\meta{number} (initially 1)}
+		Lines that |partial = auto| adds around what is drawn. A side two lines or less from the edge reaches the edge. With nothing drawn, the whole board is seen.
+
+		\begin{codeexample}[]
+			\begin{goban}[19, partial = auto]
+				\moves{Q16, R14, R16, P17}
+			\end{goban}
+
+			\begin{goban}[19, partial = auto, partial margin = 0]
+				\stones[b]{J10, K11}\stones[w]{K9}
+			\end{goban}
+		\end{codeexample}
 	\end{key}
-	
+
+	\subsection{Labels of the board}
+
+	The labels are the coordinates written on the sides of the board.
+
+	\begin{key}{/pgfgo/goban/label=\meta{options} (default true)}
+		Options of the labels.
+	\end{key}
+
 	\begin{key}{/pgfgo/goban/label/true}
 		Puts the letters below and the numbers on the left: |A1| is read from the lower left corner. It is the same as |label = {at = {south, west}}|; for the four sides, |label = {at = all}|.
 
@@ -803,66 +846,66 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/false}
-		Disables all labels.
+		Turns off all the labels.
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/label/at =\meta{options}}
-		
-		Defines on which sides of the board the labels appear. Options include combinations of cardinal positions or predefined values like "all" or "none".
-		
+
+		On which sides of the board the labels go: one or several cardinal points, |all| or |none|.
+
 		\begin{stylekey}{/pgfgo/goban/label/at/all}
-			
-			Displays labels on all sides of the board (north, south, east, and west).
+
+			On the four sides.
 		\end{stylekey}
-		
+
 		\begin{stylekey}{/pgfgo/goban/label/at/none}
-			
-			Equivalent to |label=false|, removing all labels.
+
+			The same as |label = false|.
 		\end{stylekey}
-		
+
 		\begin{stylekey}{/pgfgo/goban/label/at/east}
-			Places labels only on the right side (vertical numbers).
+			On the right (the numbers).
 		\end{stylekey}
 		\begin{stylekey}{/pgfgo/goban/label/at/right}
 			Equivalent to |east|.
 		\end{stylekey}
-		
+
 		\begin{stylekey}{/pgfgo/goban/label/at/north}
-			Places labels only at the top (horizontal letters).
+			Above (the letters).
 		\end{stylekey}
 		\begin{stylekey}{/pgfgo/goban/label/at/above}
 			Equivalent to |north|.
 		\end{stylekey}
-		
+
 		\begin{stylekey}{/pgfgo/goban/label/at/south}
-			Places labels only at the bottom (horizontal letters).
+			Below (the letters).
 		\end{stylekey}
 		\begin{stylekey}{/pgfgo/goban/label/at/below}
 			Equivalent to |south|.
 		\end{stylekey}
-		
+
 		\begin{stylekey}{/pgfgo/goban/label/at/west}
-			Places labels only on the left side (vertical numbers).
+			On the left (the numbers).
 		\end{stylekey}
 		\begin{stylekey}{/pgfgo/goban/label/at/left}
 			Equivalent to |west|.
 		\end{stylekey}
-		
+
 		\begin{codeexample}[]
 			\begin{goban}[12, label = {at = {all}}]
 			\end{goban}
-			
+
 			\begin{goban}[partial = A6:I9, label = {at = north}]
 			\end{goban}
-			
+
 			\begin{goban}[partial = B2:E4, label = {at = {north, east}}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
-	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially the current font size)}
 
-		Adjusts the font size of the labels.
+	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially the size of the current font)}
+
+		Size of the font of the labels.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {south, west}}]
@@ -875,22 +918,22 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 
 	\begin{key}{/pgfgo/goban/label/font = \meta{font commands} (initially \texttt{\string\sffamily})}
 
-		Sets the font of the labels.
+		Font of the labels.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {south, west}, font = \bfseries}]
 			\end{goban}
 		\end{codeexample}
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/label/sep = \meta{dimension} (initially 0.35cm)}
-		
-		Controls the distance between the labels and the board’s border.
+
+		Distance between the labels and the border of the board.
 	\end{key}
-	
+
 	\begin{key}{/pgfgo/goban/label/color = \meta{color} (initially black)}
-		
-		Defines the text color of the labels.
+
+		Color of the labels.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {south, west}, color = red, sep = 0.6cm}]
@@ -900,15 +943,15 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/columns = \meta{letters, numbers or kanji} (initially letters)}
-		How the coordinates of the columns (above and below) are written: with letters (as in the commands, without the I if |use i = false|), with numbers, or with numbers in kanji ({\pgfgokanji 一, 二, …, 十, 十一}, …).
+		How the coordinates of the columns (above and below) are written: with letters (as in the commands, without the I except with |use i|), with numbers or with numbers in kanji ({\pgfgokanji 一, 二, …, 十, 十一}, …).
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/rows = \meta{letters, numbers or kanji} (initially numbers)}
-		The same for the rows (at the sides). The kanji of the rows are aligned on the side of the board, so that the two-character ones do not overlap it.
+		The same for the rows (on the sides). The kanji of the rows are aligned on the side of the board, so that those of two characters do not run into it.
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/columns direction = \meta{left to right or right to left} (initially left to right)}
-		The side from which the columns are counted.
+		In which direction the columns are counted.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {north, east},
@@ -919,642 +962,38 @@ When we refer to the "board," we mean an environment or \emph{scope} in which bo
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/rows direction = \meta{bottom to top or top to bottom} (initially bottom to top)}
-		The side from which the rows are counted. These four options only change what is written on the border: the coordinates of the commands (|C3|) stay the same. On a partial board, they are counted from the edge of the whole board.
+		In which direction the rows are counted. These four options change only what is written on the border: the coordinates of the commands (|C3|) stay the same. On a partial board the count starts from the edge of the whole board.
 
 		\begin{codeexample}[]
-			\begin{goban}[5, label = {at = {north, west}, columns = numbers, rows direction = top to bottom}]
+			\begin{goban}[5, label = {at = {north, west}, columns = numbers,
+				rows direction = top to bottom}]
 				\stones[b]{C4}
 			\end{goban}
 		\end{codeexample}
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/label/style = \meta{western, japanese or chinese} (initially western)}
-		Sets the four options above as usual in each place.
+		Sets the four previous options according to the custom of each place.
 
 		\begin{stylekey}{/pgfgo/goban/label/style/western}
-			Columns with letters from the left and rows with numbers from the bottom.
+			Columns with letters from the left and rows with numbers from below.
 		\end{stylekey}
 
 		\begin{stylekey}{/pgfgo/goban/label/style/japanese}
-			Columns with numbers from the right and rows with kanji from the top, as in Japanese books: the top right corner is 1-{\pgfgokanji 一}.
+			Columns with numbers from the right and rows with kanji from above, as in Japanese books: the upper right corner is 1-{\pgfgokanji 一}.
 		\end{stylekey}
 
 		\begin{stylekey}{/pgfgo/goban/label/style/chinese}
-			Columns with numbers from the left and rows with kanji from the top.
+			Columns with numbers from the left and rows with kanji from above.
 		\end{stylekey}
 
-		The kanji need a font that has them. With Lua\LaTeX, for example, IPAex (included in \TeX\ Live and MiK\TeX):
+		Kanji need a font that has them. With Lua\LaTeX, for example, IPAex (included in \TeX\ Live and in MiK\TeX):
 
 		\begin{codeexample}[]
 			\font\kanji = {file:ipaexm.ttf} at 8pt
 			\begin{goban}[9, label = {at = {north, east}, style = japanese, font = \kanji}]
 				\stones[b]{G7}
 			\end{goban}
-		\end{codeexample}
-	\end{key}
-	
-	\subsection{Captures}
-	\label{subsec:captures}
-
-	With the Lua kernel (p.~\pageref{subsec:kernel}), \pgfgoname\ can keep track of the stones on the board and remove the ones left without liberties, as in a game.
-
-	\begin{key}{/pgfgo/goban/captures=\meta{remove, fade or false} (default remove, initially false)}
-
-		Turns captures on. When a move leaves an opposing group without liberties, that group is removed from the board. If it leaves its own group without liberties (a suicide), that group is removed. Stones placed with |\stone| and |\stones| also count; neutral stones and prisoners do not. A move outside a partial board also captures. A move on an occupied point produces a warning, because it is not possible in a game. With |kernel = expl3|, this \emph{key} raises an error.
-
-		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = A1:C3}}
-
-			\begin{goban}
-				\moves*{B1,A1,A2}
-			\end{goban}
-
-			\begin{goban}[captures]
-				\moves*{B1,A1,A2} % 3 captures 2.
-			\end{goban}
-		\end{codeexample}
-
-		Since \pgfname\ cannot erase what it has already drawn, with |captures| the stones are drawn when the |goban| ends. For this reason, if the style is changed with |\pgfgoset| inside a |goban| with captures, the change does not reach the stones; the options of each command do.
-	\end{key}
-
-	\begin{stylekey}{/pgfgo/goban/captures/remove}
-
-		Captured stones disappear. It is the same as |captures| or |captures = true|.
-	\end{stylekey}
-
-	\begin{stylekey}{/pgfgo/goban/captures/fade}
-
-		Captured stones stay on the board, drawn as prisoners (with the style of |\prisoner| and |/pgfgo/prisoner|).
-
-		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = A1:E3}}
-
-			\begin{goban}[captures = fade]
-				\stones[w]{C1,D1}
-				\stones[b]{B1,C2,D2}
-				\moves*{E1}
-			\end{goban}
-		\end{codeexample}
-	\end{stylekey}
-
-	\begin{stylekey}{/pgfgo/goban/captures/false}
-
-		Turns captures off. It is the initial value.
-	\end{stylekey}
-
-	\begin{key}{/pgfgo/goban/captured marks=\meta{keep or remove} (initially keep)}
-
-		Decides what happens to the marks on a stone when it is captured. It only works with |captures|. Marks on empty points do not change.
-
-		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = A1:C3, captures}}
-
-			\begin{goban}
-				\stones[w]{A1}\stones[b]{B1}
-				\marks[triangle]{A1}
-				\moves*{A2}
-			\end{goban}
-
-			\begin{goban}[captured marks = remove]
-				\stones[w]{A1}\stones[b]{B1}
-				\marks[triangle]{A1}
-				\moves*{A2} % the triangle goes with the white stone.
-			\end{goban}
-		\end{codeexample}
-	\end{key}
-
-	\begin{stylekey}{/pgfgo/goban/captured marks/keep}
-
-		The marks stay on the empty point. It is the initial value.
-	\end{stylekey}
-
-	\begin{stylekey}{/pgfgo/goban/captured marks/remove}
-
-		The marks go with the stone, also with |captures = fade|. Sequences keep their numbers.
-	\end{stylekey}
-
-	\begin{command}{\pgfgoprisoners\marg{player}}
-		Writes how many prisoners the player (|black| or |b|, |white| or |w|) has in the last |goban| with |captures|: the opponent’s stones that their moves captured.
-
-		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = A1:C3}}
-
-			\begin{goban}[captures]
-				\moves*{B1,A1,A2}
-			\end{goban}
-
-			Black: \pgfgoprisoners{black}. White: \pgfgoprisoners{white}.
-		\end{codeexample}
-	\end{command}
-
-	\subsection{Territory}
-	\label{subsec:territory}
-
-	At the end of the game, the territory can be marked by hand with |\marks| (p.~\pageref{sec:marks}) or with |\territory|, which also counts it.
-
-	\begin{command}{\territory\opt{\oarg{options}}\marg{polygon}}
-		Marks as territory the points of the polygon with those vertices (in order), including its border. It does not mark the points that have a living stone: prisoners count as territory. Vertices are written as in |\stones|; a single one marks a point, and two, a segment. It works with both kernels.
-
-		\begin{codeexample}[width=4.75cm]
-			\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
-		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
-		\prisoners[b]{H1-|I2}
-		\prisoner[w] {A1}
-
-				\territory[b]{A1,A5,B5,B1}
-				\territory[b]{F9,F7,G7,G6,I6,I9}
-				\territory[w]{F1,F4,G4,G5,I5,I1}
-				\territory[w]{A9,A6,C6,C8,D8,D9}
-			\end{goban}
-		\end{codeexample}
-	\end{command}
-
-	\begin{command}{\territory\opt{\oarg{options}}\marg{auto}}
-		With |auto| instead of a polygon, it finds the territory by itself: each region of points without living stones belongs to the color around it. If both colors touch it (dame, seki), or none, it is neutral. Prisoners count as dead stones. Without a player, it marks the territory of both; with |b| or |w|, only that player's. Only with the Lua kernel (p.~\pageref{subsec:kernel}).
-
-		\begin{codeexample}[width=4.75cm]
-			\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
-		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
-		\prisoners[b]{H1-|I2}
-		\prisoner[w] {A1}
-
-				\territory[dame]{auto}
-			\end{goban}
-		\end{codeexample}
-	\end{command}
-
-	\begin{key}{/pgfgo/territory/black}
-		The territory belongs to Black. It can also be written |b|.
-	\end{key}
-
-	\begin{key}{/pgfgo/territory/white}
-		The territory belongs to White. It can also be written |w|.
-	\end{key}
-
-	\begin{key}{/pgfgo/territory/neutral}
-		Neutral points. It is what a polygon without a player marks. It can also be written |n|.
-	\end{key}
-
-	\begin{key}{/pgfgo/territory/b}
-		Short for |black|.
-	\end{key}
-
-	\begin{key}{/pgfgo/territory/w}
-		Short for |white|.
-	\end{key}
-
-	\begin{key}{/pgfgo/territory/n}
-		Short for |neutral|.
-	\end{key}
-
-	\begin{key}{/pgfgo/territory/draw=\meta{marks, fill or region} (initially marks)}
-		With |marks|, every point gets the territory mark of the player. With |fill|, the region is filled below the stones.
-
-		\begin{codeexample}[width=4.75cm]
-			\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
-		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
-		\prisoners[b]{H1-|I2}
-		\prisoner[w] {A1}
-
-				\territory[draw = fill]{auto}
-			\end{goban}
-		\end{codeexample}
-
-		With |region|, the territory of each color is a single polygon: every square of the grid with a corner in the territory is painted (dead stones count as territory). Its sides run along the lines of the board, its vertices are always on intersections, and it reaches the edge of the board. Two areas that touch at a single corner are kept apart. All the |\territory| of a color in the same |goban| (also the |TB| and |TW| territory of |\sgf|) make a single region, which is drawn at the end of the |goban| with the style of the last one. Neutral points are filled one by one, as with |fill|. The outline and its vertices can be drawn on top, with |line| and |vertices|, and |\pgfgoregion| gives its properties.
-
-		\begin{codeexample}[width=4.75cm]
-			\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
-		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
-		\prisoners[b]{H1-|I2}
-		\prisoner[w] {A1}
-
-				\territory[draw = region]{auto}
-			\end{goban}
-		\end{codeexample}
-	\end{key}
-
-	\begin{key}{/pgfgo/territory/dame=\meta{boolean} (default true, initially false)}
-		With |auto|, it also marks the neutral points.
-	\end{key}
-
-	\begin{key}{/pgfgo/territory/forget}
-		|resume| does not bring this territory, even with |territory| (p.~\pageref{subsec:remember}).
-	\end{key}
-
-	The other options of |\territory| change the style of the player only for that command, like |mark| and |fill| in |\territory[w, mark = {cross}]{auto}|. Without a player, they change the style of all three. The style of each player is set with |/pgfgo/players|:
-
-	\begin{key}{/pgfgo/players/black/territory=\meta{territory options}}
-		Style of the territory of each player (|black|, |white| or |neutral|).
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/mark=\meta{mark options} (initially t-circle)}
-		Mark of every point, with |draw = marks|. It is |t-circle| for Black and |t-square| for White and the neutral points.
-
-		\begin{codeexample}[]
-			\begin{goban}[5]
-				\stones[b]{C1:5}
-				\stones[w]{D1:5}
-				\territory[b, mark = {t-square}]{A1, A5, B5, B1}
-				\territory[w]{E1, E5}
-			\end{goban}
-		\end{codeexample}
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/fill=\meta{fill options} (default true)}
-		Fill, with |draw = fill| and |draw = region|.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/fill/true}
-		Draws the fill. This is the initial value.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/fill/false}
-		Does not draw the fill: with |draw = region|, only the outline or the vertices are left.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/fill/color=\meta{color} (initially black)}
-		Color of the fill: |black| for Black, |white!80!black| for White and |gray| for the neutral points.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/fill/opacity=\meta{number} (initially 0.35)}
-		Opacity of the fill: |0.35| for Black and the neutral points, |0.7| for White.
-
-		\begin{codeexample}[]
-			\begin{goban}[5]
-				\stones[b]{C1:5}
-				\stones[w]{D1:5}
-				\territory[b, draw = fill,
-					fill = {color = blue, opacity = 0.5}]{A1, A5, B5, B1}
-				\territory[w, draw = fill]{E1, E5}
-			\end{goban}
-		\end{codeexample}
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/line=\meta{line options} (default true)}
-		Outline of the region, with |draw = region|. Alone or with |true|, it draws the outline; options alone do not turn it on.
-
-		\begin{codeexample}[width=4.75cm]
-			\begin{goban}[label = {at = {above, left}}]
-		\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
-		\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
-		\prisoners[b]{H1-|I2}
-		\prisoner[w] {A1}
-
-				\territory[b, draw = region, line,
-					vertices]{auto}
-				\territory[w, draw = region,
-					line = {true, color = red}]{auto}
-			\end{goban}
-		\end{codeexample}
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/line/true}
-		Draws the outline.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/line/false}
-		Does not draw the outline. This is the initial value.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/line/color=\meta{color} (initially black)}
-		Color of the outline: |black| for Black and |white!40!black| for White.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/line/width=\meta{dimension} (initially 1.2pt)}
-		Width of the outline.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/line/opacity=\meta{number} (initially 1)}
-		Opacity of the outline and of the vertices.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/line/above=\meta{boolean} (default true, initially true)}
-		With |true|, the outline and the vertices are drawn above the stones and the marks. With |false|, below the stones, together with the fill.
-
-		\begin{codeexample}[]
-			\begin{goban}[5]
-				\stones[b]{C1:5}
-				\stones[w]{D1:5}
-				\territory[b, draw = region, fill = false,
-					line = {true, color = red, width = 2pt, opacity = 0.7}]{A1, A5, B5, B1}
-			\end{goban}
-
-			\begin{goban}[5]
-				\stones[b]{C1:5}
-				\stones[w]{D1:5}
-				\territory[b, draw = region, fill = false,
-					line = {true, color = red, width = 2pt, opacity = 0.7, above = false}]{A1, A5, B5, B1}
-			\end{goban}
-		\end{codeexample}
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/vertices=\meta{options} (default true)}
-		Dots on the vertices of the outline, with |draw = region|, like the star points. They are drawn on the same layer as the outline. Alone or with |true|, it draws them; options alone do not turn them on.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/vertices/true}
-		Draws the vertices.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/vertices/false}
-		Does not draw the vertices. This is the initial value.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/vertices/radius=\meta{dimension} (initially 2pt)}
-		Radius of the dots.
-	\end{key}
-
-	\begin{key}{/pgfgo/players/black/territory/vertices/color=\meta{color}}
-		Color of the dots. Without this key, they take the color of the outline.
-
-		\begin{codeexample}[]
-			\begin{goban}[5]
-				\stones[b]{C1:5}
-				\stones[w]{D1:5}
-				\territory[b, draw = region,
-					vertices = {true, radius = 3pt, color = red}]{A1, A5, B5, B1}
-			\end{goban}
-		\end{codeexample}
-	\end{key}
-
-	\begin{command}{\pgfgoscore\opt{\oarg{options}}\marg{player}}
-		Writes the score of the player (|black| or |b|, |white| or |w|) in the last |goban|, with Japanese rules: the points of their territory, plus the opponent's dead stones in it, plus the stones they captured (with |captures|), plus the |komi| for White. A point marked twice counts once.
-
-		\begin{codeexample}[code only]
-			Black: \pgfgoscore{black}. White: \pgfgoscore[komi = 6.5]{white}.
-		\end{codeexample}
-
-		With the board above, it writes "Black: 11. White: 23.5".
-	\end{command}
-
-	\begin{key}{/pgfgo/score/komi=\meta{number} (initially 0)}
-		Komi added to the score of White. It can be set for the whole document with |\pgfgoset{score = {komi = 6.5}}|.
-
-		\begin{codeexample}[]
-			\begin{goban}[5]
-				\stones[b]{C1:5}
-				\stones[w]{D1:5}
-				\territory{auto}
-			\end{goban}
-
-			Black: \pgfgoscore{b}. White: \pgfgoscore[komi = 6.5]{w}.
-		\end{codeexample}
-	\end{key}
-
-	\begin{command}{\pgfgoregion\marg{player}\marg{property}}
-		Writes a property of the region (|draw = region|) of the player (|black| or |b|, |white| or |w|) in the current |goban| or in the last one. It is expandable, so it can be used in a computation or inside the coordinates of |\marks|. The properties are those of the whole outline, even on a partial board. Without a region, the numbers are 0. The properties are:
-		\begin{itemize}
-			\item |polygons|: the number of outlines, outer ones and holes.
-			\item |outlines|: the number of outer outlines, one for each separate area.
-			\item |holes|: the number of holes.
-			\item |vertices|: the number of vertices of all the outlines.
-			\item |area|: the number of painted squares.
-			\item |perimeter|: the length of all the outlines, in squares.
-			\item |polygon| \meta{i}: the vertices of outline \meta{i}, as coordinates separated by commas (for example, |A1,D1,D4,A4|). Empty if there are not that many outlines.
-		\end{itemize}
-		Each outline starts at its lowest vertex and, among those, at the leftmost one. Outer outlines go counterclockwise and holes, clockwise. The outlines are sorted by that first vertex, from bottom to top.
-
-		\begin{codeexample}[width=4.75cm]
-			\begin{goban}[label = {at = {above, left}}]
-				\stones[w]{D4 R F6}
-				\territory[b, draw = region, line]{B2,B8,H8,H2}
-				\marks[triangle]{\pgfgoregion{b}{polygon 2}}
-			\end{goban}
-
-			Outlines: \pgfgoregion{b}{polygons}
-			(\pgfgoregion{b}{holes} hole).
-			Area: \pgfgoregion{b}{area} squares.
-		\end{codeexample}
-	\end{command}
-
-	\subsection{Moves on Points Already Played}
-	\label{subsec:notes}
-
-	In numbered diagrams, when a move is played on a point where there already was a move (for example, when a ko is retaken), books do not draw it: the point still shows the first stone, and below the diagram they write, for example, "3 at 1".
-
-	\begin{key}{/pgfgo/goban/notes=\meta{boolean} (default true, initially false)}
-
-		A numbered move on a point where there already was a numbered move of the same |goban| is not drawn: the point still shows the first one, even if it was captured, and "N at M" is noted. Only numbered moves (|\moves*|) that are visible on the board count. It works with both kernels.
-
-		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = A2:E4}}
-
-			\begin{goban}[notes]
-				\stones[b]{B3,C2,C4}
-				\stones[w]{D2,D4,E3}
-				\moves*[w]{C3}
-				\moves*{D3}
-				\moves*[from = 3, w]{C3}
-			\end{goban}
-
-			\pgfgomovenotes
-		\end{codeexample}
-	\end{key}
-
-	\begin{command}{\pgfgomovenotes\opt{\oarg{options}}}
-		Writes the notes of the last |goban|, separated by commas. If there are no notes, it writes nothing. The options are those of |/pgfgo/notes|.
-	\end{command}
-
-	\begin{key}{/pgfgo/notes = \meta{options}}
-		Options of |\pgfgomovenotes| for the whole document, for example |\pgfgoset{notes = {at = en}}|.
-	\end{key}
-
-	\begin{key}{/pgfgo/notes/at = \meta{text} (initially at or its translation)}
-		Text between the two numbers.
-	\end{key}
-
-	\begin{key}{/pgfgo/notes/separator = \meta{text} (initially a comma and a space)}
-		Text between the notes.
-
-		\begin{codeexample}[]
-			\begin{goban}[5, partial = A2:E4, notes]
-				\stones[b]{B3,C2,C4}
-				\stones[w]{D2,D4,E3}
-				\moves*[w]{C3}
-				\moves*{D3}
-				\moves*[from = 3, w]{C3}
-				\moves*{D3}
-			\end{goban}
-
-			\pgfgomovenotes[at = on, separator = {; }]
-		\end{codeexample}
-	\end{key}
-
-	\subsection{Remembering a Board}
-	\label{subsec:remember}
-	A |goban| with a name stores everything it draws (stones, moves, marks, arrows, lines and territory, also what comes from |\sgf|), together with its options. Another |goban| can start with that board as it was, with |resume|, and |\pgfgoview| shows it in the text (p.~\pageref{subsec:views}).
-
-	\begin{codeexample}[]
-		\pgfgoset{goban = {5, partial = B2:D4}}
-
-		\begin{goban}[name = board1]
-			\stones[b]{C2,D3}
-			\moves*[w]{B4}
-		\end{goban}
-
-		\begin{goban}[resume = board1]
-			\moves*{C3} % Continues with 2 (Black).
-		\end{goban}
-
-		\begin{goban}[resume = {board1, numbers}]
-			\moves*{C3}
-		\end{goban}
-	\end{codeexample}
-
-	\begin{key}{/pgfgo/goban/name=\meta{name}}
-		Stores with that name everything drawn in this |goban|, together with its options. The name is free (for example, |gob:board1|). Another |goban| with the same name replaces it.
-	\end{key}
-
-	\begin{key}{/pgfgo/goban/resume=\meta{name, options}}
-		Starts the |goban| with the board that has that name, as it was at the end (with the captures resolved: if that |goban| used |captures|, this one does too). The numbering and the turn continue from there. By default it brings only the stones, without numbers, marks or territory; the options ask for the rest. The board options (size, |partial|, coordinates) are given in each |goban|. If there is no |goban| with that name, an error is raised.
-
-		With |name| and |resume| in the same |goban| (in any order), the new name stores what it brought, as it was drawn, plus its own, and the board of |resume| does not change: this is how variations are made. With the same name in both, the |goban| keeps adding to that board.
-
-		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = B2:D4}}
-
-			\begin{goban}[name = base]
-				\stones[b]{C2,D3}
-				\stones[w]{C3}
-			\end{goban}
-
-			\begin{goban}[name = variation1, resume = base]
-				\moves*[w]{D2}
-			\end{goban}
-
-			\begin{goban}[name = variation2, resume = base]
-				\moves*[w]{B3}
-			\end{goban}
-
-			\begin{goban}[resume = {variation1, numbers}]
-				\moves*{B4}
-			\end{goban}
-		\end{codeexample}
-	\end{key}
-
-	\begin{key}{/pgfgo/goban/resume/numbers=\meta{boolean} (default true, initially false)}
-		Also brings the move numbers.
-	\end{key}
-
-	\begin{key}{/pgfgo/goban/resume/marks=\meta{boolean} (default true, initially false)}
-		Also brings the marks, the arrows and the lines.
-	\end{key}
-
-	\begin{key}{/pgfgo/goban/resume/territory=\meta{boolean} (default true, initially false)}
-		Also brings the territory.
-
-		\begin{codeexample}[]
-			\pgfgoset{goban = {5, partial = B2:D4}}
-
-			\begin{goban}[name = saved]
-				\stones[b]{C2:4}
-				\moves*[w]{D3}
-				\marks[triangle]{B3}
-				\territory[b]{B2, B4}
-			\end{goban}
-
-			\begin{goban}[resume = saved]
-			\end{goban}
-
-			\begin{goban}[resume = {saved, numbers, marks, territory}]
-			\end{goban}
-		\end{codeexample}
-	\end{key}
-
-	So that |resume| does not bring a stone, a move, a mark, an arrow or a territory, it is drawn with the option |forget| (|\stone[forget]{C3}|, |\marks[forget, circle]{A1}|, \ldots); with |label = forget|, a move comes without its number even with |numbers|. What is forgotten is still stored: |\pgfgoview| shows it with |forgotten|.
-
-	\subsection{Views in the Text}
-	\label{subsec:views}
-	A |goban| with a name stores everything it draws. Later, |\pgfgoview| shows a part of that board, as it was at the end (with the captures done), in the middle of a paragraph: a single stone or a rectangle.
-
-	\begin{codeexample}[]
-		\begin{goban}[5, name = board1, captures]
-			\stones[b]{B3, C2, C4}
-			\stones[w]{D2, D4, E3}
-			\moves*[w]{C3, D3}
-		\end{goban}
-
-		The black stone at D3 \pgfgoview{board1}{D3} captures the white one at C3 \pgfgoview{board1}{C3}.
-		This is the ko: \pgfgoview{board1}{B2:E4}.
-	\end{codeexample}
-
-	\begin{command}{\pgfgoview\opt{\oarg{options}}\marg{name}\marg{part}}
-		Draws the intersection or the rectangle (written as in |partial|) of the |goban| with that name, as it was at the end. By default everything the |goban| drew in that part is shown (stones, move numbers, marks, arrows and territory) with the background and the coordinates of that |goban|, at the size of the text and centered at the height of the lowercase letters. The options are those of |/pgfgo/view|, which remove the marks, the numbers or the territory, or add what was forgotten, and, also, any |goban| option, which is applied after those of the named |goban|: this removes the background, the coordinates, the grid or the star points, or changes the style of the stones, the marks and the board (|players|, |stone|, |mark|, |grid|, |background|, \ldots).
-
-		The view uses the style that |goban| had when it was drawn (the profile, what was set with |\pgfgoset| and its options), even if it changes later. The profile of the views (|view/profile|), |\pgfgoset{view = ...}| and the options of the view go on top.
-
-		A view changes nothing of what the last |goban| stores: |\pgfgoscore|, |\pgfgoprisoners| and |\pgfgomovenotes| still talk about it, and what each named |goban| stores stays the same.
-
-		\begin{codeexample}[]
-			\begin{goban}[5, name = board2]
-				\stones[b]{B2, C3}
-				\moves*[w]{C2, D3}
-				\marks[b, triangle]{C3}
-			\end{goban}
-
-			\pgfgoview{board2}{B2:D3}
-			\pgfgoview[marks = false, numbers = false]{board2}{B2:D3}
-			\pgfgoview[label = false, grid = false]{board2}{B2:D3}
-			\pgfgoview[background = false]{board2}{B2:D3}
-		\end{codeexample}
-	\end{command}
-
-	\begin{key}{/pgfgo/view=\meta{options}}
-		Options for all views, with |\pgfgoset|. The |goban| options that are not of |/pgfgo/view| are added to the one views come with: |scale = 0.8|.
-
-		\begin{codeexample}[]
-			\pgfgoset{view = {background = false, scale = 1}}
-			Without background and bigger: \pgfgoview{board2}{C3}.
-		\end{codeexample}
-	\end{key}
-
-	\begin{key}{/pgfgo/view/marks=\meta{boolean} (default true, initially true)}
-		With |false|, the marks, arrows and lines are not drawn.
-	\end{key}
-
-	\begin{key}{/pgfgo/view/numbers=\meta{boolean} (default true, initially true)}
-		With |false|, the numbers of the moves are not drawn.
-	\end{key}
-
-	\begin{key}{/pgfgo/view/territory=\meta{boolean} (default true, initially true)}
-		With |false|, the territory is not drawn.
-	\end{key}
-
-	\begin{key}{/pgfgo/view/forgotten=\meta{boolean} (default true, initially false)}
-		Also draws what was drawn with |forget| (p.~\pageref{subsec:remember}).
-
-		\begin{codeexample}[]
-			\begin{goban}[5, name = board3]
-				\stones[b]{B2, C3}
-				\stone[w, forget]{D3}
-			\end{goban}
-
-			\pgfgoview{board3}{B2:D3}
-			\pgfgoview[forgotten]{board3}{B2:D3}
-		\end{codeexample}
-	\end{key}
-
-	\begin{key}{/pgfgo/view/raise=\meta{dimension} (initially 0.5ex)}
-		How high above the baseline of the text the center of the view is.
-
-		\begin{codeexample}[]
-			Text \pgfgoview[raise = 0pt]{board2}{C3}
-			text \pgfgoview{board2}{C3}
-			text \pgfgoview[raise = 1.5ex]{board2}{C3}.
-		\end{codeexample}
-	\end{key}
-
-	\begin{key}{/pgfgo/view/profile=\meta{name} (initially false)}
-		A profile for the views (p.~\pageref{subsec:profiles}), for example |simple|. It goes after the style of the named |goban| and before the other options of the view. With |false|, the view uses the style of the |goban| as it is.
-
-		\begin{codeexample}[]
-			\pgfgoview{board1}{B2:E4}
-			\pgfgoview[profile = simple]{board1}{B2:E4}
-			\pgfgoview[profile = wain]{board1}{B2:E4}
 		\end{codeexample}
 	\end{key}
 

@@ -2,7 +2,7 @@
 
 All notable changes to `pgf-go` are listed here.
 
-## Unreleased
+## 0.2026.10.23 — 2026/10/23
 
 ### New
 
@@ -92,10 +92,10 @@ All notable changes to `pgf-go` are listed here.
   random, and a soft shadow) and `yunzi` (the same board with matte stones).
   As every profile, they also define the players `shell-black`, ...: with
   `players profile = shell` the stones go on any board. The images come with
-  the package, in the folder `img` (`pgfgo-board.jpg`, `pgfgo-shell-black.png`,
+  the package, next to `pgf-go.sty` (`pgfgo-board.jpg`, `pgfgo-shell-black.png`,
   ...), and can be used by name in your own profiles.
 - An image that is not found (in the folder of the document or in the TeX
-  path) is looked for among the images of the package, in `img`.
+  path) is looked for among the images of the package, next to `pgf-go.sty`.
 - Shadows of your own: `stone/shadow/image = {file, width, rotate, false}`
   draws an image (a soft shadow, for example) under the stone instead of its
   silhouette, moved by `angle` and `offset` like the silhouette.
@@ -358,8 +358,9 @@ All notable changes to `pgf-go` are listed here.
   takes the size of that board, unless the `goban` gives its own (`size`, a
   number, `sgf size` or `sgf view`).
 - The profile `baduktv` did not compile (its board image had no extension
-  and was not found in `img`). An image without extension is now also looked
-  for in `img` with the extensions `.pdf`, `.png`, `.jpg` and `.jpeg`.
+  and was not found). An image without extension is now also looked for
+  among the images of the package with the extensions `.pdf`, `.png`, `.jpg`
+  and `.jpeg`.
 - `\pgfgodefinemark[image = {width = ...}]` with `em`: the width was measured
   inside the picture, where the font is `\nullfont` and `1em` is 0, so the
   image did not show. Now it is measured when the mark is defined, with the
@@ -583,8 +584,14 @@ All notable changes to `pgf-go` are listed here.
 - `example-5` and `example-7` drew the same boards as `example-0` and
   `example-1` with another profile; now they show the styles of the
   coordinates and a collection of games (`games.sgf`).
-- All the images of the manual, the examples and the tests are in one folder,
-  `img`; the manual and the tests no longer have their own copies.
+- The images of the profiles are next to the `.sty` files, in `latex/`, and
+  those of the manual in `doc/img/`; the manual and the tests no longer have
+  their own copies. The folder `img` was removed. All of them start with
+  `pgfgo-`: `baduktv-black.png`, `baduktv-white.png` and `baduktv-goban.png`
+  are now `pgfgo-baduktv-black.png`, `pgfgo-baduktv-white.png` and
+  `pgfgo-baduktv-goban.png` (a document that used them by name has to change
+  it), and those of the manual are `pgfgo-cell.png`, `pgfgo-star.pdf` and
+  so on. The test image `stone-oval.png` is in `tests/cases/`.
   `wood.jpg` was removed: where it was used, the examples use
   `pgfgo-board.jpg`.
 - The Spanish manual explains when an image is kept only once in the PDF
@@ -623,8 +630,8 @@ All notable changes to `pgf-go` are listed here.
 
 - New case `installed`: the package loaded as `\usepackage{pgf-go}` from
   the TeX path, with the profiles `shell` and `yunzi`. `run_tests.py` has the
-  header `% installed: yes` (the files of `latex/` and `img/pgfgo-*` in one
-  folder, first in `TEXINPUTS`).
+  header `% installed: yes` (the files of `latex/`, with the images of the
+  profiles, in one folder, first in `TEXINPUTS`).
 - `images`: marks on a background image, with tiles and with `dim`.
 - New case `move-numbers` (`numbers` in `\moves`, `\pgfgoset` and `goban`,
   with `resume` and `notes`).

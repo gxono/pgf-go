@@ -1,98 +1,16 @@
-\section{Catalog}
-\label{sec:catalog}
+\section{Catalog of profiles}
+\label{sec:catalogo}
 
-\subsection{Profiles}
-\subsubsection{default}
+The profiles that come with \pgfgoname, each one with a sample and with its definition, as it is in |pgf-go-profiles.sty|. They are used with |profile| (p.~\pageref{subsec:perfiles}).
+
+\subsection{default}
+
+The initial style of the package: the one the board and the players have before a profile is used, and the one they go back to before any other is applied.
 \begin{codeexample}[width=4cm]
 	\pgfgoset{profile = default}
 	
 	\begin{goban}[partial = A1:G3]
-		\moves*[from = 1]{A:F 3}
-		\stones[w]{A1:2}
-		\stones[b]{B1:2}
-		\stones[n]{C1:2}
-		\stone[w, mark = circle]{D1}
-		\mark[w, circle]{D2}
-		\stone[b, mark = circle]{E1}
-		\mark[b, circle]{E2}
-		\stone[n, mark = circle]{F1}
-		\mark[n, circle]{F2}
-		\mark[w, t-square]{G1}
-		\mark[b, t-circle]{G2}
-		\mark[n, t-square]{G3}
-	\end{goban}
-\end{codeexample}
-
-\subsubsection{pgfgo}
-\begin{codeexample}[width=4cm]
-	\pgfgoset{profile = pgfgo}
-	
-	\begin{goban}[partial = A1:G3]
-		\moves*[from = 1]{A:F 3}
-		\stones[w]{A1:2}
-		\stones[b]{B1:2}
-		\stones[n]{C1:2}
-		\stone[w, mark = circle]{D1}
-		\mark[w, circle]{D2}
-		\stone[b, mark = circle]{E1}
-		\mark[b, circle]{E2}
-		\stone[n, mark = circle]{F1}
-		\mark[n, circle]{F2}
-		\mark[w, t-square]{G1}
-		\mark[b, t-circle]{G2}
-		\mark[n, t-square]{G3}
-	\end{goban}
-\end{codeexample}
-
-\subsubsection{pgfgosmooth}
-\begin{codeexample}[width=4cm]
-	\pgfgoset{profile = pgfgosmooth}
-	
-	\begin{goban}[partial = A1:G3]
-		\moves*[from = 1]{A:F 3}
-		\stones[w]{A1:2}
-		\stones[b]{B1:2}
-		\stones[n]{C1:2}
-		\stone[w, mark = circle]{D1}
-		\mark[w, circle]{D2}
-		\stone[b, mark = circle]{E1}
-		\mark[b, circle]{E2}
-		\stone[n, mark = circle]{F1}
-		\mark[n, circle]{F2}
-		\mark[w, t-square]{G1}
-		\mark[b, t-circle]{G2}
-		\mark[n, t-square]{G3}
-	\end{goban}
-\end{codeexample}
-
-\subsubsection{wain}
-\begin{codeexample}[width=4cm]
-	\pgfgoset{profile = wain}
-	
-	\begin{goban}[partial = A1:G3]
-		\moves*[from = 1]{A:F 3}
-		\stones[w]{A1:2}
-		\stones[b]{B1:2}
-		\stones[n]{C1:2}
-		\stone[w, mark = circle]{D1}
-		\mark[w, circle]{D2}
-		\stone[b, mark = circle]{E1}
-		\mark[b, circle]{E2}
-		\stone[n, mark = circle]{F1}
-		\mark[n, circle]{F2}
-		\mark[w, t-square]{G1}
-		\mark[b, t-circle]{G2}
-		\mark[n, t-square]{G3}
-	\end{goban}
-\end{codeexample}
-
-
-\subsubsection{simple}
-\begin{codeexample}[width=4cm]
-	\pgfgoset{profile = simple}
-
-	\begin{goban}[partial = A1:G3]
-		\moves*[from = 1]{A:F 3}
+		\moves[from = 1]{A:F 3}
 		\stones[w]{A1:2}
 		\stones[b]{B1:2}
 		\stones[n]{C1:2}
@@ -108,3 +26,510 @@
 	\end{goban}
 \end{codeexample}
 
+\subsection{pgfgo}
+\begin{codeexample}[width=4cm]
+	\pgfgoset{profile = pgfgo}
+	
+	\begin{goban}[partial = A1:G3]
+		\moves[from = 1]{A:F 3}
+		\stones[w]{A1:2}
+		\stones[b]{B1:2}
+		\stones[n]{C1:2}
+		\stone[w, mark = circle]{D1}
+		\mark[w, circle]{D2}
+		\stone[b, mark = circle]{E1}
+		\mark[b, circle]{E2}
+		\stone[n, mark = circle]{F1}
+		\mark[n, circle]{F2}
+		\mark[w, t-square]{F1}
+		\mark[b, t-circle]{F1}
+		\mark[n, t-square]{F1}
+	\end{goban}
+\end{codeexample}
+
+\subsubsection*{Board}
+\begin{codeexample}[code only]
+	\pgfgodefinegoban{pgfgo}{
+		background = {
+			fill = {
+				color = pgfgo,
+				opacity = 1},
+			line = {
+				color = pgfgo!10!black,
+				opacity = 1},
+			shadow = {true},
+			rounded corners = {
+				inner = 0pt,
+				outer = 2pt
+			}},
+		grid = {
+			line = {
+				color = pgfgo!10!black,
+				width = 1pt}},
+		label = {
+			color = black
+		}
+	}
+\end{codeexample}
+
+\subsubsection*{Players}
+The colors |wainshade|, |wainwhite| and |wainblack| are those of the profile |wain|, below.
+
+	We declare all the players and start by defining the look of the neutral one.
+	
+	\begin{codeexample}[code only]
+		\pgfgodefineplayer{pgfgo-neutral}{
+			stone = {
+				line = {
+					true,
+					color = black,
+					width = 0.3pt,
+					opacity = 1,
+				},
+				fill = {
+					true,
+					color = gray,
+					opacity = 1,
+				},
+				radius = 0.17cm,
+				scale = 1,
+				shadow = {true, opacity = 0.5, offset = 1pt, angle = -45},
+				shine = {true, angle = 45, color = wainshade}
+			},
+			move = {
+				label = {
+					color = black,
+					format = arabic,
+				}
+			},
+			mark = {
+				line = {
+					color = black,
+					width = 1pt,
+				},
+				fill = {true, color = gray},
+				label = {
+					color = black,
+					format = arabic
+				}
+			}
+		}
+	\end{codeexample}
+	
+	
+	Some things, such as the line width, opacities and so on, I want kept in every stone, so I copy the template of the neutral player.
+	
+	\begin{codeexample}[code only]
+		\pgfgodefineplayer[from = pgfgo-neutral]{pgfgo-white}{
+			stone = {
+				fill = {color = wainwhite},
+				shine = {color = white}
+			},
+			move = {
+				label = {
+					color = black
+				}
+			},
+			mark = {
+				line 	= {color = black},
+				label = {color = black}
+			}
+		}
+
+		\pgfgodefineplayer[from = pgfgo-neutral]{pgfgo-black}{
+			stone = {
+				fill = {
+					color = wainblack
+				}
+			},
+			move = {
+				label = {
+					color = pgfgo
+				}
+			},
+			mark = {
+				line = {
+					color = pgfgo,
+				},
+				label = {color = black}
+			}
+		}
+	\end{codeexample}
+
+\subsection{pgfgosmooth}
+\begin{codeexample}[width=4cm]
+	\pgfgoset{profile = pgfgosmooth}
+	
+	\begin{goban}[partial = A1:G3]
+		\moves[from = 1]{A:F 3}
+		\stones[w]{A1:2}
+		\stones[b]{B1:2}
+		\stones[n]{C1:2}
+		\stone[w, mark = circle]{D1}
+		\mark[w, circle]{D2}
+		\stone[b, mark = circle]{E1}
+		\mark[b, circle]{E2}
+		\stone[n, mark = circle]{F1}
+		\mark[n, circle]{F2}
+		\mark[w, t-square]{F1}
+		\mark[b, t-circle]{F1}
+		\mark[n, t-square]{F1}
+	\end{goban}
+\end{codeexample}
+
+\subsubsection*{Board}
+\begin{codeexample}[code only]
+	\definecolor{pgfgosmooth-grid}{HTML}{C7A253}
+
+	\pgfgodefinegoban[from = pgfgo]{pgfgosmooth}{
+		background = {
+			line = false,
+			rounded corners = {
+				inner = 2pt,
+				outer = 8pt
+			},
+			shadow = {true}},
+		grid = {
+			line = {color = pgfgosmooth-grid}
+			}
+	}
+\end{codeexample}
+
+\subsubsection*{Players}
+	\begin{codeexample}[code only]		
+		\pgfgodefineplayer[from = pgfgo-neutral]{pgfgosmooth-neutral}{
+			stone = {
+				line = false,
+				radius = 0.19cm,
+				shine = {opacity = 0.5}}
+		}		
+	\end{codeexample}
+
+
+	\begin{codeexample}[code only]
+		\pgfgodefineplayer[from = pgfgo-black]{pgfgosmooth-black}{
+			stone = {line = false, shine = {opacity = 0.5}}
+		}
+	\end{codeexample}
+	
+	\begin{codeexample}[code only]
+		\pgfgodefineplayer[from = pgfgo-white]{pgfgosmooth-white}{
+			stone = {line = false}	
+		}
+	\end{codeexample}
+
+\subsection{wain}
+\begin{codeexample}[width=4cm]
+	\pgfgoset{profile = wain}
+	
+	\begin{goban}[partial = A1:G3]
+		\moves[from = 1]{A:F 3}
+		\stones[w]{A1:2}
+		\stones[b]{B1:2}
+		\stones[n]{C1:2}
+		\stone[w, mark = circle]{D1}
+		\mark[w, circle]{D2}
+		\stone[b, mark = circle]{E1}
+		\mark[b, circle]{E2}
+		\stone[n, mark = circle]{F1}
+		\mark[n, circle]{F2}
+		\mark[w, t-square]{F1}
+		\mark[b, t-circle]{F1}
+		\mark[n, t-square]{F1}
+	\end{goban}
+\end{codeexample}
+
+\subsubsection*{Colors}
+	\begin{codeexample}[code only]
+		\definecolor{waingoban}{HTML}{402A2D}
+		\definecolor{waingoban-s}{HTML}{493739}
+		\definecolor{waingrid}{HTML}{FAE0B2}
+		\definecolor{wainblack}{HTML}{4B4B4D} %PIEDRA NEGRA
+		\definecolor{wainshade}{HTML}{E6E7E8}
+		\definecolor{wainwhite}{HTML}{EFEFEF} %PIEDRA BLANCA
+	\end{codeexample}
+
+\subsubsection*{Board}
+\begin{codeexample}[code only]
+	\pgfgodefinegoban[from = default]{wain}{
+		background = {
+			fill = {
+				color = waingoban,
+				opacity = 1},
+			line = {
+				color = waingrid,
+				opacity = 1}},
+		grid = {
+			line = {
+				color = waingrid,
+				width = 1pt}
+			},
+		label = {color = waingoban}
+	}
+\end{codeexample}
+
+\subsubsection*{Players}
+	\begin{codeexample}[code only]
+		\pgfgodefineplayer[from = default-neutral]{wain-neutral}{
+			stone = {
+				line = {
+					true,
+					color = waingrid,
+					width = 0.2pt,
+					opacity = 1,
+				},
+				fill = {
+					true,
+					color = wainblack!50!wainwhite,
+					opacity = 1,
+				},
+				radius = 0.17cm,
+				scale = 1,
+				shadow = {true, opacity = 0.5, offset = 1pt, angle = -45},
+				shine = {true, angle = 45, color = wainshade}
+			},
+			move = {
+				label = {
+					color = black,
+					format = arabic,
+				}
+			},
+			mark = {
+				line = {
+					color = waingoban,
+					width = 1pt,
+				},
+				label = {
+					color = waingoban,
+					format = arabic
+				},
+			}
+		}
+	\end{codeexample}
+
+
+
+	\begin{codeexample}[code only]
+		\pgfgodefineplayer[from = wain-neutral]{wain-white}{
+			stone = {
+				fill = {
+					color = wainwhite
+				}
+			},
+			move = {
+				label = {
+					color = waingoban
+				}
+			},
+			mark = {
+				line = {
+					color = waingoban,
+				},
+				label = {color = waingoban}
+			}
+		}
+	\end{codeexample}
+
+
+	
+	
+	\begin{codeexample}[code only]
+		\pgfgodefineplayer[from = wain-neutral]{wain-black}{
+			stone = {
+				fill = {
+					color = wainblack
+				}
+			},
+			move = {
+				label = {
+					color = waingrid
+				}
+			},
+			mark = {
+				line = {
+					color = waingrid,
+				},
+				label = {color = waingrid}
+			}
+		}
+	\end{codeexample}
+
+\subsection{simple}
+\begin{codeexample}[width=4cm]
+	\pgfgoset{profile = simple}
+
+	\begin{goban}[partial = A1:G3]
+		\moves[from = 1]{A:F 3}
+		\stones[w]{A1:2}
+		\stones[b]{B1:2}
+		\stones[n]{C1:2}
+		\stone[w, mark = circle]{D1}
+		\mark[w, circle]{D2}
+		\stone[b, mark = circle]{E1}
+		\mark[b, circle]{E2}
+		\stone[n, mark = circle]{F1}
+		\mark[n, circle]{F2}
+		\mark[w, t-square]{F1}
+		\mark[b, t-circle]{F1}
+		\mark[n, t-square]{F1}
+	\end{goban}
+\end{codeexample}
+
+\subsubsection*{Definition}
+\begin{codeexample}[code only]
+	\pgfgodefineprofile[from = default]{simple}{
+		goban = {
+			background = {line = false},
+			grid = {line = {width = 0.4pt}}
+		},
+		all = {stone = {line = {width = 0.5pt}}}
+	}
+\end{codeexample}
+
+\subsection{shell}
+\label{subsec:perfilshell}
+
+A wooden board with slate and shell stones, drawn with the images that come with \pgfgoname\ (p.~\pageref{subsec:piedrasimagen}). Each white stone uses one of five images, turned a little. The shadow needs pdf\LaTeX\ or Lua\LaTeX\ with PDF output.
+
+\begin{codeexample}[width=4cm]
+	\pgfgoset{profile = shell}
+
+	\begin{goban}[partial = A1:G3]
+		\moves[from = 1]{A:F 3}
+		\stones[w]{A1:2}
+		\stones[b]{B1:2}
+		\stones[n]{C1:2}
+		\stone[w, mark = circle]{D1}
+		\mark[w, circle]{D2}
+		\stone[b, mark = circle]{E1}
+		\mark[b, circle]{E2}
+		\stone[n, mark = circle]{F1}
+		\mark[n, circle]{F2}
+		\mark[w, t-square]{F1}
+		\mark[b, t-circle]{F1}
+		\mark[n, t-square]{F1}
+	\end{goban}
+\end{codeexample}
+
+\subsubsection*{Definition}
+\begin{codeexample}[code only]
+	\pgfgodefineprofile[from = default]{shell}{
+		goban = {
+			background = {
+				line = false,
+				fill = {image = {file = pgfgo-board.jpg}}
+			}
+		},
+		all = {
+			stone = {
+				shadow = {
+					true,
+					angle = -45,
+					offset = 0.75pt,
+					scale = 1.2,
+					opacity = 0.6,
+					image = {file = pgfgo-shadow.png}
+				}
+			}
+		},
+		black = {stone = {image = {file = pgfgo-shell-black.png}}},
+		white = {
+			stone = {
+				image = {
+					file = {pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+						pgfgo-shell-white-4.png, pgfgo-shell-white-5.png},
+					rotate = -15:15
+				}
+			}
+		}
+	}
+\end{codeexample}
+
+\subsection{yunzi}
+
+Like |shell|, but with matte stones, without stripes, like the Chinese \emph{yunzi}: two images for the white stones, without a turn, because the light of each image comes from one side. It starts from |shell| (|from = shell|): it only changes the images of the stones.
+
+\begin{codeexample}[width=4cm]
+	\pgfgoset{profile = yunzi}
+
+	\begin{goban}[partial = A1:G3]
+		\moves[from = 1]{A:F 3}
+		\stones[w]{A1:2}
+		\stones[b]{B1:2}
+		\stones[n]{C1:2}
+		\stone[w, mark = circle]{D1}
+		\mark[w, circle]{D2}
+		\stone[b, mark = circle]{E1}
+		\mark[b, circle]{E2}
+		\stone[n, mark = circle]{F1}
+		\mark[n, circle]{F2}
+		\mark[w, t-square]{F1}
+		\mark[b, t-circle]{F1}
+		\mark[n, t-square]{F1}
+	\end{goban}
+\end{codeexample}
+
+\subsubsection*{Definition}
+\begin{codeexample}[code only]
+	\pgfgodefineprofile[from = shell]{yunzi}{
+		black = {stone = {image = {file = pgfgo-yunzi-black.png}}},
+		white = {
+			stone = {
+				image = {
+					file = {pgfgo-yunzi-white-1.png, pgfgo-yunzi-white-2.png},
+					rotate = 0
+				}
+			}
+		}
+	}
+\end{codeexample}
+
+\subsection{baduktv}
+
+A light board, of plain wood, with plain stones, one image for each color, without a turn; the soft shadow is that of |shell|. Like |shell|, it needs pdf\LaTeX\ or Lua\LaTeX\ with PDF output for the shadow.
+
+\begin{codeexample}[width=4cm]
+	\pgfgoset{profile = baduktv}
+
+	\begin{goban}[partial = A1:G3]
+		\moves[from = 1]{A:F 3}
+		\stones[w]{A1:2}
+		\stones[b]{B1:2}
+		\stones[n]{C1:2}
+		\stone[w, mark = circle]{D1}
+		\mark[w, circle]{D2}
+		\stone[b, mark = circle]{E1}
+		\mark[b, circle]{E2}
+		\stone[n, mark = circle]{F1}
+		\mark[n, circle]{F2}
+		\mark[w, t-square]{F1}
+		\mark[b, t-circle]{F1}
+		\mark[n, t-square]{F1}
+	\end{goban}
+\end{codeexample}
+
+\subsubsection*{Definition}
+\begin{codeexample}[code only]
+	\pgfgodefineprofile[from = default]{baduktv}{
+		goban = {
+			background = {
+				line = false,
+				fill = {image = {file = pgfgo-baduktv-goban.png}}
+			}
+		},
+		all = {
+			stone = {
+				shadow = {
+					true,
+					angle = -45,
+					offset = 0.75pt,
+					scale = 1.2,
+					opacity = 0.6,
+					image = {file = pgfgo-shadow.png}
+				}
+			}
+		},
+		black = {stone = {image = {file = pgfgo-baduktv-black.png}}},
+		white = {stone = {image = {file = pgfgo-baduktv-white.png}}}
+	}
+\end{codeexample}
