@@ -1,0 +1,1922 @@
+% pgf-go-presentacion.tex: un recorrido por pgf-go en diapositivas.
+% Se compila con LuaLaTeX, tres veces: las animaciones de animate y las vistas que van antes de su
+% tablero usan el .aux. Las animaciones de \sgfanimation se ven en Acrobat Reader, Foxit o PDF-XChange;
+% las demás (diapositivas que avanzan) en cualquier visor.
+\documentclass[aspectratio = 169, 10pt]{beamer}
+\usepackage[spanish]{babel}
+\usepackage{fontspec}
+\setsansfont{Fira Sans}[Scale = 0.95]
+\setmonofont{Fira Mono}[Scale = 0.88]
+\newfontfamily\japones{ipaexm.ttf}
+\usepackage{animate}
+\usepackage[most]{tcolorbox}
+\usepackage[kernel = lua]{../latex/pgf-go}
+
+\graphicspath{{../doc/img/}}
+
+% Los kanji de las coordenadas japonesas y chinas.
+\font\kanji = {file:ipaexm.ttf} at 6pt
+
+% Las partidas: con un nombre, la ruta se escribe una sola vez.
+\pgfgodefinesgf{partida}{../doc/es/partida.sgf}
+\pgfgodefinesgf{comentada}{../doc/examples/comentada.sgf}
+\pgfgodefinesgf{variantes}{../doc/es/variantes.sgf}
+\pgfgodefinesgf{problema}{../doc/es/problema.sgf}
+\pgfgodefinesgf{josekis}{../doc/es/josekis.sgf}
+\pgfgodefinesgf{lee}{../doc/examples/lee.sgf}
+\pgfgodefinesgf{segoe}{../doc/examples/maeda-segoe.sgf}
+\pgfgodefinesgf{primera}{../doc/examples/games.sgf}
+\pgfgodefinesgf[game = 2]{segunda}{../doc/examples/games.sgf}
+\pgfgodefinesgf{hatsuyoron}{../doc/examples/hatsuyoron.sgf}
+\pgfgodefinesgf{kifu}{../doc/examples/kifu.sgf}
+
+\def\version{0.2026.10.23}
+
+% Medidos con el código de la diapositiva «Mil diagramas».
+\def\PESOSHELL{285 KB}
+\def\PESOPGFGO{615 KB}
+\def\PAGINAS{21}
+
+
+%%% EL TEMA: MADERA, PIEDRAS Y PAPEL %%%
+
+\definecolor{madera}{HTML}{DCB35C}
+\definecolor{nogal}{HTML}{5C3A1E}
+\definecolor{tinta}{HTML}{1E1B18}
+\definecolor{papel}{HTML}{FBF6EA}
+\definecolor{arena}{HTML}{F1E4C3}
+\definecolor{rojo}{HTML}{A8322D}
+\colorlet{pgfgo}{madera}
+
+\setbeamercolor{background canvas}{bg = papel}
+\setbeamercolor{normal text}{fg = tinta}
+\setbeamercolor{frametitle}{fg = papel, bg = nogal}
+\setbeamercolor{title}{fg = nogal}
+\setbeamercolor{structure}{fg = nogal}
+\setbeamercolor{alerted text}{fg = rojo}
+\setbeamercolor{block title}{fg = papel, bg = nogal}
+\setbeamercolor{block body}{bg = arena}
+\setbeamercolor{section in toc}{fg = tinta}
+\setbeamerfont{frametitle}{size = \large, series = \bfseries}
+\setbeamerfont{title}{size = \huge, series = \bfseries}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{itemize items}{\raisebox{0.15ex}{\tikz\fill[tinta] circle (0.45ex);}}
+\setbeamertemplate{itemize subitem}{\raisebox{0.15ex}{\tikz\draw[tinta, fill = white] circle (0.4ex);}}
+\setbeamertemplate{section in toc}{%
+	\raisebox{0.1ex}{\tikz\shade[ball color = \ifodd\inserttocsectionnumber black!80\else white\fi] circle (0.6ex);}~%
+	{\color{nogal!70}\inserttocsectionnumber.}~\inserttocsection}
+
+% El título del frame: una franja de nogal con dos piedras a la derecha.
+\setbeamertemplate{frametitle}{%
+	\nointerlineskip
+	\begin{tikzpicture}
+		\useasboundingbox (0, 0) rectangle (\paperwidth, 2.6em);
+		\fill[nogal] (0, 0) rectangle (\paperwidth, 2.6em);
+		\fill[madera] (0, 0) rectangle (\paperwidth, 0.25em);
+		\node[anchor = west, text = papel, font = \usebeamerfont{frametitle}] at (1.2em, 1.4em) {\insertframetitle};
+		\shade[ball color = black!80] (\paperwidth - 2.6em, 1.4em) circle (0.62em);
+		\shade[ball color = white] (\paperwidth - 1.25em, 1.4em) circle (0.62em);
+	\end{tikzpicture}%
+	\vskip 0.3em
+}
+
+% El pie: una línea del tablero, con una piedra negra que avanza con las diapositivas.
+\setbeamertemplate{footline}{%
+	\begin{tikzpicture}
+		\useasboundingbox (0, 0) rectangle (\paperwidth, 1.6em);
+		% En la primera compilación, el total todavía no se conoce.
+		\pgfmathsetmacro\avance{min(1, (\insertframenumber - 1) / max(1, \inserttotalframenumber - 1))}
+		\draw[nogal!50, line width = 0.6pt] (2em, 0.8em) -- (\paperwidth - 5em, 0.8em);
+		\foreach \k in {0, 0.25, 0.5, 0.75, 1}
+			\fill[nogal!50] ({2em + \k * (\paperwidth - 7em)}, 0.8em) circle (1.2pt);
+		\shade[ball color = black!80] ({2em + \avance * (\paperwidth - 7em)}, 0.8em) circle (0.45em);
+		\node[anchor = east, text = nogal, font = \scriptsize] at (\paperwidth - 1em, 0.8em)
+			{\insertframenumber/\inserttotalframenumber};
+		\node[anchor = west, text = nogal!70, font = \tiny] at (2em, 0.05em) {\insertsectionhead};
+	\end{tikzpicture}%
+}
+
+% Cada parte empieza con tantas jugadas de una partida de 7x7 como su número.
+\AtBeginSection{%
+	\begin{frame}[plain, noframenumbering]
+		\begin{columns}[c]
+			\column{0.55\textwidth}
+				{\color{nogal!60}\Large Parte \thesection\par}
+				\medskip
+				{\color{nogal}\Huge\bfseries\insertsectionhead\par}
+			\column{0.35\textwidth}
+				\centering
+				\begin{goban}[sgf size = comentada, profile = shell, scale = 1.6]
+					\sgf[to = \thesection, numbers = false, last mark = circle, marks = false]{comentada}
+				\end{goban}
+		\end{columns}
+	\end{frame}
+}
+
+
+%%% EL CODIGO Y SU RESULTADO %%%
+
+\lstdefinestyle{pgfgo}{
+	language = [LaTeX]TeX,
+	basicstyle = \ttfamily\scriptsize,
+	texcsstyle = *\color{nogal}\bfseries,
+	moretexcs = {stone, stones, move, moves, mark, marks, prisoner, prisoners, arrow, territory,
+		sgf, sgfinfo, sgfcomment, sgfdiagrams, sgfproblem, sgfanimation, pgfgoset, pgfgoview,
+		pgfgoscore, pgfgoprisoners, pgfgomovenotes, pgfgoregion, pgfgotext, pgfgodefinesgf,
+		pgfgodefineprofile, pgfgodefinemark, pgfgodefinelanguage, pgfgoimport, pgfgodefinegoban,
+		pgfgodefineplayer, foreach, only, pause, draw, node},
+	commentstyle = \color{rojo}\itshape,
+	extendedchars = true,
+	upquote = true,
+	literate = {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1
+		{Á}{{\'A}}1 {É}{{\'E}}1 {¿}{{?`}}1 {¡}{{!`}}1 {×}{{$\times$}}1,
+	tabsize = 2,
+	columns = fullflexible,
+	keepspaces = true,
+	breaklines = true,
+	breakatwhitespace = true,
+	breakautoindent = false,
+	breakindent = 1.5em,
+}
+
+\tcbset{
+	pgfgo/.style = {
+		enhanced,
+		colback = white, colframe = nogal, colbacklower = papel,
+		boxrule = 0.6pt, arc = 2pt, left = 4pt, right = 4pt, top = 3pt, bottom = 3pt,
+		listing options = {style = pgfgo},
+	},
+}
+
+% Código a la izquierda y resultado a la derecha; el argumento es la parte del ancho del código.
+\newtcblisting{codigo}[1][0.58]{pgfgo, listing side text, lefthand ratio = #1,
+	halign lower = center, valign lower = center}
+% Solo el código. Sin argumento opcional: buscar el corchete se comería el primer comando.
+\newtcblisting{solocodigo}{pgfgo, listing only}
+
+\newcommand\clave[1]{\texttt{\color{nogal}#1}}
+
+% El logo de LaTeX no queda bien con Fira Sans: los nombres de los motores, en letras.
+\renewcommand\LaTeX{LaTeX}
+
+
+\title{pgf-go}
+\subtitle{Tableros, partidas y problemas de go en LaTeX}
+\author{Jonatán Perren Hug}
+\date{Versión \version\ \textperiodcentered\ \today}
+
+
+\begin{document}
+
+%%% PORTADA %%%
+
+\begin{frame}[plain]
+	\begin{columns}[c]
+		\column{0.5\textwidth}
+			{\usebeamerfont{title}\color{nogal}\inserttitle\par}
+			\medskip
+			{\large\insertsubtitle\par}
+			\bigskip
+			{\color{madera}\rule{0.8\linewidth}{1.5pt}}\par
+			\medskip
+			\insertauthor\par
+			\smallskip
+			{\small\color{nogal}\insertdate\par}
+		\column{0.42\textwidth}
+			\centering
+			\begin{goban}[sgf size = lee, profile = shell, scale = 0.52, captures]
+				\sgf[to = 60, numbers = false, last mark = circle]{lee}
+			\end{goban}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{El recorrido}
+	\begin{columns}[t]
+		\column{0.45\textwidth}
+			\tableofcontents[sections = {1-6}]
+		\column{0.45\textwidth}
+			\tableofcontents[sections = {7-12}]
+	\end{columns}
+	\vfill
+	\small\color{nogal!80}
+	Cada ejemplo muestra el código y lo que dibuja. Las diapositivas que avanzan se ven en cualquier
+	visor; las animaciones con botones, en Acrobat Reader, Foxit o PDF-XChange.
+\end{frame}
+
+
+%%% 1. PRIMEROS PASOS %%%
+
+\section{Primeros pasos}
+
+\begin{frame}{Qué es pgf-go}
+	\begin{columns}[c]
+		\column{0.6\textwidth}
+			\begin{itemize}[<+->]
+				\item Tableros y posiciones de go, a color, para documentos y diapositivas.
+				\item Partidas en SGF: un tablero, diagramas como en los libros, animaciones y problemas.
+				\item Las reglas, con el kernel en Lua: capturas, notas «N en M», territorio y puntaje.
+				\item Perfiles visuales, con imágenes: madera, pizarra y concha.
+				\item Tableros con nombre: variantes y vistas en medio del texto.
+				\item Marcas, flechas, líneas y marcas propias.
+				\item Una grilla para acomodar diagramas.
+				\item Textos en diez idiomas y coordenadas al estilo occidental, japonés o chino.
+				\item Una sintaxis para escribir muchas coordenadas con pocos caracteres.
+			\end{itemize}
+		\column{0.35\textwidth}
+			\centering
+			\begin{goban}[9, profile = yunzi, scale = 1.05]
+				\stones[b]{C3, D4, E5, G3, C7, F7}
+				\stones[w]{G7, F4, D6, C5, E3}
+				\marks[b, triangle]{E5}
+				\arrow[color = rojo]{G3}{G5}
+			\end{goban}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Un documento mínimo}
+	\begin{columns}[c]
+		\column{0.5\textwidth}
+			\begin{solocodigo}
+\documentclass{article}
+\usepackage{pgf-go}
+
+\begin{document}
+	\begin{goban}
+		\stones[b]{C3, D4}
+		\stones[w]{E5}
+	\end{goban}
+\end{document}
+			\end{solocodigo}
+		\column{0.4\textwidth}
+			\centering
+			\begin{goban}
+				\stones[b]{C3, D4}
+				\stones[w]{E5}
+			\end{goban}
+
+			\medskip
+			\small Por defecto: 9$\times$9, fondo blanco, borde negro, sin coordenadas.
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Dos kernels: expl3 y Lua}
+	El cálculo (coordenadas, turnos, numeración, memoria) lo hace un \emph{kernel}; el dibujo es siempre el mismo.
+
+	\medskip
+	\begin{columns}[t]
+		\column{0.55\textwidth}
+			\renewcommand\arraystretch{1.25}
+			\begin{tabular}{lcc}
+				& \clave{expl3} & \clave{lua} \\\hline
+				Motor & cualquiera & Lua\LaTeX \\
+				Piedras, jugadas, marcas & \checkmark & \checkmark \\
+				Memoria y vistas & \checkmark & \checkmark \\
+				Capturas (\clave{captures}) & & \checkmark \\
+				\clave{\textbackslash territory\{auto\}} & & \checkmark \\
+				Partidas en SGF & & \checkmark \\
+			\end{tabular}
+		\column{0.4\textwidth}
+			Con Lua\LaTeX, el kernel en Lua se usa solo. Para elegir el otro:
+			\begin{solocodigo}
+\usepackage[kernel = expl3]{pgf-go}
+			\end{solocodigo}
+			Los dos dan los mismos diagramas.
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{\textbackslash pgfgoset} y las claves que prenden y apagan}
+	\begin{codigo}[0.6]
+\pgfgoset{goban = {5, partial = B2:D4}}
+
+% La clave sola (o true) prende.
+\begin{goban}[stone = {shine}]
+	\stones[b]{C2, D3} \stone[w]{B4}
+\end{goban}
+% Dar opciones no prende...
+\begin{goban}[stone = {shine = {angle = 45}}]
+	\stones[b]{C2, D3} \stone[w]{B4}
+\end{goban}
+% ...salvo con true.
+\begin{goban}[stone = {shine = {true, angle = 45}}]
+	\stones[b]{C2, D3} \stone[w]{B4}
+\end{goban}
+	\end{codigo}
+	\small Lo que fija \clave{\textbackslash pgfgoset} vale para todo lo que sigue; cada \clave{goban} puede cambiarlo.
+\end{frame}
+
+
+%%% 2. EL TABLERO %%%
+
+\section{El tablero}
+
+\begin{frame}[fragile]{Tamaño y escala}
+	\begin{codigo}[0.5]
+\begin{goban}[5]
+\end{goban}
+\begin{goban}[5x3]
+\end{goban}
+
+\begin{goban}[3, scale = 1.6]
+	\stone[b, mark]{B2}
+\end{goban}
+\begin{goban}[3, scale = 0.8]
+	\stone[b, mark]{B2}
+\end{goban}
+	\end{codigo}
+	\small Sin la palabra \clave{size}: un número para un tablero cuadrado, \clave{5x3} para uno rectangular.
+	\clave{scale} cambia también el grosor de las líneas.
+\end{frame}
+
+\begin{frame}{Una parte del tablero: \texttt{partial}}
+	\begin{columns}[c]
+		\column{0.45\textwidth}
+			\centering
+			\begin{goban}[19, scale = 0.42, name = completo]
+				\sgf[to = 40, numbers = false]{lee}
+				\draw<1>[rojo, line width = 2pt, rounded corners] (9.5, 9.5) rectangle (19.5, 19.5);
+				\draw<2>[rojo, line width = 2pt, rounded corners] (0.5, 0.5) rectangle (8.5, 7.5);
+				\draw<3>[rojo, line width = 2pt, rounded corners] (2.5, 10.5) rectangle (7.5, 17.5);
+				\draw<4>[rojo, line width = 2pt, rounded corners] (0.5, 0.5) rectangle (19.5, 19.5);
+			\end{goban}
+		\column{0.5\textwidth}
+			\centering
+			\only<1>{\clave{partial = J10:T19}\par\medskip
+				\begin{goban}[resume = completo, partial = J10:T19, scale = 0.75, label = {at = {north, east}}]\end{goban}}%
+			\only<2>{\clave{partial = A1:H7}\par\medskip
+				\begin{goban}[resume = completo, partial = H7:A1, scale = 0.75, label = {at = {south, west}}]\end{goban}}%
+			\only<3>{\clave{partial = C11:G18}\par\medskip
+				\begin{goban}[resume = completo, partial = C11:G18, scale = 0.75, label = {at = {north, west}}]\end{goban}}%
+			\only<4>{\clave{partial = auto}: la parte que usa lo dibujado\par\medskip
+				\begin{goban}[19, partial = auto, scale = 0.75, label = {at = {north, east}}]
+					\moves{Q16, R14, R16, P17}
+				\end{goban}}%
+	\end{columns}
+	\vfill
+	\small Dos esquinas opuestas, en cualquier orden: \clave{H7:A1} es lo mismo que \clave{A1:H7}.
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{partial = auto}}
+	\begin{codigo}[0.55]
+\pgfgoset{goban = {19, scale = 1.2}}
+
+\begin{goban}[partial = auto]
+	\moves{Q16, R14, R16, P17}
+\end{goban}
+% Sin líneas de más alrededor.
+\begin{goban}[partial = auto,
+		partial margin = 0]
+	\stones[b]{J10, K11}
+	\stones[w]{K9}
+\end{goban}
+	\end{codigo}
+	\small El tablero toma lo que usan las piedras, jugadas, marcas, flechas, líneas y territorios, más
+	\clave{partial margin} líneas. Un lado que queda a dos líneas del borde llega hasta el borde.
+\end{frame}
+
+\begin{frame}[fragile]{Las coordenadas del borde}
+	\begin{codigo}[0.45]
+\pgfgoset{goban = {7}}
+
+\begin{pgfgolayout}[columns = 3, fit]
+	\begin{goban}[label = {at = all}]
+		\stones[b]{C3, E5}
+	\end{goban}
+	\begin{goban}[label = {at = {north, east},
+			style = japanese, font = \kanji}]
+		\stones[b]{C3, E5}
+	\end{goban}
+	\begin{goban}[label = {at = {north, west},
+			style = chinese, font = \kanji}]
+		\stones[b]{C3, E5}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small \clave{western}: letras desde la izquierda y números desde abajo (sin la I). \clave{japanese}:
+	números desde la derecha y kanji desde arriba. Las coordenadas de los comandos no cambian.
+\end{frame}
+
+\begin{frame}[fragile]{Cuadrícula y puntos de estrella}
+	\begin{codigo}[0.45]
+\begin{pgfgolayout}[columns = 3, fit]
+	\begin{goban}[grid = {line = {color = nogal,
+			width = 1pt}}, hoshi = {radius = 2.5pt,
+			color = rojo}]
+		\stones[b]{C3, E5}
+	\end{goban}
+	\begin{goban}[grid = {line = false},
+			hoshi = {at = {D4, F6, D6, F4}}]
+		\stones[b]{C3, E5}
+	\end{goban}
+	\begin{goban}[grid = {x sep = 1.8em},
+			hoshi = false]
+		\stones[b]{C3, E5}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+\end{frame}
+
+\begin{frame}[fragile]{El fondo y el borde}
+	\begin{codigo}[0.45]
+\pgfgoset{goban = {5, partial = A1:C3}}
+
+\begin{pgfgolayout}[columns = 3, fit]
+	\begin{goban}[background = {fill = {color = madera},
+			line = {color = nogal, width = 1.5pt}}]
+		\stones[b]{B1, C2} \stone[w]{A3}
+	\end{goban}
+	\begin{goban}[background = {fill = {color = arena},
+			line = false, rounded corners = 8pt}]
+		\stones[b]{B1, C2} \stone[w]{A3}
+	\end{goban}
+	\begin{goban}[background = {shadow = {true,
+			color = nogal, offset = 3pt}, sep = 1.3em}]
+		\stones[b]{B1, C2} \stone[w]{A3}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+\end{frame}
+
+\begin{frame}[fragile]{Ti\emph{k}Z dentro del tablero}
+	\begin{codigo}[0.6]
+\begin{goban}[9, profile = pgfgo, scale = 1.05]
+	\stones[b]{C3, C5, D7, G3}
+	\stones[w]{E3, F5, G6, C7}
+	\draw[rojo, very thick, rounded corners]
+		(go cs:B2) rectangle (go cs:D6);
+	\node[rojo, fill = white, draw, font = \small]
+		at (go cs:C4) {moyo};
+	\draw[blue, very thick, ->]
+		(go cs:F5) to[bend right] (go cs:D8);
+\end{goban}
+	\end{codigo}
+	\small \clave{goban} es un \clave{tikzpicture}: cada intersección es un punto, \clave{(go cs:C3)}, o \clave{(3,3)}.
+\end{frame}
+
+
+%%% 3. COORDENADAS %%%
+
+\section{Coordenadas}
+
+\newcommand\expresion[3]{\only<#1->{\stones[fill = {color = #2}]{#3}}}
+\newcommand\renglon[3]{\item<#1-> {\color{#2}\rule{0.7em}{0.7em}}\ \alt<#1>{\alert{\texttt{\detokenize{#3}}}}{\texttt{\detokenize{#3}}}}
+
+\begin{frame}{Filas, columnas, segmentos y rectángulos}
+	\begin{columns}[c]
+		\column{0.45\textwidth}
+			\begin{itemize}
+				\renglon{1}{red!70}{C3, D4}
+				\renglon{2}{blue!70}{A}
+				\renglon{3}{orange}{9}
+				\renglon{4}{green!50!black}{C:G7}
+				\renglon{5}{magenta}{J6:2}
+				\renglon{6}{cyan!70!black}{C2:E4}
+				\renglon{7}{violet}{E1 r H5}
+			\end{itemize}
+			\bigskip
+			\small\uncover<4->{Los segmentos van del primer extremo al segundo: \texttt{J6:2} baja.}
+			\uncover<6->{\texttt{LN:LN} es un rectángulo lleno, como en \clave{partial}; \texttt{r}, solo su borde.}
+		\column{0.45\textwidth}
+			\centering
+			\begin{goban}[9, label = {at = {south, west}}, scale = 1.05]
+				\expresion{1}{red!70}{C3, D4}
+				\expresion{2}{blue!70}{A}
+				\expresion{3}{orange}{9}
+				\expresion{4}{green!50!black}{C:G7}
+				\expresion{5}{magenta}{J6:2}
+				\expresion{6}{cyan!70!black}{C2:E4}
+				\expresion{7}{violet}{E1 r H5}
+			\end{goban}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Caminos: \texttt{-|}, \texttt{|-} y \texttt{-{}-}}
+	\begin{columns}[c]
+		\column{0.45\textwidth}
+			\begin{itemize}
+				\renglon{1}{red!70}{A1 -| D3}
+				\renglon{2}{blue!70}{A9 -| C7 -| G5}
+				\renglon{3}{orange}{F1 |- J3 -| E4}
+				\renglon{4}{magenta}{B8 -- D2}
+				\renglon{5}{green!50!black}{J9 -| F6 -- J6}
+			\end{itemize}
+			\bigskip
+			\small
+			\uncover<1->{\texttt{-|} va primero en horizontal y después en vertical, como en Ti\emph{k}Z.}
+			\uncover<4->{\texttt{-{}-} es la línea de piedras más parecida a la recta.}
+			\uncover<5->{Los caminos se encadenan.}
+		\column{0.45\textwidth}
+			\centering
+			\begin{goban}[9, label = {at = {south, west}}, scale = 1.05]
+				\expresion{1}{red!70}{A1 -| D3}
+				\expresion{2}{blue!70}{A9 -| C7 -| G5}
+				\expresion{3}{orange}{F1 |- J3 -| E4}
+				\expresion{4}{magenta}{B8 -- D2}
+				\expresion{5}{green!50!black}{J9 -| F6 -- J6}
+			\end{goban}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Escaleras: \texttt{-|-} y \texttt{|-|}}
+	\begin{columns}[c]
+		\column{0.45\textwidth}
+			\begin{itemize}
+				\renglon{1}{red!70}{A1 -- C7}
+				\renglon{2}{blue!70}{D1 -|- F7}
+				\renglon{3}{orange}{G1 |-| J7}
+			\end{itemize}
+			\medskip
+			\small Las piedras de \texttt{-{}-} se tocan por las esquinas: no forman un grupo.
+			\texttt{-|-} rellena cada escalón primero hacia el costado; \texttt{|-|}, primero hacia arriba.
+
+			\medskip
+			\uncover<4->{Una escalera (\emph{shicho}) se escribe con sus extremos:\par
+			\texttt{\detokenize{\stones[w]{D4 -|- F6 -- G6}}}\par
+			\texttt{\detokenize{\stones[b]{C4, D3, D5 -- F7, E3 -- G5}}}}
+		\column{0.45\textwidth}
+			\centering
+			\only<1-3>{%
+				\begin{goban}[9, label = {at = {south, west}}, scale = 1.05]
+					\expresion{1}{red!70}{A1 -- C7}
+					\expresion{2}{blue!70}{D1 -|- F7}
+					\expresion{3}{orange}{G1 |-| J7}
+				\end{goban}}%
+			\only<4->{%
+				\begin{goban}[9, label = {at = {south, west}}, scale = 1.05, profile = pgfgo]
+					\stones[w]{D4 -|- F6 -- G6}
+					\stones[b]{C4, D3, D5 -- F7, E3 -- G5}
+					\only<5>{\arrow{G6}{J8}}
+				\end{goban}}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Encadenar segmentos y rectángulos}
+	\begin{columns}[c]
+		\column{0.5\textwidth}
+			\begin{itemize}
+				\renglon{1}{red!70}{A1 -| B4:6}
+				\renglon{2}{blue!70}{J9 -| D:F7}
+				\renglon{3}{orange}{D1:3 |- H5}
+				\renglon{4}{magenta}{A9:7 -- C9:7}
+				\renglon{5}{green!50!black}{J4 r G2 r J1}
+			\end{itemize}
+			\bigskip
+			\small
+			Entre dos operadores puede ir un segmento o un rectángulo: cada operador va del último punto de
+			lo anterior al primero de lo siguiente.
+
+			\medskip
+			\uncover<4->{\texttt{A9:7 -{}- C9:7} baja por A, cruza en diagonal de A7 a C9 y baja por C: una N.}
+		\column{0.4\textwidth}
+			\centering
+			\begin{goban}[9, label = {at = {south, west}}, scale = 1.05]
+				\expresion{1}{red!70}{A1 -| B4:6}
+				\expresion{2}{blue!70}{J9 -| D:F7}
+				\expresion{3}{orange}{D1:3 |- H5}
+				\expresion{4}{magenta}{A9:7 -- C9:7}
+				\expresion{5}{green!50!black}{J4 r G2 r J1}
+			\end{goban}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Productos cartesianos}
+	\begin{columns}[c]
+		\column{0.5\textwidth}
+			\begin{itemize}
+				\renglon{1}{red!70}{A[1:3, 5, 7:8]}
+				\renglon{2}{blue!70}{[C, E:G]9}
+				\renglon{3}{orange}{[D, F:H][2, 4:5]}
+			\end{itemize}
+			\bigskip
+			\small
+			\uncover<1->{Lo de afuera se reparte en cada elemento de adentro:
+				\texttt{A[1:3, 5, 7:8]} es \texttt{A1:3, A5, A7:8}.}
+
+			\medskip
+			\uncover<3->{Con dos corchetes, todos con todos: \texttt{D2, D4:5, F:H2, F:H 4:5}.}
+		\column{0.4\textwidth}
+			\centering
+			\begin{goban}[9, label = {at = {south, west}}, scale = 1.05]
+				\expresion{1}{red!70}{A[1:3, 5, 7:8]}
+				\expresion{2}{blue!70}{[C, E:G]9}
+				\expresion{3}{orange}{[D, F:H][2, 4:5]}
+			\end{goban}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Quitar lo que sobra: el punto y coma}
+	\begin{columns}[c]
+		\column{0.5\textwidth}
+			Después de un \texttt{;}, las coordenadas se quitan de la lista; con otro \texttt{;}, se vuelven a agregar.
+
+			\bigskip
+			\only<1>{\texttt{\detokenize{\stones[b]{A1:E6}}}}%
+			\only<2>{\texttt{\detokenize{\stones[b]{A1:E6; A1:2}}}}%
+			\only<3>{\texttt{\detokenize{\stones[b]{A1:E6; A1:2, C6 |- E3}}}}%
+			\only<4>{\texttt{\detokenize{\stones[b]{A1:E6; A1:C4, E6; A1:2}}}}
+
+			\bigskip
+			\small
+			\only<1>{Un rectángulo lleno.}%
+			\only<2>{Sin el segmento \texttt{A1:2}.}%
+			\only<3>{Sin el camino \texttt{C6 |- E3}.}%
+			\only<4>{Agregar, quitar, agregar: \texttt{A1:2} vuelve.}
+		\column{0.4\textwidth}
+			\centering
+			\begin{goban}[label = {at = {south, west}}, partial = A1:F7, scale = 1.2]
+				\only<1>{\stones[b]{A1:E6}}%
+				\only<2>{\stones[b]{A1:E6; A1:2}}%
+				\only<3>{\stones[b]{A1:E6; A1:2, C6 |- E3}}%
+				\only<4>{\stones[b]{A1:E6; A1:C4, E6; A1:2}}%
+			\end{goban}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{El orden de las intersecciones}
+	\begin{codigo}[0.48]
+\pgfgoset{goban = {7, label = {at = {south, west}}}}
+
+\begin{pgfgolayout}[columns = 2, fit]
+	\begin{goban}
+		\stones[w]{A1 -|- F4}
+		\marks[sequence]{A1 -|- F4}
+	\end{goban}
+	\begin{goban}
+		\stones[w]{G7:4 -| D2 -- A2}
+		\marks[sequence = {format = Alph}]
+			{G7:4 -| D2 -- A2}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small Las intersecciones salen en el orden en que se escriben: es el orden de \clave{\textbackslash moves} y
+	de \clave{sequence}. Los rectángulos no tienen un orden fijo: ahí avisan.
+\end{frame}
+
+\begin{frame}[fragile]{Todo junto: una partida terminada en dos líneas}
+	\begin{codigo}[0.62]
+\begin{goban}[profile = wain, scale = 1.05,
+		label = {at = {above, left}}]
+	\stones[b]{A6|-B5|-D1|-E2, C4, E9-|F4,
+		D5-|G7--D7, H6, H8, J7}
+	\stones[w]{E8-|C5, B:E6, A7, B8, D9,
+		J6|-H5, H2:3, F1|-C3, C2, D:E4, G4}
+	\prisoners[b]{H1-|J2}
+	\prisoner[w]{A1}
+	\territory[dame]{auto}
+\end{goban}
+	\end{codigo}
+\end{frame}
+
+
+%%% 4. PIEDRAS Y JUGADAS %%%
+
+\section{Piedras y jugadas}
+
+\begin{frame}[fragile]{Piedras}
+	\begin{codigo}[0.6]
+\begin{goban}[5, scale = 1.3]
+	\stones[b]{B2, C3}
+	\stones[w]{D4, B4}
+	\stone[n]{D2} % Neutral: de nadie.
+	\stone[fill = {color = rojo},
+		line = {color = nogal, width = 1.5pt}]{C5}
+	\stone[w, radius = 3pt]{E1}
+	\stone[b, fill = {opacity = 0.4}]{A3}
+\end{goban}
+	\end{codigo}
+	\small \clave{b}, \clave{w} y \clave{n} eligen el jugador (también \clave{black}, \clave{white},
+	\clave{neutral}). Cada piedra acepta las opciones de \clave{stone}.
+\end{frame}
+
+\begin{frame}[fragile]{Sombras y brillo}
+	\begin{codigo}[0.45]
+\pgfgoset{goban = {5, partial = B2:D4}}
+
+\begin{pgfgolayout}[columns = 3, fit]
+	\begin{goban}[stone = {shadow = {true,
+			angle = -45, offset = 1.5pt}}]
+		\stones[b]{C2, D3} \stone[w]{B4}
+	\end{goban}
+	\begin{goban}[stone = {shine}]
+		\stones[b]{C2, D3} \stone[w]{B4}
+	\end{goban}
+	\begin{goban}[stone = {shine = {true,
+			angle = 60, color = madera},
+			shadow = {true, color = nogal,
+			scale = 1.15}}]
+		\stones[b]{C2, D3} \stone[w]{B4}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+\end{frame}
+
+\begin{frame}[fragile]{Jugadas numeradas: \texttt{\textbackslash moves}}
+	\begin{codigo}[0.55]
+\pgfgoset{profile = pgfgo}
+
+\begin{pgfgolayout}[columns = 2, fit]
+	\begin{goban}
+		\stones[b]{C7}
+		\stones[w]{B6, B7, C8, D7}
+		\moves[b]{C6, C5, D6, E6, D5,
+			D4, E5, F5, E4, E3}
+	\end{goban}
+	\begin{goban}
+		\moves[w, from = 51]{E5, C3, G3}
+		\moves[numbers = false]{C7}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small Alternan negras y blancas desde el color que se da. \clave{from} elige el primer número; dentro
+	de un \clave{goban}, la numeración sigue de un \clave{\textbackslash moves} al siguiente.
+\end{frame}
+
+\begin{frame}{Jugada por jugada}
+	\begin{columns}[c]
+		\column{0.4\textwidth}
+			\centering
+			\begin{goban}[9, profile = pgfgosmooth, scale = 1.25, label = {at = {south, west}}]
+				\only<1->{\moves{E5}}
+				\only<2->{\moves{C6}}
+				\only<3->{\moves{G4}}
+				\only<4->{\moves{G6}}
+				\only<5->{\moves{C3}}
+				\only<6->{\moves{F7}}
+				\only<7->{\moves{D7}}
+				\only<8->{\moves{C7}}
+				\only<9->{\moves{D8}}
+			\end{goban}
+		\column{0.5\textwidth}
+			Cada \clave{\textbackslash moves} sigue la numeración y el turno del anterior, así que alcanza con
+			\clave{\textbackslash only} de beamer para ir sumando jugadas:
+			\medskip
+
+			{\ttfamily\small
+				\textbackslash only<1->\{\textbackslash moves\{E5\}\}\\
+				\textbackslash only<2->\{\textbackslash moves\{C6\}\}\\
+				\textbackslash only<3->\{\textbackslash moves\{G4\}\}\\
+				\ldots}
+
+			\medskip
+			\small\color{nogal}Jugada \only<1>{1}\only<2>{2}\only<3>{3}\only<4>{4}\only<5>{5}\only<6>{6}\only<7>{7}\only<8>{8}\only<9>{9} de 9.
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{El formato de los números}
+	\begin{codigo}[0.55]
+\pgfgoset{goban = {5, partial = A4:E5, scale = 1.4}}
+
+\begin{pgfgolayout}[columns = 1]
+	\begin{goban}[move = {label = {format = alph}}]
+		\moves{A:E5, E:A4}
+	\end{goban}
+	\begin{goban}[move = {label = {format = Roman,
+			color = rojo, font = \itshape}}]
+		\moves{A:E5, E:A4}
+	\end{goban}
+	\begin{goban}[move = {label = {format = kanji,
+			font = \japones}}]
+		\moves{A:E5, E:A4}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small Formatos: \clave{arabic}, \clave{alph}, \clave{Alph}, \clave{roman}, \clave{Roman} y \clave{kanji}.
+\end{frame}
+
+\begin{frame}[fragile]{Prisioneros}
+	\begin{codigo}[0.5]
+\pgfgoset{goban = {5, partial = A1:E3}}
+
+\begin{pgfgolayout}[columns = 2, fit]
+	\begin{goban}
+		\stones[b]{B1, C2, D2}
+		\prisoners[w]{C1:D1}
+	\end{goban}
+	\begin{goban}[prisoner = {fill = {opacity = 0.2}}]
+		\stones[b]{B1, C2, D2}
+		\prisoners[w]{C1:D1}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small Un prisionero es una piedra muerta que sigue en el tablero: translúcida, y cuenta como territorio
+	del rival.
+\end{frame}
+
+
+%%% 5. MARCAS, FLECHAS Y LINEAS %%%
+
+\section{Marcas, flechas y líneas}
+
+\begin{frame}[fragile]{Las marcas}
+	\begin{codigo}[0.55]
+\begin{goban}[9x3, scale = 1.45,
+		label = {at = {south}}]
+	\stones[b]{A:J1}
+	\stones[w]{A:J2}
+	\marks[circle]{A}
+	\marks[triangle]{B}
+	\marks[square]{C}
+	\marks[cross]{D}
+	\marks[filled square]{E}
+	\marks[filled circle]{F}
+	\marks[t-circle]{G}
+	\marks[t-square]{H}
+	\marks[hatched lines]{J}
+\end{goban}
+	\end{codigo}
+	\small Sobre un punto vacío, la marca tapa la cuadrícula; sobre una piedra, toma el color que se ve.
+\end{frame}
+
+\begin{frame}[fragile]{Letras, símbolos y secuencias}
+	\begin{codigo}[0.6]
+\begin{goban}[9, partial = A1:G7, scale = 1.1,
+		profile = pgfgo]
+	\stones[b]{C3, D3, E4, C5}
+	\stones[w]{D4, D5, E5, F3}
+	\marks[custom = A]{E3}
+	\marks[custom = ?, label = {color = rojo}]{F4}
+	\marks[sequence = {format = alph}]{B4, B6, C6}
+	\marks[dim]{F3} % Atenuada.
+	\marks[circle, line = {color = rojo}]{D5}
+\end{goban}
+	\end{codigo}
+\end{frame}
+
+\begin{frame}[fragile]{Flechas y líneas}
+	\begin{codigo}[0.6]
+\begin{goban}[7, scale = 1.25, profile = pgfgo]
+	\stones[b]{B2, C3}
+	\stones[w]{E5, D5}
+	\arrow{B2}{F2}
+	\arrow[color = rojo, bend = 40,
+		shorten = 4pt]{C3}{E5}
+	\arrow[dash = dashed, tips = both,
+		tip = Latex]{A7}{G7}
+	\line[color = blue, width = 2pt]{A1}{G6}
+	\line[dash = dotted, halo = false]{G1}{G5}
+\end{goban}
+	\end{codigo}
+	\small Encima de las piedras, con un halo del color del fondo que las separa de lo de abajo.
+\end{frame}
+
+\begin{frame}[fragile]{Marcas propias}
+	\begin{codigo}[0.62]
+\pgfgodefinemark{rombo}{
+	\pgfpathmoveto{\pgfpointxy{0}{0.7}}
+	\pgfpathlineto{\pgfpointxy{0.7}{0}}
+	\pgfpathlineto{\pgfpointxy{0}{-0.7}}
+	\pgfpathlineto{\pgfpointxy{-0.7}{0}}
+	\pgfpathclose \pgfusepath{fill, stroke}}
+\pgfgodefinemark{barra}{\draw (-0.5,-0.5) -- (0.5,0.5);}
+\pgfgodefinemark[image = {file = pgfgo-star.pdf}]
+	{estrella}
+
+\begin{goban}[5, scale = 1.5]
+	\stones[b]{C2, D3} \stone[w]{B4}
+	\marks[rombo, line = {color = rojo}]{C2, B2}
+	\marks[barra]{D3, C3}
+	\marks[estrella]{D4, B4}
+\end{goban}
+	\end{codigo}
+	\small Código de pgf o Ti\emph{k}Z, medido en radios de piedra, o una imagen.
+\end{frame}
+
+
+%%% 6. EL JUEGO %%%
+
+\section{El juego}
+
+\begin{frame}{Capturas}
+	\begin{columns}[c]
+		\column{0.4\textwidth}
+			\centering
+			\begin{goban}[7, captures, profile = pgfgosmooth, scale = 1.35, label = {at = {south, west}}]
+				\stones[b]{C4, D5, D3}
+				\stones[w]{D4, E5, E3, F4}
+				\only<2->{\moves{E4}}
+				\only<3->{\moves{D4}}
+				\only<4->{\moves{E4}}
+			\end{goban}
+		\column{0.5\textwidth}
+			Con \clave{captures}, el \clave{goban} sigue las reglas: un grupo sin libertades se retira.
+			\medskip
+
+			\only<1>{La posición.}%
+			\only<2>{1: negras capturan la blanca de D4\ldots}%
+			\only<3>{2: \ldots{} y blancas retoman en D4, capturando 1.}%
+			\only<4>{3: negras retoman otra vez. Es un ko: en una partida, 3 tendría que esperar una jugada. El
+				\clave{goban} no lo impide.}
+
+			\medskip
+			\small Prisioneros: negras \pgfgoprisoners{b}, blancas \pgfgoprisoners{w}.
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Capturas que se ven: \texttt{fade}}
+	\begin{codigo}[0.48]
+\pgfgoset{goban = {5, partial = A1:E3}}
+
+\begin{pgfgolayout}[columns = 2, fit]
+	\begin{goban}[captures = fade]
+		\stones[w]{C1, D1}
+		\stones[b]{B1, C2, D2}
+		\marks[triangle]{C1}
+		\moves{E1}
+	\end{goban}
+	\begin{goban}[captures,
+			captured marks = remove]
+		\stones[w]{C1, D1}
+		\stones[b]{B1, C2, D2}
+		\marks[triangle]{C1}
+		\moves{E1}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small Con \clave{fade}, las capturadas quedan como prisioneros. \clave{captured marks} decide si las marcas se van con ellas.
+\end{frame}
+
+\begin{frame}[fragile]{El ko y las notas «N en M»}
+	\begin{codigo}[0.58]
+\begin{goban}[7, captures, notes, scale = 1.05,
+		profile = pgfgo]
+	\stones[b]{B3, C2, C4}
+	\stones[w]{C3, D2, D4, E3}
+	\moves{D3, G6, G5, C3, A6, A5}
+	\moves{D3} % 7 retoma el ko.
+\end{goban}
+
+\pgfgomovenotes. Prisioneros: negras
+\pgfgoprisoners{b}, blancas \pgfgoprisoners{w}.
+	\end{codigo}
+	\small Una jugada en un punto donde ya se jugó no se dibuja: se anota debajo, como en los libros.
+\end{frame}
+
+\begin{frame}[fragile]{Territorio a mano: polígonos}
+	\begin{codigo}[0.6]
+\begin{goban}[13, profile = pgfgo, scale = 0.72]
+	\stones[b]{K4, K10, J7, L7}
+	\stones[w]{D4, D10, C7, F3}
+	\territory[b, draw = region]{J3, M3, M11, J11}
+	\territory[w, draw = region]
+		{B2, F2, F5, E5, E11, B11}
+	\marks[triangle]{J10}
+	\arrow{D7}{G7}
+\end{goban}
+
+Marco negro: \pgfgoregion{b}{area} casillas;
+blanco: \pgfgoregion{w}{area}.
+	\end{codigo}
+	\small Un polígono por sus vértices. Con \clave{draw = region}, el territorio de cada color es un solo
+	polígono que \clave{\textbackslash pgfgoregion} mide.
+\end{frame}
+
+\begin{frame}{Territorio automático}
+	\begin{columns}[c]
+		\column{0.4\textwidth}
+			\centering
+			\begin{goban}[profile = pgfgo, scale = 1.15, label = {at = {south, west}}]
+				\stones[b]{A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, J7}
+				\stones[w]{E8-|C5, B:E6, A7, B8, D9, J6|-H5, H2:3, F1|-C3, C2, D:E4, G4}
+				\prisoners[b]{H1-|J2}
+				\prisoner[w]{A1}
+				\only<1>{\territory{auto}}%
+				\only<2>{\territory[dame]{auto}}%
+				\only<3>{\territory[draw = fill]{auto}}%
+				\only<4>{\territory[draw = region]{auto}}%
+				\only<5>{\territory[draw = region, b]{auto}}%
+			\end{goban}
+		\column{0.52\textwidth}
+			\clave{\textbackslash territory\{auto\}}: cada región vacía es del color que la rodea; los
+			prisioneros cuentan como muertos.
+
+			\bigskip
+			\only<1>{\texttt{\detokenize{\territory{auto}}}\par\small Las marcas de cada jugador.}%
+			\only<2>{\texttt{\detokenize{\territory[dame]{auto}}}\par\small También los puntos neutrales.}%
+			\only<3>{\texttt{\detokenize{\territory[draw = fill]{auto}}}\par\small Relleno debajo de las piedras.}%
+			\only<4>{\texttt{\detokenize{\territory[draw = region]{auto}}}\par\small Un polígono por color.}%
+			\only<5>{\texttt{\detokenize{\territory[draw = region, b]{auto}}}\par\small Solo el de negras.}
+
+			\bigskip
+			\small Negras \pgfgoscore{b}, blancas \pgfgoscore[komi = 6.5]{w}.
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{El puntaje de una partida terminada}
+	\begin{codigo}[0.6]
+\begin{goban}[sgf size = comentada, captures,
+		profile = pgfgo, scale = 1.05]
+	\sgf[marks = false, numbers = false]{comentada}
+	\prisoner[w]{B3} % La blanca muerta.
+	\territory{auto}
+\end{goban}
+
+Negras \pgfgoscore{b}, blancas
+\pgfgoscore[komi = 6.5]{w}.
+Según el archivo: \sgfinfo{comentada}{RE}.
+	\end{codigo}
+	\small Puntaje con reglas japonesas: territorio, más muertos y capturas del rival, más el komi.
+\end{frame}
+
+\begin{frame}[fragile]{Seki: ojos que no son territorio}
+	\begin{codigo}[0.6]
+\begin{goban}[profile = pgfgo, scale = 0.95]
+	\stones[b]{A8:D8, B9:D9, E7:J7, E1:E6}
+	\stones[w]{E8:J8, F9:H9, A7:D7, D1:D6}
+	\prisoner[w]{G3}
+	\prisoner[b]{B4}
+	\territory[dame]{auto}
+	\territory[n]{A9}
+	\territory[n]{J9}
+\end{goban}
+
+Negras \pgfgoscore{b},
+blancas \pgfgoscore[komi = 6.5]{w}.
+	\end{codigo}
+	\small \clave{auto} mira qué color toca cada región, no lee la posición: los ojos del seki se vuelven
+	neutrales con un \clave{\textbackslash territory[n]} para cada uno.
+\end{frame}
+
+
+%%% 7. MEMORIA Y VISTAS %%%
+
+\section{Memoria y vistas}
+
+\begin{frame}[fragile]{Variantes con \texttt{name} y \texttt{resume}}
+	\begin{codigo}[0.45]
+\pgfgoset{goban = {19, partial = A1:H8,
+	profile = pgfgo}}
+
+\begin{pgfgolayout}[columns = 3, fit]
+	\begin{goban}[name = base]
+		\stones[b]{D4}
+		\moves[w]{C3, D3, C4, D5}
+	\end{goban}
+	\begin{goban}[resume = base]
+		\moves{B5, B6, C6, C7}
+	\end{goban}
+	\begin{goban}[resume = base]
+		\moves{B6, C6, B5}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small Un \clave{goban} con nombre guarda lo que dibuja. \clave{resume} empieza con ese tablero: la
+	numeración y el turno siguen desde ahí.
+\end{frame}
+
+\begin{frame}[fragile]{Qué trae \texttt{resume}}
+	\begin{codigo}[0.58]
+\pgfgoset{goban = {5, partial = B2:D4}}
+
+\begin{pgfgolayout}[columns = 3, fit]
+	\begin{goban}[name = guardado]
+		\stones[b]{C2:4}
+		\moves[w]{D3}
+		\marks[triangle]{B3}
+		\stone[w, forget]{B2}
+		\territory[b]{B4}
+	\end{goban}
+	\begin{goban}[resume = guardado]
+	\end{goban}
+	\begin{goban}[resume = {guardado,
+			numbers, marks, territory}]
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small Por defecto, solo las piedras. Lo dibujado con \clave{forget} no viaja.
+\end{frame}
+
+\begin{frame}[fragile]{Vistas en medio del texto}
+	\begin{codigo}[0.47]
+\begin{goban}[5, name = ko, captures,
+		profile = pgfgo, scale = 0.8]
+	\stones[b]{B3, C2, C4}
+	\stones[w]{D2, D4, E3}
+	\moves[w]{C3, D3}
+\end{goban}
+
+La negra 2 \pgfgoview{ko}{D3} captura la
+blanca 1 \pgfgoview{ko}{C3}. Así quedó el ko:
+\pgfgoview{ko}{B2:E4}. Sin números ni
+fondo: \pgfgoview[numbers = false,
+background = false]{ko}{B2:E4}.
+	\end{codigo}
+	\small \clave{\textbackslash pgfgoview} muestra una intersección o un recuadro de un \clave{goban} con nombre,
+	como quedó al terminar, al tamaño del texto.
+\end{frame}
+
+\begin{frame}[fragile]{Vistas antes del tablero y opciones}
+	\begin{codigo}[0.58]
+Más abajo, la blanca de C3 \pgfgoview{atari}{C3}
+queda en atari. Con otro perfil:
+\pgfgoview[profile = simple]{atari}{B2:D4};
+sin flechas: \pgfgoview[arrows = false,
+	raise = 0pt]{atari}{B2:D4}.
+
+\begin{goban}[5, name = atari, scale = 1.2]
+	\stones[b]{B3, C2, C4}
+	\stones[w]{C3}
+	\marks[sequence]{D3}
+	\arrow{E5}{D4}
+\end{goban}
+	\end{codigo}
+	\small Una vista puede ir antes de su tablero, como una referencia: se resuelve con el \texttt{.aux},
+	en la compilación siguiente.
+\end{frame}
+
+\begin{frame}[fragile]{Un tablero en otro documento}
+	\begin{columns}[t]
+		\column{0.48\textwidth}
+			En el artículo:
+			\begin{solocodigo}
+\begin{goban}[19, name = pelea,
+		export = pelea]
+	...
+\end{goban}
+			\end{solocodigo}
+			El \clave{goban} queda en \texttt{pelea.pgfgo}, con su estilo.
+		\column{0.48\textwidth}
+			En las diapositivas:
+			\begin{solocodigo}
+\pgfgoimport{pelea}
+...
+El ko de \pgfgoview{pelea}{Q16:S18}.
+
+\begin{goban}[resume = {pelea, marks},
+		partial = auto]
+	\moves{E3}
+\end{goban}
+			\end{solocodigo}
+			Como si se hubiera dibujado ahí: sirve para \clave{\textbackslash pgfgoview} y para \clave{resume}.
+	\end{columns}
+\end{frame}
+
+
+%%% 8. PARTIDAS EN SGF %%%
+
+\section{Partidas en SGF}
+
+\begin{frame}[fragile]{Un nombre para cada archivo y sus datos}
+	\begin{codigo}[0.45]
+% En el preámbulo:
+% \pgfgodefinesgf{lee}{lee.sgf}
+
+\begin{tabular}{rl}
+	Negras: & \sgfinfo{lee}{PB} (\sgfinfo{lee}{BR})\\
+	Blancas: & \sgfinfo{lee}{PW}\\
+	Evento: & \sgfinfo{lee}{RO}\\
+	Lugar: & \sgfinfo{lee}{PC}\\
+	Fecha: & \sgfinfo{lee}{DT}\\
+	Reglas: & \sgfinfo{lee}{RU}, komi \sgfinfo{lee}{KM}\\
+	Resultado: & \sgfinfo{lee}{RE}
+\end{tabular}
+	\end{codigo}
+	\small Con un nombre, la ruta se escribe una vez y el archivo se lee una sola vez en todo el documento.
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{\textbackslash sgf}: una partida en un tablero}
+	\begin{codigo}[0.55]
+\pgfgoset{profile = pgfgo,
+	goban = {label = {at = {north, west}}}}
+
+\begin{pgfgolayout}[columns = 2, fit]
+	% Sin captures: 2 sigue ahí.
+	\begin{goban}[sgf size = partida]
+		\sgf{partida}
+	\end{goban}
+	\begin{goban}[sgf size = partida, captures]
+		\sgf[from = 7]{partida}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small \clave{from}: la primera jugada con número. \clave{to}: la última que se juega. Después, \clave{\textbackslash moves} sigue con el turno.
+\end{frame}
+
+\begin{frame}[t]{Una partida comentada, jugada por jugada}
+	\begin{columns}[T]
+		\column{0.42\textwidth}
+			\centering
+			\foreach \k in {0, ..., 18} {%
+				\only<\inteval{\k + 1}>{%
+					\begin{goban}[sgf size = comentada, captures, profile = shell, scale = 1.55,
+							label = {at = {south, west}}]
+						\sgf[to = \k, numbers = false, last mark = circle]{comentada}
+					\end{goban}}}
+		\column{0.52\textwidth}
+			\vspace{1em}
+			{\color{nogal}\bfseries\sgfinfo{comentada}{GN}}\par
+			\small\sgfinfo{comentada}{PB} contra \sgfinfo{comentada}{PW}, komi \sgfinfo{comentada}{KM}.
+
+			\medskip
+			\foreach \k in {0, ..., 18} {%
+				\only<\inteval{\k + 1}>{%
+					{\color{nogal}Jugada \k}\par\smallskip
+					\sgfcomment{comentada}{\k}}}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Variantes}
+	\begin{codigo}[0.45]
+\pgfgoset{profile = pgfgo,
+	goban = {sgf size = variantes}}
+
+\begin{pgfgolayout}[columns = 3, fit]
+	\begin{goban}
+		\sgf[variation = 2]{variantes}
+	\end{goban}
+	\begin{goban}
+		\sgf[variation = 1.2]{variantes}
+	\end{goban}
+	\begin{goban}
+		\sgf[variation = {C5, C3}]{variantes}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small En cada bifurcación, la variante indicada (\clave{1.2}: la primera, después la segunda), o las
+	jugadas de la línea, como en un diccionario.
+\end{frame}
+
+\begin{frame}[fragile]{Las marcas del archivo}
+	\begin{codigo}[0.45]
+\pgfgoset{profile = pgfgo,
+	goban = {sgf size = variantes}}
+
+\begin{pgfgolayout}[columns = 3, fit]
+	\begin{goban}
+		\sgf[to = 2]{variantes}
+	\end{goban}
+	\begin{goban}
+		\sgf[to = 2, marks = false]{variantes}
+	\end{goban}
+	\begin{goban}
+		\sgf[to = 1, marks = false,
+			variations = children]{variantes}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small Triángulos, cuadrados, círculos, cruces, letras, flechas, líneas y territorio del archivo.
+	\clave{variations} marca con letras las jugadas que pueden seguir.
+\end{frame}
+
+\begin{frame}[fragile]{Diagramas como en los libros}
+	\begin{codigo}[0.4]
+\sgfdiagrams[step = 4,
+	layout = {columns = 3, fit}]
+	{partida}
+	\end{codigo}
+	\small Un diagrama cada \clave{step} jugadas, desde la posición real: las anteriores van sin número, y
+	cada uno lleva su epígrafe y sus notas.
+\end{frame}
+
+\begin{frame}[fragile]{Diagramas con sus comentarios}
+	\begin{codigo}[0.35]
+\sgfdiagrams[step = 5,
+	to = 10, comments,
+	goban = {scale = 0.8},
+	layout = {columns = 2}]
+	{comentada}
+	\end{codigo}
+\end{frame}
+
+\begin{frame}[fragile]{Una partida entera: un diagrama por diapositiva}
+	\begin{columns}[c]
+		\column{0.4\textwidth}
+			\begin{solocodigo}
+\pgfgoset{profile = shell}
+
+\sgfdiagrams[step = 50, restart,
+	goban = {scale = 0.48},
+	layout = {per frame}]{lee}
+			\end{solocodigo}
+			\small \clave{per frame} pone cada diagrama en la diapositiva siguiente, con su epígrafe.
+			\clave{restart} numera cada diagrama desde 1, como en los libros.
+
+			\medskip
+			\sgfinfo{lee}{PB} contra \sgfinfo{lee}{PW}, \sgfinfo{lee}{DT}.
+		\column{0.55\textwidth}
+			\centering
+			\pgfgoset{profile = shell}
+			\sgfdiagrams[step = 50, restart, goban = {scale = 0.48}, layout = {per frame}]{lee}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Colecciones: varias partidas en un archivo}
+	\begin{codigo}[0.6]
+% En el preámbulo:
+% \pgfgodefinesgf{primera}{games.sgf}
+% \pgfgodefinesgf[game = 2]{segunda}{games.sgf}
+
+\pgfgoset{profile = pgfgo}
+\begin{pgfgolayout}[columns = 2, fit]
+	\begin{goban}[sgf size = primera]
+		\sgf{primera}
+	\end{goban}
+	\begin{goban}[sgf size = segunda]
+		\sgf[to = 100, numbers = false]{segunda}
+	\end{goban}
+\end{pgfgolayout}
+\sgfinfo{primera}{PB} -- \sgfinfo{primera}{PW};
+\sgfinfo{segunda}{PB} -- \sgfinfo{segunda}{PW}.
+	\end{codigo}
+	\small Un archivo con varias partidas: \clave{game} elige una, en cada comando o en el nombre. Cada
+	partida tiene su tamaño.
+\end{frame}
+
+\begin{frame}[fragile]{Problemas: el enunciado y después la solución}
+	\begin{columns}[c]
+		\column{0.4\textwidth}
+			\begin{solocodigo}
+% Primero el enunciado...
+\sgfproblem[solutions = false,
+	goban = {scale = 1.6}]{problema}
+% ...y en la otra diapositiva,
+% las soluciones.
+\sgfproblem[statement = false,
+	verdict, comments = false,
+	layout = {columns = 4, fit}]
+	{problema}
+			\end{solocodigo}
+			\small \clave{verdict} dice si cada variante es correcta, según las anotaciones del archivo.
+		\column{0.58\textwidth}
+			\centering
+			\pgfgoset{profile = pgfgo}
+			\only<1>{\sgfproblem[solutions = false, goban = {scale = 1.6}]{problema}}%
+			\only<2>{\sgfproblem[statement = false, verdict, comments = false, layout = {columns = 4, fit}]{problema}}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Una hoja de problemas}
+	\begin{codigo}[0.32]
+\pgfgoset{profile = shell}
+
+\sgfproblem[
+	game = {1:4},
+	to play = black,
+	comments = false,
+	layout = {columns = 4,
+		fit}]{hatsuyoron}
+	\end{codigo}
+	\small Los problemas del \emph{Igo Hatsuy\=oron} (1713), uno por partida del archivo.
+\end{frame}
+
+\begin{frame}[fragile]{Un diccionario de josekis}
+	\begin{codigo}[0.32]
+\pgfgoset{profile = pgfgo}
+
+\sgfdiagrams[
+	variation = {Q16, R14},
+	variations = {commented,
+		from = 3},
+	partial = auto,
+	comments = {true, font = \tiny},
+	caption = {font = \scriptsize},
+	layout = {columns = 4,
+		fit}]{josekis}
+	\end{codigo}
+	\small La línea por sus jugadas; las variantes comentadas desde la jugada 3, cada una en su diagrama;
+	todos con la misma parte del tablero.
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{\textbackslash sgfanimation}: una partida con botones}
+	\begin{columns}[c]
+		\column{0.45\textwidth}
+			\begin{solocodigo}
+\usepackage{animate}
+...
+\sgfanimation[
+	comments = {true, height = 3em},
+	goban = {captures, scale = 1.2,
+		profile = shell},
+	animate = {controls, loop}]
+	{comentada}
+			\end{solocodigo}
+			\small Un cuadro por jugada, con los botones de \clave{animate}. Se ve en Acrobat Reader, Foxit o
+			PDF-XChange; en los demás visores, solo el primer cuadro.
+		\column{0.5\textwidth}
+			\centering
+			\sgfanimation[comments = {true, height = 3em}, goban = {captures, scale = 1.2, profile = shell},
+				animate = {controls, loop}]{comentada}
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Animaciones por capas}
+	\begin{columns}[c]
+		\column{0.55\textwidth}
+			\begin{itemize}[<+->]
+				\item Sin capas, cada cuadro es un \clave{goban} entero: el PDF crece con el cuadrado de las jugadas.
+				\item Con \clave{layers} (el valor inicial), el tablero se dibuja una sola vez, y cada piedra
+					también, en una lámina que \clave{animate} muestra mientras la piedra sigue en el tablero.
+				\item En cada cuadro solo se dibuja lo que cambia: la marca de la última jugada, las marcas del
+					archivo y el comentario.
+				\item Una partida de 200 jugadas: menos de 1~MB en lugar de más de 10~MB, y compila más rápido.
+			\end{itemize}
+		\column{0.4\textwidth}
+			\centering
+			\sgfanimation[from = 0, to = 60, fps = 6, goban = {captures, scale = 0.55, profile = shell},
+				animate = {controls, loop}]{segoe}
+
+			\small\color{nogal}Maeda -- Segoe, 1940: 60 cuadros.
+	\end{columns}
+\end{frame}
+
+
+%%% 9. DISPOSICION %%%
+
+\section{Disposición}
+
+\begin{frame}[fragile]{Una grilla de diagramas}
+	\begin{codigo}[0.5]
+\begin{pgfgolayout}[columns = 3, fit]
+	\begin{goban}[5]
+		\stones[b]{C3}
+	\end{goban}
+	\begin{goban}[5, profile = pgfgo]
+		\stones[w]{C3}
+	\end{goban}
+	\begin{goban}[7, profile = wain]
+		\moves{D4, E5, C3}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small Columnas del mismo ancho; con \clave{fit}, cada tablero se escala hasta llenar la suya.
+\end{frame}
+
+\begin{frame}[fragile]{\texttt{width = natural}}
+	\begin{codigo}[0.6]
+\begin{pgfgolayout}[columns = 2, width = natural,
+		column sep = 0.3em, row sep = 0.3em]
+	\begin{goban}[partial = A9:E5]
+		\stone[b]{C7}
+		\marks[sequence]{C8, D7, C6, B7}
+	\end{goban}
+	\begin{goban}[partial = E9:J5]
+		\stone[b]{G7} \stone[w]{F7}
+		\marks[sequence]{G8, H7, G6}
+	\end{goban}
+	\begin{goban}[partial = A1:E5]
+		\stone[b]{C3} \stones[w]{B3, C2}
+		\marks[sequence]{C4, D3}
+	\end{goban}
+	\begin{goban}[partial = E1:J5]
+		\stone[b]{G3} \stones[w]{F3, G2, H3}
+		\marks[sequence]{G4}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+\end{frame}
+
+\begin{frame}[fragile]{Páginas y diapositivas}
+	\begin{columns}[t]
+		\column{0.48\textwidth}
+			\begin{solocodigo}
+% Cuatro diagramas por página.
+\sgfdiagrams[step = 50, layout =
+	{columns = 2, fit, per page = 4}]{lee}
+
+% Uno por diapositiva, dentro de un frame.
+\sgfdiagrams[step = 50, layout =
+	{per frame}]{lee}
+			\end{solocodigo}
+		\column{0.48\textwidth}
+			\begin{itemize}
+				\item \clave{per page}: cada $n$ diagramas, \clave{\textbackslash newpage}.
+				\item \clave{per frame}: cada $n$ diagramas, la diapositiva siguiente (usa \clave{\textbackslash only<+>},
+					así que se suma a los \clave{\textbackslash pause} del frame).
+				\item \clave{align}: \clave{center}, \clave{left} o \clave{right} dentro de la columna.
+				\item Valen en \clave{pgfgolayout} y en la clave \clave{layout} de \clave{\textbackslash sgfdiagrams}
+					y \clave{\textbackslash sgfproblem}.
+			\end{itemize}
+	\end{columns}
+\end{frame}
+
+
+%%% 10. PERFILES E IMAGENES %%%
+
+\section{Perfiles e imágenes}
+
+\newcommand\posicionperfiles{%
+	\stones[b]{A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, J7}%
+	\stones[w]{E8-|C5, B:E6, A7, B8, D9, J6|-H5, H2:3, F1|-C3, C2, D:E4, G4}%
+	\stones[b, prisoner]{H1-|J2}%
+	\prisoner[w]{A1}%
+	\marks[b, t-circle]{A1:4, G8|-J9, J8, H7}%
+	\marks[w, t-square]{G3|-J1|-H4, C9-|A8, B7}%
+	\moves[from = 1]{E5}}
+
+\begin{frame}{Nueve perfiles}
+	\begin{columns}[c]
+		\column{0.42\textwidth}
+			\centering
+			\foreach \p [count = \k] in {default, pgfgo, pgfgosmooth, wain, simple, draft, shell, yunzi, baduktv} {%
+				\only<\k>{%
+					\expanded{\noexpand\pgfgoset{profile = \p}}%
+					\begin{goban}[scale = 1.2, label = {at = {south, west}}]
+						\posicionperfiles
+					\end{goban}}}
+		\column{0.5\textwidth}
+			Un perfil cambia el estilo del tablero y de los tres jugadores de una vez:
+
+			\medskip
+			\foreach \p [count = \k] in {default, pgfgo, pgfgosmooth, wain, simple, draft, shell, yunzi, baduktv} {%
+				\only<\k>{\clave{\textbackslash pgfgoset\{profile = \p\}}}}
+
+			\medskip
+			\small
+			\only<1>{El estilo inicial: al que vuelven el tablero y los jugadores antes de aplicar cualquier perfil.}%
+			\only<2>{El color del tablero, con sombra.}%
+			\only<3>{Como \clave{pgfgo}, más suave.}%
+			\only<4>{Los colores de un tablero de madera clara, con piedras con brillo.}%
+			\only<5>{Para imprimir: blanco y negro, sin adornos. Sirve también para las vistas.}%
+			\only<6>{Blanco y negro, con rayas donde hay relleno: piedras negras, marcas y territorio.}%
+			\only<7>{Imágenes: madera, pizarra y cinco conchas giradas, con sombra difusa.}%
+			\only<8>{Como \clave{shell}, con piedras \emph{yunzi}, mates.}%
+			\only<9>{Al estilo de las transmisiones de televisión.}
+
+			\bigskip
+			{\color{nogal!80}\footnotesize Perfil \only<1>{1}\only<2>{2}\only<3>{3}\only<4>{4}\only<5>{5}\only<6>{6}\only<7>{7}\only<8>{8}\only<9>{9} de 9.}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Las opciones de cada jugador}
+	\begin{codigo}[0.6]
+\pgfgoset{
+	goban = {background = {fill = {color = madera},
+		line = false}, grid = {line = {color = white}}},
+	players = {
+		black = {stone = {line = {color = magenta},
+			fill = {color = blue!50!black}}},
+		white = {stone = {line = {color = blue}},
+			mark = {line = {color = orange}}}}}
+
+\begin{goban}[4, scale = 1.6]
+	\stone[b]{A2}
+	\stones[w, mark = circle]{B2, A3}
+	\moves{C3, C2}
+\end{goban}
+	\end{codigo}
+	\small Tres jugadores: \clave{black}, \clave{white} y \clave{neutral}; \clave{all} para los tres. Cada
+	uno con sus piedras, jugadas y marcas.
+\end{frame}
+
+\begin{frame}[fragile]{Un perfil propio}
+	\begin{codigo}[0.62]
+\pgfgodefineprofile[from = default]{noche}{
+	goban = {background = {fill = {color = black!85},
+			line = false},
+		grid = {line = {color = white!60}},
+		label = {color = gray}},
+	neutral = {mark = {line = {color = white!80},
+		fill = {color = gray}}},
+	black = {stone = {fill = {color = blue!55!black},
+		line = {color = white!70}}},
+	white = {stone = {fill = {color = orange!85},
+		line = {color = orange!40!black}}}}
+
+\begin{goban}[9, profile = noche, scale = 0.95,
+		label = {at = {south, west}}]
+	\stones[b]{C3, D3, E4, C5}
+	\stones[w]{D4, D5, E5, F3}
+	\moves{F4, G4, F5}
+	\marks[triangle]{G7}
+\end{goban}
+	\end{codigo}
+\end{frame}
+
+\begin{frame}[fragile]{Mezclar perfiles}
+	\begin{codigo}[0.45]
+\pgfgoset{goban = {3}}
+
+\begin{pgfgolayout}[columns = 3, fit]
+	% El tablero de un perfil...
+	\begin{goban}[goban profile = pgfgo]
+		\stones[b]{A1, B2} \stones[w]{C3}
+	\end{goban}
+	% ...los jugadores de otro...
+	\begin{goban}[players profile = wain]
+		\stones[b]{A1, B2} \stones[w]{C3}
+	\end{goban}
+	% ...o un jugador de cada uno.
+	\begin{goban}[goban profile = pgfgo,
+			players = {
+				black = {profile = wain-black},
+				white = {profile = baduktv-white}}]
+		\stones[b]{A1, B2} \stones[w]{C3}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small Un perfil empieza siempre desde el estilo inicial: no hereda lo que no define.
+\end{frame}
+
+\begin{frame}[fragile]{Imágenes en el fondo}
+	\begin{codigo}[0.45]
+\pgfgoset{goban = {5}}
+
+\begin{pgfgolayout}[columns = 3, fit]
+	\begin{goban}[background = {fill = {image = {
+			file = pgfgo-board.jpg}}}]
+		\stones[b]{C3} \marks[circle]{D4}
+	\end{goban}
+	\begin{goban}[background = {fill = {image = {
+			file = pgfgo-board.jpg, fit = tile,
+			width = 1cm, rotate = random}}}]
+	\end{goban}
+	\begin{goban}[background = {fill = {image = {
+			file = {pgfgo-tile.png, pgfgo-cell.png},
+			fit = tile, width = 0.8cm}}}]
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small \clave{cover} (inicial), \clave{stretch} o \clave{tile}. Con \clave{partial}, se ve la parte que corresponde.
+\end{frame}
+
+\newcommand\madera{%
+	\stones[b]{B2, E2, J2, C3, D3, G3, H3, C:G5, E6, G6}%
+	\stones[w]{D8, F8, E7, H7, C6, D6, F6, H6, B5, B4, E4, H2, J3:5}}
+
+\begin{frame}[fragile]{Piedras con imágenes, paso a paso}
+	\begin{columns}[c]
+		\column{0.56\textwidth}
+			\begin{solocodigo}
+\pgfgoset{
+	goban = {background = {fill = {image = {
+		file = pgfgo-board.jpg}}}},
+	players = {
+		all = {stone = {shadow = {true,
+			offset = 0.75pt, angle = -45}}},
+		black = {stone = {image = {
+			file = pgfgo-shell-black.png}}},
+		white = {stone = {image = {
+			file = {pgfgo-shell-white-1.png, ...,
+				pgfgo-shell-white-5.png},
+			rotate = -15:15}}}}}
+			\end{solocodigo}
+			\small
+			\begin{enumerate}
+				\item<1-> \alert<1>{La madera en el fondo.}
+				\item<2-> \alert<2>{Una imagen para cada jugador.}
+				\item<3-> \alert<3>{Cinco conchas: cada punto elige la suya.}
+				\item<4-> \alert<4>{Una sombra con la forma de la imagen.}
+				\item<5-> \alert<5>{Cada concha girada, entre $-15$ y $15$ grados.}
+			\end{enumerate}
+		\column{0.4\textwidth}
+			\centering
+			\pgfgoset{goban = {scale = 1.15, label = {at = {north, west}}}}
+			\only<1>{\begin{goban}[background = {fill = {image = {file = pgfgo-board.jpg}}}]
+				\madera\end{goban}}%
+			\only<2>{\begin{goban}[background = {fill = {image = {file = pgfgo-board.jpg}}},
+					players = {black = {stone = {image = {file = pgfgo-shell-black.png}}},
+						white = {stone = {image = {file = pgfgo-shell-white-1.png}}}}]
+				\madera\end{goban}}%
+			\only<3>{\begin{goban}[background = {fill = {image = {file = pgfgo-board.jpg}}},
+					players = {black = {stone = {image = {file = pgfgo-shell-black.png}}},
+						white = {stone = {image = {file = {pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+							pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}]
+				\madera\end{goban}}%
+			\only<4>{\begin{goban}[background = {fill = {image = {file = pgfgo-board.jpg}}},
+					players = {all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
+						black = {stone = {image = {file = pgfgo-shell-black.png}}},
+						white = {stone = {image = {file = {pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+							pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}}}}}]
+				\madera\end{goban}}%
+			\only<5>{\begin{goban}[background = {fill = {image = {file = pgfgo-board.jpg}}},
+					players = {all = {stone = {shadow = {true, offset = 0.75pt, angle = -45}}},
+						black = {stone = {image = {file = pgfgo-shell-black.png}}},
+						white = {stone = {image = {file = {pgfgo-shell-white-1.png, pgfgo-shell-white-2.png, pgfgo-shell-white-3.png,
+							pgfgo-shell-white-4.png, pgfgo-shell-white-5.png}, rotate = -15:15}}}}]
+				\madera\end{goban}}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Ya hechos: \texttt{shell} y \texttt{yunzi}}
+	\begin{codigo}[0.45]
+\pgfgoset{goban = {sgf size = segoe,
+	partial = K10:T19, captures}}
+
+\begin{pgfgolayout}[columns = 2, fit]
+	\begin{goban}[profile = shell]
+		\sgf[to = 80, numbers = false]{segoe}
+	\end{goban}
+	\begin{goban}[profile = yunzi]
+		\sgf[to = 80, numbers = false]{segoe}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small Las imágenes vienen con el paquete y se usan por su nombre, desde cualquier documento.
+\end{frame}
+
+\begin{frame}[fragile]{Sombras, hoshi, cuadrícula y marcas con imágenes}
+	\begin{codigo}[0.56]
+\pgfgoset{goban = {5}}
+\pgfgodefinemark[image = {file = {
+	pgfgo-shell-white-1.png, pgfgo-shell-white-3.png},
+	width = 1em}]{concha}
+
+\begin{pgfgolayout}[columns = 3, fit]
+	\begin{goban}[stone = {shadow = {true,
+			angle = -45, offset = 2pt, color = rojo,
+			image = {file = pgfgo-star.pdf,
+			width = 16pt, rotate = 18, silhouette}}}]
+		\stones[b]{B2, D3} \stone[w]{C4}
+	\end{goban}
+	\begin{goban}[hoshi = false, grid = {image = {
+			file = pgfgo-cell.png, fit = tile}}]
+		\stones[b]{B2, D3} \stone[w]{C4}
+	\end{goban}
+	\begin{goban}[hoshi = {image = {
+			file = pgfgo-hoshi.png}, radius = 3pt}]
+		\marks[concha]{A:E1, A:E5}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+\end{frame}
+
+\begin{frame}{Cómo guarda pgf-go las imágenes en el PDF}
+	\begin{columns}[c]
+		\column{0.5\textwidth}
+			\begin{itemize}[<+->]
+				\item Con pdf\LaTeX\ o Lua\LaTeX, cada imagen se guarda \alert{una sola vez}, la primera vez que se
+					usa, en un \emph{Form XObject}.
+				\item Después, cada piedra, baldosa o marca que la usa solo la \emph{nombra}: unos bytes.
+				\item Girarla (\clave{rotate}) no agrega otra copia, y la sombra con su forma usa la misma copia.
+				\item Lo que sí agrega una copia es otro tamaño: otro \clave{width}, u otro \clave{scale}.
+				\item Con Xe\LaTeX\ o salida DVI, la imagen se incluye cada vez.
+			\end{itemize}
+		\column{0.45\textwidth}
+			\centering
+			\begin{tikzpicture}[x = 1em, y = 1em, font = \scriptsize]
+				\node[draw = nogal, fill = arena, rounded corners, align = center, minimum width = 9em, inner sep = 0.5em]
+					(form) at (0, 0) {\includegraphics[width = 2.2em]{pgfgo-shell-white-2.png}\\[2pt]
+						\texttt{pgfgo-shell-white-2.png}\\una copia en el PDF};
+				\foreach \x/\y [count = \k] in {-6/-6, -2/-6.6, 2/-6.6, 6/-6} {
+					\node (p\k) at (\x, \y) {\includegraphics[width = 1.6em]{pgfgo-shell-white-2.png}};
+					\draw[->, nogal!70] (p\k) -- (form);
+				}
+				\node[text = nogal] at (0, -8.6) {cientos de piedras: una referencia cada una};
+			\end{tikzpicture}
+	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Mil diagramas, menos de 700 KB}
+	\begin{columns}[c]
+		\column{0.5\textwidth}
+			\begin{solocodigo}
+\pgfgoset{profile = shell}
+
+\begin{pgfgolayout}[columns = 6, fit]
+	\foreach \k in {1, ..., 1000} {
+		\begin{goban}[9]
+			\stones[b]{C3, D4, E5, G3, ...}
+			\stones[w]{G7, F4, D6, C7, B4:6}
+			\moves{H3, H4, J4}
+		\end{goban}}
+\end{pgfgolayout}
+			\end{solocodigo}
+		\column{0.45\textwidth}
+			\renewcommand\arraystretch{1.3}
+			\begin{tabular}{lr}
+				\multicolumn{2}{l}{\bfseries 1000 tableros de 9$\times$9} \\\hline
+				Perfil \clave{shell} (imágenes) & \PESOSHELL \\
+				Perfil \clave{pgfgo} (dibujado) & \PESOPGFGO \\
+				Páginas & \PAGINAS \\
+			\end{tabular}
+
+			\medskip
+			\small La madera, las seis piedras y la sombra se guardan una vez, y cada piedra solo las nombra:
+			con imágenes, el PDF pesa menos que con piedras dibujadas. Todos los tableros tienen la misma
+			escala (\clave{fit}): no hay copias de otro tamaño.
+	\end{columns}
+\end{frame}
+
+\begin{frame}{Qué agranda un PDF y qué no}
+	\begin{columns}[t]
+		\column{0.48\textwidth}
+			{\color{nogal}\bfseries No lo agranda}
+			\begin{itemize}
+				\item Más piedras con la misma imagen y el mismo tamaño.
+				\item Girar las imágenes, o elegir entre varios archivos.
+				\item La sombra con la forma de la imagen.
+				\item Muchas marcas sobre un fondo de baldosas: solo se redibujan las que tocan la marca.
+				\item Una animación por capas (\clave{layers}).
+			\end{itemize}
+		\column{0.48\textwidth}
+			{\color{rojo}\bfseries Lo agranda}
+			\begin{itemize}
+				\item La misma imagen con otro tamaño: otro \clave{width}, otro \clave{scale}, \clave{fit} en
+					grillas distintas.
+				\item Piedras translúcidas (\clave{opacity} menor que 1): cada una va en un grupo de transparencia.
+				\item Animaciones con \clave{layers = false}: un tablero entero por cuadro.
+				\item Xe\LaTeX\ o salida DVI con imágenes.
+			\end{itemize}
+	\end{columns}
+	\vfill
+	\small En \clave{\textbackslash sgfdiagrams} y \clave{\textbackslash sgfproblem} con \clave{fit}, todos los tableros usan la misma escala: las piedras miden lo mismo, y cada imagen se guarda una vez.
+\end{frame}
+
+
+%%% 11. IDIOMAS %%%
+
+\section{Idiomas}
+
+\begin{frame}[fragile]{Los textos del paquete}
+	\begin{codigo}[0.55]
+\pgfgotext{black to play}.
+\pgfgotext{very good tesuji}.
+
+\pgfgoset{lang = fr} \pgfgotext{black to play}.
+
+\pgfgoset{lang = de} \pgfgotext{black to play}.
+
+\pgfgoset{lang = eo} \pgfgotext{black to play}.
+
+\pgfgoset{lang = it} \pgfgotext{bad move}.
+
+{\japones\pgfgoset{lang = ja}
+	\pgfgotext{black to play}.}
+	\end{codigo}
+	\small Epígrafes, resultados, anotaciones y notas «N en M», en el idioma de \texttt{babel} o
+	\texttt{polyglossia} (diez idiomas), o el que se elija con \clave{lang}.
+\end{frame}
+
+\begin{frame}[fragile]{Un diagrama en francés, otro en alemán}
+	\begin{codigo}[0.45]
+\pgfgoset{goban = {scale = 0.75},
+	sgf diagrams = {layout = {columns = 2}}}
+
+\pgfgoset{lang = fr}
+\sgfdiagrams[from = 1, to = 6,
+	step = 6]{partida}
+
+\pgfgoset{lang = de}
+\sgfproblem[solutions = false]
+	{problema}
+	\end{codigo}
+	\small El comentario del problema no se traduce: está así en el archivo. Cada texto se cambia con
+	su clave o con \clave{\textbackslash pgfgodefinelanguage}.
+\end{frame}
+
+\begin{frame}[fragile]{Una partida japonesa}
+	\begin{codigo}[0.55]
+{\japones\sgfinfo{kifu}{PB} -- \sgfinfo{kifu}{PW}}
+
+\begin{goban}[sgf size = kifu, profile = yunzi,
+		scale = 1.15, label = {at = {north, east},
+		style = japanese, font = \kanji},
+		move = {label = {format = kanji,
+			font = \japones}}]
+	\sgf[to = 8]{kifu}
+\end{goban}
+	\end{codigo}
+	\small Coordenadas al estilo japonés y números de jugada en kanji. Los archivos en GB2312, Big5,
+	Shift\_JIS, EUC-JP o EUC-KR se convierten solos.
+\end{frame}
+
+
+%%% 12. CIERRE %%%
+
+\section{Cierre}
+
+\begin{frame}{En resumen}
+	\begin{columns}[c]
+		\column{0.55\textwidth}
+			\begin{itemize}
+				\item \clave{goban}, \clave{\textbackslash stones}, \clave{\textbackslash moves}, \clave{\textbackslash marks}:
+					posiciones a mano, con una sintaxis para escribir poco.
+				\item \clave{captures}, \clave{notes}, \clave{\textbackslash territory}, \clave{\textbackslash pgfgoscore}:
+					las reglas.
+				\item \clave{name}, \clave{resume}, \clave{\textbackslash pgfgoview}, \clave{export}: los tableros se recuerdan.
+				\item \clave{\textbackslash sgf}, \clave{\textbackslash sgfdiagrams}, \clave{\textbackslash sgfproblem},
+					\clave{\textbackslash sgfanimation}: partidas, libros, problemas y animaciones.
+				\item \clave{profile} e imágenes: el estilo, en un PDF liviano.
+			\end{itemize}
+
+			\medskip
+			\small El manual (\texttt{pgf-go-es.pdf}) tiene catorce tutoriales y la referencia de cada clave; en
+			\texttt{doc/examples} hay 35 ejemplos con su código.
+		\column{0.4\textwidth}
+			\centering
+			\begin{goban}[sgf size = comentada, captures, profile = shell, scale = 1.6]
+				\sgf[numbers = false]{comentada}
+				\territory[draw = region]{auto}
+			\end{goban}
+
+			\small Negras \pgfgoscore{b}, blancas \pgfgoscore[komi = 6.5]{w}.
+	\end{columns}
+\end{frame}
+
+\begin{frame}[plain]
+	\centering
+	\vfill
+	\begin{goban}[16x7, profile = shell, scale = 0.9, background = {rounded corners = 6pt}]
+		\stones[b]{E6 -| B2 |- D4}
+		\stones[w]{[G:J][2, 6], H3:5}
+		\stones[b]{L2:6 -- P2:6}
+	\end{goban}
+	\vfill
+	{\color{nogal}\Large\bfseries ¡Gracias!}\par
+	\medskip
+	{\small\color{nogal!80}\ttfamily
+		\detokenize{\stones[b]{E6 -| B2 |- D4}}\par
+		\detokenize{\stones[w]{[G:J][2, 6], H3:5}}\par
+		\detokenize{\stones[b]{L2:6 -- P2:6}}\par}
+	\vfill
+\end{frame}
+
+\end{document}

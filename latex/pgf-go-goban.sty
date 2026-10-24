@@ -40,6 +40,17 @@
 	\tl_new:N \l_pgfgo_goban_label_columns_direction_tl
 	\tl_new:N \l_pgfgo_goban_label_rows_direction_tl
 
+	%\pgftransformscale (scale) SOLO MUEVE LOS PUNTOS: LOS GROSORES DE LAS LINEAS QUEDAN COMO ESTAN. CON
+	%scale line width, scale TAMBIEN LOS MULTIPLICA, SALVO CON layout/fit, QUE ELIGE LA ESCALA PARA LLENAR LA
+	%COLUMNA: LO AVISA \l_pgfgo_goban_fit_bool, QUE PRENDEN pgf-go-layout.sty Y pgf-go-sgf.sty ANTES DEL goban.
+	\bool_new:N \l_pgfgo_goban_scale_line_width_bool
+	\bool_new:N \l_pgfgo_goban_fit_bool
+	\fp_new:N \l_pgfgo_goban_line_scale_fp
+	\fp_set:Nn \l_pgfgo_goban_line_scale_fp {1}
+	\cs_new_protected:Npn \pgfgo_goban_line_width:n #1 {
+		\pgfsetlinewidth {\fp_to_dim:n {(#1) * \l_pgfgo_goban_line_scale_fp}}
+	}
+
 	%LAYERS
 	\pgfdeclarelayer{pgfgo_layer_goban_border}
 	\pgfdeclarelayer{pgfgo_layer_goban_grid}
@@ -121,6 +132,11 @@
 
 		scale							.tl_set:N		= \l_pgfgo_goban_scale_tl,
 		scale							.initial:n	= {1},
+
+		%scale TAMBIEN MULTIPLICA LOS GROSORES DE LAS LINEAS (VER \pgfgo_goban_line_width:n).
+		scale~line~width	.bool_set:N	= \l_pgfgo_goban_scale_line_width_bool,
+		scale~line~width	.default:n	= {true},
+		scale~line~width	.initial:n	= {false},
 
 		size							.code:n			= {\pgfgo_kernel_board_size:n{#1} \bool_set_true:N \l__pgfgo_goban_size_bool},
 
@@ -329,10 +345,30 @@
 	opacity			.tl_set:N 	= \l_pgfgo_goban_border_fill_opacity_tl,
 	opacity			.initial:n	= {1},
 
+	pattern			.code:n = {\keys_set:nn {pgfgo / goban / background / fill / pattern} {#1}},
+
 	false				.code:n = {\bool_set_false:N\l_pgfgo_goban_border_fill_bool},
 	true				.code:n = {\bool_set_true:N\l_pgfgo_goban_border_fill_bool},
 
 	image				.code:n = {\keys_set:nn {pgfgo / goban / background / fill / image} {#1}},
+}
+
+%EL PATRON, SOBRE EL COLOR Y LA IMAGEN (VER \pgfgo_fill:nnnn EN pgf-go.sty). EL COLOR DEL FONDO TAMBIEN
+%TAPA LA CUADRICULA DEBAJO DE LAS MARCAS Y DE LOS HALOS: ACA NO VALE none.
+\tl_new:N \l_pgfgo_goban_border_fill_pattern_tl
+\tl_new:N \l_pgfgo_goban_border_fill_pattern_color_tl
+\keys_define:nn {pgfgo / goban / background / fill / pattern}{
+	name				.tl_set:N		= \l_pgfgo_goban_border_fill_pattern_tl,
+	color				.tl_set:N		= \l_pgfgo_goban_border_fill_pattern_color_tl,
+	color				.initial:n	= {black},
+	false				.code:n			= {\tl_clear:N \l_pgfgo_goban_border_fill_pattern_tl},
+}
+%EL RELLENO DEL FONDO (COLOR Y PATRON) EN EL CAMINO QUE ARMA #1.
+\cs_new_protected:Npn \pgfgo_goban_background_fill:n #1 {
+	\pgfgo_fill:nVVV {#1}
+		\l_pgfgo_goban_border_fill_color_tl
+		\l_pgfgo_goban_border_fill_pattern_tl
+		\l_pgfgo_goban_border_fill_pattern_color_tl
 }
 
 %IMAGEN DE FONDO, SOBRE EL COLOR. SE UBICA SEGUN EL TABLERO COMPLETO (CON partial SE VE LA PARTE QUE
@@ -919,6 +955,10 @@
 		\pgfsetxvec{\pgfpoint{ \l_pgfgo_goban_grid_x_sep_dim}{0}}
 		\pgfsetyvec{\pgfpoint{0}{ \l_pgfgo_goban_grid_y_sep_dim}}
 		\pgftransformscale{\l_pgfgo_goban_scale_tl}
+		\fp_set:Nn \l_pgfgo_goban_line_scale_fp {
+			\bool_if:nTF {\l_pgfgo_goban_scale_line_width_bool && !\l_pgfgo_goban_fit_bool}
+				{\l_pgfgo_goban_scale_tl} {1}
+		}
 		\bool_if:NTF \l_pgfgo_goban_partial_auto_bool
 			{\pgfgo_kernel_extent_clear:}
 			{\__pgfgo_goban_board:nn {#1} {#2}}
@@ -964,7 +1004,7 @@
 	%EL FONDO (#1 Y #2: EL TAMANO COMPLETO), CON SU SOMBRA, SU IMAGEN Y SU BORDE.
 	\cs_new_protected:Npn \__pgfgo_goban_background:nn #1#2 {
 		\pgfscope
-			\pgfsetlinewidth{\l_pgfgo_goban_border_line_width_dim}
+			\pgfgo_goban_line_width:n {\l_pgfgo_goban_border_line_width_dim}
 			\pgfsetstrokecolor{\l_pgfgo_goban_border_color_tl}
 			\pgfsetstrokeopacity{\l_pgfgo_goban_border_opacity_tl}
 			\pgfsetfillcolor{\l_pgfgo_goban_border_fill_color_tl}
@@ -987,13 +1027,28 @@
 					\pgfusepath{fill, clip}
 					\pgfgo_goban_background_image:
 				\endpgfscope
+				\bool_lazy_and:nnT {\l_pgfgo_goban_border_fill_bool} {! \tl_if_empty_p:N \l_pgfgo_goban_border_fill_pattern_tl} {
+					\pgfgo_fill:nnVV {\__pgfgo_goban_background_path:nn {#1} {#2}} {none}
+						\l_pgfgo_goban_border_fill_pattern_tl
+						\l_pgfgo_goban_border_fill_pattern_color_tl
+				}
 				\bool_if:NT \l_pgfgo_goban_border_line_bool {
 					\__pgfgo_goban_background_path:nn {#1} {#2}
 					\pgfusepath{stroke}
 				}
 			}{
-				\__pgfgo_goban_background_path:nn {#1} {#2}
-				\pgfusepath{\bool_if:NT\l_pgfgo_goban_border_line_bool{stroke}, \bool_if:NT\l_pgfgo_goban_border_fill_bool{fill}}
+				\tl_if_empty:NTF \l_pgfgo_goban_border_fill_pattern_tl {
+					\__pgfgo_goban_background_path:nn {#1} {#2}
+					\pgfusepath{\bool_if:NT\l_pgfgo_goban_border_line_bool{stroke}, \bool_if:NT\l_pgfgo_goban_border_fill_bool{fill}}
+				}{
+					%CON PATRON: EL COLOR, EL PATRON ENCIMA Y EL BORDE ENCIMA DE LOS DOS.
+					\bool_if:NT \l_pgfgo_goban_border_fill_bool
+						{\pgfgo_goban_background_fill:n {\__pgfgo_goban_background_path:nn {#1} {#2}}}
+					\bool_if:NT \l_pgfgo_goban_border_line_bool {
+						\__pgfgo_goban_background_path:nn {#1} {#2}
+						\pgfusepath{stroke}
+					}
+				}
 			}
 		\endpgfscope
 	}
@@ -1003,7 +1058,7 @@
 		\pgfscope
 		\pgfsetstrokecolor{\l_pgfgo_goban_grid_color_tl}
 		\pgfsetstrokeopacity{\l_pgfgo_goban_grid_opacity_tl}
-		\pgfsetlinewidth{\l_pgfgo_goban_grid_line_width_dim}
+		\pgfgo_goban_line_width:n {\l_pgfgo_goban_grid_line_width_dim}
 		\pgfsetroundcap
 		\pgfpathgrid[step = \pgfpointxy{1}{1}] {\pgfpointxy{1}{1}}{\pgfpointxy{#1}{#2}}
 		\pgfusepath{stroke}

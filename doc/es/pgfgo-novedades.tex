@@ -44,11 +44,12 @@
 					\item Números en kanji para las jugadas y las marcas (|format = kanji|).
 					\item Opacidad del trazo y del relleno de las marcas, de los números de las jugadas, de las imágenes de las piedras y de los puntos de estrella.
 					\item El sistema de coordenadas |go| de \tikzname: |(go cs:C3)| (pág.~\pageref{subsec:tikz}).
+					\item Patrones de \tikzname\ en los rellenos de las piedras, las marcas, el territorio y el fondo (|fill/pattern|, pág.~\pageref{sec:piedras}).
 				\end{itemize}
 			\item Estilos y perfiles:
 				\begin{itemize}
 					\item Los perfiles son \emph{keys} (pág.~\pageref{subsec:perfiles}): |profile|, |goban profile|, |players profile| y |players/|\meta{jugador}|/profile|. Antes de aplicarse, el tablero y los jugadores vuelven al estilo inicial. |\pgfgodefineprofile| define un perfil completo de una vez.
-					\item Tres perfiles nuevos: |simple|, y |shell| y |yunzi|, con imágenes (pág.~\pageref{subsec:perfilshell}): un tablero de madera con piedras de pizarra y concha, o mates. Las imágenes vienen con el paquete, junto a sus archivos |.sty|, y se usan por su nombre.
+					\item Cuatro perfiles nuevos: |simple|, |draft| (blanco y negro, con rayas donde hay relleno), y |shell| y |yunzi|, con imágenes (pág.~\pageref{subsec:perfilshell}): un tablero de madera con piedras de pizarra y concha, o mates. Las imágenes vienen con el paquete, junto a sus archivos |.sty|, y se usan por su nombre.
 					\item Una misma regla para las \emph{keys} que prenden o apagan algo (pág.~\pageref{subsec:prender}).
 					\item Las opciones de un |goban| aceptan las de |\pgfgoset|, solo para ese tablero, y |\pgfgoset{mark = {...}}| fija también el estilo de las marcas de los tres jugadores.
 				\end{itemize}

@@ -545,6 +545,45 @@
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%DRAFT (BLANCO Y NEGRO, RAYADO DONDE HAY RELLENO; PARA IMPRIMIR O FOTOCOPIAR)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pgfgodefineprofile[from = default]{draft}{
+	all = {
+		mark = {
+			fill = {
+				color = white,
+				pattern = {name = {Lines[angle = 45, distance = 1.2pt, line width = 0.3pt]}}
+			}
+		}
+	},
+	black = {
+		stone = {
+			fill = {
+				color = white,
+				pattern = {name = {Lines[angle = 45, distance = 1.5pt, line width = 0.4pt]}, color = black!50}
+			}
+		},
+		move = {label = {color = black}},
+		mark = {line = {color = black}, label = {color = black}},
+		territory = {
+			fill = {
+				color = none,
+				pattern = {name = {Lines[angle = 45, distance = 2pt, line width = 0.4pt]}, color = black!50}
+			}
+		}
+	},
+	white = {
+		territory = {
+			fill = {
+				color = none,
+				pattern = {name = {Lines[angle = -45, distance = 2pt, line width = 0.4pt]}, color = black!50}
+			}
+		}
+	}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %SHELL (MADERA, PIZARRA Y CONCHA, CON IMAGENES; LOS ARCHIVOS ESTAN JUNTO A pgf-go.sty)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

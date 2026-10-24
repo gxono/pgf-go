@@ -1,0 +1,50 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+% Stones, numbers, marks (on a stone, on an empty point, filled, t-) and the territory of both players.
+\newcommand\board{%
+	\stones[b]{A1:3, B4}\stones[w]{D1:3, C4}%
+	\moves{B2, C2}%
+	\marks[triangle]{B3}\marks[b, circle]{A1}\marks[filled square]{E4}\marks[filled circle]{E5}%
+	\marks[b, t-circle]{A4}\marks[w, t-square]{D4}%
+	\territory[b, draw = fill]{A5, B5}\territory[w, draw = region]{E1:3}}
+\begin{document}
+
+% fill/pattern: a TikZ pattern (patterns or patterns.meta) over the color of stone/fill, mark/fill,
+% territory/fill and goban/background/fill; color = none leaves only the pattern. The profile draft uses it.
+
+\case{Without patterns; draft; and back to default (the patterns go away)}
+\begin{goban}[5]\board\end{goban}
+{\pgfgoset{profile = draft}\begin{goban}[5]\board\end{goban}}
+{\pgfgoset{profile = draft}\pgfgoset{profile = default}\begin{goban}[5]\board\end{goban}}
+
+\case{stone/fill: over the color, only the pattern (color = none), with options, translucent; pattern = false}
+{\pgfgoset{players = {black = {stone = {fill = {pattern = {name = north east lines, color = white}}}}}}
+\begin{goban}[5x2]\stones[b]{A1}\stones[w]{A2}\end{goban}}
+{\pgfgoset{players = {black = {stone = {fill = {color = none, pattern = {name = crosshatch}}}},
+	white = {stone = {fill = {color = yellow, opacity = 0.5, pattern = {name = {Dots[distance = 2pt, radius = 0.4pt]}, color = red}}}}}}
+\begin{goban}[5x2]\stones[b]{A1, C1}\stones[w]{A2, B1, B2}\moves{D1, D2}\end{goban}
+\pgfgoset{players = {black = {stone = {fill = {pattern = false}}}}}
+\begin{goban}[5x2]\stones[b]{A1}\stones[w]{A2}\end{goban}}
+
+\case{mark/fill, territory/fill (fill and region, color = none) and goban/background/fill (with the circle under a mark)}
+{\pgfgoset{players = {
+	all = {mark = {fill = {pattern = {name = {Lines[angle = 90, distance = 1pt]}, color = blue}}}},
+	black = {territory = {line, fill = {color = none, pattern = {name = horizontal lines, color = red}}}},
+	white = {territory = {fill = {color = yellow, pattern = {name = {Hatch[distance = 2pt]}}}}}}}
+\begin{goban}[5, background = {fill = {color = black!10, pattern = {name = dots, color = gray}}}]
+	\stones[b]{C3}\marks[triangle]{C2}\marks[filled square]{D4}\marks[filled circle]{E5}
+	\territory[b, draw = region]{A1:2, B1}\territory[w, draw = fill]{E1:2}
+\end{goban}
+\begin{goban}[5, background = {fill = {image = {file = pgfgo-board.jpg}, pattern = {name = north west lines}}}]
+	\stones[b]{C3}\marks[triangle]{C2}
+\end{goban}
+\begin{goban}[5, background = {fill = {false, pattern = {name = north west lines}}}]
+	\stones[b]{C3}
+\end{goban}}
+\end{document}

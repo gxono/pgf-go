@@ -1927,6 +1927,8 @@
 	\prop_gclear:N \g__pgfgo_sgf_shown_prop
 	\hbox_set:Nn \l__pgfgo_sgfdiag_box {
 		\pgfgo_layout_restore_goban:
+		%LA ESCALA DE fit NO CAMBIA EL GROSOR DE LAS LINEAS (VER pgf-go-goban.sty).
+		\tl_if_empty:NF \l__pgfgo_sgfdiag_scale_tl {\bool_set_true:N \l_pgfgo_goban_fit_bool}
 		\use:e {
 			\exp_not:N \begin{goban}
 				[

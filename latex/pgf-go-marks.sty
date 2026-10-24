@@ -106,7 +106,7 @@
 \cs_new_protected:Npn \__pgfgo_mark_stroke_style: {
 	\pgfsetstrokecolor{\l_pgfgo_players_mark_line_color_tl}
 	\__pgfgo_mark_opacity:NN \pgfsetstrokeopacity \l_pgfgo_players_mark_line_opacity_tl
-	\pgfsetlinewidth{\l_pgfgo_players_mark_line_width_dim}
+	\pgfgo_goban_line_width:n {\l_pgfgo_players_mark_line_width_dim}
 }
 %EL RELLENO: #1 RECIBE EL COLOR. CON mark/fill = false NO SE RELLENA NADA.
 \cs_new_protected:Npn \__pgfgo_mark_fill:nn #1#2 {
@@ -114,6 +114,17 @@
 		\__pgfgo_mark_opacity:NN \pgfsetfillopacity \l_pgfgo_players_mark_fill_opacity_tl
 		#1 {\l_pgfgo_players_mark_fill_color_tl}
 		#2
+	}
+}
+
+%EL RELLENO CON SU PATRON (mark/fill/pattern) DEL CAMINO QUE ARMA #1.
+\cs_new_protected:Npn \__pgfgo_mark_fill_path:n #1 {
+	\bool_if:NT \l_pgfgo_players_mark_fill_bool {
+		\__pgfgo_mark_opacity:NN \pgfsetfillopacity \l_pgfgo_players_mark_fill_opacity_tl
+		\pgfgo_fill:nVVV {#1}
+			\l_pgfgo_players_mark_fill_color_tl
+			\l_pgfgo_players_mark_fill_pattern_tl
+			\l_pgfgo_players_mark_fill_pattern_color_tl
 	}
 }
 
@@ -155,17 +166,11 @@
 }
 
 \cs_new_protected:Nn\pgfgo_mark_filled_square: {
-	\__pgfgo_mark_fill:nn {\pgfsetfillcolor} {
-		\__pgfgo_mark_square_path:n {0.7071 * 0.5}
-		\pgfusepath{fill}
-	}
+	\__pgfgo_mark_fill_path:n {\__pgfgo_mark_square_path:n {0.7071 * 0.5}}
 }
 
 \cs_new_protected:Nn\pgfgo_mark_filled_circle: {
-	\__pgfgo_mark_fill:nn {\pgfsetfillcolor} {
-		\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * 0.5}
-		\pgfusepath{fill}
-	}
+	\__pgfgo_mark_fill_path:n {\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * 0.5}}
 }
 
 \cs_new_protected:Nn\pgfgo_mark_cross: {
@@ -179,26 +184,30 @@
 
 \cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_cross:
 
-%LAS MARCAS t- (TERRITORIO): CON EL ESTILO DE LA CUADRICULA Y EL RELLENO DE LA PIEDRA.
-\cs_new_protected:Npn \__pgfgo_mark_t_style: {
+%LAS MARCAS t- (TERRITORIO): EL CAMINO QUE ARMA #1, CON EL ESTILO DE LA CUADRICULA Y EL RELLENO DE LA
+%PIEDRA (CON SU PATRON).
+\cs_new_protected:Npn \__pgfgo_mark_t:n #1 {
 	\pgfsetstrokecolor{\l_pgfgo_goban_grid_color_tl}
-	\pgfsetlinewidth{\l_pgfgo_goban_grid_line_width_dim}
-	\pgfsetfillcolor{\l_pgfgo_players_stone_fill_color_tl}
+	\pgfgo_goban_line_width:n {\l_pgfgo_goban_grid_line_width_dim}
 	\pgfsetstrokeopacity{\l_pgfgo_goban_grid_opacity_tl}
+	\pgfgo_fill:nVVV {#1}
+		\l_pgfgo_players_stone_fill_color_tl
+		\l_pgfgo_players_stone_fill_pattern_tl
+		\l_pgfgo_players_stone_fill_pattern_color_tl
+	#1
+	\pgfusepath{stroke}
 }
 
 \cs_new_protected:Nn\pgfgo_mark_t_circle: {
-	\__pgfgo_mark_t_style:
-	\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * 0.35}
-	\pgfusepath{stroke, fill}
+	\__pgfgo_mark_t:n {\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * 0.35}}
 }
 
 \cs_new_protected:Nn\pgfgo_mark_t_square: {
-	\__pgfgo_mark_t_style:
-	\pgfpathrectanglecorners
-		{\pgfpointpolar{45}{\l_pgfgo_players_stone_radius_dim * 0.25 * 1.41}}
-		{\pgfpointpolar{225}{\l_pgfgo_players_stone_radius_dim * 0.25 * 1.41}}
-	\pgfusepath{stroke, fill}
+	\__pgfgo_mark_t:n {
+		\pgfpathrectanglecorners
+			{\pgfpointpolar{45}{\l_pgfgo_players_stone_radius_dim * 0.25 * 1.41}}
+			{\pgfpointpolar{225}{\l_pgfgo_players_stone_radius_dim * 0.25 * 1.41}}
+	}
 }
 
 %EL PUNTO DE LA MARCA QUE SE ESTA DIBUJANDO.
@@ -216,8 +225,8 @@
 		\pgfgo_goban_background_image:VV \l__pgfgo_mark_x_tl \l__pgfgo_mark_y_tl
 		\endpgfscope
 	}{
-		\pgfpathrectanglecorners {\pgfpointxy{-0.5}{-0.5}} {\pgfpointxy{0.5}{0.5}}
-		\pgfusepath{fill}
+		\pgfgo_goban_background_fill:n
+			{\pgfpathrectanglecorners {\pgfpointxy{-0.5}{-0.5}} {\pgfpointxy{0.5}{0.5}}}
 	}
 }
 
@@ -373,8 +382,8 @@
 			\endpgfscope
 		}{
 			\pgftransformshift{\pgfpointxy{#1}{#2}}
-			\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * \l_pgfgo_mark_shadow_scale_tl}
-			\pgfusepath{fill}
+			\pgfgo_goban_background_fill:n
+				{\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * \l_pgfgo_mark_shadow_scale_tl}}
 		}
 		\endpgfonlayer
 	}
@@ -497,7 +506,7 @@
 		\pgfsetfillcolor{pgfgomarkfill}
 		\__pgfgo_mark_opacity:NN \pgfsetstrokeopacity \l_pgfgo_players_mark_line_opacity_tl
 		\__pgfgo_mark_opacity:NN \pgfsetfillopacity \l_pgfgo_players_mark_fill_opacity_tl
-		\pgfsetlinewidth{\l_pgfgo_players_mark_line_width_dim}
+		\pgfgo_goban_line_width:n {\l_pgfgo_players_mark_line_width_dim}
 		#1
 	\endpgfscope
 }

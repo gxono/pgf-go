@@ -49,7 +49,7 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 
 
 \begin{key}{/pgfgo/stone/fill/color = \meta{color}}	
-	Color del relleno.
+	Color del relleno. Con |none|, sin color: queda el patrón, si lo hay.
 	
 	\begin{codeexample}[]
 		\pgfgoset{goban = {5, partial = B2:D4}}
@@ -83,6 +83,34 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 			\stone[w, fill = {opacity = 0.5}]{B4}
 		\end{goban}
 	\end{codeexample}
+\end{key}
+
+
+\begin{key}{/pgfgo/stone/fill/pattern = \meta{options}}
+	Un patrón de Ti\emph{k}Z sobre el color del relleno, con su misma opacidad. Con |fill/color = none|, la piedra tiene solo el patrón. Las marcas |t-circle| y |t-square| del jugador usan el mismo relleno. El patrón no cambia de tamaño con |goban/scale|.
+
+	\begin{codeexample}[]
+		\pgfgoset{goban = {5, partial = B2:D4}}
+
+		\begin{goban}
+			\stones[b, fill = {color = white,
+				pattern = {name = north east lines}}]{C2,D3}
+			\stone[w, fill = {color = none,
+				pattern = {name = {Dots[distance = 2pt]}}}]{B4}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/stone/fill/pattern/name = \meta{pattern}}
+	El patrón: cualquiera de las bibliotecas |patterns| y |patterns.meta| de Ti\emph{k}Z, que \pgfgoname\ carga. Uno con opciones va entre llaves: |name = {Lines[angle = 45, distance = 2pt]}|. Sin |name| no hay patrón.
+\end{key}
+
+\begin{key}{/pgfgo/stone/fill/pattern/color = \meta{color} (initially black)}
+	Color del patrón.
+\end{key}
+
+\begin{key}{/pgfgo/stone/fill/pattern/false}
+	Sin patrón.
 \end{key}
 
 

@@ -2,7 +2,7 @@
 \ProvidesPackage{pgf-go}[2026/10/23 v0.2026.10.23 Go diagrams with PGF]
 
 \RequirePackage{tikz}
-\usetikzlibrary{patterns, arrows.meta}
+\usetikzlibrary{patterns, patterns.meta, arrows.meta}
 \RequirePackage{xparse}
 
 \definecolor{pgfgo}{RGB}{220,179,92}
@@ -58,6 +58,24 @@
 
 %VARIANTE QUE USAN LOS MODULOS (LOS l3kernel RECIENTES YA LA TIENEN).
 \prg_generate_conditional_variant:Nnn \regex_match:nn {nV} {T, F, TF}
+
+%UN RELLENO (fill = {color, pattern}): EL CAMINO QUE ARMA #1, DEL COLOR #2 (SALVO none) Y, CON UN PATRON
+%#3, OTRA VEZ ENCIMA CON EL PATRON #3 DEL COLOR #4. #3 ES CUALQUIER PATRON DE TikZ (DE patterns O DE
+%patterns.meta, CON SUS OPCIONES: Lines[angle = 45, distance = 2pt]). LA OPACIDAD ES LA QUE YA ESTA PUESTA.
+\cs_new_protected:Npn \pgfgo_fill:nnnn #1#2#3#4 {
+	\str_if_eq:eeF {#2} {none} {
+		#1
+		\pgfsetfillcolor {#2}
+		\pgfusepath {fill}
+	}
+	\tl_if_blank:eF {#3} {
+		#1
+		\use:e {\exp_not:N \pgfsetfillpattern {#3} {#4}}
+		\pgfusepath {fill}
+	}
+}
+\cs_generate_variant:Nn \pgfgo_fill:nnnn {nVVV, nnVV, nvvv, neee}
+\prg_generate_conditional_variant:Nnn \str_if_eq:nn {Vn} {p, T, F, TF}
 
 %LAS VARIABLES DEL ESTILO: LAS LOCALES (l_pgfgo..., l__pgfgo...) QUE CREAN LOS MODULOS DE ESTILO, SALVO LAS
 %DE LAS VISTAS Y DE resume. UN goban CON NOMBRE GUARDA SUS VALORES, Y \pgfgoview LOS VUELVE A PONER (VER

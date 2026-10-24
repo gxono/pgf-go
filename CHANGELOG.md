@@ -6,6 +6,21 @@ All notable changes to `pgf-go` are listed here.
 
 ### New
 
+- `fill/pattern = {name, color}` in `stone/fill`, `mark/fill`,
+  `territory/fill` and `goban/background/fill`: a TikZ pattern (of
+  `patterns` or `patterns.meta`, now loaded too) over the fill color, with
+  its opacity; `pattern/color` is initially `black`, and `pattern = false`
+  removes it. `fill/color = none` leaves only the pattern (not in the
+  background). The marks `t-circle` and `t-square` use the pattern of the
+  stone; the marks on empty points and `dim` repeat the pattern of the
+  background.
+- The profile `draft`: black and white, with lines where there is a fill
+  (black stones, filled marks and territory, a direction for each player).
+- `goban/scale line width` (initially `false`): `scale` also multiplies the
+  width of the lines (grid, border, stones, marks, arrows, lines and
+  territory). Without it, as before, `scale` changes only the sizes. With
+  `layout/fit`, which chooses the scale to fill the column, the widths do not
+  change.
 - The TikZ coordinate system `go`: inside a `goban`, `(go cs:C3)` is the
   intersection C3, for `\draw`, `\node` and the other commands of TikZ
   (`\draw (go cs:B2) rectangle (go cs:D6);`). It can be outside the board
@@ -556,6 +571,8 @@ All notable changes to `pgf-go` are listed here.
 
 ### Documentation
 
+- `goban/scale` said that it also changes the width of the lines; it changes
+  only the sizes (for the widths, `scale line width`).
 - `\territory{auto}`: what it cannot know (open positions, gaps in a border,
   dead stones that are not prisoners, eyes in seki, neutral stones) and that
   `partial = auto` grows to the territory. When the territory is drawn.

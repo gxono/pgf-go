@@ -158,16 +158,16 @@
 						\pgfsetstrokecolor {\l__pgfgo_lines_halo_tl}
 						\pgfsetfillcolor {\l__pgfgo_lines_halo_tl}
 						\str_if_eq:nnTF {#1} {arrow} {
-							\pgfsetlinewidth {\dim_use:c {l__pgfgo_ #1 _width_dim}}
+							\pgfgo_goban_line_width:n {\dim_use:c {l__pgfgo_ #1 _width_dim}}
 							\__pgfgo_lines_arrow_halo:nnnnn {#1} {#3} {#4} {#5} {#6}
 						}{
-							\pgfsetlinewidth {\dim_eval:n {\dim_use:c {l__pgfgo_ #1 _width_dim} + \dim_use:c {l__pgfgo_ #1 _halo_width_dim} * 2}}
+							\pgfgo_goban_line_width:n {\dim_eval:n {\dim_use:c {l__pgfgo_ #1 _width_dim} + \dim_use:c {l__pgfgo_ #1 _halo_width_dim} * 2}}
 							\__pgfgo_lines_path:nnnn {#3} {#4} {#5} {#6}
 							\pgfusepath{stroke}
 						}
 					\endpgfscope
 				}
-				\pgfsetlinewidth {\dim_use:c {l__pgfgo_ #1 _width_dim}}
+				\pgfgo_goban_line_width:n {\dim_use:c {l__pgfgo_ #1 _width_dim}}
 				\pgfsetstrokecolor {\tl_use:c {l__pgfgo_ #1 _color_tl}}
 				\pgfsetfillcolor {\tl_use:c {l__pgfgo_ #1 _color_tl}}
 				\pgfsetstrokeopacity {\tl_use:c {l__pgfgo_ #1 _opacity_tl}}

@@ -32,6 +32,8 @@
 	\tl_new:c {l_pgfgo_players_ #1 _territory_mark_tl}
 	\tl_new:c {l_pgfgo_players_ #1 _territory_fill_color_tl}
 	\tl_new:c {l_pgfgo_players_ #1 _territory_fill_opacity_tl}
+	\tl_new:c {l_pgfgo_players_ #1 _territory_fill_pattern_tl}
+	\tl_new:c {l_pgfgo_players_ #1 _territory_fill_pattern_color_tl}
 	\bool_new:c {l_pgfgo_players_ #1 _territory_fill_bool}
 	\bool_set_true:c {l_pgfgo_players_ #1 _territory_fill_bool}
 	\bool_new:c {l_pgfgo_players_ #1 _territory_line_bool}
@@ -57,6 +59,14 @@
 		false		.code:n		= {\bool_set_false:c {l_pgfgo_players_ #1 _territory_fill_bool}},
 		color		.tl_set:c	= {l_pgfgo_players_ #1 _territory_fill_color_tl},
 		opacity	.tl_set:c	= {l_pgfgo_players_ #1 _territory_fill_opacity_tl},
+		%COMO EN stone/fill: color = none, SOLO EL PATRON.
+		pattern	.code:n		= {\keys_set:nn {pgfgo / players / #1 / territory / fill / pattern} {##1}},
+	}
+	\keys_define:nn {pgfgo / players / #1 / territory / fill / pattern} {
+		name		.tl_set:c	= {l_pgfgo_players_ #1 _territory_fill_pattern_tl},
+		color		.tl_set:c	= {l_pgfgo_players_ #1 _territory_fill_pattern_color_tl},
+		color		.initial:n	= {black},
+		false		.code:n		= {\tl_clear:c {l_pgfgo_players_ #1 _territory_fill_pattern_tl}},
 	}
 	\keys_define:nn {pgfgo / players / #1 / territory / line} {
 		true		.code:n		= {\bool_set_true:c {l_pgfgo_players_ #1 _territory_line_bool}},
@@ -222,10 +232,11 @@
 		\pgfonlayer{pgfgo_layer_territory}
 		\pgfscope
 			\__pgfgo_territory_clip:n {0}
-			\clist_map_inline:nn {#2} {\__pgfgo_territory_cell:nn ##1}
-			\pgfsetfillcolor{\tl_use:c {l_pgfgo_players_ #1 _territory_fill_color_tl}}
 			\pgfsetfillopacity{\tl_use:c {l_pgfgo_players_ #1 _territory_fill_opacity_tl}}
-			\pgfusepath{fill}
+			\pgfgo_fill:nvvv {\clist_map_inline:nn {#2} {\__pgfgo_territory_cell:nn ##1}}
+				{l_pgfgo_players_ #1 _territory_fill_color_tl}
+				{l_pgfgo_players_ #1 _territory_fill_pattern_tl}
+				{l_pgfgo_players_ #1 _territory_fill_pattern_color_tl}
 		\endpgfscope
 		\endpgfonlayer
 	}
@@ -287,6 +298,8 @@
 		fill					= {\bool_if:cTF {l_pgfgo_players_ #1 _territory_fill_bool} {true} {false}},
 		fill~color		= {\exp_not:v {l_pgfgo_players_ #1 _territory_fill_color_tl}},
 		fill~opacity	= {\exp_not:v {l_pgfgo_players_ #1 _territory_fill_opacity_tl}},
+		fill~pattern	= {\exp_not:v {l_pgfgo_players_ #1 _territory_fill_pattern_tl}},
+		fill~pattern~color	= {\exp_not:v {l_pgfgo_players_ #1 _territory_fill_pattern_color_tl}},
 		line					= {\bool_if:cTF {l_pgfgo_players_ #1 _territory_line_bool} {true} {false}},
 		line~color		= {\exp_not:v {l_pgfgo_players_ #1 _territory_line_color_tl}},
 		line~width		= {\dim_use:c {l_pgfgo_players_ #1 _territory_line_width_dim}},
@@ -374,10 +387,11 @@
 		\pgfonlayer{pgfgo_layer_territory}
 		\pgfscope
 			\__pgfgo_territory_clip:n {0}
-			\__pgfgo_territory_region_path:n {#1}
-			\pgfsetfillcolor{\__pgfgo_territory_style:n {fill~color}}
 			\pgfsetfillopacity{\__pgfgo_territory_style:n {fill~opacity}}
-			\pgfusepath{fill}
+			\pgfgo_fill:neee {\__pgfgo_territory_region_path:n {#1}}
+				{\__pgfgo_territory_style:n {fill~color}}
+				{\__pgfgo_territory_style:n {fill~pattern}}
+				{\__pgfgo_territory_style:n {fill~pattern~color}}
 		\endpgfscope
 		\endpgfonlayer
 	}
@@ -395,7 +409,7 @@
 						\__pgfgo_territory_region_path:n {#1}
 						\pgfsetstrokecolor{\__pgfgo_territory_style:n {line~color}}
 						\pgfsetstrokeopacity{\__pgfgo_territory_style:n {line~opacity}}
-						\pgfsetlinewidth{\__pgfgo_territory_style:n {line~width}}
+						\pgfgo_goban_line_width:n {\__pgfgo_territory_style:n {line~width}}
 						\pgfusepath{stroke}
 					\endpgfscope
 				}

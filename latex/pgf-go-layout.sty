@@ -361,6 +361,8 @@
 \cs_new_protected:Npn \__pgfgo_layout_goban_draw:n #1 {
 	\hbox_set:Nn \l__pgfgo_layout_box {
 		\pgfgo_layout_restore_goban:
+		%CON fit, LA ESCALA LLENA LA COLUMNA, PERO LAS LINEAS NO CAMBIAN DE GROSOR (VER pgf-go-goban.sty).
+		\pgfgo_layout_if_fit:T {\bool_set_true:N \l_pgfgo_goban_fit_bool}
 		\use:e {\exp_not:N \begin{goban}[\exp_not:V \l__pgfgo_layout_options_tl, \exp_not:n {#1}]}
 			\tl_use:N \l__pgfgo_layout_body_tl
 		\end{goban}

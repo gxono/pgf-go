@@ -166,7 +166,8 @@
 
 \cs_set:Nn\pgfgo_stone_set_render_options:{
 	\pgfonlayer{pgfgo_layer_stone}
-	\pgfsetfillcolor{\l_pgfgo_players_stone_fill_color_tl}
+	\str_if_eq:VnF \l_pgfgo_players_stone_fill_color_tl {none}
+		{\pgfsetfillcolor{\l_pgfgo_players_stone_fill_color_tl}}
 	\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_fill_opacity_fp}
 	\pgfsetstrokecolor{\l_pgfgo_players_stone_line_color_tl}
 	\pgfsetstrokeopacity{\fp_use:N\l_pgfgo_players_stone_line_opacity_fp}
@@ -280,6 +281,9 @@
 		{\pgfscope \__pgfgo_stone_shape: \endpgfscope}
 		{\pgftransparencygroup \__pgfgo_stone_shape: \endpgftransparencygroup}
 }
+\cs_new_protected:Npn \__pgfgo_stone_circle: {
+	\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}
+}
 \cs_new_protected:Npn \__pgfgo_stone_shape: {
 	\seq_if_empty:NTF \l_pgfgo_players_stone_image_seq {
 	%SOMBRA
@@ -293,9 +297,26 @@
 	}
 
 	%PIEDRA
-	\pgfsetlinewidth{\l_pgfgo_players_stone_line_width_dim * \fp_use:N \l_pgfgo_players_stone_scale_fp}
-	\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}
-	\pgfusepath{\bool_if:NT\l_pgfgo_players_stone_line_bool{stroke},\bool_if:NT\l_pgfgo_players_stone_fill_bool{fill}}
+	\pgfgo_goban_line_width:n {\l_pgfgo_players_stone_line_width_dim * \l_pgfgo_players_stone_scale_fp}
+	\bool_lazy_and:nnTF
+		{\tl_if_empty_p:N \l_pgfgo_players_stone_fill_pattern_tl}
+		{! \str_if_eq_p:Vn \l_pgfgo_players_stone_fill_color_tl {none}}
+	{
+		\__pgfgo_stone_circle:
+		\pgfusepath{\bool_if:NT\l_pgfgo_players_stone_line_bool{stroke},\bool_if:NT\l_pgfgo_players_stone_fill_bool{fill}}
+	}{
+		%CON PATRON O color = none: EL COLOR, EL PATRON ENCIMA Y EL BORDE ENCIMA DE LOS DOS.
+		\bool_if:NT \l_pgfgo_players_stone_fill_bool {
+			\pgfgo_fill:nVVV {\__pgfgo_stone_circle:}
+				\l_pgfgo_players_stone_fill_color_tl
+				\l_pgfgo_players_stone_fill_pattern_tl
+				\l_pgfgo_players_stone_fill_pattern_color_tl
+		}
+		\bool_if:NT \l_pgfgo_players_stone_line_bool {
+			\__pgfgo_stone_circle:
+			\pgfusepath{stroke}
+		}
+	}
 	\__pgfgo_stone_shine:
 	}{\__pgfgo_stone_image:}
 }

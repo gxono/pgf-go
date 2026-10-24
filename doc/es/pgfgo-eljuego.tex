@@ -296,7 +296,7 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/fill/color=\meta{color} (initially black)}
-		Color del relleno: |black| para las negras, |white!80!black| para las blancas y |gray| para los puntos neutrales.
+		Color del relleno: |black| para las negras, |white!80!black| para las blancas y |gray| para los puntos neutrales. Con |none|, sin color.
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/fill/opacity=\meta{number} (initially 0.35)}
@@ -311,6 +311,33 @@ Con el kernel en Lua, un |goban| puede seguir las reglas del juego: retirar las 
 				\territory[w, draw = fill]{E1, E5}
 			\end{goban}
 		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/pattern=\meta{options}}
+		Un patrón sobre el color del relleno, como |stone/fill/pattern| (pág.~\pageref{sec:piedras}). Con |fill/color = none|, queda solo el patrón.
+
+		\begin{codeexample}[]
+			\begin{goban}[5]
+				\stones[b]{C1:5}
+				\stones[w]{D1:5}
+				\territory[b, draw = fill, fill = {color = none,
+					pattern = {name = north east lines}}]{A1, A5, B5, B1}
+				\territory[w, draw = region, fill = {color = none,
+					pattern = {name = north west lines}}]{E1:5}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/pattern/name = \meta{pattern}}
+		El patrón: cualquiera de las bibliotecas |patterns| y |patterns.meta| de Ti\emph{k}Z, que \pgfgoname\ carga. Uno con opciones va entre llaves: |name = {Lines[angle = 45, distance = 2pt]}|. Sin |name| no hay patrón.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/pattern/color = \meta{color} (initially black)}
+		Color del patrón.
+	\end{key}
+
+	\begin{key}{/pgfgo/players/black/territory/fill/pattern/false}
+		Sin patrón.
 	\end{key}
 
 	\begin{key}{/pgfgo/players/black/territory/line=\meta{line options} (default true)}

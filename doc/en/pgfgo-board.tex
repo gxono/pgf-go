@@ -86,7 +86,7 @@ When we speak of the ``board'', we mean the |goban| environment: the grid, the b
 
 	\begin{key}{/pgfgo/goban/scale=\meta{float} (initially 1)}
 
-		Scale of the board: the sizes and also the width of the lines.
+		Scale of the board: the sizes. The width of the lines does not change, except with |scale line width|.
 
 		\begin{codeexample}[width=5.5cm]
 			\begin{goban}[2, scale = 2]
@@ -98,6 +98,20 @@ When we speak of the ``board'', we mean the |goban| environment: the grid, the b
 			\end{goban}
 
 			\begin{goban}[2, scale = 0.5]
+				\stone[b, mark]{A1}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/scale line width=\meta{boolean} (default true, initially false)}
+		With |true|, |scale| also multiplies the width of the lines: the grid, the border, the stones, the marks, the arrows, the lines and the territory. With |layout/fit|, which chooses the scale to fill the column, the width does not change (p.~\pageref{subsec:disposicion}).
+
+		\begin{codeexample}[width=5.5cm]
+			\begin{goban}[2, scale = 2]
+				\stone[b, mark]{A1}
+			\end{goban}
+
+			\begin{goban}[2, scale = 2, scale line width]
 				\stone[b, mark]{A1}
 			\end{goban}
 		\end{codeexample}
@@ -455,6 +469,32 @@ When we speak of the ``board'', we mean the |goban| environment: the grid, the b
 			\end{goban}
 		\end{codeexample}
 
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/pattern =\meta{options}}
+		A pattern over the color and the image of the background, as |stone/fill/pattern| (p.~\pageref{sec:piedras}). The marks on empty points and the mark |dim|, which cover the grid with the color of the background, repeat the pattern. Here |fill/color| cannot be |none|.
+
+		\begin{codeexample}[]
+			\pgfgoset{goban = {5, partial = B2:D4}}
+
+			\begin{goban}[background = {fill = {
+					pattern = {name = dots, color = gray}}}]
+				\stones[b]{C2,D3}
+				\mark[triangle]{C3}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/pattern/name = \meta{pattern}}
+		The pattern: any of the Ti\emph{k}Z libraries |patterns| and |patterns.meta|, which \pgfgoname\ loads. One with options goes in braces: |name = {Lines[angle = 45, distance = 2pt]}|. Without |name| there is no pattern.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/pattern/color = \meta{color} (initially black)}
+		Color of the pattern.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/background/fill/pattern/false}
+		No pattern.
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/background/fill/image =\meta{options}}

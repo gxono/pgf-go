@@ -386,6 +386,62 @@ Los colores |wainshade|, |wainwhite| y |wainblack| son los del perfil |wain|, m�
 	}
 \end{codeexample}
 
+\subsection{draft}
+
+Blanco y negro, para imprimir o fotocopiar: donde hay relleno, rayas. Las piedras negras, las marcas rellenas y el territorio usan |fill/pattern| (pág.~\pageref{sec:piedras}); el territorio, con rayas en un sentido para cada jugador, se ve con |draw = fill| o |draw = region|.
+
+\begin{codeexample}[width=4cm]
+	\pgfgoset{profile = draft}
+
+	\begin{goban}[partial = A1:G4]
+		\moves[from = 1]{A:F 4}
+		\stones[w]{A1:2}
+		\stones[b]{B1:2}
+		\mark[filled square]{C2}
+		\mark[b, triangle]{B2}
+		\mark[sequence]{C1, D2}
+		\territory[b, draw = fill]{F1:2, G1:2}
+		\territory[w, draw = fill]{G3}
+	\end{goban}
+\end{codeexample}
+
+\subsubsection*{Definición}
+\begin{codeexample}[code only]
+	\pgfgodefineprofile[from = default]{draft}{
+		all = {
+			mark = {
+				fill = {
+					color = white,
+					pattern = {name = {Lines[angle = 45, distance = 1.2pt, line width = 0.3pt]}}
+				}
+			}
+		},
+		black = {
+			stone = {
+				fill = {
+					color = white,
+					pattern = {name = {Lines[angle = 45, distance = 1.5pt, line width = 0.4pt]}, color = black!50}
+				}
+			},
+			move = {label = {color = black}},
+			mark = {line = {color = black}, label = {color = black}},
+			territory = {
+				fill = {
+					color = none,
+					pattern = {name = {Lines[angle = 45, distance = 2pt, line width = 0.4pt]}, color = black!50}
+				}
+			}
+		},
+		white = {
+			territory = {
+				fill = {
+					color = none,
+					pattern = {name = {Lines[angle = -45, distance = 2pt, line width = 0.4pt]}, color = black!50}
+				}
+			}
+		}
+\end{codeexample}
+
 \subsection{shell}
 \label{subsec:perfilshell}
 

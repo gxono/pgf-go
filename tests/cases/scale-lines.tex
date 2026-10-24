@@ -1,0 +1,37 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+% Black and white stones, a mark on a stone and one on an empty point, an arrow, a line and a region.
+\newcommand\board{%
+	\stones[b]{A1}\stones[w]{B1}%
+	\marks[b, circle]{A1}\marks[triangle]{A3}%
+	\arrow{C1}{E1}\line{C3}{E3}%
+	\territory[b, draw = region, line]{E2}}
+\begin{document}
+
+% goban/scale changes only the sizes; with scale line width it also multiplies the line widths (the manual
+% said that scale did it, and it did not). With layout/fit the widths stay as they are.
+
+\case{scale = 1, 2 and 3: the lines keep their width}
+\begin{goban}[5x3, scale = 1]\board\end{goban}
+\begin{goban}[5x3, scale = 2]\board\end{goban}
+\begin{goban}[5x3, scale = 3]\board\end{goban}
+
+\case{scale line width, scale = 1, 2 and 3: the grid, border, stones, marks, arrow, line and territory get thicker}
+\begin{goban}[5x3, scale = 1, scale line width]\board\end{goban}
+\begin{goban}[5x3, scale = 2, scale line width]\board\end{goban}
+\begin{goban}[5x3, scale = 3, scale line width]\board\end{goban}
+
+\case{scale line width in \textbackslash pgfgoset, layout fit: three boards that fill 4cm columns, with the widths of scale = 1}
+\pgfgoset{goban = {scale line width}}
+\begin{pgfgolayout}[columns = 3, fit, width = 13cm]
+	\begin{goban}[5x3]\board\end{goban}
+	\begin{goban}[5x3, scale = 0.5]\board\end{goban}
+	\begin{goban}[5x3, scale = 4]\board\end{goban}
+\end{pgfgolayout}
+\end{document}

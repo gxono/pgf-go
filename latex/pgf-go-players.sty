@@ -73,6 +73,8 @@
 	#1 {bool}	{l_pgfgo_players_}	{stone_fill_bool}
 	#1 {tl}		{l_pgfgo_players_}	{stone_fill_color_tl}
 	#1 {fp}		{l_pgfgo_players_}	{stone_fill_opacity_fp}
+	#1 {tl}		{l_pgfgo_players_}	{stone_fill_pattern_tl}
+	#1 {tl}		{l_pgfgo_players_}	{stone_fill_pattern_color_tl}
 
 	#1 {bool}	{l_pgfgo_players_}	{stone_shadow_bool}
 	#1 {fp}		{l_pgfgo_players_}	{stone_shadow_angle_fp}
@@ -116,6 +118,8 @@
 	#1 {tl}		{l_pgfgo_players_}	{mark_fill_color_tl}
 	#1 {bool}	{l_pgfgo_players_}	{mark_fill_bool}
 	#1 {tl}		{l_pgfgo_players_}	{mark_fill_opacity_tl}
+	#1 {tl}		{l_pgfgo_players_}	{mark_fill_pattern_tl}
+	#1 {tl}		{l_pgfgo_players_}	{mark_fill_pattern_color_tl}
 
 	#1 {tl}		{l_pgfgo_players_}	{mark_label_color_tl}
 	#1 {bool}	{l_pgfgo_players_}	{mark_sequence_bool}
@@ -146,6 +150,8 @@
 \bool_new:N \l_pgfgo_players_stone_fill_bool
 \tl_new:N 	\l_pgfgo_players_stone_fill_color_tl
 \fp_new:N 	\l_pgfgo_players_stone_fill_opacity_fp
+\tl_new:N 	\l_pgfgo_players_stone_fill_pattern_tl
+\tl_new:N 	\l_pgfgo_players_stone_fill_pattern_color_tl
 
 \bool_new:N	\l_pgfgo_players_stone_shadow_bool
 \fp_new:N		\l_pgfgo_players_stone_shadow_angle_fp
@@ -188,6 +194,8 @@
 \tl_new:N 	\l_pgfgo_players_mark_fill_color_tl
 \bool_new:N \l_pgfgo_players_mark_fill_bool
 \tl_new:N 	\l_pgfgo_players_mark_fill_opacity_tl
+\tl_new:N 	\l_pgfgo_players_mark_fill_pattern_tl
+\tl_new:N 	\l_pgfgo_players_mark_fill_pattern_color_tl
 
 \tl_new:N 	\l_pgfgo_players_mark_label_color_tl
 
@@ -349,14 +357,24 @@
 	\bool_set_true:c {l_pgfgo_players_ #1 _stone_fill_bool}
 	\tl_new:c 	{l_pgfgo_players_ #1 _stone_fill_color_tl}
 	\fp_new:c 	{l_pgfgo_players_ #1 _stone_fill_opacity_fp}
+	\tl_new:c 	{l_pgfgo_players_ #1 _stone_fill_pattern_tl}
+	\tl_new:c 	{l_pgfgo_players_ #1 _stone_fill_pattern_color_tl}
 
+	%color = none: SOLO EL PATRON. pattern: ENCIMA DEL COLOR (VER \pgfgo_fill:nnnn EN pgf-go.sty).
 	\keys_define:nn { pgfgo / players / #1 / stone / fill } {
 		true 				.code:n 		= {\bool_set_true:c 	{l_pgfgo_players_ #1 _stone_fill_bool}},
 		false 			.code:n 		= {\bool_set_false:c 	{l_pgfgo_players_ #1 _stone_fill_bool}},
 		color				.code:n 		= {\tl_set:cn 				{l_pgfgo_players_ #1 _stone_fill_color_tl}{##1}},
 		color				.initial:n 	= {gray},
 		opacity			.code:n 		= {\fp_set:cn 				{l_pgfgo_players_ #1 _stone_fill_opacity_fp}{##1}},
-		opacity			.initial:n	=	{1}
+		opacity			.initial:n	=	{1},
+		pattern			.code:n			= {\keys_set:nn { pgfgo / players / #1 / stone / fill / pattern } {##1}},
+	}
+	\keys_define:nn { pgfgo / players / #1 / stone / fill / pattern } {
+		name				.tl_set:c		= {l_pgfgo_players_ #1 _stone_fill_pattern_tl},
+		color				.tl_set:c		= {l_pgfgo_players_ #1 _stone_fill_pattern_color_tl},
+		color				.initial:n	= {black},
+		false				.code:n			= {\tl_clear:c {l_pgfgo_players_ #1 _stone_fill_pattern_tl}},
 	}
 
 
@@ -544,7 +562,10 @@
 	\bool_set_true:c {l_pgfgo_players_ #1 _mark_fill_bool}
 	\tl_new:c {l_pgfgo_players_ #1 _mark_fill_color_tl}
 	\tl_new:c {l_pgfgo_players_ #1 _mark_fill_opacity_tl}
+	\tl_new:c {l_pgfgo_players_ #1 _mark_fill_pattern_tl}
+	\tl_new:c {l_pgfgo_players_ #1 _mark_fill_pattern_color_tl}
 
+	%color Y pattern: COMO EN stone/fill (filled~square Y filled~circle; LAS MARCAS PROPIAS SOLO USAN EL COLOR).
 	\keys_define:nn { pgfgo / players / #1 / mark / fill } {
 		true			.code:n = {\bool_set_true:c {l_pgfgo_players_ #1 _mark_fill_bool}},
 		false			.code:n = {\bool_set_false:c {l_pgfgo_players_ #1 _mark_fill_bool}},
@@ -552,6 +573,13 @@
 		color			.initial:n = {gray},
 		opacity		.code:n = {\tl_set:cn{l_pgfgo_players_ #1 _mark_fill_opacity_tl}{##1}},
 		opacity		.initial:n = {1},
+		pattern		.code:n = {\keys_set:nn { pgfgo / players / #1 / mark / fill / pattern } {##1}},
+	}
+	\keys_define:nn { pgfgo / players / #1 / mark / fill / pattern } {
+		name			.tl_set:c		= {l_pgfgo_players_ #1 _mark_fill_pattern_tl},
+		color			.tl_set:c		= {l_pgfgo_players_ #1 _mark_fill_pattern_color_tl},
+		color			.initial:n	= {black},
+		false			.code:n			= {\tl_clear:c {l_pgfgo_players_ #1 _mark_fill_pattern_tl}},
 	}
 
 
