@@ -204,3 +204,24 @@ Por defecto, los textos están en el idioma que fijan babel o polyglossia, y lo 
 		\pgfgolanguagealias{castellano}{es}
 	\end{codeexample}
 \end{command}
+
+\subsection{Un tablero por página}
+\label{subsec:paginas}
+
+Con la opción |pages|, el documento sale con un |goban| por página, cada una del tamaño de su tablero, y nada más: el texto, los epígrafes y las notas no salen. Las vistas en el texto (|\pgfgoview|) y las animaciones tampoco. Así, los tableros de un documento se pueden usar en otro programa (un procesador de textos, un libro electrónico, una página web) sin copiar su código.
+
+Al terminar, el paquete escribe además |<documento>-pages.lua|, que pasa cada página a un archivo en la carpeta |<documento>-pages|. El archivo se llama como el |goban| (|name|; solo letras, números, |.|, |_| y |-|), o |diagram-| y el número de la página si no tiene nombre. Se ejecuta con |texlua|:
+
+\begin{codeexample}[code only]
+texlua libro-pages.lua          % SVG, con pdftocairo o dvisvgm
+texlua libro-pages.lua png 600  % PNG a 600 ppp (300 si no se dice), con pdftocairo o pdftoppm
+texlua libro-pages.lua pdf      % un PDF por tablero, con pdftocairo o pdfseparate
+\end{codeexample}
+
+\begin{key}{/pgfgo/package/pages = \meta{boolean} (default true, initially false)}
+	Opción del paquete: un |goban| por página. Necesita Lua\LaTeX{} y |kernel = lua|; si no, el paquete avisa y el documento sale como siempre.
+
+	\begin{codeexample}[code only]
+		\usepackage[pages]{pgf-go}
+	\end{codeexample}
+\end{key}

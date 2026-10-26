@@ -1,0 +1,37 @@
+% engines: lualatex
+% expect-warnings: 3
+% expect-errors: 0
+%
+% Columns past Z on boards wider than 25: two upper-case letters, AA right after Z (without I, AA is column
+% 26). They work everywhere a column goes: points, ranges, chains, brackets, whole columns, partial and
+% arrows, and in variation (two-letters.sgf: the second branch, W at
+% SGF Ab, is AB29 without I and AA29 with use i). Lower-case letters are not columns (two warnings); AA1 r AE5 has no order (one warning).
+% With --kernel expl3, the expl3 kernel must give the same points in the same order.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\newcommand\Path[2][30]{\begin{goban}[size = #1, scale = 0.2]\stones[w]{#2}\marks[sequence]{#2}\end{goban}\hspace{2pt}}
+\newcommand\Set[2][30]{\begin{goban}[size = #1, scale = 0.2]\stones[b]{#2}\end{goban}\hspace{2pt}}
+\pagestyle{empty}
+\begin{document}
+
+\case{30x30 without I: Z1, AA1, AE30 / with use i: Z1, AA1, AD30 / a whole column AA / AA:AC (three columns)}
+\Set{Z1, AA1, AE30}\Set[30, use i]{Z1, AA1, AD30}\Set{AA}\Set{AA:AC}
+
+\case{Ranges: AA:AE 3 / AB 1:5 / Y28:AC30 / AA:AB 1:2 / brackets AA[1:3, 5] and [Z, AA, AB]10 / one letter minus two: A:AE 1; Z:AA 1}
+\Set{AA:AE 3}\Set{AB 1:5}\Set{Y28:AC30}\Set{AA:AB 1:2}\Set{AA[1:3, 5], [Z, AA, AB]10}\Set{A:AE 1; Z:AA 1}
+
+\case{Chains: A1 -- AE30 / AA1 r AE5 / Z1 -| AE6 / AE30 |-| W25}
+\Path{A1 -- AE30}\Path{AA1 r AE5}\Path{Z1 -| AE6}\Path{AE30 |-| W25}
+
+\case{partial = Y1 to AE7 with an arrow AA1 to AE5 and a circle at (go cs:AC6) / partial = AA25:AE30 / lower case: aa1 and z1 (two warnings)}
+\begin{goban}[size = 30, scale = 0.4, partial = Y1 to AE7]\stones[b]{AA1}\arrow{AA1}{AE5}\draw (go cs:AC6) circle (0.3);\end{goban}\hspace{2pt}
+\begin{goban}[size = 30, scale = 0.4, partial = AA25:AE30]\stones[w]{AC28}\end{goban}\hspace{2pt}
+\Set{aa1, z1}
+
+\case{variation = {A29, AB29} (without I) and {A29, AA29} (use i): the second branch, both times}
+\begin{goban}[sgf size = two-letters.sgf, scale = 0.2, partial = auto]\sgf[variation = {A29, AB29}]{two-letters.sgf}\end{goban}\hspace{2pt}
+\begin{goban}[sgf size = two-letters.sgf, scale = 0.2, partial = auto, use i]\sgf[variation = {A29, AA29}]{two-letters.sgf}\end{goban}
+
+\end{document}

@@ -1,0 +1,39 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% ko.sgf: 2 captures 1 (the diagram keeps it), 3 retakes. Each diagram is a named goban with
+% the whole position: the second one did not have the setup stones (it continued from a copy).
+\case{sgf diagrams/name: ko1, ko2, ko3; views (captures resolved) and resume}
+\sgfdiagrams[step = 2, name = ko, goban = {scale = 0.5}]{ko.sgf}
+
+ko1 \pgfgoview{ko1}{A1:E5} ko2 \pgfgoview{ko2}{A1:E5} ko3 \pgfgoview{ko3}{A1:E5}
+\begin{goban}[resume = {ko2, numbers}, scale = 0.5]\end{goban}
+
+\case{Variations: v1, v1a, v2, v2a, v3}
+\sgfdiagrams[step = 2, name = v, variations = all, goban = {scale = 0.4}, layout = {columns = 5}]{variations.sgf}
+
+v1a \pgfgoview{v1a}{A1:G7} v2a \pgfgoview{v2a}{A1:G7} v3 \pgfgoview{v3}{A1:G7}
+
+\case{goban = \{name = last\}: each diagram overwrites it; the last one has the whole position}
+\sgfdiagrams[step = 2, goban = {name = last, scale = 0.5}]{ko.sgf}
+
+last \pgfgoview{last}{A1:E5}
+
+\case{sgf problem/name: p (statement), p1, p2, p3 (solutions)}
+\sgfproblem[name = p, goban = {scale = 0.4}, layout = {columns = 4}]{problem.sgf}
+
+p \pgfgoview{p}{A15:G19} p1 \pgfgoview{p1}{A15:G19} p3 \pgfgoview{p3}{A15:G19}
+
+\case{Several games: q1, q2, q3 (statements), q3-1, q3-2 (solutions)}
+\sgfproblem[game = 1:3, name = q, goban = {scale = 0.3}, layout = {columns = 5}]{problems.sgf}
+
+q2 \pgfgoview{q2}{E5:J1} q3 \pgfgoview{q3}{A9:E5} q3-1 \pgfgoview{q3-1}{A9:E5} q3-2 \pgfgoview{q3-2}{A9:E5}
+
+\end{document}

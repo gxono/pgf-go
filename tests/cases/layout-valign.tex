@@ -1,0 +1,38 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% game.sgf: 9x9; B E5, W G7, B pass, W C3, B G5.
+
+\case{pgfgolayout, columns = 3: boards of different height, valign = top (initially)}
+\begin{pgfgolayout}[columns = 3]
+	\begin{goban}[5, scale = 0.5]\stones[b]{C3}\end{goban}
+	\begin{goban}[5x3, scale = 0.5]\stones[w]{C2}\end{goban}
+	\begin{goban}[9, scale = 0.5]\stones[b]{E5}\end{goban}
+\end{pgfgolayout}
+
+\case{the same with valign = bottom: the boards end at the same height}
+\begin{pgfgolayout}[columns = 3, valign = bottom]
+	\begin{goban}[5, scale = 0.5]\stones[b]{C3}\end{goban}
+	\begin{goban}[5x3, scale = 0.5]\stones[w]{C2}\end{goban}
+	\begin{goban}[9, scale = 0.5]\stones[b]{E5}\end{goban}
+\end{pgfgolayout}
+
+\case{sgf diagrams, partial = auto, columns = 3, valign = bottom: the captions start at the same height; captions in several lines}
+\sgfdiagrams[step = 2, goban = {partial = auto, scale = 0.5},
+	caption = {font = \large}, layout = {columns = 3, width = 8cm, valign = bottom}]{game.sgf}
+
+\case{the same with width = natural}
+\sgfdiagrams[step = 2, goban = {partial = auto, scale = 0.5},
+	layout = {columns = 3, width = natural, valign = bottom}]{game.sgf}
+
+\case{sgf problem, statement = false, columns = 3, fit, valign = bottom}
+\sgfproblem[statement = false, goban = {partial = auto}, layout = {columns = 3, fit, valign = bottom}]{problem.sgf}
+
+\end{document}

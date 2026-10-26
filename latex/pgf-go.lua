@@ -49,9 +49,13 @@ end
 -- COLUMNAS
 ---------------------------------------------------------------------------------------------------
 
--- LETRA -> NUMERO DE COLUMNA. SIN use i, J ES 9 (Y I TAMBIEN, POR LAS DUDAS).
-local function column_number(letter, use_i)
-	local n = letter:byte() - 64
+-- LETRAS -> NUMERO DE COLUMNA, COMO \int_from_alph:n (AA ES 27). SIN use i, J ES 9 (Y I TAMBIEN, POR LAS
+-- DUDAS).
+local function column_number(letters, use_i)
+	local n = 0
+	for c in letters:gmatch(".") do
+		n = 26 * n + c:byte() - 64
+	end
 	if not use_i and n > 9 then
 		n = n - 1
 	end
@@ -95,21 +99,14 @@ function pgfgo.board_size(spec)
 	end
 end
 
--- COLUMNA (SIN DISTINGUIR MAYUSCULAS) Y FILA DE UNA COORDENADA COMO C3. LA FILA QUEDA COMO TEXTO.
+-- COLUMNA Y FILA DE UNA COORDENADA COMO C3. LA FILA QUEDA COMO TEXTO.
 local function parse_window_corner(s, use_i)
-	local letters, digits = s:match("^([A-Za-z]*)%s*(%d*)")
-	local x = 0
-	for c in letters:upper():gmatch(".") do
-		x = 26 * x + c:byte() - 64
-	end
-	if not use_i and x > 9 then
-		x = x - 1
-	end
-	return x, digits
+	local letters, digits = s:match("^([A-Z]*)%s*(%d*)")
+	return column_number(letters, use_i), digits
 end
 
 function pgfgo.board_window(spec, use_i)
-	local from, to = spec:match("^%s*([a-zA-Z]%s*%d%d?)%s*to%s*([a-zA-Z]%s*%d%d?)%s*$")
+	local from, to = spec:match("^%s*([A-Z][A-Z]?%s*%d%d?)%s*to%s*([A-Z][A-Z]?%s*%d%d?)%s*$")
 	local fx, fy = parse_window_corner(from or "", use_i)
 	local tx, ty = parse_window_corner(to or "", use_i)
 	-- LAS FILAS PASAN POR \int_set:Nn COMO EN EL KERNEL expl3 (UNA VENTANA MAL ESCRITA DA EL MISMO ERROR).
@@ -294,16 +291,16 @@ local links = {
 -- LOS TRAMOS QUE SE ENCADENAN (A3, A:C 3, C 1:3, A1:C3) SON RECTANGULOS: DEVUELVEN SUS DOS ESQUINAS.
 -- c ES LA COLUMNA (LETRA -> NUMERO).
 local pieces = {
-	{"^([A-Z])(%d%d?)$", function(c, l, n)
+	{"^([A-Z][A-Z]?)(%d%d?)$", function(c, l, n)
 		return c(l), tonumber(n), c(l), tonumber(n)
 	end},
-	{"^([A-Z]):([A-Z])%s*(%d%d?)$", function(c, l1, l2, n)
+	{"^([A-Z][A-Z]?):([A-Z][A-Z]?)%s*(%d%d?)$", function(c, l1, l2, n)
 		return c(l1), tonumber(n), c(l2), tonumber(n)
 	end},
-	{"^([A-Z])%s*(%d%d?):(%d%d?)$", function(c, l, n1, n2)
+	{"^([A-Z][A-Z]?)%s*(%d%d?):(%d%d?)$", function(c, l, n1, n2)
 		return c(l), tonumber(n1), c(l), tonumber(n2)
 	end},
-	{"^([A-Z])(%d%d?):([A-Z])(%d%d?)$", function(c, l1, n1, l2, n2)
+	{"^([A-Z][A-Z]?)(%d%d?):([A-Z][A-Z]?)(%d%d?)$", function(c, l1, n1, l2, n2)
 		return c(l1), tonumber(n1), c(l2), tonumber(n2)
 	end},
 }
@@ -320,16 +317,16 @@ end
 -- LO QUE NO SE ENCADENA NI TIENE UN ORDEN: RECTANGULOS DE RANGOS, COLUMNAS Y FILAS ENTERAS Y *. w ES LA
 -- PARTE VISIBLE.
 local regions = {
-	{"^([A-Z]):([A-Z])%s*(%d%d?):(%d%d?)$", function(out, c, w, l1, l2, n1, n2)
+	{"^([A-Z][A-Z]?):([A-Z][A-Z]?)%s*(%d%d?):(%d%d?)$", function(out, c, w, l1, l2, n1, n2)
 		return rectangle(out, c(l1), tonumber(n1), c(l2), tonumber(n2))
 	end},
-	{"^([A-Z])$", function(out, c, w, l)
+	{"^([A-Z][A-Z]?)$", function(out, c, w, l)
 		rectangle(out, c(l), w.fy, c(l), w.ty)
 	end},
 	{"^(%d%d?)$", function(out, c, w, n)
 		rectangle(out, w.fx, tonumber(n), w.tx, tonumber(n))
 	end},
-	{"^([A-Z]):([A-Z])$", function(out, c, w, l1, l2)
+	{"^([A-Z][A-Z]?):([A-Z][A-Z]?)$", function(out, c, w, l1, l2)
 		rectangle(out, c(l1), w.fy, c(l2), w.ty)
 	end},
 	{"^(%d%d?):(%d%d?)$", function(out, c, w, n1, n2)
@@ -436,7 +433,7 @@ local function expand_brackets(group)
 		end
 		return join(out)
 	end)
-	group = group:gsub("([A-Z])%[([^%]]*)%]", function(l, numbers)
+	group = group:gsub("([A-Z][A-Z]?)%[([^%]]*)%]", function(l, numbers)
 		local out = {}
 		for _, n in ipairs(clist(numbers)) do insert(out, l .. n) end
 		return join(out)
@@ -558,7 +555,7 @@ function pgfgo.polygon(text)
 end
 
 function pgfgo.point(spec, use_i)
-	local l, n = spec:match("^([A-Z])(%d%d?)$")
+	local l, n = spec:match("^([A-Z][A-Z]?)(%d%d?)$")
 	if l then
 		token.set_macro("l_pgfgo_kernel_point_tl", point(column_number(l, use_i), n))
 	end
@@ -851,6 +848,191 @@ local function parse_sgf(s)
 	return games
 end
 
+-- DIAGRAMAS DE Sensei's Library: UN TEXTO SIN NODOS SGF Y CON LINEAS QUE EMPIEZAN CON $$. EN L19 VAN ENTRE
+-- [go] Y [/go]. CADA BLOQUE DE LINEAS $$ SEGUIDAS ES UN DIAGRAMA; LO QUE ESTA ENTRE LOS BLOQUES NO SE LEE.
+local function is_diagram(s)
+	return not s:find("%(%s*;") and ("\n" .. s):find("\n[ \t]*%$%$") ~= nil
+end
+
+-- PIEDRA Y MARCA DE CADA SIMBOLO. LOS NUMEROS SON JUGADAS, LAS MINUSCULAS SON LETRAS, . Y , SON PUNTOS
+-- VACIOS (LOS PUNTOS DE ESTRELLA LOS PONE goban) Y _ ES FUERA DEL TABLERO.
+local diagram_stones = {X = "AB", B = "AB", ["#"] = "AB", Y = "AB", Z = "AB",
+	O = "AW", W = "AW", ["@"] = "AW", Q = "AW", P = "AW"}
+local diagram_marks = {B = "CR", W = "CR", C = "CR", ["#"] = "SQ", ["@"] = "SQ", S = "SQ",
+	Y = "TR", Q = "TR", T = "TR", Z = "MA", P = "MA", M = "MA"}
+local diagram_columns = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
+
+local function sgf_letter(n)
+	return string.char(n <= 26 and 96 + n or 38 + n)
+end
+
+-- EL DIAGRAMA number DE name (PARA LOS AVISOS), DE LAS LINEAS lines (SIN EL $$), COMO PARTIDA.
+local function parse_diagram(name, number, lines)
+	-- LA CABECERA: B O W (QUIEN JUEGA 1), c (COORDENADAS, NO SE USA: LAS PONE goban), EL TAMANO, m Y EL
+	-- NUMERO DE 1, Y EL TITULO.
+	local h = lines[1]
+	local first = h:match("^[BW]") or "B"
+	local explicit = h:match("^[BW]") ~= nil
+	h = h:gsub("^[BW]", ""):gsub("^c", "")
+	local size = tonumber(h:match("^%d+"))
+	h = h:gsub("^%d+", "")
+	local start = tonumber(h:match("^m(%d+)")) or 1
+	h = h:gsub("^m%d+", "")
+	local title = h:match("^%s*(.-)%s*$")
+	local rows, lines_drawn = {}, {}
+	local north, south, west, east = false, false, false, false
+	local blank = false
+	for i = 2, #lines do
+		local l = lines[i]:match("^%s*(.-)%s*$")
+		local kind, p, q = l:match("^{%s*(%u%u)%s+([%w:]+)%s+([%w:]+)%s*}$")
+		if l == "" or l:match("^%[.*%]$") then
+			-- LOS ENLACES ([a|pagina]) NO SE USAN.
+		elseif kind == "AR" or kind == "LN" then
+			insert(lines_drawn, {kind, p, q})
+		elseif l:match("^[-+|%s]+$") and l:find("-") then
+			if #rows == 0 then north = true else south = true end
+		else
+			local r = l:gsub("%s", "")
+			if r:match("^[|+]") then west, r = true, r:sub(2) end
+			if r:match("[|+]$") then east, r = true, r:sub(1, -2) end
+			if r == "" or r:find("[^0-9a-z%.,XOBW#@YQZPCSTM_]") then
+				message("warning", "diagram-line", name, number, l)
+			else
+				insert(rows, r)
+			end
+		end
+	end
+	local nr, nc = #rows, 0
+	for _, r in ipairs(rows) do nc = math.max(nc, #r) end
+	-- EL TABLERO: EL TAMANO DE LA CABECERA; SIN TAMANO, EL QUE DICEN DOS BORDES OPUESTOS (EL OTRO LADO ES IGUAL,
+	-- SI ENTRA) O 19.
+	local sx, sy = size, size
+	if not size then
+		local w = west and east and nc or nil
+		local h2 = north and south and nr or nil
+		sx = w or (h2 and h2 >= nc and h2) or 19
+		sy = h2 or (w and w >= nr and w) or 19
+	end
+	if nc > sx or nr > sy then
+		message("warning", "diagram-size", name, number, sx == sy and sx or (sx .. "x" .. sy))
+		sx, sy = math.max(sx, nc), math.max(sy, nr)
+	end
+	-- DONDE ESTA EL DIAGRAMA: CONTRA LOS BORDES QUE TIENE; SIN BORDES, EN EL MEDIO.
+	local x0 = west and 0 or east and sx - nc or floor((sx - nc) / 2)
+	local top = north and sy or south and nr or sy - floor((sy - nr) / 2)
+	local function at(j, i)
+		return sgf_letter(x0 + j) .. sgf_letter(sy - (top - i + 1) + 1)
+	end
+	-- UN PUNTO DE AR O LN: RELATIVO AL DIAGRAMA (5:6, COLUMNA Y FILA DESDE ARRIBA A LA IZQUIERDA) O DEL TABLERO
+	-- (C14). nil SI NO ESTA EN EL TABLERO.
+	local function board_point(text)
+		local x, y
+		local j, i = text:match("^(%d+):(%d+)$")
+		if j then
+			x, y = x0 + tonumber(j), top - tonumber(i) + 1
+		else
+			local l, n = text:match("^(%u)(%d+)$")
+			x, y = l and diagram_columns:find(l, 1, true), tonumber(n)
+		end
+		if x and y and x >= 1 and x <= sx and y >= 1 and y <= sy then
+			return sgf_letter(x) .. sgf_letter(sy - y + 1)
+		end
+	end
+	local root = {SZ = {sx == sy and tostring(sx) or (sx .. ":" .. sy)}}
+	local markup, moves = {}, {}
+	local function add(node, prop, v)
+		node[prop] = node[prop] or {}
+		insert(node[prop], v)
+	end
+	for i, r in ipairs(rows) do
+		for j = 1, nc do
+			local c = r:sub(j, j)
+			local p = at(j, i)
+			if c:match("%d") then
+				local n = tonumber(c)
+				if n == 0 then n = 10 end
+				moves[n] = moves[n] or p
+			elseif c:match("%l") then
+				add(markup, "LB", p .. ":" .. c)
+			elseif c == "_" then
+				blank = true
+			else
+				if diagram_stones[c] then add(root, diagram_stones[c], p) end
+				if diagram_marks[c] then add(markup, diagram_marks[c], p) end
+			end
+		end
+	end
+	if blank then message("warning", "diagram-blank", name, number) end
+	for _, d in ipairs(lines_drawn) do
+		local a, b = board_point(d[2]), board_point(d[3])
+		if a and b then
+			add(markup, d[1], a .. ":" .. b)
+		else
+			message("warning", "diagram-line", name, number, "{" .. concat(d, " ") .. "}")
+		end
+	end
+	if title ~= "" then
+		root.GN = {title}
+		root.FG = {"0:" .. title}
+	end
+	if explicit then root.PL = {first} end
+	-- LA VISTA ES LO DIBUJADO, SI NO ES TODO EL TABLERO.
+	if nr > 0 and (nc < sx or nr < sy) then
+		root.VW = {at(1, 1) .. ":" .. at(nc, nr)}
+	end
+	local tree = {nodes = {root}, children = {}}
+	local last = 0
+	for n = 1, 10 do
+		if moves[n] then
+			local color = ((n % 2 == 1) == (first == "B")) and "B" or "W"
+			local node = {[color] = {moves[n]}}
+			if n ~= last + 1 or (last == 0 and start ~= 1) then node.MN = {tostring(n + start - 1)} end
+			insert(tree.nodes, node)
+			last = n
+		end
+	end
+	local node = tree.nodes[#tree.nodes]
+	for prop, values in pairs(markup) do node[prop] = values end
+	return tree
+end
+
+local function parse_diagrams(name, s)
+	s = s:gsub("%[/?[gG][oO]%]", "\n")
+	local games, block = {}, nil
+	for line in (s .. "\n"):gmatch("(.-)\r?\n") do
+		local body = line:match("^%s*%$%$(.*)$")
+		if body then
+			block = block or {}
+			insert(block, body)
+		elseif block then
+			insert(games, parse_diagram(name, #games + 1, block))
+			block = nil
+		end
+	end
+	return games
+end
+
+-- LOS TEXTOS DE \pgfgo_kernel_sgf_text:nn, POR NOMBRE: {text = TEXTO}. find_file LOS DEVUELVE EN LUGAR DE UNA RUTA.
+local sgf_texts = {}
+
+-- LAS LINEAS QUE SIGUEN EN EL ARCHIVO DE TeX, HASTA LA QUE TIENE finish, SON EL TEXTO DE name. TeX NO LAS LEE
+-- (CADA UNA QUEDA COMO UN COMENTARIO); LA ULTIMA SE LEE DESDE finish.
+function pgfgo.sgf_text(name, finish)
+	name = name:gsub("\\protect ", ""):gsub("\\([&#%%$_{}])", "%1")
+	local lines = {}
+	luatexbase.add_to_callback("process_input_buffer", function(line)
+		local i = line:find(finish, 1, true)
+		if not i then
+			insert(lines, line)
+			return "%"
+		end
+		insert(lines, line:sub(1, i - 1))
+		sgf_texts[name] = {text = concat(lines, "\n")}
+		luatexbase.remove_from_callback("process_input_buffer", "pgfgo.sgf_text")
+		return line:sub(i)
+	end, "pgfgo.sgf_text")
+end
+
 -- a..z SON 1..26 Y A..Z SON 27..52.
 local function sgf_number(c)
 	local b = c:byte()
@@ -860,19 +1042,32 @@ local function sgf_number(c)
 	return b - 64 + 26
 end
 
--- PUNTOS DE UN VALOR: "pd" O UN RECTANGULO "aa:cc", COMO {x, y}. LA FILA 1 DE pgf-go ES LA DE ABAJO.
-local function sgf_coords(v, size_y)
+-- LA ORIENTACION DEL ARCHIVO QUE SE LEE (LA PONE read_tree): LA ESQUINA DE aa Y SI LA PRIMERA LETRA ES LA FILA.
+local sgf_origin, sgf_transpose = "top left", false
+
+-- EL PUNTO "pd" COMO {x, y} DE pgf-go (LA FILA 1 ES LA DE ABAJO), SEGUN LA ORIENTACION. size_x Y size_y SON
+-- LOS DEL TABLERO (YA DADOS VUELTA CON sgf_transpose).
+local function sgf_point(p, size_x, size_y)
+	local x, y = sgf_number(p:sub(1, 1)), sgf_number(p:sub(2, 2))
+	if sgf_transpose then x, y = y, x end
+	if sgf_origin:find("right") then x = size_x - x + 1 end
+	if not sgf_origin:find("bottom") then y = size_y - y + 1 end
+	return x, y
+end
+
+-- PUNTOS DE UN VALOR: "pd" O UN RECTANGULO "aa:cc", COMO {x, y}.
+local function sgf_coords(v, size_x, size_y)
 	local list = {}
 	local a, b = v:match("^(%a%a):(%a%a)$")
 	a = a or v:match("^(%a%a)$")
 	b = b or a
 	if a then
-		local x1, x2 = sgf_number(a:sub(1, 1)), sgf_number(b:sub(1, 1))
-		local y1, y2 = sgf_number(a:sub(2, 2)), sgf_number(b:sub(2, 2))
-		-- EN ORDEN CRECIENTE, SIN IMPORTAR CUAL ESQUINA VIENE PRIMERO.
+		local x1, y1 = sgf_point(a, size_x, size_y)
+		local x2, y2 = sgf_point(b, size_x, size_y)
+		-- POR COLUMNAS DE IZQUIERDA A DERECHA Y CADA UNA DE ARRIBA ABAJO, SIN IMPORTAR CUAL ESQUINA VIENE PRIMERO.
 		for x = math.min(x1, x2), math.max(x1, x2) do
-			for y = math.min(y1, y2), math.max(y1, y2) do
-				insert(list, {x, size_y - y + 1})
+			for y = math.max(y1, y2), math.min(y1, y2), -1 do
+				insert(list, {x, y})
 			end
 		end
 	end
@@ -891,7 +1086,7 @@ local function parse_path(text, use_i)
 	end
 	local path = {}
 	for item in text:gmatch("[^,%s]+") do
-		local l, n = item:match("^([A-Z])(%d%d?)$")
+		local l, n = item:match("^([A-Z][A-Z]?)(%d%d?)$")
 		if l then
 			insert(path, {column_number(l, use_i), tonumber(n)})
 		elseif item == "pass" then
@@ -924,7 +1119,7 @@ local function game_line(t, path, moves, size_x, size_y)
 		local v = (n.B or n.W or {})[1]
 		if not v then return nil end
 		local want = path[i]
-		local c = v ~= "" and sgf_coords(v, size_y)[1]
+		local c = v ~= "" and sgf_coords(v, size_x, size_y)[1]
 		if not c or (v == "tt" and size_x <= 19 and size_y <= 19) then
 			return want == "pass"
 		end
@@ -978,6 +1173,9 @@ local function game_line(t, path, moves, size_x, size_y)
 end
 
 local function find_file(name)
+	if sgf_texts[name] then
+		return sgf_texts[name]
+	end
 	local f = io.open(name, "r")
 	if f then
 		f:close()
@@ -1109,19 +1307,24 @@ local function from_utf16(s)
 	return concat(out)
 end
 
--- ARCHIVOS SGF YA LEIDOS, POR RUTA (UN DOCUMENTO SUELE LEER MUCHAS VECES EL MISMO ARCHIVO): {stamp =
+-- ARCHIVOS SGF YA LEIDOS, POR RUTA O TEXTO DE sgf_texts (UN DOCUMENTO SUELE LEER MUCHAS VECES EL MISMO ARCHIVO): {stamp =
 -- FECHA Y TAMANO, text = CONTENIDO, ca = VALOR DE CA, utf8 = SI ES UTF-8 VALIDO, games = {[CODIFICACION] =
 -- PARTIDAS}}. SI EL ARCHIVO CAMBIA, SE VUELVE A LEER.
 local sgf_files = {}
 
 local function sgf_file(path)
-	local attributes = lfs.attributes(path)
-	local stamp = attributes and (attributes.modification .. ":" .. attributes.size)
+	-- UN TEXTO DE \pgfgo_kernel_sgf_text:nn NO CAMBIA (UNO NUEVO CON EL MISMO NOMBRE ES OTRA TABLA).
+	local text = type(path) == "table"
+	local attributes = not text and lfs.attributes(path)
+	local stamp = text and "text" or attributes and (attributes.modification .. ":" .. attributes.size)
 	local file = sgf_files[path]
 	if not (file and stamp and file.stamp == stamp) then
-		local f = io.open(path, "rb")
-		local s = f:read("a")
-		f:close()
+		local s = path.text
+		if not text then
+			local f = io.open(path, "rb")
+			s = f:read("a")
+			f:close()
+		end
 		local bom = s:sub(1, 2)
 		if bom == "\255\254" or bom == "\254\255" then
 			s = from_utf16(s)
@@ -1160,7 +1363,7 @@ local function sgf_games(name, path)
 		elseif kind ~= "utf8" then
 			s = decode(kind, s)
 		end
-		games = parse_sgf(s)
+		games = is_diagram(s) and parse_diagrams(name, s) or parse_sgf(s)
 		file.games[kind] = games
 	end
 	return games
@@ -1176,6 +1379,8 @@ local function read_tree(name)
 		return nil
 	end
 	local games = sgf_games(name, path)
+	sgf_origin = token.get_macro("l_pgfgo_kernel_sgf_origin_tl") or "top left"
+	sgf_transpose = token.get_macro("l_pgfgo_kernel_sgf_transpose_tl") == "true"
 	local n = count("l_pgfgo_kernel_sgf_game_int")
 	if not games[n] then
 		if n ~= 1 then message("warning", "sgf-game", name, n) end
@@ -1324,7 +1529,7 @@ function pgfgo.sgf_view(k1, k2)
 	token.set_macro("l_pgfgo_kernel_sgf_view_tl", view_text(views_between(k1, k2)))
 end
 
--- TAMANO DE UNA PARTIDA (SZ DE LA RAIZ; 19 SI NO ESTA).
+-- TAMANO DE UNA PARTIDA (SZ DE LA RAIZ; 19 SI NO ESTA). CON sgf_transpose, DADO VUELTA.
 local function sgf_size(root)
 	local size_x, size_y = 19, 19
 	if root and root.SZ then
@@ -1332,6 +1537,7 @@ local function sgf_size(root)
 		size_x = tonumber(x or root.SZ[1]) or 19
 		size_y = tonumber(y or root.SZ[1]) or 19
 	end
+	if sgf_transpose then return size_y, size_x end
 	return size_x, size_y
 end
 
@@ -1344,8 +1550,8 @@ local drawn_props = {"AB", "AW", "B", "W", "TR", "SQ", "CR", "MA", "SL", "AR", "
 local function node_box(box, n, size_x, size_y, stones)
 	local function extend(v)
 		if v == "tt" and size_x <= 19 and size_y <= 19 then return end
-		for _, c in ipairs(sgf_coords(v, size_y)) do
-			if c[1] <= size_x and c[2] >= 1 then
+		for _, c in ipairs(sgf_coords(v, size_x, size_y)) do
+			if c[1] >= 1 and c[1] <= size_x and c[2] >= 1 and c[2] <= size_y then
 				box = box and {math.min(box[1], c[1]), math.min(box[2], c[2]),
 					math.max(box[3], c[1]), math.max(box[4], c[2])} or {c[1], c[2], c[1], c[2]}
 			end
@@ -1513,7 +1719,7 @@ function pgfgo.sgf_read(name, path_text, use_i)
 		local dim = {}
 		local function each_point(node, property, f)
 			for _, v in ipairs(node[property] or {}) do
-				for _, c in ipairs(sgf_coords(v, size_y)) do f(point(c[1], c[2]), c) end
+				for _, c in ipairs(sgf_coords(v, size_x, size_y)) do f(point(c[1], c[2]), c) end
 			end
 		end
 		local function without(list, p)
@@ -1529,7 +1735,7 @@ function pgfgo.sgf_read(name, path_text, use_i)
 		-- LA JUGADA DE UN NODO: {x}{y}, O "" SI ES UN PASE O NO TIENE JUGADA.
 		local function move_point(n)
 			local v = (n.B or n.W or {})[1]
-			local c = v and sgf_coords(v, size_y)[1]
+			local c = v and sgf_coords(v, size_x, size_y)[1]
 			if not c or (v == "tt" and size_x <= 19 and size_y <= 19) then return "" end
 			return point(c[1], c[2]) .. "{" .. (sim.stones[key(c[1], c[2])] or "neutral") .. "}"
 		end
@@ -1586,7 +1792,7 @@ function pgfgo.sgf_read(name, path_text, use_i)
 					end
 					local v = values[1] or ""
 					-- [] Y, HASTA 19x19, [tt] SON PASES.
-					local c = sgf_coords(v, size_y)[1]
+					local c = sgf_coords(v, size_x, size_y)[1]
 					if not c or (v == "tt" and size_x <= 19 and size_y <= 19) then
 						insert(moves, "{" .. player[2] .. "}{}{}")
 					else
@@ -1651,7 +1857,7 @@ function pgfgo.sgf_read(name, path_text, use_i)
 				local where, text = v:match("^(%a%a):(.*)$")
 				if where then
 					insert(sgf_labels, text)
-					for _, c in ipairs(sgf_coords(where, size_y)) do mark("label", c, #sgf_labels) end
+					for _, c in ipairs(sgf_coords(where, size_x, size_y)) do mark("label", c, #sgf_labels) end
 				end
 			end
 			-- DD REEMPLAZA LOS PUNTOS ATENUADOS (DD[] LOS QUITA); SIN DD, SIGUEN LOS DEL NODO ANTERIOR.
@@ -1663,7 +1869,7 @@ function pgfgo.sgf_read(name, path_text, use_i)
 			for _, kind in ipairs({{"AR", "arrow"}, {"LN", "line"}}) do
 				for _, v in ipairs(n[kind[1]] or {}) do
 					local a, b = v:match("^(%a%a):(%a%a)$")
-					local p, q = a and sgf_coords(a, size_y)[1], b and sgf_coords(b, size_y)[1]
+					local p, q = a and sgf_coords(a, size_x, size_y)[1], b and sgf_coords(b, size_x, size_y)[1]
 					if p and q then
 						local list = sgf_lines[played] or {}
 						sgf_lines[played] = list
@@ -1884,6 +2090,88 @@ function pgfgo.remember_get(name, cs)
 	end
 	insert(all, token.create(125, 2))
 	token.put_next(all)
+end
+
+-- UN goban POR PAGINA (OPCION pages, VER pgf-go-pages.sty). CADA goban LLEVA EL ATRIBUTO pages.attr CON SU
+-- NUMERO. AL MANDAR UNA PAGINA DEL DOCUMENTO SE BUSCAN EN ELLA LAS CAJAS CON EL ATRIBUTO: LA DE AFUERA DE
+-- CADA tikzpicture (LOS TABLEROS QUE SOLO SE MIDIERON NO LLEGAN A LA PAGINA). TAMBIEN LO LLEVA LA SANGRIA DEL
+-- PARRAFO QUE EMPIEZA EL goban (SUBTIPO 3, SIN ALTO): ESA NO CUENTA.
+local pages = {names = {}, found = {}, shipped = {}, used = {}}
+local HLIST, VLIST = node.id("hlist"), node.id("vlist")
+
+function pgfgo.pages_init()
+	pages.attr = luatexbase.new_attribute("pgfgo_pages")
+	tex.sprint(-2, tostring(pages.attr))
+end
+
+function pgfgo.pages_name(id, name)
+	pages.names[id] = name
+end
+
+local function pages_find(head, found)
+	for n in node.traverse(head) do
+		if n.id == HLIST or n.id == VLIST then
+			local id = node.has_attribute(n, pages.attr)
+			if id and id > 0 then
+				if n.subtype ~= 3 and n.height + n.depth > 0 then insert(found, {id = id, box = node.copy(n)}) end
+			else
+				pages_find(n.head, found)
+			end
+		end
+	end
+end
+
+-- LOS TABLEROS DE LA CAJA #box (LA PAGINA). DEVUELVE CUANTOS SON.
+function pgfgo.pages_collect(box)
+	pages.found = {}
+	local page = tex.getbox(box)
+	if page then pages_find(page.head, pages.found) end
+	tex.sprint(-2, tostring(#pages.found))
+end
+
+-- EL TABLERO i DE LA PAGINA, EN LA CAJA box. SU NOMBRE DE ARCHIVO ES EL DEL goban (SOLO LETRAS, NUMEROS,
+-- . _ -) O diagram-<PAGINA>, SIN REPETIRSE.
+function pgfgo.pages_put(i, box)
+	local entry = pages.found[i]
+	local n = #pages.shipped + 1
+	local name = pages.names[entry.id]
+	if not name or name == "" then name = string.format("diagram-%03d", n) end
+	name = name:gsub("[^%w%._%-]", "_")
+	local base, k = name, 1
+	while pages.used[name] do
+		k = k + 1
+		name = base .. "-" .. k
+	end
+	pages.used[name] = true
+	pages.shipped[n] = name
+	entry.box.shift = 0
+	tex.setbox(box, (node.hpack(entry.box)))
+end
+
+-- ESCRIBE (CON \iow_now:Nn EN iow) EL SCRIPT QUE PASA LAS PAGINAS DE pdf A ARCHIVOS: LOS NOMBRES Y LA
+-- LLAMADA A pgf-go-pages.lua (script, CON SU RUTA ABSOLUTA).
+function pgfgo.pages_write(iow, pdf, script)
+	if not (script:match("^/") or script:match("^%a:")) then
+		script = lfs.currentdir():gsub("\\", "/") .. "/" .. script:gsub("^%./", "")
+	end
+	local lines = {
+		"-- pgf-go, option pages: texlua <this file> [svg | png | pdf] [resolution]",
+		"local script = [==[" .. script .. "]==]",
+		"if not lfs.isfile(script) then",
+		"  kpse.set_program_name(\"luatex\")",
+		"  script = kpse.find_file(\"pgf-go-pages.lua\", \"lua\") or kpse.find_file(\"pgf-go-pages.lua\", \"tex\")",
+		"end",
+		"dofile(script)([==[" .. pdf .. "]==], {",
+	}
+	for _, name in ipairs(pages.shipped) do
+		insert(lines, "  \"" .. name .. "\",")
+	end
+	insert(lines, "}, arg)")
+	for _, line in ipairs(lines) do
+		tex_code("\\iow_now:Nn " .. iow .. " {")
+		tex.sprint(-2, line)
+		tex_code("}")
+	end
 end
 
 return pgfgo

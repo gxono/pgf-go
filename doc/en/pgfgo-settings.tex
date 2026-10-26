@@ -204,3 +204,24 @@ By default, the texts are in the language set by babel or polyglossia, and they 
 		\pgfgolanguagealias{castellano}{es}
 	\end{codeexample}
 \end{command}
+
+\subsection{One board per page}
+\label{subsec:paginas}
+
+With the option |pages|, the document comes out with one |goban| per page, each one the size of its board, and nothing else: the text, the captions and the notes do not come out. Neither do the views in the text (|\pgfgoview|) and the animations. So the boards of a document can be used in another program (a word processor, an ebook, a web page) without copying their code.
+
+At the end, the package also writes |<document>-pages.lua|, which turns each page into a file in the folder |<document>-pages|. The file is named like the |goban| (|name|; only letters, digits, |.|, |_| and |-|), or |diagram-| and the number of the page if it has no name. It is run with |texlua|:
+
+\begin{codeexample}[code only]
+texlua book-pages.lua          % SVG, with pdftocairo or dvisvgm
+texlua book-pages.lua png 600  % PNG at 600 dpi (300 if not given), with pdftocairo or pdftoppm
+texlua book-pages.lua pdf      % one PDF per board, with pdftocairo or pdfseparate
+\end{codeexample}
+
+\begin{key}{/pgfgo/package/pages = \meta{boolean} (default true, initially false)}
+	Package option: one |goban| per page. It needs Lua\LaTeX{} and |kernel = lua|; otherwise, the package warns and the document comes out as always.
+
+	\begin{codeexample}[code only]
+		\usepackage[pages]{pgf-go}
+	\end{codeexample}
+\end{key}

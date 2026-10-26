@@ -7,7 +7,7 @@ Algo que distingue a \pgfgoname\ de otros paquetes es la posibilidad de introduc
 	\item Posibilidad de eliminar piedras agregando el grupo sustractivo despu\'es de un <<;>>.
 \end{itemize}
 
-Estas formas solo funcionan en los comandos plurales (|\stones|, |\marks|, |\prisoners|); |\stone|, |\mark| y |\prisoner| reciben una sola intersección. |\moves| las acepta todas salvo los grupos sustractivos, y avisa si no tienen un orden fijo (pág.~\pageref{subsec:orden-coordenadas}). La escritura tiene algunas restricciones. Por ejemplo, para referirse a una intersección, la coordenada alfabética debe escribirse en mayúsculas y sin espacios. Así, la intersección B5 debe ingresarse como |B5|, y no como |B 5|, |B  5| o |b5|, ya que los espacios entre letra y número no son válidos en este contexto. Las restricciones se explicarán en cada caso.
+Estas formas solo funcionan en los comandos plurales (|\stones|, |\marks|, |\prisoners|); |\stone|, |\mark| y |\prisoner| reciben una sola intersección. |\moves| las acepta todas salvo los grupos sustractivos, y avisa si no tienen un orden fijo (pág.~\pageref{subsec:orden-coordenadas}). La escritura tiene algunas restricciones. Por ejemplo, para referirse a una intersección, la coordenada alfabética debe escribirse en mayúsculas y sin espacios. Así, la intersección B5 debe ingresarse como |B5|, y no como |B 5|, |B  5| o |b5|, ya que los espacios entre letra y número no son válidos en este contexto. En los tableros de más de 25 columnas, después de la |Z| siguen columnas de dos letras: |AA|, |AB|, \dots\ (|AA5|, |AA:AC 3|, |partial = AZ5:BG8|). Las restricciones se explicarán en cada caso.
 
 
 Cuando \pgfgoname\ tiene que leer el argumento de las coordenadas se puede encontrar con algo como esto

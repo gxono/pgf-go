@@ -27,6 +27,20 @@
 	\stones[black]{C3}
 \end{goban}
 
+\case{letter case = lower: columns / rows = letters (use i) / partial board / back to upper}
+\begin{goban}[9x9, scale = 0.6, label = {at = all, letter case = lower}]
+	\stones[black]{C3}
+\end{goban}
+\begin{goban}[9x9, scale = 0.6, use i, label = {at = all, columns = numbers, rows = letters, letter case = lower}]
+	\stones[black]{C3}
+\end{goban}
+\begin{goban}[19x19, scale = 0.6, partial = N13:T19, label = {at = all, letter case = lower}]
+	\stones[white]{Q16}
+\end{goban}
+\begin{goban}[9x9, scale = 0.6, label = {at = all, letter case = lower, letter case = upper}]
+	\stones[black]{C3}
+\end{goban}
+
 \case{Kanji up to 21 (3x21 board), partial board counts from the full board}
 \begin{goban}[3x21, scale = 0.5, label = {at = west, rows = kanji, rows direction = top to bottom, font = \kanjifont}]
 \end{goban}

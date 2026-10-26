@@ -1,0 +1,20 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% It drew nothing: the diagrams were only of moves.
+\case{A game without moves is one diagram of its position (figure name, no range, result)}
+\sgfdiagrams[goban = {scale = 0.5}, result]{position.sgf}
+
+% The range said the positions in the file (1--2, 3--6), not the numbers of the stones.
+\case{The caption range follows MN: (21--22), (23--24), (1--2); with step = {2, 4}: (21--22), (23--2)}
+\sgfdiagrams[step = 2, goban = {scale = 0.5}]{move-number.sgf}
+\sgfdiagrams[step = {2, 4}, goban = {scale = 0.5}]{move-number.sgf}
+
+\end{document}

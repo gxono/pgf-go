@@ -724,6 +724,19 @@ An option can be changed for every player with |\pgfgoset{stone = {...}}|. This 
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/stone/shift = \meta{columns}, \meta{rows} (initially 0, 0)}
+
+	Moves the coordinates of the command: |shift = {2, -1}| is the same as writing them two columns to the right and one row lower. With a single number, it moves only the columns. It is always to the right and up, even when the labels of the border go the other way. The stones are in their new place for everything (captures, territory, |resume|). Points that end up off the board are not drawn, with a warning. It applies only to that command. It also works in |\stone|.
+
+	\begin{codeexample}[]
+		\def\corner{A1--A3, B5; A2}
+		\begin{goban}[9]
+			\stones[b]{\corner}
+			\stones[w, shift = {4, 2}]{\corner}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
 \begin{key}{/pgfgo/stone/forget}
 
 	|resume| does not bring this stone (p.~\pageref{subsec:recordar}). It stays in the memory of the named |goban|: |\pgfgoview| shows it with |forgotten|.
@@ -1078,6 +1091,10 @@ The options of every player can be changed with |\pgfgoset{move = {...}}|, which
 			\moves{C:D4}
 		\end{goban}
 	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/shift = \meta{columns}, \meta{rows} (initially 0, 0)}
+	Moves the moves, like |stone/shift|.
 \end{key}
 
 \begin{key}{/pgfgo/move/forget}

@@ -1,0 +1,18 @@
+% engines: pdflatex
+% expect-warnings: 0
+% expect-errors: 1
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\pagestyle{empty}
+\begin{document}
+
+Without a kernel that reads games, the environment gives the error kernel-feature and skips its
+lines (\$\$, \#, braces): this is the only text.
+\begin{pgfgodiagram}{skipped}
+$$B Title
+$$ | . # @ . |
+$$ {AR 1:1 2:1}
+\end{pgfgodiagram}
+
+\end{document}

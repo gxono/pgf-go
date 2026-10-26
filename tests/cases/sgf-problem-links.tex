@@ -1,0 +1,29 @@
+% engines: lualatex
+% passes: 2
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\usepackage[colorlinks]{hyperref}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\pgfgoset{sgf problem = {links, comments = false, notes = false, goban = {scale = 0.4}}}
+\begin{document}
+
+\case{The statements link forward to their first solution (red captions); problem 2 has no solutions: no link}
+\sgfproblem[game = 2:3, solutions = false, to play = black]{problems.sgf}
+
+\case{A single problem: statement and solutions link to each other}
+\sgfproblem{problem.sgf}
+
+\case{The same problem again: links to the first one, no new targets}
+\sgfproblem[solutions = false]{problem.sgf}
+
+\newpage
+\case{The solutions link back to their statements}
+\sgfproblem[game = 2:3, statement = false, to play = black]{problems.sgf}
+
+\case{links = false: no links}
+\sgfproblem[game = 3, links = false, to play = black]{problems.sgf}
+\end{document}

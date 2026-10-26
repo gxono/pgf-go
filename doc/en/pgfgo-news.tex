@@ -3,6 +3,21 @@
 
 
 \begin{itemize}
+	\item Next version:
+		\begin{itemize}
+			\item \tikzname\ patterns in the fills of the stones, the marks, the territory and the background (|fill/pattern|, p.~\pageref{sec:piedras}).
+			\item Coordinates on the border in lower case (|label/letter case = lower|, p.~\pageref{subsec:etiquetas}).
+			\item The profile |draft|: black and white, with lines where there is a fill.
+			\item |scale line width|: |scale| also multiplies the width of the lines.
+			\item |layout/valign = bottom|: the boards of a row of the grid end at the same height (p.~\pageref{subsec:disposicion}).
+			\item |partial| of |\sgfdiagrams|, |\sgfproblem| and |\sgfanimation| also takes two corners (|partial = K10:T19|): the same part in every board (p.~\pageref{subsec:sgfdiagramas}).
+			\item |\pgfgodefinesgf| takes |origin| and |transpose|: the corner where the point |aa| of the file goes and whether the first letter is the row, the eight symmetries of the board (p.~\pageref{subsec:sgfnombres}).
+			\item |name| in |\sgfdiagrams| and |\sgfproblem|: each diagram is a named board (|var1|, |var2a|...), for |resume| and the views in the text (p.~\pageref{subsec:sgfdiagramas}).
+			\item Columns of two letters after |Z|, for boards of more than 25 columns: |AA5|, |partial = AZ5:BG8| (p.~\pageref{subsec:sintaxis-de-coordenadas}).
+			\item |links| in |\sgfproblem|: with |hyperref|, the statement and its solutions link to each other (p.~\pageref{subsec:sgfproblemas}).
+			\item The option |pages|: one board per page, and |<document>-pages.lua| turns them into SVG, PNG or PDF (p.~\pageref{subsec:paginas}).
+			\item Sensei's Library and L19 diagrams (|$$| lines), in a file or in the environment |pgfgodiagram|: every SGF command reads them (p.~\pageref{subsec:sgfsensei}).
+		\end{itemize}
 	\item \pgfgoversion:
 		\begin{itemize}
 			\item Kernel and rules of the game:
@@ -44,12 +59,11 @@
 					\item Numbers in kanji for the moves and the marks (|format = kanji|).
 					\item Opacity of the stroke and of the fill of the marks, of the numbers of the moves, of the images of the stones and of the star points.
 					\item The \tikzname\ coordinate system |go|: |(go cs:C3)| (p.~\pageref{subsec:tikz}).
-					\item \tikzname\ patterns in the fills of the stones, the marks, the territory and the background (|fill/pattern|, p.~\pageref{sec:piedras}).
 				\end{itemize}
 			\item Styles and profiles:
 				\begin{itemize}
 					\item Profiles are \emph{keys} (p.~\pageref{subsec:perfiles}): |profile|, |goban profile|, |players profile| and |players/|\meta{player}|/profile|. Before they are applied, the board and the players go back to the initial style. |\pgfgodefineprofile| defines a whole profile at once.
-					\item Four new profiles: |simple|, |draft| (black and white, with lines where there is a fill), and |shell| and |yunzi|, with images (p.~\pageref{subsec:perfilshell}): a wooden board with slate and shell stones, or matte ones. The images come with the package, next to its |.sty| files, and are used by their name.
+					\item Three new profiles: |simple|, and |shell| and |yunzi|, with images (p.~\pageref{subsec:perfilshell}): a wooden board with slate and shell stones, or matte ones. The images come with the package, next to its |.sty| files, and are used by their name.
 					\item The same rule for the \emph{keys} that turn something on or off (p.~\pageref{subsec:prender}).
 					\item The options of a |goban| accept those of |\pgfgoset|, only for that board, and |\pgfgoset{mark = {...}}| also sets the style of the marks of the three players.
 				\end{itemize}

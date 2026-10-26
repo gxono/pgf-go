@@ -1,0 +1,76 @@
+% engines: lualatex
+% expect-warnings: 1
+% expect-errors: 0
+%
+% The orientation of a name (\pgfgodefinesgf, origin and transpose): the eight symmetries of a 7x5 game
+% (transpose turns it into 5x7), with its stones, a triangle, a label and an arrow; the file itself
+% after a transposed name, as SGF says; a rectangle of stones (AB[aa:bb]), a pass (tt), a line (LN),
+% dimmed points (DD), territory (TB, TW), a square and a circle; a view (VW) with sgf view and game = 2;
+% a 19x19 joseki with partial = auto and a variation chosen by its moves, which are the points of the
+% board, not of the file; \sgfproblem and \sgfanimation.
+% The only warning: a transposed 7x5 game is 5x7, so on a 7x7 goban it is for another board (sgf-size).
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\newcommand\board[1]{\begin{goban}[sgf size = #1, scale = 0.4]\sgf{#1}\end{goban}\quad}
+\pagestyle{empty}
+
+% Draws frames of \sgfanimation one by one (as in sgf-animation.tex).
+\ExplSyntaxOn
+\NewDocumentCommand \frames {mmm} {
+	\group_begin:
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\clist_map_inline:nn {#3} {\pgfgo_sgfanimation_frame:n {##1}\quad}
+	\group_end:
+}
+\ExplSyntaxOff
+
+\pgfgodefinesgf{tl}{orientation.sgf}
+\pgfgodefinesgf[origin = top right]{tr}{orientation.sgf}
+\pgfgodefinesgf[origin = bottom left]{bl}{orientation.sgf}
+\pgfgodefinesgf[origin = bottom right]{br}{orientation.sgf}
+\pgfgodefinesgf[transpose]{ttl}{orientation.sgf}
+\pgfgodefinesgf[origin = top right, transpose]{ttr}{orientation.sgf}
+\pgfgodefinesgf[origin = bottom left, transpose]{tbl}{orientation.sgf}
+\pgfgodefinesgf[origin = bottom right, transpose = true]{tbr}{orientation.sgf}
+\pgfgodefinesgf{mtl}{orientation-markup.sgf}
+\pgfgodefinesgf[origin = top right]{mtr}{orientation-markup.sgf}
+\pgfgodefinesgf[origin = bottom right, transpose]{mtbr}{orientation-markup.sgf}
+\pgfgodefinesgf[game = 2, origin = bottom right]{view}{collection.sgf}
+\pgfgodefinesgf[game = 2]{view2}{collection.sgf}
+\pgfgodefinesgf[origin = bottom left]{joseki}{joseki.sgf}
+\pgfgodefinesgf[origin = bottom right]{problem}{problem.sgf}
+
+\begin{document}
+
+\case{origin = top left (as the file), top right, bottom left, bottom right}
+\board{tl}\board{tr}\board{bl}\board{br}
+
+\case{The same, with transpose}
+\board{ttl}\board{ttr}\board{tbl}\board{tbr}
+
+\case{The file after a transposed name: as SGF says}
+\board{ttl}\board{orientation.sgf}
+
+\case{Rectangle, pass (3 is B at G5 in the file), LN, DD, TB, TW, SQ, CR: as the file, top right, bottom right transposed}
+\board{mtl}\board{mtr}\board{mtbr}
+
+\case{A 7x7 goban with a transposed name (the warning says 5x7)}
+\begin{goban}[size = 7x7, scale = 0.4]\sgf{ttl}\end{goban}
+
+\case{game = 2 and origin = bottom right: the view VW[aa:ee] in the lower right corner; game = 2 as the file}
+\begin{goban}[sgf view = view, scale = 0.5]\sgf{view}\end{goban}
+\begin{goban}[sgf view = view2, scale = 0.5]\sgf{view2}\end{goban}
+
+\case{Joseki with origin = bottom left: partial = auto, and variation = \{R4, P3, Q5\}}
+\sgfdiagrams[step = 3, partial = auto, goban = {scale = 0.5}]{joseki}
+\sgfdiagrams[variation = {R4, P3, Q5}, partial = auto, goban = {scale = 0.5}]{joseki}
+
+\case{sgf problem with origin = bottom right (lower right corner)}
+\sgfproblem[solutions = false, goban = {scale = 0.5}]{problem}
+
+\case{sgf animation with origin = bottom left: frames 0 and 3}
+\frames{partial = auto, goban = {scale = 0.4}}{joseki}{0, 3}
+
+\end{document}

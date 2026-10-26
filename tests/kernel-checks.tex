@@ -6,7 +6,7 @@
 \cs_generate_variant:Nn \msg_error:nnnnn {nnnVn}
 \cs_new_protected:Npn \__test:nnn #1#2#3 {
 	\tl_set:Ne \l_tmpa_tl {#2}
-	\str_if_eq:VnF \l_tmpa_tl {#3}
+	\str_if_eq:eeF {\exp_not:V \l_tmpa_tl} {#3}
 		{\msg_error:nnnVn {kernel-test} {fail} {#1} \l_tmpa_tl {#3}}
 }
 % #2 is a protected conditional without its TF arguments.
@@ -137,6 +137,73 @@
 	\__test_points:nn {H9 -- K9} {{8}{9},{9}{9},{10}{9}}
 	\__test_if:nnn {point~K10~without~I} {\pgfgo_kernel_point:nTF {K10}} {yes}
 	\__test:nnn {point~K10~value} {\l_pgfgo_kernel_point_tl} {{10}{10}}
+\group_end:
+
+\tl_new:N \l__test_a_tl
+\tl_new:N \l__test_b_tl
+% Columns of two letters. Without I, only the first 25 columns skip it: AA is 26 and AI is a column.
+\cs_new_protected:Npn \__test_column:nn #1#2 {
+	\__test_if:nnn {point~#11} {\pgfgo_kernel_point:nTF {#11}} {yes}
+	\__test:nnn {point~#11~value} {\l_pgfgo_kernel_point_tl} {{#2}{1}}
+	\__test_points:nn {#11} {{#2}{1}}
+}
+\group_begin:
+	\pgfgo_kernel_board_size:n {99}
+	\bool_set_false:N \l_pgfgo_use_i_bool
+	\__test_column:nn {H} {8}
+	\__test_column:nn {I} {9}
+	\__test_column:nn {J} {9}
+	\__test_column:nn {Z} {25}
+	\__test_column:nn {AA} {26}
+	\__test_column:nn {AH} {33}
+	\__test_column:nn {AI} {34}
+	\__test_column:nn {AJ} {35}
+	\__test_column:nn {AZ} {51}
+	\__test_column:nn {BA} {52}
+	\__test_column:nn {CV} {99}
+	\__test:nnn {column~26~without~I} {\pgfgo_kernel_column_name:n {26}} {AA}
+	\__test:nnn {column~34~without~I} {\pgfgo_kernel_column_name:n {34}} {AI}
+	\__test:nnn {column~99~without~I} {\pgfgo_kernel_column_name:n {99}} {CV}
+	\bool_set_true:N \l_pgfgo_use_i_bool
+	\__test_column:nn {I} {9}
+	\__test_column:nn {J} {10}
+	\__test_column:nn {Z} {26}
+	\__test_column:nn {AA} {27}
+	\__test_column:nn {AI} {35}
+	\__test_column:nn {AZ} {52}
+	\__test_column:nn {CU} {99}
+	\__test:nnn {column~99} {\pgfgo_kernel_column_name:n {99}} {CU}
+
+	% Only upper case, and at most two letters.
+	\__test_if:nnn {point~aa1} {\pgfgo_kernel_point:nTF {aa1}} {no}
+	\__test_if:nnn {point~Aa1} {\pgfgo_kernel_point:nTF {Aa1}} {no}
+	\__test_if:nnn {point~AAA1} {\pgfgo_kernel_point:nTF {AAA1}} {no}
+
+	% Every column from 1 to 99 reads back from its name, with and without I, in every form of coordinate.
+	\bool_set_true:N \l_pgfgo_goban_partial_bool
+	\clist_map_inline:nn {true, false} {
+		\use:c {bool_set_#1:N} \l_pgfgo_use_i_bool
+		\int_step_inline:nn {98} {
+			\tl_set:Ne \l__test_a_tl {\pgfgo_kernel_column_name:n {##1}}
+			\tl_set:Ne \l__test_b_tl {\pgfgo_kernel_column_name:n {##1 + 1}}
+			\__test_if:nnn {use~i~#1~point~\l__test_a_tl 7} {\pgfgo_kernel_point:eTF {\l__test_a_tl 7}} {yes}
+			\__test:nnn {use~i~#1~point~\l__test_a_tl 7~value} {\l_pgfgo_kernel_point_tl} {{##1}{7}}
+			\__test_points:nn {\l__test_a_tl 7} {{##1}{7}}
+			\__test_points:nn {\l__test_a_tl 7 \c_colon_str \l__test_b_tl 8} {{##1}{7},{##1}{8},{\int_eval:n {##1 + 1}}{7},{\int_eval:n {##1 + 1}}{8}}
+			\__test_points:nn {\l__test_a_tl \c_colon_str \l__test_b_tl~3} {{##1}{3},{\int_eval:n {##1 + 1}}{3}}
+			\__test_points:nn {\l__test_b_tl~4 \c_colon_str 5} {{\int_eval:n {##1 + 1}}{4},{\int_eval:n {##1 + 1}}{5}}
+			\__test_points:nn {\l__test_b_tl \c_colon_str \l__test_a_tl~1 \c_colon_str 2} {{\int_eval:n {##1 + 1}}{1},{\int_eval:n {##1 + 1}}{2},{##1}{1},{##1}{2}}
+			\__test_points:nn {\l__test_a_tl[3, 1], [\l__test_b_tl, \l__test_a_tl]2} {{##1}{3},{##1}{1},{\int_eval:n {##1 + 1}}{2},{##1}{2}}
+			\__test_points:nn {\l__test_b_tl 9~--~\l__test_a_tl 9} {{\int_eval:n {##1 + 1}}{9},{##1}{9}}
+			\__test_points:nn {\l__test_a_tl 1~r~\l__test_b_tl 2} {{##1}{1},{\int_eval:n {##1 + 1}}{1},{\int_eval:n {##1 + 1}}{2},{##1}{2}}
+			\__test_moves:nn {\l__test_a_tl 5, \l__test_b_tl 5, \l__test_a_tl 5} {{##1}{5},{\int_eval:n {##1 + 1}}{5},{##1}{5}}
+			\pgfgo_kernel_board_window:e {\l__test_b_tl 6~to~\l__test_a_tl 4}
+			\pgfgo_kernel_board_init:
+			\__test:nnn {use~i~#1~window~\l__test_a_tl} {\__test_window:} {##1,4,\int_eval:n {##1 + 1},6}
+			\__test_points:nn {\l__test_b_tl} {{\int_eval:n {##1 + 1}}{4},{\int_eval:n {##1 + 1}}{5},{\int_eval:n {##1 + 1}}{6}}
+			\__test_points:nn {\l__test_a_tl \c_colon_str \l__test_b_tl} {{##1}{4},{##1}{5},{##1}{6},{\int_eval:n {##1 + 1}}{4},{\int_eval:n {##1 + 1}}{5},{\int_eval:n {##1 + 1}}{6}}
+		}
+	}
 \group_end:
 
 % Points of a polygon: inside or on the border, row by row from the bottom.

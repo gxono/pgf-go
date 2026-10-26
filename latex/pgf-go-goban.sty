@@ -39,6 +39,7 @@
 	\tl_new:N \l_pgfgo_goban_label_rows_tl
 	\tl_new:N \l_pgfgo_goban_label_columns_direction_tl
 	\tl_new:N \l_pgfgo_goban_label_rows_direction_tl
+	\bool_new:N \l_pgfgo_goban_label_lower_bool
 
 	%\pgftransformscale (scale) SOLO MUEVE LOS PUNTOS: LOS GROSORES DE LAS LINEAS QUEDAN COMO ESTAN. CON
 	%scale line width, scale TAMBIEN LOS MULTIPLICA, SALVO CON layout/fit, QUE ELIGE LA ESCALA PARA LLENAR LA
@@ -425,6 +426,10 @@
 		rows~direction		.choices:nn	= {bottom~to~top, top~to~bottom}
 			{\tl_set_eq:NN \l_pgfgo_goban_label_rows_direction_tl \l_keys_choice_tl},
 		rows~direction		.initial:n	= {bottom~to~top},
+		%SOLO EL BORDE: LAS COORDENADAS DE LOS COMANDOS SE LEEN IGUAL.
+		letter~case			.choices:nn	= {upper, lower}
+			{\bool_set:Nn \l_pgfgo_goban_label_lower_bool {\int_compare_p:nNn {\l_keys_choice_int} = {2}}},
+		letter~case			.initial:n	= {upper},
 
 		%ESTILOS COMPLETOS. japanese: NUMEROS DESDE LA DERECHA ARRIBA Y KANJI DESDE ARRIBA AL COSTADO.
 		%chinese: IGUAL, PERO LOS NUMEROS DESDE LA IZQUIERDA.
@@ -452,12 +457,18 @@
 	}
 	\cs_new:Npn \__pgfgo_goban_label_text:nn #1#2 {
 		\str_case:nn {#1} {
-			{letters}	{\pgfgo_kernel_column_name:n {#2}}
+			{letters}	{
+				%LA MISMA CAJA PARA TODAS LAS MINUSCULAS (CON Y SIN ASCENDENTES O DESCENDENTES): LA MISMA LINEA BASE.
+				\bool_if:NTF \l_pgfgo_goban_label_lower_bool
+					{\vphantom{bg} \str_lowercase:e {\pgfgo_kernel_column_name:n {#2}}}
+					{\pgfgo_kernel_column_name:n {#2}}
+			}
 			{numbers}	{\int_eval:n {#2}}
 			{kanji}		{\pgfgo_int_to_kanji:n {#2}}
 		}
 	}
 	\cs_generate_variant:Nn \__pgfgo_goban_label_text:nn {V}
+	\cs_generate_variant:Nn \str_lowercase:n {e}
 
 
 	%FUENTE DE LAS COORDENADAS DEL BORDE.
@@ -1340,12 +1351,15 @@
 		\pgfgo_kernel_board_init:
 		\tl_if_empty:NF \l_pgfgo_goban_name_tl {\__pgfgo_goban_name:n {#1}}
 		\bool_if:NT \l_pgfgo_goban_captures_bool {\pgfgo_captures_begin:}
+		%UN goban POR PAGINA (pgf-go-pages.sty).
+		\pgfgo_pages_begin:
 
 		\__pgfgo_goban_begin:VV \l_pgfgo_goban_size_x_int \l_pgfgo_goban_size_y_int
 		}{
 			\__pgfgo_goban_end:
 			%AL .aux Y A export (pgf-go-store.sty).
 			\pgfgo_store_end:
+			\pgfgo_pages_end:
 		}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

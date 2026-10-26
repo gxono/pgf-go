@@ -45,9 +45,13 @@
 \tl_new:N \g_pgfgo_kernel_tl
 %IDIOMA DE LOS TEXTOS: \usepackage[lang = es]{pgf-go}. VER pgf-go-lang.sty.
 \tl_new:N \g__pgfgo_lang_option_tl
+%UN goban POR PAGINA: \usepackage[pages]{pgf-go}. VER pgf-go-pages.sty.
+\bool_new:N \g_pgfgo_pages_bool
 \keys_define:nn {pgfgo / package} {
 	kernel		.choices:nn = {expl3, lua} {\tl_gset_eq:NN \g_pgfgo_kernel_tl \l_keys_choice_tl},
 	lang			.tl_gset:N	= \g__pgfgo_lang_option_tl,
+	pages			.bool_gset:N	= \g_pgfgo_pages_bool,
+	pages			.default:n	= {true},
 }
 \sys_if_engine_luatex:TF
 	{\tl_gset:Nn \g_pgfgo_kernel_tl {lua}}
@@ -113,7 +117,7 @@
 \clist_map_inline:nn {
 	pgf-go-kernel, pgf-go-lang, pgf-go-remember, pgf-go-images, pgf-go-profiles, pgf-go-players, pgf-go-stones,
 	pgf-go-goban, pgf-go-marks, pgf-go-lines, pgf-go-territory, pgf-go-layout, pgf-go-sgf,
-	pgf-go-store
+	pgf-go-store, pgf-go-pages
 } {
 	\clist_if_in:NnTF \c__pgfgo_style_modules_clist {#1}
 		{\bool_gset_true:N \g__pgfgo_style_register_bool}

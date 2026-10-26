@@ -198,6 +198,11 @@
 }
 \cs_generate_variant:Nn \prop_gput:Nnn {Nee}
 
+%EL NOMBRE SE GUARDA COMO LO DEJA \text_expand:n (COMO EL DE UN ARCHIVO).
+\cs_new_protected:Npn \pgfgo_kernel_sgf_text:nn #1#2 {
+	\lua_now:e {pgfgo.sgf_text("\lua_escape:e {\text_expand:n {#1}}",~"\lua_escape:e {#2}")}
+}
+
 \cs_new_protected:Npn \pgfgo_kernel_sgf_read:n #1 {\pgfgo_kernel_sgf_read:nn {#1} {}}
 
 \cs_new_protected:Npn \pgfgo_kernel_sgf_read:nn #1#2 {

@@ -1,0 +1,71 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 10
+% expect-errors: 0
+%
+% shift = {<columns>, <rows>} in \stones, \stone, \moves and \marks: it moves the coordinates (to the right
+% and up), not the drawing. A pattern kept in a macro is reused in other places; the labels of the border
+% (right to left, top to bottom) do not change the direction; whole columns (A) and rectangles move too;
+% resume replays the shifted points. The ten warnings (outside-board, one per point): J1 and the nine
+% points of the column J go off the board.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\def\corner{A1--A3, B5; A2}
+\def\trio{C3, D4, E3}
+\begin{document}
+
+\case{The pattern, then shift = \{2, 0\}, \{0, 3\}, \{4, -0\} and \{6, 3\}, all in one goban}
+\begin{goban}[9]
+	\stones[b]{\corner}
+	\stones[w, shift = {2, 0}]{\corner}
+	\stones[n, shift = {0, 3}]{\corner}
+	\stones[w, shift = {6, 3}]{\corner}
+\end{goban}
+\begin{goban}[9]
+	\stones[b, shift = {4, -0}]{\corner}
+\end{goban}
+
+\case{Negative shifts and one number (shift = 3 is \{3, 0\}): the shape at C3, at A1 and at F3}
+\begin{goban}[9]
+	\stones[b]{\trio}
+	\stones[w, shift = {-2, -2}]{\trio}
+	\stones[n, shift = 3]{\trio}
+\end{goban}
+
+\case{Labels from the right and from the top (columns direction = right to left, rows direction = top to bottom): shift = \{2, 0\} still goes to the right}
+\begin{goban}[9, label = {at = all, columns direction = right to left, rows direction = top to bottom}]
+	\stones[b]{\trio}
+	\stones[w, shift = {2, 0}]{\trio}
+\end{goban}
+
+\case{\textbackslash stone, \textbackslash moves (numbered, from 5) and \textbackslash marks with sequence}
+\begin{goban}[9]
+	\stone[b, shift = {1, 1}]{A1}
+	\moves[from = 5, shift = {4, 4}]{\trio}
+	\marks[sequence, shift = {-1, 5}]{\trio}
+	\marks[triangle, shift = {4, 4}]{\trio}
+\end{goban}
+
+\case{Whole columns and rectangles: the column A becomes C; A1:B2 becomes H8:J9}
+\begin{goban}[9]
+	\stones[b, shift = {2, 0}]{A}
+	\stones[w, shift = {7, 7}]{A1:B2}
+\end{goban}
+
+\case{Off the board: H1, J1 shifted 1 to the right (J1 goes off), and the column J shifted 1 (all of it)}
+\begin{goban}[9]
+	\stones[b, shift = {1, 0}]{H1, J1}
+	\stones[w, shift = {1, 0}]{J}
+\end{goban}
+
+\case{resume replays the shifted stones, moves and marks}
+\begin{goban}[9, name = shifted, scale = 0.6]
+	\stones[b, shift = {2, 2}]{\corner}
+	\moves[shift = {4, 0}]{\trio}
+	\marks[circle, shift = {4, 0}]{\trio}
+\end{goban}
+\begin{goban}[9, resume = {shifted, numbers, marks}, scale = 0.6]\end{goban}
+
+\end{document}

@@ -61,6 +61,9 @@
 	forget						.code:n	=	{\bool_set_false:N\l_pgfgo_goban_remember_mark_bool},
 	forget						.groups:n	=	{preset},
 
+	shift							.code:n		=	{\pgfgo_shift_set:n {#1}},
+	shift							.groups:n	=	{preset},
+
 	hatched~lines	.code:n			=	{
 		\bool_set_true:N\l_pgfgo_mark_hatched_lines_bool
 		\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_hatched_lines:
@@ -433,8 +436,10 @@
 \tl_new:N \l__pgfgo_marks_coordinates_tl
 \cs_new_protected:Npn\pgfgo_marks:nn #1#2 {
 	\group_begin:
+		\pgfgo_shift_reset:
 		\keys_set_groups:nnn{ pgfgo / mark }{ preset }{#1}
 		\pgfgo_kernel_points:n{#2} %Devuelve \l_pgfgo_kernel_points_seq
+		\pgfgo_shift_points:
 		\bool_if:NF \l_pgfgo_kernel_points_ordered_bool {
 			\bool_set_true:N \l__pgfgo_marks_unordered_bool
 			\tl_set:Ne \l__pgfgo_marks_coordinates_tl {#2}

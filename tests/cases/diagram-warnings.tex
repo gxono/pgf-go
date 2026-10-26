@@ -1,0 +1,24 @@
+% engines: lualatex
+% expect-warnings: 4
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% The arrow outside the board was read as a point with garbage coordinates, without a warning.
+\begin{pgfgodiagram}{bad}
+$$c5 Too big for 5, a bad line, a bad arrow and _
+$$ ------------
+$$ | . X O . _ _
+$$ | . O X . _ _
+$$ | . . ? . . .
+$$ {AR Z99 1:1}
+	\end{pgfgodiagram}
+
+\case{diagram-size (5 is made 6), diagram-line twice (the row with ? and the arrow off the board), diagram-blank}
+\sgfdiagrams[goban = {scale = 0.5}]{bad}
+
+\end{document}

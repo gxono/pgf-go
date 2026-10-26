@@ -42,7 +42,7 @@
 
 
 %COLUMNA Y FILA DE UNA COORDENADA COMO C3. DEJA \l__pgfgo_kernel_x_int Y \l__pgfgo_kernel_y_tl.
-\regex_const:Nn \c__pgfgo_kernel_coordinate_regex {([A-Za-z]*)\s*(\d*)}
+\regex_const:Nn \c__pgfgo_kernel_coordinate_regex {([A-Z]*)\s*(\d*)}
 \cs_new_protected:Npn \__pgfgo_kernel_parse_coordinate:n #1 {
 	\regex_extract_once:NnN \c__pgfgo_kernel_coordinate_regex {#1} \l__pgfgo_kernel_match_seq
 	\int_set:Nn \l__pgfgo_kernel_x_int {\int_from_alph:e {\seq_item:Nn \l__pgfgo_kernel_match_seq {2}}}
@@ -60,9 +60,9 @@
 
 \regex_const:Nn \c__pgfgo_kernel_window_regex {
 	\A\s*
-	([a-zA-Z]{1}\s*\d{1,2})
+	([A-Z]{1,2}\s*\d{1,2})
 	\s* to \s*
-	([a-zA-Z]{1}\s*\d{1,2})
+	([A-Z]{1,2}\s*\d{1,2})
 	\s*\Z
 }
 \cs_new_protected:Npn \pgfgo_kernel_board_window:n #1 {

@@ -24,6 +24,20 @@
 	\tl_set:Ne #1 {\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
 }
 
+%LA CLAVE partial DE \sgfdiagrams, \sgfproblem Y \sgfanimation: auto (#1 VERDADERO), false O LAS ESQUINAS DE
+%UNA PARTE FIJA (B2:D4, COMO EN goban), QUE QUEDAN EN #2. LA PARTE FIJA ES LA DE TODOS LOS TABLEROS, AUNQUE
+%EL ARCHIVO TENGA VISTA.
+\cs_new_protected:Npn \__pgfgo_sgf_partial:NNn #1#2#3 {
+	\bool_set_false:N #1
+	\tl_clear:N #2
+	\str_case:nnF {#3} {
+		{auto}	{\bool_set_true:N #1}
+		{false}	{}
+	}{
+		\tl_set:Nn #2 {#3}
+	}
+}
+
 %partial = auto EN \sgfdiagrams, \sgfproblem Y \sgfanimation: TODOS LOS TABLEROS TIENEN LA MISMA PARTE
 %VISIBLE, LA QUE USAN LAS LINEAS QUE SE DIBUJAN: TODO EL ARBOL DEL ARCHIVO #1 (\__pgfgo_sgf_extent:n, EN
 %\sgfproblem) O LAS LINEAS #2, SEPARADAS POR ; (\__pgfgo_sgf_extent:nn). \__pgfgo_sgf_extent_add: LA SUMA A LO
@@ -69,6 +83,26 @@
 			}
 		}
 	}
+}
+
+%DEJA EN #1 EL NUMERO DE LA JUGADA #2 (SU POSICION EN EL ARCHIVO) DE LA ULTIMA PARTIDA LEIDA: EL QUE SIGUE A
+%MN, SIN restart.
+\int_new:N \l__pgfgo_sgf_moves_seen_int
+\cs_new_protected:Npn \__pgfgo_sgf_move_number:Nn #1#2 {
+	\int_zero:N #1
+	\int_zero:N \l__pgfgo_sgf_moves_seen_int
+	\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgf_move_number:Nnnnn #1 {#2} ##1}
+}
+\cs_new_protected:Npn \__pgfgo_sgf_move_number:Nnnnn #1#2#3#4#5 {
+	\str_if_eq:nnTF {#3} {number}
+		{\int_set:Nn #1 {#4 - 1}}
+		{
+			\__pgfgo_sgf_if_move:nnnT {#3} {#4} {#5} {
+				\int_incr:N #1
+				\int_incr:N \l__pgfgo_sgf_moves_seen_int
+				\int_compare:nNnF {\l__pgfgo_sgf_moves_seen_int} < {#2} {\seq_map_break:}
+			}
+		}
 }
 
 
@@ -692,8 +726,11 @@
 	\int_zero:N \l__pgfgo_sgf_number_int
 	\int_zero:N \l__pgfgo_sgf_shift_int
 	\tl_clear:N \l__pgfgo_sgf_slot_tl
-	%SIN goban/captures LAS PIEDRAS SE DIBUJAN AL JUGARLAS: NO HAY NADA QUE GUARDAR.
-	\bool_lazy_and:nnTF {\l__pgfgo_sgf_cache_bool} {\l_pgfgo_goban_captures_bool} {
+	%SIN goban/captures LAS PIEDRAS SE DIBUJAN AL JUGARLAS: NO HAY NADA QUE GUARDAR. UN goban CON name TAMPOCO
+	%USA LA COPIA: SU MEMORIA TIENE QUE TENER TODAS LAS JUGADAS, Y LA COPIA NO LAS TRAE.
+	\bool_lazy_all:nTF
+		{{\l__pgfgo_sgf_cache_bool} {\l_pgfgo_goban_captures_bool} {\tl_if_empty_p:N \l_pgfgo_goban_name_tl}}
+	{
 		\int_set:Nn \l__pgfgo_sgf_start_int {1}
 		\int_set:Nn \l__pgfgo_sgf_resume_int {\seq_count:N \l_pgfgo_kernel_sgf_moves_seq + 1}
 		\prop_clear:N \l__pgfgo_sgf_numbered_prop
@@ -725,50 +762,89 @@
 	}
 }
 
-%\pgfgodefinesgf[game = <n>, charset = <codificacion>]{<nombre>}{<archivo>}: <nombre> SIRVE DONDE VA UN
-%ARCHIVO SGF (\sgf, \sgfinfo, sgf size, ...). EL KERNEL LO TRADUCE AL ARCHIVO; game Y charset QUEDAN EN
-%\g__pgfgo_sgf_names_prop ({game}{charset}, VACIOS SI NO SE DIERON) Y CADA COMANDO LOS PONE ANTES DE SUS
-%OPCIONES, QUE GANAN. UN NOMBRE QUE NO ESTA DEFINIDO ES UN ARCHIVO.
+%\pgfgodefinesgf[game = <n>, charset = <codificacion>, origin = <esquina>, transpose]{<nombre>}{<archivo>}:
+%<nombre> SIRVE DONDE VA UN ARCHIVO SGF (\sgf, \sgfinfo, sgf size, ...). EL KERNEL LO TRADUCE AL ARCHIVO;
+%LAS OPCIONES QUEDAN EN \g__pgfgo_sgf_names_prop ({game}{charset}{origin}{transpose}; game Y charset VACIOS
+%SI NO SE DIERON) Y CADA COMANDO LAS PONE ANTES DE SUS OPCIONES, QUE GANAN. UN NOMBRE QUE NO ESTA DEFINIDO
+%ES UN ARCHIVO.
+%origin: LA ESQUINA DONDE VA EL PUNTO aa DEL ARCHIVO. transpose: LA PRIMERA LETRA DE CADA PUNTO ES LA FILA
+%Y NO LA COLUMNA. ENTRE LAS DOS, LAS OCHO SIMETRIAS DEL TABLERO. SOLO VALEN PARA EL NOMBRE: UN ARCHIVO SE
+%LEE COMO DICE SGF (aa ARRIBA A LA IZQUIERDA, LA PRIMERA LETRA ES LA COLUMNA).
 \prop_new:N \g__pgfgo_sgf_names_prop
 \tl_new:N \l__pgfgo_sgf_name_game_tl
 \tl_new:N \l__pgfgo_sgf_name_charset_tl
+\tl_new:N \l__pgfgo_sgf_name_origin_tl
+\tl_new:N \l__pgfgo_sgf_name_transpose_tl
 \tl_new:N \l__pgfgo_sgf_name_tl
 \keys_define:nn {pgfgo / define~sgf} {
 	game					.tl_set:N		= \l__pgfgo_sgf_name_game_tl,
 	charset				.tl_set:N		= \l__pgfgo_sgf_name_charset_tl,
+	origin				.choices:nn	= {top~left, top~right, bottom~left, bottom~right}
+		{\tl_set_eq:NN \l__pgfgo_sgf_name_origin_tl \l_keys_choice_tl},
+	origin				.initial:n	= {top~left},
+	transpose			.choices:nn	= {true, false}
+		{\tl_set_eq:NN \l__pgfgo_sgf_name_transpose_tl \l_keys_choice_tl},
+	transpose			.default:n	= {true},
+	transpose			.initial:n	= {false},
 }
 \NewDocumentCommand \pgfgodefinesgf {O{}mm} {
 	\group_begin:
 		\keys_set:nn {pgfgo / define~sgf} {#1}
 		\prop_gput:Nee \g__pgfgo_sgf_names_prop {\text_expand:n {#2}}
-			{{\exp_not:V \l__pgfgo_sgf_name_game_tl} {\exp_not:V \l__pgfgo_sgf_name_charset_tl}}
+			{{\exp_not:V \l__pgfgo_sgf_name_game_tl} {\exp_not:V \l__pgfgo_sgf_name_charset_tl}
+				{\exp_not:V \l__pgfgo_sgf_name_origin_tl} {\exp_not:V \l__pgfgo_sgf_name_transpose_tl}}
 		\pgfgo_kernel_if_feature:nT {sgf} {\pgfgo_kernel_sgf_define:nn {#2} {#3}}
 	\group_end:
 }
 
-%SI #1 ES UN NOMBRE DE \pgfgodefinesgf, PONE SU game Y SU charset.
-\cs_new_protected:Npn \pgfgo_sgf_use_name:n #1 {
-	\prop_get:NeNT \g__pgfgo_sgf_names_prop {\text_expand:n {#1}} \l__pgfgo_sgf_name_tl
-		{\exp_after:wN \__pgfgo_sgf_use_name:nn \l__pgfgo_sgf_name_tl}
+%\begin{pgfgodiagram}{<nombre>} ... \end{pgfgodiagram}: DIAGRAMAS DE Sensei's Library (O DE L19) ESCRITOS EN EL
+%DOCUMENTO, QUE LOS COMANDOS DE SGF LEEN COMO EL ARCHIVO <nombre>. LAS LINEAS SE LEEN TAL CUAL (VER
+%\pgfgo_kernel_sgf_text:nn): \begin{pgfgodiagram}{<nombre>} TERMINA SU LINEA. SIN UN KERNEL QUE LEA PARTIDAS, EL
+%CONTENIDO SE SALTEA.
+\pgfgo_kernel_if_feature:nTF {sgf} {
+	\NewDocumentEnvironment {pgfgodiagram} {m} {
+		\pgfgo_kernel_sgf_text:nn {#1}
+			{\c_backslash_str end \c_left_brace_str pgfgodiagram \c_right_brace_str}
+		\ignorespaces
+	} {\ignorespacesafterend}
+} {
+	\NewDocumentEnvironment {pgfgodiagram} {m +b} {\pgfgo_kernel_require:n {sgf}} {\ignorespacesafterend}
 }
-\cs_new_protected:Npn \__pgfgo_sgf_use_name:nn #1#2 {
+
+%SI #1 ES UN NOMBRE DE \pgfgodefinesgf, PONE SU game, SU charset Y SU ORIENTACION. SI NO, LA ORIENTACION
+%DE SGF.
+\cs_new_protected:Npn \pgfgo_sgf_use_name:n #1 {
+	\tl_set:Nn \l_pgfgo_kernel_sgf_origin_tl {top~left}
+	\tl_set:Nn \l_pgfgo_kernel_sgf_transpose_tl {false}
+	\prop_get:NeNT \g__pgfgo_sgf_names_prop {\text_expand:n {#1}} \l__pgfgo_sgf_name_tl
+		{\exp_after:wN \__pgfgo_sgf_use_name:nnnn \l__pgfgo_sgf_name_tl}
+}
+\cs_new_protected:Npn \__pgfgo_sgf_use_name:nnnn #1#2#3#4 {
 	\tl_if_empty:nF {#1} {\int_set:Nn \l_pgfgo_kernel_sgf_game_int {#1}}
 	\tl_if_empty:nF {#2} {\tl_set:Nn \l_pgfgo_kernel_sgf_charset_tl {#2}}
+	\tl_set:Nn \l_pgfgo_kernel_sgf_origin_tl {#3}
+	\tl_set:Nn \l_pgfgo_kernel_sgf_transpose_tl {#4}
 }
 \cs_generate_variant:Nn \pgfgo_sgf_use_name:n {V}
 \prg_generate_conditional_variant:Nnn \prop_get:NnN {NeN} {T}
 
-%EJECUTA #2 CON EL game Y EL charset DEL NOMBRE #1, Y DESPUES VUELVE A LOS DE ANTES (PARA LAS CLAVES DE
-%goban, QUE NO ESTAN EN UN GRUPO PROPIO).
+%EJECUTA #2 CON EL game, EL charset Y LA ORIENTACION DEL NOMBRE #1, Y DESPUES VUELVE A LOS DE ANTES (PARA
+%LAS CLAVES DE goban, QUE NO ESTAN EN UN GRUPO PROPIO).
 \int_new:N \l__pgfgo_sgf_saved_game_int
 \tl_new:N \l__pgfgo_sgf_saved_charset_tl
+\tl_new:N \l__pgfgo_sgf_saved_origin_tl
+\tl_new:N \l__pgfgo_sgf_saved_transpose_tl
 \cs_new_protected:Npn \pgfgo_sgf_with_name:nn #1#2 {
 	\int_set_eq:NN \l__pgfgo_sgf_saved_game_int \l_pgfgo_kernel_sgf_game_int
 	\tl_set_eq:NN \l__pgfgo_sgf_saved_charset_tl \l_pgfgo_kernel_sgf_charset_tl
+	\tl_set_eq:NN \l__pgfgo_sgf_saved_origin_tl \l_pgfgo_kernel_sgf_origin_tl
+	\tl_set_eq:NN \l__pgfgo_sgf_saved_transpose_tl \l_pgfgo_kernel_sgf_transpose_tl
 	\pgfgo_sgf_use_name:n {#1}
 	#2
 	\int_set_eq:NN \l_pgfgo_kernel_sgf_game_int \l__pgfgo_sgf_saved_game_int
 	\tl_set_eq:NN \l_pgfgo_kernel_sgf_charset_tl \l__pgfgo_sgf_saved_charset_tl
+	\tl_set_eq:NN \l_pgfgo_kernel_sgf_origin_tl \l__pgfgo_sgf_saved_origin_tl
+	\tl_set_eq:NN \l_pgfgo_kernel_sgf_transpose_tl \l__pgfgo_sgf_saved_transpose_tl
 }
 \cs_generate_variant:Nn \pgfgo_sgf_with_name:nn {V}
 
@@ -1044,6 +1120,7 @@
 \bool_new:N \l__pgfgo_sgfanim_marks_bool
 \bool_new:N \l__pgfgo_sgfanim_view_bool
 \bool_new:N \l__pgfgo_sgfanim_partial_bool
+\tl_new:N \l__pgfgo_sgfanim_partial_tl
 \bool_new:N \l__pgfgo_sgfanim_layers_bool
 \tl_new:N \l__pgfgo_sgfanim_file_tl
 \tl_new:N \l__pgfgo_sgfanim_size_tl
@@ -1089,8 +1166,7 @@
 	view						.default:n	= {true},
 	view						.initial:n	= {true},
 	%auto: LOS TABLEROS MUESTRAN SOLO LA PARTE QUE USA LA PARTIDA (SI NO HAY VISTA).
-	partial					.choices:nn	= {auto, false}
-		{\bool_set:Nn \l__pgfgo_sgfanim_partial_bool {\str_if_eq_p:Vn \l_keys_choice_tl {auto}}},
+	partial					.code:n			= {\__pgfgo_sgf_partial:NNn \l__pgfgo_sgfanim_partial_bool \l__pgfgo_sgfanim_partial_tl {#1}},
 	partial					.initial:n	= {false},
 	%POR CAPAS: CADA PIEDRA SE DIBUJA UNA SOLA VEZ (VER MAS ABAJO).
 	layers					.bool_set:N	= \l__pgfgo_sgfanim_layers_bool,
@@ -1176,8 +1252,12 @@
 			\exp_not:N \begin{goban}
 				[
 					size = \l__pgfgo_sgfanim_size_tl,
-					\bool_if:NT \l__pgfgo_sgfanim_partial_bool {partial = auto,}
-					\bool_if:NT \l__pgfgo_sgfanim_view_bool {sgf~view = {\exp_not:V \l__pgfgo_sgfanim_file_tl},}
+					\tl_if_empty:NTF \l__pgfgo_sgfanim_partial_tl {
+						\bool_if:NT \l__pgfgo_sgfanim_partial_bool {partial = auto,}
+						\bool_if:NT \l__pgfgo_sgfanim_view_bool {sgf~view = {\exp_not:V \l__pgfgo_sgfanim_file_tl},}
+					}{
+						partial = {\exp_not:V \l__pgfgo_sgfanim_partial_tl},
+					}
 					\exp_not:V \l__pgfgo_sgfanim_goban_tl
 				]
 		}
@@ -1526,6 +1606,7 @@
 \cs_new:Npn \__pgfgo_sgfdiag_comment_number:n #1 {}
 \bool_new:N \l__pgfgo_sgfdiag_view_bool
 \bool_new:N \l__pgfgo_sgfdiag_partial_bool
+\tl_new:N \l__pgfgo_sgfdiag_partial_tl
 \bool_new:N \l__pgfgo_sgfdiag_figures_bool
 \bool_new:N \l__pgfgo_sgfdiag_result_bool
 \tl_new:N \l__pgfgo_sgfdiag_result_title_tl
@@ -1584,6 +1665,8 @@
 														},
 	last~mark				.initial:n	= {false},
 	goban						.tl_set:N		= \l__pgfgo_sgfdiag_goban_tl,
+	%CADA DIAGRAMA ES UN goban CON NOMBRE: EL DE name Y EL NUMERO DE SU EPIGRAFE (tablero1, tablero3a).
+	name						.tl_set:N		= \l__pgfgo_sgfdiag_name_tl,
 	variation				.tl_set:N		= \l__pgfgo_sgfdiag_variation_tl,
 	notes						.bool_set:N	= \l__pgfgo_sgfdiag_notes_bool,
 	notes						.default:n	= {true},
@@ -1599,8 +1682,7 @@
 	view						.default:n	= {true},
 	view						.initial:n	= {true},
 	%auto: LOS TABLEROS MUESTRAN SOLO LA PARTE QUE USA LA PARTIDA (SI NO HAY VISTA).
-	partial					.choices:nn	= {auto, false}
-		{\bool_set:Nn \l__pgfgo_sgfdiag_partial_bool {\str_if_eq_p:Vn \l_keys_choice_tl {auto}}},
+	partial					.code:n			= {\__pgfgo_sgf_partial:NNn \l__pgfgo_sgfdiag_partial_bool \l__pgfgo_sgfdiag_partial_tl {#1}},
 	partial					.initial:n	= {false},
 	%SI EL ARCHIVO TIENE FIGURAS (FG), CADA FIGURA ES UN DIAGRAMA (CON SU NOMBRE COMO EPIGRAFE).
 	figures					.bool_set:N	= \l__pgfgo_sgfdiag_figures_bool,
@@ -1922,7 +2004,9 @@
 	\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box
 }
 
-%EL goban DEL DIAGRAMA (JUGADAS #1 A #2) EN \l__pgfgo_sgfdiag_box.
+%EL goban DEL DIAGRAMA (JUGADAS #1 A #2) EN \l__pgfgo_sgfdiag_box. CON name, SE LLAMA name SEGUIDO DE
+%\l__pgfgo_sgfdiag_suffix_tl.
+\tl_new:N \l__pgfgo_sgfdiag_suffix_tl
 \cs_new_protected:Npn \__pgfgo_sgfdiag_board:nn #1#2 {
 	\prop_gclear:N \g__pgfgo_sgf_shown_prop
 	\hbox_set:Nn \l__pgfgo_sgfdiag_box {
@@ -1936,6 +2020,8 @@
 					\exp_not:V \l__pgfgo_sgfdiag_window_tl,
 					\exp_not:V \l__pgfgo_sgfdiag_goban_tl,
 					\exp_not:V \l__pgfgo_sgfdiag_scale_tl
+					\tl_if_empty:NF \l__pgfgo_sgfdiag_name_tl
+						{, name = {\exp_not:V \l__pgfgo_sgfdiag_name_tl \exp_not:V \l__pgfgo_sgfdiag_suffix_tl}}
 				]
 		}
 			%COMO EN LOS LIBROS, LAS CAPTURAS DEL TRAMO NUMERADO NO SE QUITAN (SE VEN EN EL DIAGRAMA SIGUIENTE).
@@ -2085,25 +2171,49 @@
 	}
 }
 
-%EL DIAGRAMA #1, CON LAS JUGADAS #2 A #3. #4: EL NUMERO DEL NOMBRE DE SU FIGURA (0: SIN NOMBRE).
+%EL DIAGRAMA #1, CON LAS JUGADAS #2 A #3. #4: EL NUMERO DEL NOMBRE DE SU FIGURA (0: SIN NOMBRE). EL EPIGRAFE
+%DICE LOS NUMEROS DE LA PRIMERA Y LA ULTIMA JUGADA (LOS QUE SIGUEN A MN); SIN JUGADAS (#3 MENOR QUE #2), NADA.
+\int_new:N \l__pgfgo_sgfdiag_first_number_int
+\int_new:N \l__pgfgo_sgfdiag_last_number_int
 \cs_new_protected:Npn \__pgfgo_sgfdiag_diagram:nnnn #1#2#3#4 {
 	%LA VISTA QUE ABARCA LAS DE TODAS LAS JUGADAS DEL DIAGRAMA.
 	\int_set:Nn \l_pgfgo_goban_sgf_view_from_int {#2}
 	\int_set:Nn \l_pgfgo_goban_sgf_view_to_int {#3}
-	\__pgfgo_sgfdiag_add:nnnn {#2} {#3}
-		{
-			\int_compare:nNnTF {#4} > {0}
-				{\pgfgo_kernel_sgf_name:n {#4}}
-				{\l__pgfgo_sgfdiag_title_tl \nobreakspace \int_eval:n {#1}}
-			\nobreakspace (\int_eval:n {#2}--\int_eval:n {#3})
-		}
-		{
-			\__pgfgo_sgfdiag_notes:nn {#2} {#3}
-			\bool_lazy_and:nnT
-				{\l__pgfgo_sgfdiag_result_bool}
-				{\int_compare_p:nNn {#3} = {\l__pgfgo_sgfdiag_total_int}}
-				{\__pgfgo_sgfdiag_result:}
-		}
+	\tl_set:Ne \l__pgfgo_sgfdiag_suffix_tl {\int_eval:n {#1}}
+	\__pgfgo_sgf_move_number:Nn \l__pgfgo_sgfdiag_first_number_int {#2}
+	\__pgfgo_sgf_move_number:Nn \l__pgfgo_sgfdiag_last_number_int {#3}
+	\use:e {
+		\exp_not:N \__pgfgo_sgfdiag_add:nnnn {#2} {#3}
+			{
+				\exp_not:n {
+					\int_compare:nNnTF {#4} > {0}
+						{\pgfgo_kernel_sgf_name:n {#4}}
+						{\l__pgfgo_sgfdiag_title_tl \nobreakspace \int_eval:n {#1}}
+				}
+				\int_compare:nNnF {#3} < {#2} {
+					\exp_not:N \nobreakspace
+					(\int_use:N \l__pgfgo_sgfdiag_first_number_int--\int_use:N \l__pgfgo_sgfdiag_last_number_int)
+				}
+			}
+			{
+				\exp_not:n {
+					\__pgfgo_sgfdiag_notes:nn {#2} {#3}
+					\bool_lazy_and:nnT
+						{\l__pgfgo_sgfdiag_result_bool}
+						{\int_compare_p:nNn {#3} = {\l__pgfgo_sgfdiag_total_int}}
+						{\__pgfgo_sgfdiag_result:}
+				}
+			}
+	}
+}
+
+%UNA PARTIDA SIN JUGADAS ES UN DIAGRAMA DE SU POSICION, CON EL NOMBRE DE SU FIGURA (SI TIENE).
+\cs_new_protected:Npn \__pgfgo_sgfdiag_position: {
+	\tl_clear:N \l__pgfgo_sgfdiag_first_tl
+	\tl_set:Nn \l_tmpa_tl {{1}{0}}
+	\bool_lazy_and:nnT {\l__pgfgo_sgfdiag_figures_bool} {! \seq_if_empty_p:N \l_pgfgo_kernel_sgf_figures_seq}
+		{\seq_get_left:NN \l_pgfgo_kernel_sgf_figures_seq \l_tmpa_tl}
+	\use:e {\exp_not:N \__pgfgo_sgfdiag_diagram:nnnn {1} {1} {0} {\exp_after:wN \use_ii:nn \l_tmpa_tl}}
 }
 
 %EL DIAGRAMA #1 (JUGADAS #2 A #3, CON EL NOMBRE #4), SI TIENE JUGADAS DESDE from: EMPIEZA EN from O DESPUES.
@@ -2155,7 +2265,7 @@
 		\__pgfgo_sgfdiag_var_wanted:nnnn {#4} {#5} {#6} {#9}
 		\bool_if:NT \l__pgfgo_sgfdiag_var_wanted_bool {
 			\int_incr:N \l__pgfgo_sgfdiag_var_count_int
-			\__pgfgo_sgfdiag_variation:nnnnn {#1 \int_to_alph:n {\l__pgfgo_sgfdiag_var_count_int}} {#4} {#7} {#7} {#8}
+			\__pgfgo_sgfdiag_variation:nnnnn {\int_eval:n {#1} \int_to_alph:n {\l__pgfgo_sgfdiag_var_count_int}} {#4} {#7} {#7} {#8}
 		}
 	}
 }
@@ -2175,6 +2285,7 @@
 		\int_set:Nn \l__pgfgo_sgfdiag_var_move_int {#3}
 		\int_set:Nn \l_pgfgo_goban_sgf_view_from_int {#4}
 		\int_set:Nn \l_pgfgo_goban_sgf_view_to_int {#5}
+		\tl_set:Ne \l__pgfgo_sgfdiag_suffix_tl {#1}
 		\__pgfgo_sgfdiag_add:nnnn {#4} {#5}
 			{\l__pgfgo_sgfdiag_title_tl \nobreakspace #1 \nobreakspace (\l__pgfgo_sgfdiag_var_title_tl)}
 			{\__pgfgo_sgfdiag_notes:nn {#4} {#5}}
@@ -2326,8 +2437,12 @@
 		\tl_set:Ne \l__pgfgo_sgfdiag_sgf_restart_tl
 			{\str_if_eq:VnTF \l__pgfgo_sgfdiag_restart_tl {auto} {auto} {false}}
 		\tl_set:Ne \l__pgfgo_sgfdiag_window_tl {
-			\bool_if:NT \l__pgfgo_sgfdiag_partial_bool {partial = auto,}
-			\bool_if:NT \l__pgfgo_sgfdiag_view_bool {sgf~view = {\exp_not:n {#2}}}
+			\tl_if_empty:NTF \l__pgfgo_sgfdiag_partial_tl {
+				\bool_if:NT \l__pgfgo_sgfdiag_partial_bool {partial = auto,}
+				\bool_if:NT \l__pgfgo_sgfdiag_view_bool {sgf~view = {\exp_not:n {#2}}}
+			}{
+				partial = {\exp_not:V \l__pgfgo_sgfdiag_partial_tl}
+			}
 		}
 		\tl_set_eq:NN \l_pgfgo_goban_sgf_view_variation_tl \l__pgfgo_sgfdiag_variation_tl
 		\__pgfgo_sgf_count_moves:Nn \l__pgfgo_sgfdiag_total_int {\c_max_int}
@@ -2340,6 +2455,7 @@
 		\bool_lazy_and:nnTF {\l__pgfgo_sgfdiag_figures_bool} {! \seq_if_empty_p:N \l_pgfgo_kernel_sgf_figures_seq}
 			{\__pgfgo_sgfdiag_figures:}
 			{\__pgfgo_sgfdiag_steps:}
+		\int_compare:nNnT {\l__pgfgo_sgfdiag_total_int} = {0} {\__pgfgo_sgfdiag_position:}
 		\pgfgo_layout_end:
 		\__pgfgo_sgfdiag_after_flush:
 	\group_end:
@@ -2412,6 +2528,7 @@
 \bool_new:N \l__pgfgo_sgfprob_solutions_bool
 \bool_new:N \l__pgfgo_sgfprob_view_bool
 \bool_new:N \l__pgfgo_sgfprob_partial_bool
+\tl_new:N \l__pgfgo_sgfprob_partial_tl
 \int_new:N \l__pgfgo_sgfprob_last_int
 \tl_new:N \l__pgfgo_sgfprob_title_tl
 \tl_new:N \l__pgfgo_sgfprob_goban_tl
@@ -2443,6 +2560,7 @@
 \tl_new:N \l__pgfgo_sgfprob_moves_tl
 \bool_new:N \l__pgfgo_sgfprob_right_bool
 \seq_new:N \l__pgfgo_sgfprob_paths_seq
+\bool_new:N \l__pgfgo_sgfprob_links_bool
 
 \keys_define:nn {pgfgo / sgf~problem} {
 	%alone: EL ENUNCIADO VA SOLO EN SU FILA, Y LAS VARIANTES DEBAJO.
@@ -2465,6 +2583,9 @@
 	white~to~play				.initial:n	= {\pgfgo_text:n {white~to~play}},
 	%COMO EN \sgfdiagrams (PERO CON LOS COMENTARIOS: ASI SE VE CUALES LINEAS SON CORRECTAS).
 	goban								.tl_set:N		= \l__pgfgo_sgfprob_goban_tl,
+	%EL ENUNCIADO SE LLAMA name, Y CADA SOLUCION name SEGUIDO DE SU NUMERO. CON VARIAS PARTIDAS, name Y LA
+	%PARTIDA (problema3), Y name, LA PARTIDA, - Y EL NUMERO (problema3-1).
+	name								.tl_set:N		= \l__pgfgo_sgfprob_name_tl,
 	caption							.code:n			= {\keys_set:nn {pgfgo / sgf~problem / caption} {#1}},
 	notes								.bool_set:N	= \l__pgfgo_sgfprob_notes_bool,
 	notes								.default:n	= {true},
@@ -2490,10 +2611,13 @@
 	view								.bool_set:N	= \l__pgfgo_sgfprob_view_bool,
 	view								.default:n	= {true},
 	view								.initial:n	= {true},
-	partial							.choices:nn	= {auto, false}
-		{\bool_set:Nn \l__pgfgo_sgfprob_partial_bool {\str_if_eq_p:Vn \l_keys_choice_tl {auto}}},
+	partial							.code:n			= {\__pgfgo_sgf_partial:NNn \l__pgfgo_sgfprob_partial_bool \l__pgfgo_sgfprob_partial_tl {#1}},
 	partial							.initial:n	= {auto},
 	layout							.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfprob_layout_tl {, #1}},
+	%CON hyperref: EL EPIGRAFE DEL ENUNCIADO LLEVA A SU PRIMERA SOLUCION, Y EL DE CADA SOLUCION AL ENUNCIADO.
+	links								.bool_set:N	= \l__pgfgo_sgfprob_links_bool,
+	links								.default:n	= {true},
+	links								.initial:n	= {false},
 }
 %COMO EN \sgfdiagrams (SIN root: EL COMENTARIO DE LA RAIZ VA CON EL ENUNCIADO).
 \keys_define:nn {pgfgo / sgf~problem / comments} {
@@ -2544,9 +2668,13 @@
 	\int_zero:N \l_pgfgo_goban_sgf_view_from_int
 	\int_zero:N \l_pgfgo_goban_sgf_view_to_int
 	\tl_clear:N \l_pgfgo_goban_sgf_view_variation_tl
-	\bool_lazy_and:nnTF {\l__pgfgo_sgfprob_view_bool} {! \tl_if_empty_p:N \l_pgfgo_kernel_sgf_view_tl}
-		{\tl_set:Nn \l__pgfgo_sgfdiag_window_tl {sgf~view = {#1}}}
-		{\bool_if:NT \l__pgfgo_sgfprob_partial_bool {\tl_set:Nn \l__pgfgo_sgfdiag_window_tl {partial = auto}}}
+	\tl_if_empty:NTF \l__pgfgo_sgfprob_partial_tl {
+		\bool_lazy_and:nnTF {\l__pgfgo_sgfprob_view_bool} {! \tl_if_empty_p:N \l_pgfgo_kernel_sgf_view_tl}
+			{\tl_set:Nn \l__pgfgo_sgfdiag_window_tl {sgf~view = {#1}}}
+			{\bool_if:NT \l__pgfgo_sgfprob_partial_bool {\tl_set:Nn \l__pgfgo_sgfdiag_window_tl {partial = auto}}}
+	}{
+		\tl_set:Ne \l__pgfgo_sgfdiag_window_tl {partial = {\exp_not:V \l__pgfgo_sgfprob_partial_tl}}
+	}
 }
 
 %LAS PARTIDAS DE game: NUMEROS Y RANGOS (3:7, COMO LOS DE LAS COORDENADAS), SEPARADOS POR COMAS. LOS : DEL
@@ -2582,7 +2710,11 @@
 }
 
 %EL COMIENZO DEL EPIGRAFE DEL PROBLEMA #1: title; CON VARIAS PARTIDAS, title (O "Problem") Y EL NUMERO.
+%CON VARIAS PARTIDAS, \l__pgfgo_sgfprob_game_tl ES #1 (PARA LOS NOMBRES DE name).
+\tl_new:N \l__pgfgo_sgfprob_game_tl
 \cs_new_protected:Npn \__pgfgo_sgfprob_head:n #1 {
+	\tl_set:Ne \l__pgfgo_sgfprob_game_tl
+		{\int_compare:nNnT {\seq_count:N \l__pgfgo_sgfprob_games_seq} > {1} {#1}}
 	\int_compare:nNnTF {\seq_count:N \l__pgfgo_sgfprob_games_seq} > {1}
 		{
 			\tl_set:Ne \l__pgfgo_sgfprob_head_tl {
@@ -2594,18 +2726,75 @@
 		{\tl_set_eq:NN \l__pgfgo_sgfprob_head_tl \l__pgfgo_sgfprob_title_tl}
 }
 
+%LOS ENLACES (links). EL DESTINO DEL ENUNCIADO Y EL DE LA PRIMERA SOLUCION DE CADA PROBLEMA SE LLAMAN
+%pgfgo.<HASH> (DEL ARCHIVO, LA PARTIDA Y statement O solution), Y SE ANOTAN EN EL .aux COMO ETIQUETAS
+%(pgfgo@<HASH>): UN ENLACE SOLO SE PONE SI SU DESTINO ESTABA EN LA COMPILACION ANTERIOR, Y SI ALGUNO ES NUEVO
+%LaTeX AVISA QUE LAS ETIQUETAS CAMBIARON. CADA DESTINO SE PONE UNA SOLA VEZ.
+\msg_new:nnn {pgfgo} {sgf-links} {sgf~problem/links~needs~hyperref.}
+\bool_new:N \g__pgfgo_sgfprob_links_warned_bool
+\prop_new:N \g__pgfgo_sgfprob_targets_prop
+\tl_new:N \l__pgfgo_sgfprob_target_tl
+\tl_new:N \l__pgfgo_sgfprob_link_tl
+\cs_generate_variant:Nn \str_mdfive_hash:n {e}
+\cs_new:Npn \__pgfgo_sgfprob_id:n #1 {
+	\str_mdfive_hash:e {\tl_to_str:N \l__pgfgo_sgfdiag_file_tl / \int_use:N \l_pgfgo_kernel_sgf_game_int / #1}
+}
+\prg_new_protected_conditional:Npnn \__pgfgo_sgfprob_if_links: {T, TF} {
+	\bool_if:NTF \l__pgfgo_sgfprob_links_bool
+		{
+			\cs_if_exist:NTF \hyperlink
+				{\prg_return_true:}
+				{
+					\bool_if:NF \g__pgfgo_sgfprob_links_warned_bool {
+						\bool_gset_true:N \g__pgfgo_sgfprob_links_warned_bool
+						\msg_warning:nn {pgfgo} {sgf-links}
+					}
+					\prg_return_false:
+				}
+		}
+		{\prg_return_false:}
+}
+%EL EPIGRAFE #1, CON UN ENLACE AL DESTINO \l__pgfgo_sgfprob_link_tl SI ESTABA EN LA COMPILACION ANTERIOR.
+\cs_new_protected:Npn \__pgfgo_sgfprob_link:n #1 {
+	\__pgfgo_sgfprob_if_links:TF
+		{\cs_if_exist:cTF {r@pgfgo@\l__pgfgo_sgfprob_link_tl} {\hyperlink{pgfgo.\l__pgfgo_sgfprob_link_tl}{#1}} {#1}}
+		{#1}
+}
+%EL DESTINO #1 (statement O solution) ARRIBA DEL DIAGRAMA, SI TODAVIA NO ESTA.
+\cs_new_protected:Npn \__pgfgo_sgfprob_target:n #1 {
+	\__pgfgo_sgfprob_if_links:T {
+		\tl_set:Ne \l__pgfgo_sgfprob_target_tl {\__pgfgo_sgfprob_id:n {#1}}
+		\prop_if_in:NVF \g__pgfgo_sgfprob_targets_prop \l__pgfgo_sgfprob_target_tl {
+			\prop_gput:NVn \g__pgfgo_sgfprob_targets_prop \l__pgfgo_sgfprob_target_tl {}
+			\hbox_set:Nn \l__pgfgo_sgfdiag_cell_box {
+				\hbox_overlap_right:n {
+					\box_move_up:nn {\box_ht:N \l__pgfgo_sgfdiag_cell_box}
+						{\hbox:n {\hypertarget{pgfgo.\l__pgfgo_sgfprob_target_tl}{}}}
+				}
+				\box_use:N \l__pgfgo_sgfdiag_cell_box
+			}
+			\legacy_if:nT {@filesw}
+				{\iow_now:Ne \@auxout {\token_to_str:N \newlabel {pgfgo@\l__pgfgo_sgfprob_target_tl} {{}{}}}}
+		}
+	}
+}
+
 %EL ENUNCIADO: LA POSICION INICIAL, QUIEN JUEGA Y EL COMENTARIO DE LA RAIZ.
 \cs_new_protected:Npn \__pgfgo_sgfprob_statement: {
 	\tl_clear:N \l__pgfgo_sgfdiag_variation_tl
+	\tl_set_eq:NN \l__pgfgo_sgfdiag_suffix_tl \l__pgfgo_sgfprob_game_tl
+	\tl_set:Ne \l__pgfgo_sgfprob_link_tl {\__pgfgo_sgfprob_id:n {solution}}
 	\__pgfgo_sgfdiag_draw:nnnn {1} {0}
 		{
-			%LOS DOS PUNTOS, SOLO SI DESPUES SE DICE QUIEN JUEGA.
-			\tl_use:N \l__pgfgo_sgfprob_head_tl
-			\tl_if_empty:NF \l__pgfgo_sgfprob_player_tl {
-				\tl_if_empty:NF \l__pgfgo_sgfprob_head_tl {:~}
-				\str_case:Vn \l__pgfgo_sgfprob_player_tl {
-					{black} {\l__pgfgo_sgfprob_black_tl}
-					{white} {\l__pgfgo_sgfprob_white_tl}
+			\__pgfgo_sgfprob_link:n {
+				%LOS DOS PUNTOS, SOLO SI DESPUES SE DICE QUIEN JUEGA.
+				\tl_use:N \l__pgfgo_sgfprob_head_tl
+				\tl_if_empty:NF \l__pgfgo_sgfprob_player_tl {
+					\tl_if_empty:NF \l__pgfgo_sgfprob_head_tl {:~}
+					\str_case:Vn \l__pgfgo_sgfprob_player_tl {
+						{black} {\l__pgfgo_sgfprob_black_tl}
+						{white} {\l__pgfgo_sgfprob_white_tl}
+					}
 				}
 			}
 		}
@@ -2615,6 +2804,7 @@
 					{\__pgfgo_sgfdiag_comments_below:n {\__pgfgo_sgf_comment_use:}}
 			}
 		}
+	\__pgfgo_sgfprob_target:n {statement}
 	\bool_if:NTF \l__pgfgo_sgfprob_alone_bool
 		{\pgfgo_layout_add_alone:N \l__pgfgo_sgfdiag_cell_box}
 		{\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box}
@@ -2674,14 +2864,21 @@
 	\tl_clear:N \l__pgfgo_sgfprob_verdict_tl
 	\bool_if:NT \l__pgfgo_sgfprob_verdict_bool {\__pgfgo_sgfprob_verdict:n {\l__pgfgo_sgfprob_last_int}}
 	\int_compare:nNnT {\l__pgfgo_sgfprob_last_int} > {0} {
-		\__pgfgo_sgfdiag_add:nnnn {1} {\l__pgfgo_sgfprob_last_int}
+		\tl_set:Ne \l__pgfgo_sgfdiag_suffix_tl
+			{\tl_if_empty:NF \l__pgfgo_sgfprob_game_tl {\l__pgfgo_sgfprob_game_tl -} #1}
+		\tl_set:Ne \l__pgfgo_sgfprob_link_tl {\__pgfgo_sgfprob_id:n {statement}}
+		\__pgfgo_sgfdiag_draw:nnnn {1} {\l__pgfgo_sgfprob_last_int}
 			{
-				\int_compare:nNnT {\seq_count:N \l__pgfgo_sgfprob_games_seq} > {1} {\l__pgfgo_sgfprob_head_tl :~}
-				\l__pgfgo_sgfprob_variation_title_tl \nobreakspace #1
-				\tl_if_empty:NF \l__pgfgo_sgfprob_verdict_tl
-					{\nobreakspace (\exp_args:Ne \pgfgo_text:n {\l__pgfgo_sgfprob_verdict_tl})}
+				\__pgfgo_sgfprob_link:n {
+					\int_compare:nNnT {\seq_count:N \l__pgfgo_sgfprob_games_seq} > {1} {\l__pgfgo_sgfprob_head_tl :~}
+					\l__pgfgo_sgfprob_variation_title_tl \nobreakspace #1
+					\tl_if_empty:NF \l__pgfgo_sgfprob_verdict_tl
+						{\nobreakspace (\exp_args:Ne \pgfgo_text:n {\l__pgfgo_sgfprob_verdict_tl})}
+				}
 			}
 			{\__pgfgo_sgfdiag_notes:nn {1} {\l__pgfgo_sgfprob_last_int}}
+		\__pgfgo_sgfprob_target:n {solution}
+		\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box
 	}
 }
 
@@ -2697,6 +2894,7 @@
 		\bool_set_true:N \l__pgfgo_sgfdiag_numbers_bool
 		\tl_clear:N \l__pgfgo_sgfdiag_last_tl
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_goban_tl \l__pgfgo_sgfprob_goban_tl
+		\tl_set_eq:NN \l__pgfgo_sgfdiag_name_tl \l__pgfgo_sgfprob_name_tl
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_font_tl \l__pgfgo_sgfprob_font_tl
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_caption_min_tl \l__pgfgo_sgfprob_caption_min_tl
 		\bool_set_eq:NN \l__pgfgo_sgfdiag_notes_bool \l__pgfgo_sgfprob_notes_bool

@@ -1,0 +1,14 @@
+% engines: pdflatex
+% expect-warnings: 1
+% expect-errors: 0
+%
+% The option pages needs LuaLaTeX: a warning, and the document is as always.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[pages]{../../latex/pgf-go}
+\pagestyle{empty}
+\begin{document}
+Text and a goban:
+
+\begin{goban}[9, scale = 0.5]\stones[b]{C3, D4}\stones[w]{E5}\end{goban}
+\end{document}

@@ -1,0 +1,70 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\begin{pgfgodiagram}{nadare}
+$$c13 Nadare joseki on a small board
+$$  --------------
+$$ | . . . . . . .
+$$ | . . . . . . .
+$$ | . . . 1 6 . .
+$$ | . . 5 4 . . .
+$$ | . . 3 2 . . .
+$$ | . . . . . . .
+$$ | . . . . . . .
+\end{pgfgodiagram}
+
+\begin{pgfgodiagram}{arrows}
+$$Bc Example: using arrows to show influence
+$$  ------------------
+$$ | . . . . . . . . .
+$$ | . . . . . . . . .
+$$ | . O O O . O . . .
+$$ | . O X X X . . . .
+$$ | . X . . . . . . .
+$$ | . . X . . . . . .
+$$ | . . . . . . . . .
+$$ | . . . . . . . . .
+$$ | . . . . . . . . .
+$$ {AR C14 C11}
+$$ {AR 5:6 5:9}
+$$ {LN 7:3 9:5}
+\end{pgfgodiagram}
+
+\begin{pgfgodiagram}{small}
+$$W Ko (5 at 1, 8 at 2)
+$$ +---------+
+$$ |. . 3 4 .|
+$$ |. . O X .|
+$$ |. O 2 1 X|
+$$ |. . O X .|
+$$ |. . 7 6 .|
+$$ +---------+
+\end{pgfgodiagram}
+
+\case{Environment: title as caption, partial board from the diagram, 13x13, moves}
+\sgfdiagrams[goban = {scale = 0.5}]{nadare}
+
+\case{Arrows with board and relative coordinates, a line}
+\sgfdiagrams[goban = {scale = 0.5}]{arrows}
+
+\case{Full 5x5 board from four edges, W first, missing numbers keep the numbering}
+\sgfdiagrams[goban = {scale = 0.5}]{small}
+
+\case{A file with three diagrams (text around them, [go] of L19): games 1, 2, 3}
+\sgfdiagrams[goban = {scale = 0.4}]{diagrams.txt}
+\sgfdiagrams[game = 2, goban = {scale = 0.4}]{diagrams.txt}
+\sgfdiagrams[game = 3, goban = {scale = 0.4}]{diagrams.txt}
+
+\case{In a goban with \textbackslash sgf, and \textbackslash sgfinfo of GN: \sgfinfo{nadare}{GN}}
+\begin{goban}[13x13, scale = 0.4]
+	\sgf{nadare}
+\end{goban}
+
+\end{document}

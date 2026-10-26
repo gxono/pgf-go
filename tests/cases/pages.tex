@@ -1,0 +1,33 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+% passes: 2
+%
+% With the option pages, each goban goes alone on a page of its size, and the rest of the document is
+% discarded. The names (in pages-pages.lua): fuseki, diagram-002, fuseki-2, p, p1...p4 and big_one (the
+% float goes at the bottom of the page).
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{animate}
+\usepackage[kernel = lua, pages]{../../latex/pgf-go}
+\pagestyle{empty}
+\begin{document}
+
+This text is not seen. A view is not a page: \pgfgoview{fuseki}{C3:E5}.
+
+\begin{goban}[9, name = fuseki]\stones[b]{C3, D4}\stones[w]{E5}\end{goban}
+\begin{goban}[9]\stones[b]{G7}\end{goban}
+
+\begin{goban}[9, name = fuseki, scale = 0.5]\stones[w]{G7}\end{goban}
+
+\begin{figure}[b]
+	\centering
+	\begin{goban}[13, name = {big one}, partial = J9:N13]\stones[b]{K10}\end{goban}
+	\caption{A goban in a float.}
+\end{figure}
+
+\sgfproblem[name = p, comments = false, layout = {columns = 3, fit}]{problem.sgf}
+
+An animation is not a page:
+\sgfanimation[to = 3]{game.sgf}
+\end{document}

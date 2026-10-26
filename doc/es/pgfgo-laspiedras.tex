@@ -724,6 +724,19 @@ Es posible cambiar una opci\'on en todos los jugadores mediante |\pgfgoset{stone
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/stone/shift = \meta{columnas}, \meta{filas} (initially 0, 0)}
+
+	Mueve las coordenadas del comando: |shift = {2, -1}| es lo mismo que escribirlas dos columnas a la derecha y una fila más abajo. Con un solo número, mueve solo las columnas. Siempre es hacia la derecha y hacia arriba, aunque las etiquetas del borde vayan al revés. Las piedras quedan en su nuevo lugar para todo (capturas, territorio, |resume|). Los puntos que quedan fuera del tablero no se dibujan, con un aviso. Vale solo para ese comando. Sirve también en |\stone|.
+
+	\begin{codeexample}[]
+		\def\esquina{A1--A3, B5; A2}
+		\begin{goban}[9]
+			\stones[b]{\esquina}
+			\stones[w, shift = {4, 2}]{\esquina}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
 \begin{key}{/pgfgo/stone/forget}
 
 	|resume| no trae esta piedra (p.~\pageref{subsec:recordar}). Queda en la memoria del |goban| con nombre: |\pgfgoview| la muestra con |forgotten|.
@@ -1078,6 +1091,10 @@ Es posible cambiar las opciones de todos los jugadores mediante |\pgfgoset{move 
 			\moves{C:D4}
 		\end{goban}
 	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/move/shift = \meta{columnas}, \meta{filas} (initially 0, 0)}
+	Mueve las jugadas, como |stone/shift|.
 \end{key}
 
 \begin{key}{/pgfgo/move/forget}

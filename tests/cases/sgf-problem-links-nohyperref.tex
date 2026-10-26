@@ -1,0 +1,15 @@
+% engines: lualatex
+% expect-warnings: 1
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\pgfgoset{sgf problem = {comments = false, notes = false, goban = {scale = 0.4}}}
+\begin{document}
+
+\case{links without hyperref: one warning (only once), no links}
+\sgfproblem[links]{problem.sgf}
+\sgfproblem[links, solutions = false]{problem.sgf}
+\end{document}

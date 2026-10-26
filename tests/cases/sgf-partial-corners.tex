@@ -1,0 +1,39 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+
+% Draws frames of \sgfanimation one by one (as in sgf-animation.tex).
+\ExplSyntaxOn
+\NewDocumentCommand \frames {mmm} {
+	\group_begin:
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\clist_map_inline:nn {#3} {\pgfgo_sgfanimation_frame:n {##1}\quad}
+	\group_end:
+}
+\ExplSyntaxOff
+\begin{document}
+
+% partial = <corners> in \sgfdiagrams, \sgfproblem and \sgfanimation: the same part in every board,
+% also when the file has a view (VW).
+
+\case{sgf diagrams, partial = K10:T19: every diagram, also the variation}
+\sgfdiagrams[partial = K10:T19, step = 2, variations, goban = {scale = 0.5}]{joseki.sgf}
+
+\case{sgf diagrams, partial = \{T19, N12\}}
+\sgfdiagrams[partial = {T19, N12}, goban = {scale = 0.5}]{joseki.sgf}
+
+\case{sgf diagrams: partial = A1:I9 wins over the views of the file (the whole board in every diagram)}
+\sgfdiagrams[partial = A1:I9, step = 2, goban = {scale = 0.4}]{views.sgf}
+
+\case{sgf problem, partial = A1:T19: the whole board}
+\sgfproblem[solutions = false, partial = A1:T19, goban = {scale = 0.3}]{problem.sgf}
+
+\case{sgf animation, partial = M12:T19: frames 0, 2 and 5}
+\frames{partial = M12:T19, goban = {scale = 0.4}}{joseki.sgf}{0, 2, 5}
+
+\end{document}

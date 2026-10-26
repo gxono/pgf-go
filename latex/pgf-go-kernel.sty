@@ -111,8 +111,18 @@
 %\l_pgfgo_kernel_sgf_charset_tl O, SI ES auto, EN LA DE CA (Latin-1 SI NO HAY): Latin-1, GBK (Y GB2312),
 %Big5, Shift_JIS, EUC-JP O EUC-KR. OTRA CODIFICACION DA EL AVISO sgf-charset Y SE LEE COMO Latin-1. SIN CA,
 %UN ARCHIVO QUE PARECE DE DOS BYTES DA EL AVISO sgf-guess-charset. UTF-16 CON BOM SE PASA A UTF-8.
+%LOS PUNTOS SE LEEN CON aa EN LA ESQUINA \l_pgfgo_kernel_sgf_origin_tl (top left, top right, bottom left O
+%bottom right) Y, SI \l_pgfgo_kernel_sgf_transpose_tl ES true, CON LA PRIMERA LETRA COMO FILA (Y EL TAMANO
+%DADO VUELTA). UN ARCHIVO SIN NODOS SGF ("(;") Y CON LINEAS QUE EMPIEZAN CON $$ ES UNA COLECCION DE DIAGRAMAS
+%DE Sensei's Library (O DE L19, ENTRE [go] Y [/go]): CADA BLOQUE DE LINEAS $$ ES UNA PARTIDA. EL TITULO ES SU
+%NOMBRE (GN) Y EL DE SU FIGURA (FG); X, O Y LAS PIEDRAS MARCADAS SON AB Y AW; LOS NUMEROS SON JUGADAS (CON MN SI
+%FALTA ALGUNO O CON m); LAS MARCAS, LAS LETRAS, AR Y LN VAN EN LA ULTIMA JUGADA; LA PARTE DIBUJADA ES LA VISTA
+%(VW). UNA LINEA QUE NO SE ENTIENDE DA EL AVISO diagram-line Y _ EL AVISO diagram-blank (SE LEE COMO .).
 %	\pgfgo_kernel_sgf_define:nn {<nombre>}{<archivo>}
 %		DESDE AHORA, <nombre> EN EL LUGAR DE UN ARCHIVO (EN TODAS LAS FUNCIONES DE ABAJO) ES <archivo>.
+%	\pgfgo_kernel_sgf_text:nn {<nombre>}{<fin>}
+%		LAS LINEAS QUE SIGUEN EN EL ARCHIVO DE TeX, HASTA LA QUE TIENE <fin> (QUE SE LEE DESDE <fin>), NO SE
+%		LEEN: SON EL TEXTO DE UN ARCHIVO <nombre>, QUE PASA ANTES QUE LOS DEL DISCO.
 %	\pgfgo_kernel_sgf_read:nn {<archivo>}{<variante>}
 %		LEE UNA LINEA DE LA PARTIDA. <variante> ES UNA LISTA DE NUMEROS (2.1): EN CADA
 %		BIFURCACION SE TOMA ESA VARIANTE (1 ES LA PRINCIPAL). O ES LA LISTA DE LAS JUGADAS DE LA LINEA
@@ -240,6 +250,7 @@
 }
 \clist_const:Nn \c__pgfgo_kernel_sgf_clist {
 	pgfgo_kernel_sgf_define:nn,
+	pgfgo_kernel_sgf_text:nn,
 	pgfgo_kernel_sgf_read:n,
 	pgfgo_kernel_sgf_read:nn,
 	pgfgo_kernel_sgf_comment:nn,
@@ -308,6 +319,10 @@
 \int_set:Nn \l_pgfgo_kernel_sgf_game_int {1}
 \tl_new:N \l_pgfgo_kernel_sgf_charset_tl
 \tl_set:Nn \l_pgfgo_kernel_sgf_charset_tl {auto}
+\tl_new:N \l_pgfgo_kernel_sgf_origin_tl
+\tl_set:Nn \l_pgfgo_kernel_sgf_origin_tl {top~left}
+\tl_new:N \l_pgfgo_kernel_sgf_transpose_tl
+\tl_set:Nn \l_pgfgo_kernel_sgf_transpose_tl {false}
 \tl_new:N \l_pgfgo_kernel_sgf_view_tl
 \seq_new:N \l_pgfgo_kernel_sgf_figures_seq
 \seq_new:N \l_pgfgo_kernel_sgf_variations_seq
@@ -352,6 +367,12 @@
 		GBK,~Big5,~Shift_JIS~or~EUC-KR.~Set~it~with~\iow_char:N\\pgfgoset{sgf~charset~=~...}.}
 \msg_new:nnn {pgfgo} {sgf-variation}
 	{'#1'~has~no~variation~'#2'.~The~first~variation~is~used~from~there.}
+\msg_new:nnn {pgfgo} {diagram-line}
+	{'#1'~(diagram~#2):~'#3'~is~not~a~diagram~line~and~is~ignored.}
+\msg_new:nnn {pgfgo} {diagram-blank}
+	{'#1'~(diagram~#2):~'_'~(no~board)~is~drawn~as~an~empty~point.}
+\msg_new:nnn {pgfgo} {diagram-size}
+	{'#1'~(diagram~#2):~the~diagram~does~not~fit~in~a~board~of~size~#3.~The~board~is~made~bigger.}
 
 \cs_generate_variant:Nn \msg_warning:nnn {nnV}
 \cs_generate_variant:Nn \msg_error:nnnn {nnnV, nnVe}

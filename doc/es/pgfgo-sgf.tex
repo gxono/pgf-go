@@ -11,7 +11,7 @@ Cada archivo se lee una sola vez en todo el documento, por más comandos que lo 
 \label{subsec:sgfnombres}
 
 \begin{command}{\pgfgodefinesgf\opt{\oarg{options}}\marg{name}\marg{file}}
-	Le da un nombre a una partida: desde ahí, \meta{name} sirve en todos los lugares donde va un archivo SGF (|\sgf|, |\sgfinfo|, |\sgfcomment|, |\sgfdiagrams|, |\sgfproblem|, |\sgfanimation|, |sgf size| y |sgf view|). Así, la ruta del archivo se escribe una sola vez, y lo que dice qué partida es (|game| en una colección, la codificación) también. Un nombre que no está definido es un archivo, como siempre; si un nombre coincide con el de un archivo, vale el nombre. Las opciones de cada comando ganan sobre las del nombre: |\sgfinfo[game = 1]{|\meta{name}|}{PB}| lee la partida 1 aunque el nombre diga otra. Con |kernel = expl3|, el nombre se define pero no se puede usar, como los comandos SGF.
+	Le da un nombre a una partida: desde ahí, \meta{name} sirve en todos los lugares donde va un archivo SGF (|\sgf|, |\sgfinfo|, |\sgfcomment|, |\sgfdiagrams|, |\sgfproblem|, |\sgfanimation|, |sgf size| y |sgf view|). Así, la ruta del archivo se escribe una sola vez, y lo que dice qué partida es (|game| en una colección, la codificación, la orientación) también. Un nombre que no está definido es un archivo, como siempre; si un nombre coincide con el de un archivo, vale el nombre. Las opciones de cada comando ganan sobre las del nombre: |\sgfinfo[game = 1]{|\meta{name}|}{PB}| lee la partida 1 aunque el nombre diga otra. Con |kernel = expl3|, el nombre se define pero no se puede usar, como los comandos SGF.
 
 	\begin{codeexample}[]
 		\pgfgodefinesgf{partida}{partida.sgf}
@@ -39,6 +39,75 @@ Cada archivo se lee una sola vez en todo el documento, por más comandos que lo 
 		\pgfgodefinesgf[charset = GBK]{qipu}{partidas/qipu-sin-ca.sgf}
 	\end{codeexample}
 \end{key}
+
+\begin{key}{/pgfgo/define sgf/origin = \meta{corner} (initially top left)}
+	La esquina donde va el punto |aa| del archivo: |top left|, |top right|, |bottom left| o |bottom right|. Con |top left| se lee como dice SGF. La orientación es solo del nombre: no hay opción de los comandos que la cambie, y el mismo archivo usado por su ruta se lee como dice SGF. Vale para todo lo que se lee del archivo (piedras, jugadas, marcas, flechas, vistas) y para |partial = auto|. Las coordenadas que se escriben en los comandos, como las de |variation = {R16, P17}|, son las del tablero, no las del archivo.
+\end{key}
+
+\begin{key}{/pgfgo/define sgf/transpose = \meta{boolean} (default true, initially false)}
+	La primera letra de cada punto es la fila y la segunda la columna; el tamaño también se da vuelta (una partida de 13$\times$9 queda de 9$\times$13). Junto con |origin|, da las ocho simetrías del tablero.
+
+	\begin{codeexample}[]
+		\pgfgodefinesgf[origin = bottom right]{espejo}{partida.sgf}
+		\pgfgodefinesgf[transpose]{traspuesta}{partida.sgf}
+
+		\begin{goban}[sgf size = espejo, scale = 0.4]
+			\sgf[to = 7]{espejo}
+		\end{goban}
+		\begin{goban}[sgf size = traspuesta, scale = 0.4]
+			\sgf[to = 7]{traspuesta}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\subsection{Diagramas de Sensei's Library}
+\label{subsec:sgfsensei}
+
+Sensei's Library y los foros como L19 escriben los diagramas como texto, con líneas que empiezan con |$$|. Un archivo sin nodos SGF y con esas líneas se lee como una colección: cada bloque de líneas |$$| seguidas es una partida (|game = 2| es el segundo diagrama), y lo que hay entre los bloques no se lee. Las etiquetas |[go]| y |[/go]| de L19 se pueden dejar. El archivo sirve en todos los lugares donde va un archivo SGF, y también con |\pgfgodefinesgf|.
+
+\begin{environment}{{pgfgodiagram}\marg{name}}
+	Los diagramas escritos en el documento, que todos los comandos SGF leen como el archivo \meta{name}. Las líneas se leen tal cual: |\begin{pgfgodiagram}|\marg{name} termina su línea y |\end{pgfgodiagram}| va en una línea propia. No funciona dentro del argumento de otro comando ni dentro de |pgfgolayout|. Si \meta{name} coincide con el de un archivo, vale el entorno. Con |kernel = expl3|, el contenido se saltea y se produce un error.
+
+	\begin{codeexample}[code only]
+\begin{pgfgodiagram}{nadare}
+$$Bc Nadare
+$$  ---------------
+$$ | . . . . . . .
+$$ | . . . . . . .
+$$ | . . . 1 6 . .
+$$ | . . 5 4 . . .
+$$ | . . 3 2 a . .
+$$ | . . . . . . .
+\end{pgfgodiagram}
+
+\sgfdiagrams[goban = {scale = 0.5}]{nadare}
+	\end{codeexample}
+
+\begin{pgfgodiagram}{nadare}
+$$Bc Nadare
+$$  ---------------
+$$ | . . . . . . .
+$$ | . . . . . . .
+$$ | . . . 1 6 . .
+$$ | . . 5 4 . . .
+$$ | . . 3 2 a . .
+$$ | . . . . . . .
+\end{pgfgodiagram}
+
+\sgfdiagrams[goban = {scale = 0.5}]{nadare}
+\end{environment}
+
+La primera línea es la cabecera: |$$|, |B| o |W| (quién juega la jugada 1; si no está, negras), un tamaño de tablero (|$$B13|; si no está, 19), |m| y el número de la jugada 1 (|$$Wm67|) y el título. La |c| de las coordenadas se acepta pero no se usa: las coordenadas son las de |goban/label|. Cada diagrama se lee así:
+\begin{itemize}
+	\item El título es el nombre de la partida (|GN|) y el de su figura (|FG|): |\sgfdiagrams| lo pone en el epígrafe.
+	\item |X| y |O| son piedras iniciales (|AB| y |AW|). |B|, |#|, |Y| y |Z| son piedras negras con círculo, cuadrado, triángulo y cruz; |W|, |@|, |Q| y |P|, blancas. |C|, |S|, |T| y |M| son esas marcas en puntos vacíos, y las minúsculas son letras.
+	\item Los números (|1| a |9|, y |0| es 10) son jugadas, en orden: las impares son del que juega la 1. Si falta un número («5 en 1»), las jugadas siguientes conservan el suyo (|MN|).
+	\item Las marcas, las letras y las líneas |{AR C14 C11}| (flecha) y |{LN 5:6 5:9}| (línea) van en la última jugada. Sus puntos son del tablero (|C14|) o del diagrama (|5:6|, columna y fila desde arriba a la izquierda).
+	\item Los bordes (|---|, \verb+|+, |+|) dicen dónde está el diagrama en el tablero. Sin tamaño, dos bordes opuestos dan ese lado del tablero. Sin bordes, el diagrama va en el medio. Lo dibujado es la vista de la partida (|VW|): |\sgfdiagrams| solo muestra esa parte.
+	\item |.| y |,| son puntos vacíos (las estrellas las pone |goban/hoshi|). Los enlaces (\verb+[a|página]+) no se leen.
+\end{itemize}
+
+Una línea que no se entiende se saltea con una advertencia. |_| (fuera del tablero) se dibuja como un punto vacío, con una advertencia. Un diagrama más grande que el tamaño de la cabecera agranda el tablero, también con una advertencia.
 
 \subsection{Una partida en un tablero}
 \label{subsec:sgftablero}
@@ -99,7 +168,7 @@ En los ejemplos, los archivos se usan por su nombre (pág.~\pageref{subsec:sgfno
 \begin{key}{/pgfgo/sgf/variation = \meta{números o jugadas} (initially la línea principal)}
 	Elige una variante: en cada bifurcación de la partida se toma, en orden, la variante indicada (1 es la principal). Por ejemplo, |variation = 2.1| toma la segunda variante en la primera bifurcación y la primera en la segunda.
 
-	En un archivo con muchas bifurcaciones, como un diccionario de josekis, es más cómodo dar las jugadas de la línea desde la primera, separadas por comas o espacios: |variation = {R16, P17, Q15}|. En cada bifurcación se toma la variante que juega la siguiente; un pase se escribe |pass|. Cada intersección es una letra mayúscula y un número, como en |\stone|.
+	En un archivo con muchas bifurcaciones, como un diccionario de josekis, es más cómodo dar las jugadas de la línea desde la primera, separadas por comas o espacios: |variation = {R16, P17, Q15}|. En cada bifurcación se toma la variante que juega la siguiente; un pase se escribe |pass|. Cada intersección es una columna (una o dos letras mayúsculas) y un número, como en |\stone|.
 
 	En los dos casos, cuando la lista se termina, se sigue por la primera variante. Si una variante (o una jugada) no existe, se produce una advertencia y se sigue por la primera desde ahí.
 
@@ -396,7 +465,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/goban = \meta{goban options}}
-	Opciones de cada tablero, como en |\begin{goban}[...]|.
+	Opciones de cada tablero, como en |\begin{goban}[...]|. Como en |\sgfdiagrams|, la vista del archivo se aplica después: para fijar la parte visible está |partial|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/animate = \meta{animate options} (initially controls)}
@@ -497,8 +566,8 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Si el archivo tiene vista (|VW|), los tableros muestran solo esa parte, como |sgf view|. Todos los cuadros tienen el mismo tablero: si la vista cambia durante la partida, el tablero abarca las vistas de todos los cuadros (y si en alguno se ve todo el tablero, se ve todo).
 \end{key}
 
-\begin{key}{/pgfgo/sgf animation/partial = \meta{auto o false} (initially false)}
-	Con |auto|, donde no hay vista del archivo, los tableros muestran solo la parte que usa la línea que se anima (la de |variation|), como en |\sgfdiagrams|. Todos los cuadros tienen el mismo tablero.
+\begin{key}{/pgfgo/sgf animation/partial = \meta{auto, false o esquinas} (initially false)}
+	Con |auto|, donde no hay vista del archivo, los tableros muestran solo la parte que usa la línea que se anima (la de |variation|), como en |\sgfdiagrams|. Con dos esquinas (|partial = M12:T19|), todos los tableros muestran esa parte, aunque el archivo tenga vista. Todos los cuadros tienen el mismo tablero.
 \end{key}
 
 \begin{key}{/pgfgo/sgf animation/layers = \meta{boolean} (default true, initially true)}
@@ -509,7 +578,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \label{subsec:sgfdiagramas}
 
 \begin{command}{\sgfdiagrams\opt{\oarg{options}}\marg{file}}
-	Dibuja la partida como en los libros: un diagrama cada |step| jugadas (1--50, 51--100, etc.). Cada diagrama parte de la posición real, con las jugadas anteriores sin número y sus capturas; las piedras capturadas dentro del diagrama no se quitan (se quitan en el siguiente). Debajo de cada uno van su epígrafe y sus notas «N en M» (pág.~\pageref{subsec:notas}). Se usa fuera de |goban|. Las opciones pueden fijarse para todo el documento con |\pgfgoset{sgf diagrams = {...}}|.
+	Dibuja la partida como en los libros: un diagrama cada |step| jugadas (1--50, 51--100, etc.). Cada diagrama parte de la posición real, con las jugadas anteriores sin número y sus capturas; las piedras capturadas dentro del diagrama no se quitan (se quitan en el siguiente). Debajo de cada uno van su epígrafe y sus notas «N en M» (pág.~\pageref{subsec:notas}). El epígrafe dice los números de la primera y la última jugada, los que tienen las piedras si el archivo cambia la numeración (|MN|). Una partida sin jugadas es un solo diagrama, de su posición, sin números en el epígrafe. Se usa fuera de |goban|. Las opciones pueden fijarse para todo el documento con |\pgfgoset{sgf diagrams = {...}}|.
 
 	\begin{codeexample}[code only]
 		\sgfdiagrams[step = 5, title = Diagrama]{partida}
@@ -603,7 +672,17 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/goban = \meta{goban options}}
-	Opciones de cada tablero. Por defecto, los tableros tienen el tamaño de la partida y usan |captures| y |notes|.
+	Opciones de cada tablero. Por defecto, los tableros tienen el tamaño de la partida y usan |captures| y |notes|. La vista del archivo (|view|) se aplica después de estas opciones: si el archivo tiene vista, |goban = {partial = ...}| no cambia la parte visible; para eso está |partial|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/name = \meta{name}}
+	Cada diagrama es un |goban| con nombre (|/pgfgo/goban/name|): este nombre seguido del número de su epígrafe. Con |name = var|, los diagramas se llaman |var1|, |var2|... y las variantes |var2a|, |var2b|... Sirven para |resume| y para las vistas en el texto (pág.~\pageref{subsec:vistas}). Cada uno guarda la posición completa hasta su última jugada, con las capturas resueltas: una piedra del tramo numerado que se capturó en el mismo diagrama sigue en el dibujo, pero no en la memoria.
+
+	\begin{codeexample}[]
+		\sgfdiagrams[step = 2, to = 3, name = var, goban = {scale = 0.5}]{variantes}
+
+		El diagrama 2 en el texto: \pgfgoview{var2}{B2:F6}.
+	\end{codeexample}
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/layout = \meta{layout options}}
@@ -744,11 +823,12 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Si el archivo tiene vista (|VW|), cada diagrama muestra solo esa parte, como |sgf view|. Si la vista cambia durante la partida, cada diagrama abarca las vistas de sus jugadas.
 \end{key}
 
-\begin{key}{/pgfgo/sgf diagrams/partial = \meta{auto o false} (initially false)}
-	Con |auto|, donde no hay vista del archivo, cada diagrama muestra solo la parte del tablero que usan las líneas que se dibujan (la de |variation| y las de |variations|), como |/pgfgo/goban/partial = auto|. Es la misma en todos los diagramas, también en los de las variantes.
+\begin{key}{/pgfgo/sgf diagrams/partial = \meta{auto, false o esquinas} (initially false)}
+	Con |auto|, donde no hay vista del archivo, cada diagrama muestra solo la parte del tablero que usan las líneas que se dibujan (la de |variation| y las de |variations|), como |/pgfgo/goban/partial = auto|. Es la misma en todos los diagramas, también en los de las variantes. Con dos esquinas, como en |/pgfgo/goban/partial| (|K10:T19|, |{K10, T19}| o |{K10 to T19}|), todos los diagramas muestran esa parte, aunque el archivo tenga vista.
 
 	\begin{codeexample}[code only]
 		\sgfdiagrams[partial = auto, variations]{josekis}
+		\sgfdiagrams[partial = K10:T19, variations]{josekis}
 		\sgfdiagrams[partial = auto, variation = {Q16, R14},
 			variations = {commented, from = 3}, marks = false]{josekis}
 	\end{codeexample}
@@ -944,6 +1024,10 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Opciones de cada tablero, como |/pgfgo/sgf diagrams/goban|.
 \end{key}
 
+\begin{key}{/pgfgo/sgf problem/name = \meta{name}}
+	Como |/pgfgo/sgf diagrams/name|: el enunciado se llama |name|, y cada variante |name| seguido de su número. Con varias partidas (|game|), se agrega la partida: el enunciado del problema 3 es |name3|, y sus variantes |name3-1|, |name3-2|...
+\end{key}
+
 \begin{key}{/pgfgo/sgf problem/layout = \meta{layout options}}
 	Cómo se disponen el enunciado y las variantes: opciones de |/pgfgo/layout| (pág.~\pageref{subsec:disposicion}) solo para |\sgfproblem|.
 \end{key}
@@ -952,8 +1036,8 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	Si el archivo tiene vista (|VW|) al principio, todos los diagramas muestran esa parte.
 \end{key}
 
-\begin{key}{/pgfgo/sgf problem/partial = \meta{auto o false} (initially auto)}
-	Con |auto|, si no se usa la vista del archivo, muestra solo la parte del tablero donde hay piedras, jugadas, marcas, flechas o líneas en alguna línea del problema, como |/pgfgo/goban/partial = auto|. Es la misma en todos los diagramas. Las líneas que se agregan alrededor se cambian con |goban = {partial margin = ...}|. Con |false|, se ve todo el tablero.
+\begin{key}{/pgfgo/sgf problem/partial = \meta{auto, false o esquinas} (initially auto)}
+	Con |auto|, si no se usa la vista del archivo, muestra solo la parte del tablero donde hay piedras, jugadas, marcas, flechas o líneas en alguna línea del problema, como |/pgfgo/goban/partial = auto|. Es la misma en todos los diagramas. Las líneas que se agregan alrededor se cambian con |goban = {partial margin = ...}|. Con |false|, se ve todo el tablero. Con dos esquinas (|partial = A14:G19|), todos los diagramas muestran esa parte, aunque el archivo tenga vista.
 
 	\begin{codeexample}[code only]
 		\sgfproblem[solutions = false, goban = {partial margin = 3}]{problema}
@@ -968,5 +1052,14 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 	\begin{codeexample}[code only]
 		\sgfproblem[game = 1:24, to play = black, comments = false,
 			layout = {columns = 6, fit}]{coleccion.sgf}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/links = \meta{boolean} (default true, initially false)}
+	Con |hyperref|, el epígrafe del enunciado es un enlace a su primera solución, y el de cada solución, un enlace al enunciado, también si están en otro |\sgfproblem| (con |solutions = false| y |statement = false|). Hacen falta dos compilaciones; un enlace cuyo destino no está no se pone. Sin |hyperref|, el paquete avisa.
+
+	\begin{codeexample}[]
+		\sgfproblem[links, comments = false, notes = false,
+			goban = {scale = 0.5}]{problema}
 	\end{codeexample}
 \end{key}

@@ -39,7 +39,49 @@
 			\pgfgo_mark:nee{#1}{\l_pgfgo_parsed_x_coordinate_tl}{\l_pgfgo_parsed_y_coordinate_tl}
 	},
 
-	mark		.groups:n = {mark}
+	mark		.groups:n = {mark},
+
+	shift				.code:n		= {\pgfgo_shift_set:n {#1}},
+	shift				.groups:n	= {preset},
+}
+
+%shift = {<columnas>, <filas>}: \stones, \stone, \moves Y \marks MUEVEN LAS COORDENADAS (NO EL DIBUJO).
+%HACIA LA DERECHA Y HACIA ARRIBA, SIN IMPORTAR LAS ETIQUETAS DEL BORDE. VALE SOLO PARA EL COMANDO: CADA
+%UNO EMPIEZA EN 0.
+\int_new:N \l_pgfgo_shift_x_int
+\int_new:N \l_pgfgo_shift_y_int
+\cs_new_protected:Npn \pgfgo_shift_set:n #1 {
+	\int_set:Nn \l_pgfgo_shift_x_int {\clist_item:nn {#1} {1} + 0}
+	\int_set:Nn \l_pgfgo_shift_y_int {\clist_item:nn {#1} {2} + 0}
+}
+\cs_new_protected:Npn \pgfgo_shift_reset: {
+	\int_zero:N \l_pgfgo_shift_x_int
+	\int_zero:N \l_pgfgo_shift_y_int
+}
+
+%DESPLAZA LOS PUNTOS {x}{y} DE \l_pgfgo_kernel_points_seq. LOS QUE QUEDAN FUERA DEL TABLERO SE SACAN CON
+%UN AVISO (outside-board).
+\cs_new_protected:Npn \pgfgo_shift_points: {
+	\bool_lazy_and:nnF
+		{\int_compare_p:nNn {\l_pgfgo_shift_x_int} = {0}}
+		{\int_compare_p:nNn {\l_pgfgo_shift_y_int} = {0}}
+		{
+			\seq_clear:N \l__pgfgo_shift_seq
+			\seq_map_inline:Nn \l_pgfgo_kernel_points_seq {\__pgfgo_shift_point:nn ##1}
+			\seq_set_eq:NN \l_pgfgo_kernel_points_seq \l__pgfgo_shift_seq
+		}
+}
+\seq_new:N \l__pgfgo_shift_seq
+\cs_new_protected:Npn \__pgfgo_shift_point:nn #1#2 {
+	\exp_args:Nee \__pgfgo_shift_point_aux:nn
+		{\int_eval:n {#1 + \l_pgfgo_shift_x_int}} {\int_eval:n {#2 + \l_pgfgo_shift_y_int}}
+}
+\cs_new_protected:Npn \__pgfgo_shift_point_aux:nn #1#2 {
+	\bool_lazy_and:nnTF
+		{\int_compare_p:n {1 <= #1 <= \l_pgfgo_goban_size_x_int}}
+		{\int_compare_p:n {1 <= #2 <= \l_pgfgo_goban_size_y_int}}
+		{\seq_put_right:Nn \l__pgfgo_shift_seq {{#1}{#2}}}
+		{\msg_warning:nnnn {pgfgo} {outside-board} {#1} {#2}}
 }
 
 %#1, #2, #3: SI LA PIEDRA ES NEGRA, BLANCA, NEUTRAL.
@@ -72,6 +114,9 @@
 
 	from				.code:n			=	{\pgfgo_kernel_move_set_number:n {#1}},
 	from				.groups:n		= {first stone, preset, local},
+
+	shift				.code:n			= {\pgfgo_shift_set:n {#1}},
+	shift				.groups:n		= {preset},
 
 
 	%SI LAS JUGADAS LLEVAN SU NUMERO. ES ESTILO: \pgfgoset{move = {numbers = false}} VALE PARA TODAS.
@@ -691,14 +736,20 @@
 
 \DeclareDocumentCommand{\stone}{O{}m}{
 	\group_begin:
+	\pgfgo_shift_reset:
 	\keys_set_groups:nnn{ pgfgo / stone }{ preset }{#1}
 	\pgfgo_kernel_point:nTF {#2} { %Devuelve \l_pgfgo_kernel_point_tl
+		\seq_clear:N \l_pgfgo_kernel_points_seq
+		\seq_put_right:NV \l_pgfgo_kernel_points_seq \l_pgfgo_kernel_point_tl
+		\pgfgo_shift_points:
 		%\stone SIN JUGADOR DIBUJA UNA PIEDRA NEUTRAL, COMO \stones.
-		%RECORDAR LAS PIEDRAS
-		\pgfgo_remember:Nnn \l_pgfgo_goban_remember_stone_bool {stone}
-			{\exp_not:N\pgfgo_stone:nn{neutral, \exp_not:n{#1}}{\exp_not:V \l_pgfgo_kernel_point_tl}}
+		\seq_map_inline:Nn \l_pgfgo_kernel_points_seq {
+			%RECORDAR LAS PIEDRAS
+			\pgfgo_remember:Nnn \l_pgfgo_goban_remember_stone_bool {stone}
+				{\exp_not:N\pgfgo_stone:nn{neutral, \exp_not:n{#1}}{\exp_not:n {##1}}}
 
-		\pgfgo_stone:nV{neutral, #1}\l_pgfgo_kernel_point_tl
+			\pgfgo_stone:nn{neutral, #1}{##1}
+		}
 	}{
 		\msg_warning:nnn {pgfgo} {unknown-coordinate} {#2}
 	}
@@ -716,9 +767,11 @@
 \cs_set_protected:Npn\pgfgo_stones:nn #1#2 {
 	\group_begin:
 
-	\pgfgo_kernel_points:n{#2} %Devuelve \l_pgfgo_kernel_points_seq
-
+	\pgfgo_shift_reset:
 	\keys_set_groups:nnn{ pgfgo / stone }{ preset }{#1}
+	\pgfgo_kernel_points:n{#2} %Devuelve \l_pgfgo_kernel_points_seq
+	\pgfgo_shift_points:
+
 	%RECORDAR LAS PIEDRAS
 	\clist_set_from_seq:NN \l_tmpa_clist\l_pgfgo_kernel_points_seq
 	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_stone_bool {stone}
@@ -895,9 +948,11 @@
 
 \NewDocumentCommand{\moves}{O{}m}{
 	\group_begin:
+	\pgfgo_shift_reset:
 	\__pgfgo_moves_points:n{#2} %Devuelve \l_pgfgo_kernel_points_seq
 
 	\keys_set_groups:nnn { pgfgo / move} {preset, player-id, first stone} {#1}
+	\pgfgo_shift_points:
 	\keys_set_groups:nnn { pgfgo / players / neutral / move} { label } {#1}
 	\tl_set:Ne \l__pgfgo_moves_numbers_tl
 		{\bool_if:NTF \l_pgfgo_move_numbers_bool {\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}}

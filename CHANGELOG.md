@@ -2,10 +2,14 @@
 
 All notable changes to `pgf-go` are listed here.
 
-## 0.2026.10.23 — 2026/10/23
+## Unreleased
 
 ### New
 
+- `shift = {columns, rows}` in `\stones`, `\stone`, `\moves` and `\marks`:
+  moves the coordinates of the command (to the right and up, whatever the
+  labels of the border); points off the board are dropped with a warning.
+  With a pattern in a macro, the same shape goes anywhere.
 - `fill/pattern = {name, color}` in `stone/fill`, `mark/fill`,
   `territory/fill` and `goban/background/fill`: a TikZ pattern (of
   `patterns` or `patterns.meta`, now loaded too) over the fill color, with
@@ -14,13 +18,82 @@ All notable changes to `pgf-go` are listed here.
   background). The marks `t-circle` and `t-square` use the pattern of the
   stone; the marks on empty points and `dim` repeat the pattern of the
   background.
+- `layout/valign` (`top` or `bottom`, initially `top`): with `bottom`, the
+  boards of a row of the grid end at the same height, and their captions and
+  notes start on the same line.
+- `goban/label/letter case` (`upper` or `lower`, initially `upper`): the
+  letters of the coordinates on the border, in upper or lower case. The
+  coordinates of the commands are read as before.
 - The profile `draft`: black and white, with lines where there is a fill
   (black stones, filled marks and territory, a direction for each player).
+- `partial` of `\sgfdiagrams`, `\sgfproblem` and `\sgfanimation` also
+  takes two corners, as in `goban/partial` (`partial = K10:T19`): every board
+  shows that part, even if the file has a view (`VW`).
 - `goban/scale line width` (initially `false`): `scale` also multiplies the
   width of the lines (grid, border, stones, marks, arrows, lines and
   territory). Without it, as before, `scale` changes only the sizes. With
   `layout/fit`, which chooses the scale to fill the column, the widths do not
   change.
+- `origin` (`top left`, `top right`, `bottom left` or `bottom right`,
+  initially `top left`) and `transpose` (initially `false`) in
+  `\pgfgodefinesgf`: the corner where the point `aa` of the file goes, and
+  whether the first letter of each point is the row (the size is turned
+  too). Together, the eight symmetries of the board. Everything read from the
+  file follows them, and so does `partial = auto`; the coordinates written in
+  the commands (`variation = {R16, P17}`) are those of the board.
+- `name` in `\sgfdiagrams` and `\sgfproblem`: each diagram is a named
+  `goban`, for `resume` and `\pgfgoview`. In `\sgfdiagrams`, the name
+  followed by the number of the caption (`var1`, `var2a`); in `\sgfproblem`,
+  the statement is `name` and the variations `name1`, `name2`... (with
+  several games, `name3` and `name3-1`). Each one keeps the whole position,
+  with the captures resolved.
+- Columns of two capital letters after `Z`, for boards of more than 25
+  columns: `AA5`, `AA:AC 3`, `partial = AZ5:BG8`, `variation = {AB29}`,
+  `(go cs:AA5)`. Without `use i`, the I is skipped only between `A` and `Z`:
+  `AI` is a column, as in the labels on the border.
+- `links` in `\sgfproblem` (initially `false`): with `hyperref`, the caption
+  of the statement links to its first solution, and the caption of each
+  solution links back to the statement, also across two `\sgfproblem`
+  (`solutions = false` and `statement = false`). The targets are written to
+  the `.aux`, so it takes two compilations; a link whose target is missing is
+  not set.
+- The package option `pages` (LuaLaTeX and `kernel = lua`): the document
+  comes out with one `goban` per page, each one the size of its board, and
+  nothing else (no text, captions, views or animations). At the end, the
+  package writes `<document>-pages.lua`: `texlua <document>-pages.lua
+  [svg | png | pdf] [resolution]` turns each page into a file named after the
+  `goban` (or `diagram-<page>`) in the folder `<document>-pages`, with
+  `pdftocairo`, `dvisvgm`, `pdftoppm` or `pdfseparate`. New files:
+  `pgf-go-pages.sty` and `pgf-go-pages.lua`.
+- Sensei's Library diagrams (`$$` lines, also between `[go]` and `[/go]` of
+  L19): a file with them and no SGF nodes is read as a collection, one game
+  per diagram, by every SGF command. The environment `pgfgodiagram{name}`
+  writes them in the document. The title is the name of the game and of its
+  figure; the numbers are moves (`m` and missing numbers keep the
+  numbering); marks, letters, `AR` and `LN` go on the last move; the edges
+  place the diagram on the board, and what is drawn is its view. New
+  warnings `diagram-line`, `diagram-blank` and `diagram-size`.
+
+### Fixed
+
+- `\sgfdiagrams` drew nothing for a game without moves; now it draws one
+  diagram of its position, with the name of its figure and no range.
+- The range in the caption of `\sgfdiagrams` gave the positions of the moves
+  in the file; now it gives their numbers, which follow `MN`.
+- A named `goban` in `\sgfdiagrams` or `\sgfanimation` (`goban = {name =
+  x}`) kept only the stones of its own diagram (from the second one on): the
+  position continued from a copy of the previous board. Now a named board
+  plays the whole game.
+
+### Documentation
+
+- `goban/scale` said that it also changes the width of the lines; it changes
+  only the sizes (for the widths, `scale line width`).
+
+## 0.2026.10.23 — 2026/10/23
+
+### New
+
 - The TikZ coordinate system `go`: inside a `goban`, `(go cs:C3)` is the
   intersection C3, for `\draw`, `\node` and the other commands of TikZ
   (`\draw (go cs:B2) rectangle (go cs:D6);`). It can be outside the board
@@ -571,8 +644,6 @@ All notable changes to `pgf-go` are listed here.
 
 ### Documentation
 
-- `goban/scale` said that it also changes the width of the lines; it changes
-  only the sizes (for the widths, `scale line width`).
 - `\territory{auto}`: what it cannot know (open positions, gaps in a border,
   dead stones that are not prisoners, eyes in seki, neutral stones) and that
   `partial = auto` grows to the territory. When the territory is drawn.

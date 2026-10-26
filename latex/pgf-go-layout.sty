@@ -4,7 +4,8 @@
 %DISPOSICION DE VARIOS DIAGRAMAS: LA USAN \sgfdiagrams, \sgfproblem Y EL ENTORNO pgfgolayout. CADA DIAGRAMA
 %ES UNA CELDA (UNA CAJA). CON columns = auto, LAS CELDAS VAN EN EL PARRAFO, UNA AL LADO DE LA OTRA, Y TeX
 %LAS PASA DE LINEA. CON columns = n, VAN EN UNA GRILLA DE n COLUMNAS DEL MISMO ANCHO: CADA FILA ES UNA
-%LINEA APARTE (LA PAGINA SE CORTA ENTRE FILAS) Y LAS CELDAS DE UNA FILA SE ALINEAN ARRIBA. CON
+%LINEA APARTE (LA PAGINA SE CORTA ENTRE FILAS) Y LAS CELDAS DE UNA FILA SE ALINEAN ARRIBA (O, CON
+%valign = bottom, POR LA LINEA DE BASE DE LA CELDA: EL PIE DEL TABLERO). CON
 %width = natural, CADA CELDA TIENE SU ANCHO NATURAL Y LAS COLUMNAS EL DE LA MAS ANCHA: LAS CELDAS SE JUNTAN
 %Y LAS FILAS SE DIBUJAN AL FINAL (O AL TERMINAR CADA GRUPO DE per page O per frame).
 
@@ -15,6 +16,7 @@
 \tl_new:N \l__pgfgo_layout_row_sep_tl
 \bool_new:N \l__pgfgo_layout_fit_bool
 \tl_new:N \l_pgfgo_layout_align_tl
+\tl_new:N \l__pgfgo_layout_valign_tl
 \int_new:N \l__pgfgo_layout_per_page_int
 \int_new:N \l__pgfgo_layout_per_frame_int
 \cs_new_protected:Npn \__pgfgo_layout_set_per:Nn #1#2 {
@@ -47,6 +49,8 @@
 	fit							.initial:n	= {false},
 	align						.choices:nn	= {center, left, right} {\tl_set_eq:NN \l_pgfgo_layout_align_tl \l_keys_choice_tl},
 	align						.initial:n	= {center},
+	valign					.choices:nn	= {top, bottom} {\tl_set_eq:NN \l__pgfgo_layout_valign_tl \l_keys_choice_tl},
+	valign					.initial:n	= {top},
 	%CADA n DIAGRAMAS, UNA PAGINA NUEVA (per page) O UNA DIAPOSITIVA NUEVA DE beamer (per frame). 0 O false:
 	%SIN CORTES.
 	per~page				.code:n			= {\__pgfgo_layout_set_per:Nn \l__pgfgo_layout_per_page_int {#1}},
@@ -213,12 +217,16 @@
 	\int_compare:nNnT {\g__pgfgo_layout_count_int} = {\l_pgfgo_layout_columns_int}
 		{\__pgfgo_layout_ship:}
 	%LA CELDA CUELGA DE LA LINEA BASE (vtop QUE EMPIEZA CON UN ESPACIO): ASI LAS DE UNA FILA QUEDAN
-	%ALINEADAS ARRIBA.
+	%ALINEADAS ARRIBA. CON valign = bottom, SIN EL ESPACIO, LA LINEA BASE ES LA DE LA CELDA: EN LOS
+	%DIAGRAMAS DE \sgfdiagrams Y \sgfproblem, EL PIE DEL TABLERO (EL EPIGRAFE Y LAS NOTAS QUEDAN DEBAJO).
 	\hbox_gset:Nn \g__pgfgo_layout_row_box {
 		\hbox_unpack_drop:N \g__pgfgo_layout_row_box
 		\int_compare:nNnT {\g__pgfgo_layout_count_int} > {0}
 			{\skip_horizontal:N \l__pgfgo_layout_column_sep_dim}
-		\vbox_top:n {\skip_vertical:n {0pt} \pgfgo_layout_place:n {\box_use:N #1}}
+		\vbox_top:n {
+			\str_if_eq:VnT \l__pgfgo_layout_valign_tl {top} {\skip_vertical:n {0pt}}
+			\pgfgo_layout_place:n {\box_use:N #1}
+		}
 	}
 	\int_gincr:N \g__pgfgo_layout_count_int
 }
