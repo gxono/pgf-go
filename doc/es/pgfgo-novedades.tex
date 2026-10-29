@@ -17,7 +17,8 @@
 			\item Columnas de dos letras después de la |Z|, para tableros de más de 25 columnas: |AA5|, |partial = AZ5:BG8| (pág.~\pageref{subsec:sintaxis-de-coordenadas}).
 			\item |links| en |\sgfproblem|: con |hyperref|, el enunciado y sus soluciones se enlazan entre sí (pág.~\pageref{subsec:sgfproblemas}).
 			\item La opción |pages|: un tablero por página, y |<documento>-pages.lua| los pasa a SVG, PNG o PDF (pág.~\pageref{subsec:paginas}).
-			\item Diagramas de Sensei's Library y L19 (líneas |$$|), en un archivo o en el entorno |pgfgodiagram|: todos los comandos SGF los leen (pág.~\pageref{subsec:sgfsensei}).
+			\item Diagramas de Sensei's Library y L19 (líneas |$$|): todos los comandos SGF los leen (pág.~\pageref{subsec:sgfsensei}). |sgf syntax| y |syntax| en |\pgfgodefinesgf| eligen la sintaxis del archivo.
+			\item El entorno |pgfgosgf|: un archivo escrito en el documento, en cualquier sintaxis, que los comandos SGF leen como un archivo (pág.~\pageref{subsec:sgfnombres}).
 			\item |goban/blank|: intersecciones que no son del tablero, sin líneas ni estrellas; son los |_| de los diagramas de Sensei's Library (pág.~\pageref{subsec:parcial}).
 			\item Las medidas del tablero están en |pt|: no cambian con el tamaño de la letra del documento. Un carácter de |mark/sequence| y uno de |mark/custom| tienen el mismo tamaño.
 			\item |grid/edge|: el borde de la cuadrícula, más grueso o de otro color.

@@ -74,12 +74,18 @@ All notable changes to `pgf-go` are listed here.
   `pgf-go-pages.sty` and `pgf-go-pages.lua`.
 - Sensei's Library diagrams (`$$` lines, also between `[go]` and `[/go]` of
   L19): a file with them and no SGF nodes is read as a collection, one game
-  per diagram, by every SGF command. The environment `pgfgodiagram{name}`
-  writes them in the document. The title is the name of the game and of its
-  figure; the numbers are moves (`m` and missing numbers keep the
+  per diagram, by every SGF command. The title is the name of the game and
+  of its figure; the numbers are moves (`m` and missing numbers keep the
   numbering); marks, letters, `AR` and `LN` go on the last move; the edges
   place the diagram on the board, and what is drawn is its view; `_` is
-  `goban/blank`. New warnings `diagram-line` and `diagram-size`.
+  `goban/blank`. New warnings `sensei-line` and `sensei-size`.
+- Syntaxes of the files: `sgf syntax = auto | sgf | sensei`, and `syntax` in
+  `\pgfgodefinesgf`. `auto` (the default) reads Sensei's Library diagrams if
+  the file has no SGF nodes and has `$$` lines, and SGF otherwise. Every
+  syntax is read as an SGF game. New warning `sgf-syntax`.
+- The environment `pgfgosgf[options]{name}`: a file written in the document,
+  in any syntax, which every SGF command reads as the file `name`. Its options
+  are those of `\pgfgodefinesgf`.
 - `goban/blank = {coordinates}`: intersections that are not part of the
   board, without lines or star points. A line joins only two neighbouring
   intersections of the board, so next to a blank point it ends as at the

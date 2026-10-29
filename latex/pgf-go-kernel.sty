@@ -113,12 +113,14 @@
 %UN ARCHIVO QUE PARECE DE DOS BYTES DA EL AVISO sgf-guess-charset. UTF-16 CON BOM SE PASA A UTF-8.
 %LOS PUNTOS SE LEEN CON aa EN LA ESQUINA \l_pgfgo_kernel_sgf_origin_tl (top left, top right, bottom left O
 %bottom right) Y, SI \l_pgfgo_kernel_sgf_transpose_tl ES true, CON LA PRIMERA LETRA COMO FILA (Y EL TAMANO
-%DADO VUELTA). UN ARCHIVO SIN NODOS SGF ("(;") Y CON LINEAS QUE EMPIEZAN CON $$ ES UNA COLECCION DE DIAGRAMAS
-%DE Sensei's Library (O DE L19, ENTRE [go] Y [/go]): CADA BLOQUE DE LINEAS $$ ES UNA PARTIDA. EL TITULO ES SU
+%DADO VUELTA). LA SINTAXIS DEL ARCHIVO ES \l_pgfgo_kernel_sgf_syntax_tl: sgf, sensei O auto (LA QUE PARECE: sensei
+%SI NO TIENE NODOS SGF ("(;") Y TIENE LINEAS QUE EMPIEZAN CON $$; SI NO, sgf). OTRA DA EL AVISO sgf-syntax Y
+%SE USA auto. sensei ES UNA COLECCION DE DIAGRAMAS DE Sensei's Library (O DE L19, ENTRE [go] Y [/go]): CADA
+%BLOQUE DE LINEAS $$ ES UNA PARTIDA. EL TITULO ES SU
 %NOMBRE (GN) Y EL DE SU FIGURA (FG); X, O Y LAS PIEDRAS MARCADAS SON AB Y AW; LOS NUMEROS SON JUGADAS (CON MN SI
 %FALTA ALGUNO O CON m); LAS MARCAS, LAS LETRAS, AR Y LN VAN EN LA ULTIMA JUGADA; LA PARTE DIBUJADA ES LA VISTA
 %(VW); LOS PUNTOS _ NO SON DEL TABLERO (\l_pgfgo_kernel_sgf_blank_tl). UNA LINEA QUE NO SE ENTIENDE DA EL AVISO
-%diagram-line.
+%sensei-line.
 %	\pgfgo_kernel_sgf_define:nn {<nombre>}{<archivo>}
 %		DESDE AHORA, <nombre> EN EL LUGAR DE UN ARCHIVO (EN TODAS LAS FUNCIONES DE ABAJO) ES <archivo>.
 %	\pgfgo_kernel_sgf_text:nn {<nombre>}{<fin>}
@@ -325,6 +327,8 @@
 \int_set:Nn \l_pgfgo_kernel_sgf_game_int {1}
 \tl_new:N \l_pgfgo_kernel_sgf_charset_tl
 \tl_set:Nn \l_pgfgo_kernel_sgf_charset_tl {auto}
+\tl_new:N \l_pgfgo_kernel_sgf_syntax_tl
+\tl_set:Nn \l_pgfgo_kernel_sgf_syntax_tl {auto}
 \tl_new:N \l_pgfgo_kernel_sgf_origin_tl
 \tl_set:Nn \l_pgfgo_kernel_sgf_origin_tl {top~left}
 \tl_new:N \l_pgfgo_kernel_sgf_transpose_tl
@@ -373,11 +377,13 @@
 \msg_new:nnn {pgfgo} {sgf-guess-charset}
 	{'#1'~is~not~UTF-8~and~does~not~say~its~charset~(CA),~so~it~is~read~as~Latin-1,~but~it~looks~like~
 		GBK,~Big5,~Shift_JIS~or~EUC-KR.~Set~it~with~\iow_char:N\\pgfgoset{sgf~charset~=~...}.}
+\msg_new:nnn {pgfgo} {sgf-syntax}
+	{'#1'~asks~for~the~syntax~'#2',~which~is~unknown~(#3~are~known).~It~is~read~with~auto.}
 \msg_new:nnn {pgfgo} {sgf-variation}
 	{'#1'~has~no~variation~'#2'.~The~first~variation~is~used~from~there.}
-\msg_new:nnn {pgfgo} {diagram-line}
+\msg_new:nnn {pgfgo} {sensei-line}
 	{'#1'~(diagram~#2):~'#3'~is~not~a~diagram~line~and~is~ignored.}
-\msg_new:nnn {pgfgo} {diagram-size}
+\msg_new:nnn {pgfgo} {sensei-size}
 	{'#1'~(diagram~#2):~the~diagram~does~not~fit~in~a~board~of~size~#3.~The~board~is~made~bigger.}
 
 \cs_generate_variant:Nn \msg_warning:nnn {nnV}

@@ -1,0 +1,53 @@
+% engines: lualatex
+% expect-warnings: 1
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\begin{pgfgosgf}{plain}
+(;SZ[9];B[cc];W[gc];B[cg])
+\end{pgfgosgf}
+
+\begin{pgfgosgf}[origin = bottom right]{mirrored}
+(;SZ[9];B[cc];W[gc];B[cg])
+\end{pgfgosgf}
+
+% A title with "(;" made auto read the diagram as SGF.
+\begin{pgfgosgf}[syntax = sensei]{forced}
+$$B9 Title with (; in it
+$$  ------------------
+$$ | . . . . . . . . . |
+$$ | . . 1 . . . 2 . . |
+$$ | . . . . . . . . . |
+$$  ------------------
+\end{pgfgosgf}
+
+\case{SGF in pgfgosgf: black at C7 and C3, white at G7}
+\begin{goban}[sgf size = plain, scale = 0.4]
+	\sgf{plain}
+\end{goban}
+
+\case{origin = bottom right in pgfgosgf: black at G3 and G7, white at C3}
+\begin{goban}[sgf size = mirrored, scale = 0.4]
+	\sgf{mirrored}
+\end{goban}
+
+\case{syntax = sensei with (; in the title: two moves, caption "Title with (; in it"}
+\sgfdiagrams[goban = {scale = 0.4}]{forced}
+
+\case{syntax = sensei in \textbackslash pgfgoset: the same diagram}
+\begingroup
+\pgfgoset{sgf syntax = sensei}
+\pgfgodefinesgf{forced-again}{forced}
+\sgfdiagrams[goban = {scale = 0.4}]{forced-again}
+\endgroup
+
+\case{Unknown syntax: one warning sgf-syntax, read with auto (the first diagram of diagrams.txt)}
+\pgfgodefinesgf[syntax = kifu]{unknown}{diagrams.txt}
+\sgfdiagrams[goban = {scale = 0.4}]{unknown}
+
+\end{document}

@@ -11,7 +11,7 @@ Cada archivo se lee una sola vez en todo el documento, por más comandos que lo 
 \label{subsec:sgfnombres}
 
 \begin{command}{\pgfgodefinesgf\opt{\oarg{options}}\marg{name}\marg{file}}
-	Le da un nombre a una partida: desde ahí, \meta{name} sirve en todos los lugares donde va un archivo SGF (|\sgf|, |\sgfinfo|, |\sgfcomment|, |\sgfdiagrams|, |\sgfproblem|, |\sgfanimation|, |sgf size| y |sgf view|). Así, la ruta del archivo se escribe una sola vez, y lo que dice qué partida es (|game| en una colección, la codificación, la orientación) también. Un nombre que no está definido es un archivo, como siempre; si un nombre coincide con el de un archivo, vale el nombre. Las opciones de cada comando ganan sobre las del nombre: |\sgfinfo[game = 1]{|\meta{name}|}{PB}| lee la partida 1 aunque el nombre diga otra. Con |kernel = expl3|, el nombre se define pero no se puede usar, como los comandos SGF.
+	Le da un nombre a una partida: desde ahí, \meta{name} sirve en todos los lugares donde va un archivo SGF (|\sgf|, |\sgfinfo|, |\sgfcomment|, |\sgfdiagrams|, |\sgfproblem|, |\sgfanimation|, |sgf size| y |sgf view|). Así, la ruta del archivo se escribe una sola vez, y lo que dice qué partida es (|game| en una colección, la codificación, la sintaxis, la orientación) también. Un nombre que no está definido es un archivo, como siempre; si un nombre coincide con el de un archivo, vale el nombre. Las opciones de cada comando ganan sobre las del nombre: |\sgfinfo[game = 1]{|\meta{name}|}{PB}| lee la partida 1 aunque el nombre diga otra. Con |kernel = expl3|, el nombre se define pero no se puede usar, como los comandos SGF.
 
 	\begin{codeexample}[]
 		\pgfgodefinesgf{partida}{partida.sgf}
@@ -40,6 +40,14 @@ Cada archivo se lee una sola vez en todo el documento, por más comandos que lo 
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/define sgf/syntax = \meta{syntax} (initially la de \texttt{sgf syntax})}
+	La sintaxis con la que se lee el archivo, como |/pgfgo/sgf syntax|, solo para este nombre.
+
+	\begin{codeexample}[code only]
+		\pgfgodefinesgf[syntax = sensei]{josekis}{diagramas/josekis.txt}
+	\end{codeexample}
+\end{key}
+
 \begin{key}{/pgfgo/define sgf/origin = \meta{corner} (initially top left)}
 	La esquina donde va el punto |aa| del archivo: |top left|, |top right|, |bottom left| o |bottom right|. Con |top left| se lee como dice SGF. La orientación es solo del nombre: no hay opción de los comandos que la cambie, y el mismo archivo usado por su ruta se lee como dice SGF. Vale para todo lo que se lee del archivo (piedras, jugadas, marcas, flechas, vistas) y para |partial = auto|. Las coordenadas que se escriben en los comandos, como las de |variation = {R16, P17}|, son las del tablero, no las del archivo.
 \end{key}
@@ -60,16 +68,35 @@ Cada archivo se lee una sola vez en todo el documento, por más comandos que lo 
 	\end{codeexample}
 \end{key}
 
+\begin{environment}{{pgfgosgf}\opt{\oarg{options}}\marg{name}}
+	Un archivo escrito en el documento, que todos los comandos SGF leen como el archivo \meta{name}, en cualquier sintaxis (|sgf syntax|). Las \meta{options} son las de |\pgfgodefinesgf|; |charset| no hace nada, porque el texto ya está en la codificación del documento. Las líneas se leen tal cual: |\begin{pgfgosgf}|\opt{\oarg{options}}\marg{name} termina su línea y |\end{pgfgosgf}| va en una línea propia. No funciona dentro del argumento de otro comando ni dentro de |pgfgolayout|. Si \meta{name} coincide con el de un archivo, vale el entorno. Con |kernel = expl3|, el contenido se saltea y se produce un error.
+
+	\begin{codeexample}[code only]
+\begin{pgfgosgf}{corta}
+(;SZ[9];B[ee];W[gc];B[cg];W[ge])
+\end{pgfgosgf}
+
+\begin{goban}[sgf size = corta, scale = 0.4]
+	\sgf{corta}
+\end{goban}
+	\end{codeexample}
+
+\begin{pgfgosgf}{corta}
+(;SZ[9];B[ee];W[gc];B[cg];W[ge])
+\end{pgfgosgf}
+
+\begin{goban}[sgf size = corta, scale = 0.4]
+	\sgf{corta}
+\end{goban}
+\end{environment}
+
 \subsection{Diagramas de Sensei's Library}
 \label{subsec:sgfsensei}
 
-Sensei's Library y los foros como L19 escriben los diagramas como texto, con líneas que empiezan con |$$|. Un archivo sin nodos SGF y con esas líneas se lee como una colección: cada bloque de líneas |$$| seguidas es una partida (|game = 2| es el segundo diagrama), y lo que hay entre los bloques no se lee. Las etiquetas |[go]| y |[/go]| de L19 se pueden dejar. El archivo sirve en todos los lugares donde va un archivo SGF, y también con |\pgfgodefinesgf|.
+Sensei's Library y los foros como L19 escriben los diagramas como texto, con líneas que empiezan con |$$|. Un archivo con |sgf syntax = sensei|, o con |auto| si no tiene nodos SGF y tiene esas líneas, se lee como una colección: cada bloque de líneas |$$| seguidas es una partida (|game = 2| es el segundo diagrama), y lo que hay entre los bloques no se lee. Las etiquetas |[go]| y |[/go]| de L19 se pueden dejar. El archivo sirve en todos los lugares donde va un archivo SGF, y también con |\pgfgodefinesgf| y en el entorno |pgfgosgf|.
 
-\begin{environment}{{pgfgodiagram}\marg{name}}
-	Los diagramas escritos en el documento, que todos los comandos SGF leen como el archivo \meta{name}. Las líneas se leen tal cual: |\begin{pgfgodiagram}|\marg{name} termina su línea y |\end{pgfgodiagram}| va en una línea propia. No funciona dentro del argumento de otro comando ni dentro de |pgfgolayout|. Si \meta{name} coincide con el de un archivo, vale el entorno. Con |kernel = expl3|, el contenido se saltea y se produce un error.
-
-	\begin{codeexample}[code only]
-\begin{pgfgodiagram}{nadare}
+\begin{codeexample}[code only]
+\begin{pgfgosgf}{nadare}
 $$Bc Nadare
 $$  ---------------
 $$ | . . . . . . .
@@ -78,12 +105,12 @@ $$ | . . . 1 6 . .
 $$ | . . 5 4 . . .
 $$ | . . 3 2 a . .
 $$ | . . . . . . .
-\end{pgfgodiagram}
+\end{pgfgosgf}
 
 \sgfdiagrams[goban = {scale = 0.5}]{nadare}
-	\end{codeexample}
+\end{codeexample}
 
-\begin{pgfgodiagram}{nadare}
+\begin{pgfgosgf}{nadare}
 $$Bc Nadare
 $$  ---------------
 $$ | . . . . . . .
@@ -92,10 +119,9 @@ $$ | . . . 1 6 . .
 $$ | . . 5 4 . . .
 $$ | . . 3 2 a . .
 $$ | . . . . . . .
-\end{pgfgodiagram}
+\end{pgfgosgf}
 
 \sgfdiagrams[goban = {scale = 0.5}]{nadare}
-\end{environment}
 
 La primera línea es la cabecera: |$$|, |B| o |W| (quién juega la jugada 1; si no está, negras), un tamaño de tablero (|$$B13|; si no está, 19), |m| y el número de la jugada 1 (|$$Wm67|) y el título. La |c| de las coordenadas se acepta pero no se usa: las coordenadas son las de |goban/label|. Cada diagrama se lee así:
 \begin{itemize}
@@ -283,6 +309,10 @@ En los ejemplos, los archivos se usan por su nombre (pág.~\pageref{subsec:sgfno
 	Muchos archivos de servidores asiáticos no dicen su codificación; para leerlos, por ejemplo, |\pgfgoset{sgf charset = GBK}|. Si un archivo sin |CA| parece estar en una de esas codificaciones, se produce un aviso que lo recuerda. Con otra codificación se produce un aviso y el archivo se lee como Latin-1: hay que convertirlo antes a UTF-8, por ejemplo con |iconv -f KOI8-R -t UTF-8 partida.sgf > partida-utf8.sgf|.
 
 	Para escribir los comentarios en chino, japonés o coreano hace falta además el paquete de ese idioma: |ctex|, |luatexja| o |luatexko|. Los ejemplos 14, 18 y 19 de |doc/examples| muestran una partida comentada en cada uno. Sin él, LaTeX solo anota los caracteres que faltan en el |.log|; por eso, si la fuente con la que se escribe un comentario o un |\sgfinfo| no tiene algún carácter chino, japonés o coreano, se produce un aviso, una vez por fuente. Con esos paquetes (o |xeCJK|) no se mira: escriben esos caracteres con otra fuente.
+\end{key}
+
+\begin{key}{/pgfgo/sgf syntax = \meta{syntax} (initially auto)}
+	Sintaxis de los archivos, para todos los comandos que leen archivos: |sgf|, |sensei| (diagramas de Sensei's Library y L19, pág.~\pageref{subsec:sgfsensei}) o |auto|, que es |sensei| si el archivo no tiene nodos SGF (|(;|) y tiene líneas que empiezan con |$$|, y |sgf| si no. Todas las sintaxis se leen como una partida SGF, así que todos los comandos funcionan igual con cualquiera. Con otra sintaxis se produce un aviso y se usa |auto|.
 \end{key}
 
 \begin{key}{/pgfgo/sgf = \meta{sgf options}}

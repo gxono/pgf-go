@@ -898,7 +898,7 @@ local function parse_diagram(name, number, lines)
 			if r:match("^[|+]") then west, r = true, r:sub(2) end
 			if r:match("[|+]$") then east, r = true, r:sub(1, -2) end
 			if r == "" or r:find("[^0-9a-z%.,XOBW#@YQZPCSTM_]") then
-				message("warning", "diagram-line", name, number, l)
+				message("warning", "sensei-line", name, number, l)
 			else
 				insert(rows, r)
 			end
@@ -916,7 +916,7 @@ local function parse_diagram(name, number, lines)
 		sy = h2 or (w and w >= nr and w) or 19
 	end
 	if nc > sx or nr > sy then
-		message("warning", "diagram-size", name, number, sx == sy and sx or (sx .. "x" .. sy))
+		message("warning", "sensei-size", name, number, sx == sy and sx or (sx .. "x" .. sy))
 		sx, sy = math.max(sx, nc), math.max(sy, nr)
 	end
 	-- DONDE ESTA EL DIAGRAMA: CONTRA LOS BORDES QUE TIENE; SIN BORDES, EN EL MEDIO.
@@ -969,7 +969,7 @@ local function parse_diagram(name, number, lines)
 		if a and b then
 			add(markup, d[1], a .. ":" .. b)
 		else
-			message("warning", "diagram-line", name, number, "{" .. concat(d, " ") .. "}")
+			message("warning", "sensei-line", name, number, "{" .. concat(d, " ") .. "}")
 		end
 	end
 	if title ~= "" then
@@ -1309,8 +1309,8 @@ local function from_utf16(s)
 end
 
 -- ARCHIVOS SGF YA LEIDOS, POR RUTA O TEXTO DE sgf_texts (UN DOCUMENTO SUELE LEER MUCHAS VECES EL MISMO ARCHIVO): {stamp =
--- FECHA Y TAMANO, text = CONTENIDO, ca = VALOR DE CA, utf8 = SI ES UTF-8 VALIDO, games = {[CODIFICACION] =
--- PARTIDAS}}. SI EL ARCHIVO CAMBIA, SE VUELVE A LEER.
+-- FECHA Y TAMANO, text = CONTENIDO, ca = VALOR DE CA, utf8 = SI ES UTF-8 VALIDO, games = {["CODIFICACION:SINTAXIS"]
+-- = PARTIDAS}}. SI EL ARCHIVO CAMBIA, SE VUELVE A LEER.
 local sgf_files = {}
 
 local function sgf_file(path)
@@ -1336,7 +1336,40 @@ local function sgf_file(path)
 	return file
 end
 
--- LAS PARTIDAS DE UN ARCHIVO, CON SU TEXTO PASADO A UTF-8. AVISA SI LA CODIFICACION ES DESCONOCIDA.
+-- LAS SINTAXIS DE LOS ARCHIVOS, EN EL ORDEN EN QUE LAS PRUEBA auto. detect DICE SI UN TEXTO ES DE LA SINTAXIS
+-- Y parse DEVUELVE SUS PARTIDAS COMO parse_sgf (LO QUE NO ENTRA EN SGF VA EN PROPIEDADES pgfgo-*, COMO
+-- diagram_blank). UNA SINTAXIS NUEVA ES UNA ENTRADA MAS: NADA DE TeX CAMBIA.
+local syntaxes = {
+	{name = "sensei", detect = is_diagram, parse = parse_diagrams},
+	{name = "sgf", detect = function() return true end, parse = function(_, s) return parse_sgf(s) end},
+}
+
+-- LA SINTAXIS QUE PIDE \l_pgfgo_kernel_sgf_syntax_tl, O nil CON auto. SI ES DESCONOCIDA, USA auto Y AVISA UNA
+-- VEZ POR ARCHIVO Y SINTAXIS (UN COMANDO LEE VARIAS VECES EL ARCHIVO).
+local unknown_syntaxes = {}
+local function sgf_syntax(name)
+	local wanted = token.get_macro("l_pgfgo_kernel_sgf_syntax_tl") or "auto"
+	if wanted == "auto" or wanted == "" then return nil end
+	for _, syntax in ipairs(syntaxes) do
+		if syntax.name == wanted then return syntax end
+	end
+	if not unknown_syntaxes[name .. "\0" .. wanted] then
+		unknown_syntaxes[name .. "\0" .. wanted] = true
+		local names = {"auto"}
+		for _, syntax in ipairs(syntaxes) do insert(names, syntax.name) end
+		message("warning", "sgf-syntax", name, wanted, concat(names, ", "))
+	end
+end
+
+-- LA PRIMERA SINTAXIS QUE DETECTA EL TEXTO s.
+local function detect_syntax(s)
+	for _, syntax in ipairs(syntaxes) do
+		if syntax.detect(s) then return syntax end
+	end
+end
+
+-- LAS PARTIDAS DE UN ARCHIVO, CON SU TEXTO PASADO A UTF-8. AVISA SI LA CODIFICACION O LA SINTAXIS SON
+-- DESCONOCIDAS.
 local function sgf_games(name, path)
 	local file = sgf_file(path)
 	local forced = token.get_macro("l_pgfgo_kernel_sgf_charset_tl") or "auto"
@@ -1350,7 +1383,10 @@ local function sgf_games(name, path)
 	elseif not kind or kind == "utf8" then
 		kind = "latin"
 	end
-	local games = file.games[kind]
+	-- LA MISMA CODIFICACION CON OTRA SINTAXIS DA OTRAS PARTIDAS.
+	local syntax = sgf_syntax(name)
+	local key = kind .. ":" .. (syntax and syntax.name or "auto")
+	local games = file.games[key]
 	if not games then
 		local s = file.text
 		-- SIN UNA CODIFICACION QUE SIRVA, CUATRO BYTES ALTOS SEGUIDOS NO PARECEN Latin-1 (DONDE LAS LETRAS
@@ -1364,8 +1400,8 @@ local function sgf_games(name, path)
 		elseif kind ~= "utf8" then
 			s = decode(kind, s)
 		end
-		games = is_diagram(s) and parse_diagrams(name, s) or parse_sgf(s)
-		file.games[kind] = games
+		games = (syntax or detect_syntax(s)).parse(name, s)
+		file.games[key] = games
 	end
 	return games
 end

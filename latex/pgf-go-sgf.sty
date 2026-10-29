@@ -237,10 +237,12 @@
 }
 
 %\pgfgoset{sgf = {...}} FIJA LAS OPCIONES DE TODOS LOS \sgf (Y LA PARTIDA DE LOS DEMAS COMANDOS).
-%sgf charset: LA CODIFICACION DE LOS ARCHIVOS QUE NO SON UTF-8 (auto: LA DE CA).
+%sgf charset: LA CODIFICACION DE LOS ARCHIVOS QUE NO SON UTF-8 (auto: LA DE CA). sgf syntax: LA SINTAXIS DE
+%LOS ARCHIVOS (auto: LA QUE PARECE; VER pgf-go-kernel.sty).
 \keys_define:nn {pgfgo} {
 	sgf					.code:n			= {\keys_set:nn {pgfgo / sgf} {#1}},
 	sgf~charset	.tl_set:N		= \l_pgfgo_kernel_sgf_charset_tl,
+	sgf~syntax	.tl_set:N		= \l_pgfgo_kernel_sgf_syntax_tl,
 }
 
 \msg_new:nnn {pgfgo} {sgf-size}
@@ -625,6 +627,7 @@
 		{\exp_not:V \l__pgfgo_sgf_file_tl}
 		{\exp_not:V \l__pgfgo_sgf_variation_tl}
 		{\exp_not:V \l_pgfgo_kernel_sgf_charset_tl}
+		{\exp_not:V \l_pgfgo_kernel_sgf_syntax_tl}
 		{
 			\int_use:N \l_pgfgo_kernel_sgf_game_int ,
 			\int_use:N \l_pgfgo_goban_size_x_int , \int_use:N \l_pgfgo_goban_size_y_int ,
@@ -768,11 +771,11 @@
 	}
 }
 
-%\pgfgodefinesgf[game = <n>, charset = <codificacion>, origin = <esquina>, transpose]{<nombre>}{<archivo>}:
-%<nombre> SIRVE DONDE VA UN ARCHIVO SGF (\sgf, \sgfinfo, sgf size, ...). EL KERNEL LO TRADUCE AL ARCHIVO;
-%LAS OPCIONES QUEDAN EN \g__pgfgo_sgf_names_prop ({game}{charset}{origin}{transpose}; game Y charset VACIOS
-%SI NO SE DIERON) Y CADA COMANDO LAS PONE ANTES DE SUS OPCIONES, QUE GANAN. UN NOMBRE QUE NO ESTA DEFINIDO
-%ES UN ARCHIVO.
+%\pgfgodefinesgf[game = <n>, charset = <codificacion>, syntax = <sintaxis>, origin = <esquina>,
+%transpose]{<nombre>}{<archivo>}: <nombre> SIRVE DONDE VA UN ARCHIVO SGF (\sgf, \sgfinfo, sgf size, ...). EL
+%KERNEL LO TRADUCE AL ARCHIVO; LAS OPCIONES QUEDAN EN \g__pgfgo_sgf_names_prop
+%({game}{charset}{origin}{transpose}{syntax}; game, charset Y syntax VACIOS SI NO SE DIERON) Y CADA COMANDO
+%LAS PONE ANTES DE SUS OPCIONES, QUE GANAN. UN NOMBRE QUE NO ESTA DEFINIDO ES UN ARCHIVO.
 %origin: LA ESQUINA DONDE VA EL PUNTO aa DEL ARCHIVO. transpose: LA PRIMERA LETRA DE CADA PUNTO ES LA FILA
 %Y NO LA COLUMNA. ENTRE LAS DOS, LAS OCHO SIMETRIAS DEL TABLERO. SOLO VALEN PARA EL NOMBRE: UN ARCHIVO SE
 %LEE COMO DICE SGF (aa ARRIBA A LA IZQUIERDA, LA PRIMERA LETRA ES LA COLUMNA).
@@ -781,10 +784,12 @@
 \tl_new:N \l__pgfgo_sgf_name_charset_tl
 \tl_new:N \l__pgfgo_sgf_name_origin_tl
 \tl_new:N \l__pgfgo_sgf_name_transpose_tl
+\tl_new:N \l__pgfgo_sgf_name_syntax_tl
 \tl_new:N \l__pgfgo_sgf_name_tl
 \keys_define:nn {pgfgo / define~sgf} {
 	game					.tl_set:N		= \l__pgfgo_sgf_name_game_tl,
 	charset				.tl_set:N		= \l__pgfgo_sgf_name_charset_tl,
+	syntax				.tl_set:N		= \l__pgfgo_sgf_name_syntax_tl,
 	origin				.choices:nn	= {top~left, top~right, bottom~left, bottom~right}
 		{\tl_set_eq:NN \l__pgfgo_sgf_name_origin_tl \l_keys_choice_tl},
 	origin				.initial:n	= {top~left},
@@ -793,64 +798,74 @@
 	transpose			.default:n	= {true},
 	transpose			.initial:n	= {false},
 }
+%GUARDA LAS OPCIONES #1 DEL NOMBRE #2.
+\cs_new_protected:Npn \__pgfgo_sgf_name:nn #1#2 {
+	\keys_set:nn {pgfgo / define~sgf} {#1}
+	\prop_gput:Nee \g__pgfgo_sgf_names_prop {\text_expand:n {#2}}
+		{{\exp_not:V \l__pgfgo_sgf_name_game_tl} {\exp_not:V \l__pgfgo_sgf_name_charset_tl}
+			{\exp_not:V \l__pgfgo_sgf_name_origin_tl} {\exp_not:V \l__pgfgo_sgf_name_transpose_tl}
+			{\exp_not:V \l__pgfgo_sgf_name_syntax_tl}}
+}
 \NewDocumentCommand \pgfgodefinesgf {O{}mm} {
 	\group_begin:
-		\keys_set:nn {pgfgo / define~sgf} {#1}
-		\prop_gput:Nee \g__pgfgo_sgf_names_prop {\text_expand:n {#2}}
-			{{\exp_not:V \l__pgfgo_sgf_name_game_tl} {\exp_not:V \l__pgfgo_sgf_name_charset_tl}
-				{\exp_not:V \l__pgfgo_sgf_name_origin_tl} {\exp_not:V \l__pgfgo_sgf_name_transpose_tl}}
+		\__pgfgo_sgf_name:nn {#1} {#2}
 		\pgfgo_kernel_if_feature:nT {sgf} {\pgfgo_kernel_sgf_define:nn {#2} {#3}}
 	\group_end:
 }
 
-%\begin{pgfgodiagram}{<nombre>} ... \end{pgfgodiagram}: DIAGRAMAS DE Sensei's Library (O DE L19) ESCRITOS EN EL
-%DOCUMENTO, QUE LOS COMANDOS DE SGF LEEN COMO EL ARCHIVO <nombre>. LAS LINEAS SE LEEN TAL CUAL (VER
-%\pgfgo_kernel_sgf_text:nn): \begin{pgfgodiagram}{<nombre>} TERMINA SU LINEA. SIN UN KERNEL QUE LEA PARTIDAS, EL
-%CONTENIDO SE SALTEA.
+%\begin{pgfgosgf}[<opciones>]{<nombre>} ... \end{pgfgosgf}: UN ARCHIVO ESCRITO EN EL DOCUMENTO (EN CUALQUIER
+%SINTAXIS), QUE LOS COMANDOS DE SGF LEEN COMO EL ARCHIVO <nombre>. LAS OPCIONES SON LAS DE \pgfgodefinesgf.
+%LAS LINEAS SE LEEN TAL CUAL (VER \pgfgo_kernel_sgf_text:nn): \begin{pgfgosgf}[<opciones>]{<nombre>} TERMINA SU
+%LINEA. SIN UN KERNEL QUE LEA PARTIDAS, EL CONTENIDO SE SALTEA.
 \pgfgo_kernel_if_feature:nTF {sgf} {
-	\NewDocumentEnvironment {pgfgodiagram} {m} {
-		\pgfgo_kernel_sgf_text:nn {#1}
-			{\c_backslash_str end \c_left_brace_str pgfgodiagram \c_right_brace_str}
+	\NewDocumentEnvironment {pgfgosgf} {O{}m} {
+		\__pgfgo_sgf_name:nn {#1} {#2}
+		\pgfgo_kernel_sgf_text:nn {#2}
+			{\c_backslash_str end \c_left_brace_str pgfgosgf \c_right_brace_str}
 		\ignorespaces
 	} {\ignorespacesafterend}
 } {
-	\NewDocumentEnvironment {pgfgodiagram} {m +b} {\pgfgo_kernel_require:n {sgf}} {\ignorespacesafterend}
+	\NewDocumentEnvironment {pgfgosgf} {O{}m +b} {\pgfgo_kernel_require:n {sgf}} {\ignorespacesafterend}
 }
 
-%SI #1 ES UN NOMBRE DE \pgfgodefinesgf, PONE SU game, SU charset Y SU ORIENTACION. SI NO, LA ORIENTACION
-%DE SGF.
+%SI #1 ES UN NOMBRE DE \pgfgodefinesgf, PONE SU game, SU charset, SU syntax Y SU ORIENTACION. SI NO, LA
+%ORIENTACION DE SGF.
 \cs_new_protected:Npn \pgfgo_sgf_use_name:n #1 {
 	\tl_set:Nn \l_pgfgo_kernel_sgf_origin_tl {top~left}
 	\tl_set:Nn \l_pgfgo_kernel_sgf_transpose_tl {false}
 	\prop_get:NeNT \g__pgfgo_sgf_names_prop {\text_expand:n {#1}} \l__pgfgo_sgf_name_tl
-		{\exp_after:wN \__pgfgo_sgf_use_name:nnnn \l__pgfgo_sgf_name_tl}
+		{\exp_after:wN \__pgfgo_sgf_use_name:nnnnn \l__pgfgo_sgf_name_tl}
 }
-\cs_new_protected:Npn \__pgfgo_sgf_use_name:nnnn #1#2#3#4 {
+\cs_new_protected:Npn \__pgfgo_sgf_use_name:nnnnn #1#2#3#4#5 {
 	\tl_if_empty:nF {#1} {\int_set:Nn \l_pgfgo_kernel_sgf_game_int {#1}}
 	\tl_if_empty:nF {#2} {\tl_set:Nn \l_pgfgo_kernel_sgf_charset_tl {#2}}
 	\tl_set:Nn \l_pgfgo_kernel_sgf_origin_tl {#3}
 	\tl_set:Nn \l_pgfgo_kernel_sgf_transpose_tl {#4}
+	\tl_if_empty:nF {#5} {\tl_set:Nn \l_pgfgo_kernel_sgf_syntax_tl {#5}}
 }
 \cs_generate_variant:Nn \pgfgo_sgf_use_name:n {V}
 \prg_generate_conditional_variant:Nnn \prop_get:NnN {NeN} {T}
 
-%EJECUTA #2 CON EL game, EL charset Y LA ORIENTACION DEL NOMBRE #1, Y DESPUES VUELVE A LOS DE ANTES (PARA
-%LAS CLAVES DE goban, QUE NO ESTAN EN UN GRUPO PROPIO).
+%EJECUTA #2 CON EL game, EL charset, LA syntax Y LA ORIENTACION DEL NOMBRE #1, Y DESPUES VUELVE A LOS DE
+%ANTES (PARA LAS CLAVES DE goban, QUE NO ESTAN EN UN GRUPO PROPIO).
 \int_new:N \l__pgfgo_sgf_saved_game_int
 \tl_new:N \l__pgfgo_sgf_saved_charset_tl
 \tl_new:N \l__pgfgo_sgf_saved_origin_tl
 \tl_new:N \l__pgfgo_sgf_saved_transpose_tl
+\tl_new:N \l__pgfgo_sgf_saved_syntax_tl
 \cs_new_protected:Npn \pgfgo_sgf_with_name:nn #1#2 {
 	\int_set_eq:NN \l__pgfgo_sgf_saved_game_int \l_pgfgo_kernel_sgf_game_int
 	\tl_set_eq:NN \l__pgfgo_sgf_saved_charset_tl \l_pgfgo_kernel_sgf_charset_tl
 	\tl_set_eq:NN \l__pgfgo_sgf_saved_origin_tl \l_pgfgo_kernel_sgf_origin_tl
 	\tl_set_eq:NN \l__pgfgo_sgf_saved_transpose_tl \l_pgfgo_kernel_sgf_transpose_tl
+	\tl_set_eq:NN \l__pgfgo_sgf_saved_syntax_tl \l_pgfgo_kernel_sgf_syntax_tl
 	\pgfgo_sgf_use_name:n {#1}
 	#2
 	\int_set_eq:NN \l_pgfgo_kernel_sgf_game_int \l__pgfgo_sgf_saved_game_int
 	\tl_set_eq:NN \l_pgfgo_kernel_sgf_charset_tl \l__pgfgo_sgf_saved_charset_tl
 	\tl_set_eq:NN \l_pgfgo_kernel_sgf_origin_tl \l__pgfgo_sgf_saved_origin_tl
 	\tl_set_eq:NN \l_pgfgo_kernel_sgf_transpose_tl \l__pgfgo_sgf_saved_transpose_tl
+	\tl_set_eq:NN \l_pgfgo_kernel_sgf_syntax_tl \l__pgfgo_sgf_saved_syntax_tl
 }
 \cs_generate_variant:Nn \pgfgo_sgf_with_name:nn {V}
 

@@ -9,16 +9,16 @@
 \begin{document}
 
 % The arrow outside the board was read as a point with garbage coordinates, without a warning.
-\begin{pgfgodiagram}{bad}
+\begin{pgfgosgf}{bad}
 $$c5 Too big for 5, a bad line, a bad arrow and _
 $$ ------------
 $$ | . X O . _ _
 $$ | . O X . _ _
 $$ | . . ? . . .
 $$ {AR Z99 1:1}
-	\end{pgfgodiagram}
+	\end{pgfgosgf}
 
-\case{diagram-size (5 is made 6), diagram-line twice (the row with ? and the arrow off the board); the blank points give no warning}
+\case{sensei-size (5 is made 6), sensei-line twice (the row with ? and the arrow off the board); the blank points give no warning}
 \sgfdiagrams[goban = {scale = 0.5}]{bad}
 
 \end{document}

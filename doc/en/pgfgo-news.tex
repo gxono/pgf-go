@@ -17,7 +17,8 @@
 			\item Columns of two letters after |Z|, for boards of more than 25 columns: |AA5|, |partial = AZ5:BG8| (p.~\pageref{subsec:sintaxis-de-coordenadas}).
 			\item |links| in |\sgfproblem|: with |hyperref|, the statement and its solutions link to each other (p.~\pageref{subsec:sgfproblemas}).
 			\item The option |pages|: one board per page, and |<document>-pages.lua| turns them into SVG, PNG or PDF (p.~\pageref{subsec:paginas}).
-			\item Sensei's Library and L19 diagrams (|$$| lines), in a file or in the environment |pgfgodiagram|: every SGF command reads them (p.~\pageref{subsec:sgfsensei}).
+			\item Sensei's Library and L19 diagrams (|$$| lines): every SGF command reads them (p.~\pageref{subsec:sgfsensei}). |sgf syntax| and |syntax| in |\pgfgodefinesgf| choose the syntax of the file.
+			\item The environment |pgfgosgf|: a file written in the document, in any syntax, which the SGF commands read as a file (p.~\pageref{subsec:sgfnombres}).
 			\item |goban/blank|: intersections that are not part of the board, without lines or star points; they are the |_| of Sensei's Library diagrams (p.~\pageref{subsec:parcial}).
 			\item The sizes of the board are in |pt|: they do not change with the size of the font of the document. One character of |mark/sequence| and one of |mark/custom| have the same size.
 			\item |grid/edge|: the edge of the grid, thicker or in another color.

@@ -11,7 +11,7 @@ Each file is read only once in the whole document, however many commands use it 
 \label{subsec:sgfnombres}
 
 \begin{command}{\pgfgodefinesgf\opt{\oarg{options}}\marg{name}\marg{file}}
-	Gives a name to a game: from then on, \meta{name} works in every place where an SGF file goes (|\sgf|, |\sgfinfo|, |\sgfcomment|, |\sgfdiagrams|, |\sgfproblem|, |\sgfanimation|, |sgf size| and |sgf view|). So the path of the file is written only once, and so is what says which game it is (|game| in a collection, the charset, the orientation). A name that is not defined is a file, as always; if a name matches that of a file, the name wins. The options of each command win over those of the name: |\sgfinfo[game = 1]{|\meta{name}|}{PB}| reads game 1 even if the name says another one. With |kernel = expl3|, the name is defined but cannot be used, like the SGF commands.
+	Gives a name to a game: from then on, \meta{name} works in every place where an SGF file goes (|\sgf|, |\sgfinfo|, |\sgfcomment|, |\sgfdiagrams|, |\sgfproblem|, |\sgfanimation|, |sgf size| and |sgf view|). So the path of the file is written only once, and so is what says which game it is (|game| in a collection, the charset, the syntax, the orientation). A name that is not defined is a file, as always; if a name matches that of a file, the name wins. The options of each command win over those of the name: |\sgfinfo[game = 1]{|\meta{name}|}{PB}| reads game 1 even if the name says another one. With |kernel = expl3|, the name is defined but cannot be used, like the SGF commands.
 
 	\begin{codeexample}[]
 		\pgfgodefinesgf{game}{game.sgf}
@@ -40,6 +40,14 @@ Each file is read only once in the whole document, however many commands use it 
 	\end{codeexample}
 \end{key}
 
+\begin{key}{/pgfgo/define sgf/syntax = \meta{syntax} (initially that of \texttt{sgf syntax})}
+	The syntax with which the file is read, like |/pgfgo/sgf syntax|, only for this name.
+
+	\begin{codeexample}[code only]
+		\pgfgodefinesgf[syntax = sensei]{josekis}{diagrams/josekis.txt}
+	\end{codeexample}
+\end{key}
+
 \begin{key}{/pgfgo/define sgf/origin = \meta{corner} (initially top left)}
 	The corner where the point |aa| of the file goes: |top left|, |top right|, |bottom left| or |bottom right|. With |top left| it is read as SGF says. The orientation belongs only to the name: no option of the commands changes it, and the same file used by its path is read as SGF says. It holds for everything read from the file (stones, moves, marks, arrows, views) and for |partial = auto|. The coordinates written in the commands, like those of |variation = {R16, P17}|, are those of the board, not those of the file.
 \end{key}
@@ -60,16 +68,35 @@ Each file is read only once in the whole document, however many commands use it 
 	\end{codeexample}
 \end{key}
 
+\begin{environment}{{pgfgosgf}\opt{\oarg{options}}\marg{name}}
+	A file written in the document, which every SGF command reads as the file \meta{name}, in any syntax (|sgf syntax|). The \meta{options} are those of |\pgfgodefinesgf|; |charset| does nothing, because the text is already in the encoding of the document. The lines are read as they are: |\begin{pgfgosgf}|\opt{\oarg{options}}\marg{name} ends its line and |\end{pgfgosgf}| goes on a line of its own. It does not work inside the argument of another command or inside |pgfgolayout|. If \meta{name} is also the name of a file, the environment wins. With |kernel = expl3|, the content is skipped and there is an error.
+
+	\begin{codeexample}[code only]
+\begin{pgfgosgf}{short}
+(;SZ[9];B[ee];W[gc];B[cg];W[ge])
+\end{pgfgosgf}
+
+\begin{goban}[sgf size = short, scale = 0.4]
+	\sgf{short}
+\end{goban}
+	\end{codeexample}
+
+\begin{pgfgosgf}{short}
+(;SZ[9];B[ee];W[gc];B[cg];W[ge])
+\end{pgfgosgf}
+
+\begin{goban}[sgf size = short, scale = 0.4]
+	\sgf{short}
+\end{goban}
+\end{environment}
+
 \subsection{Sensei's Library diagrams}
 \label{subsec:sgfsensei}
 
-Sensei's Library and forums such as L19 write diagrams as text, with lines that start with |$$|. A file with no SGF nodes and with those lines is read as a collection: each block of consecutive |$$| lines is a game (|game = 2| is the second diagram), and what is between the blocks is not read. The |[go]| and |[/go]| tags of L19 can be left in. The file works everywhere an SGF file goes, and also with |\pgfgodefinesgf|.
+Sensei's Library and forums such as L19 write diagrams as text, with lines that start with |$$|. A file with |sgf syntax = sensei|, or with |auto| if it has no SGF nodes and has those lines, is read as a collection: each block of consecutive |$$| lines is a game (|game = 2| is the second diagram), and what is between the blocks is not read. The |[go]| and |[/go]| tags of L19 can be left in. The file works everywhere an SGF file goes, and also with |\pgfgodefinesgf| and in the environment |pgfgosgf|.
 
-\begin{environment}{{pgfgodiagram}\marg{name}}
-	Diagrams written in the document, which every SGF command reads as the file \meta{name}. The lines are read as they are: |\begin{pgfgodiagram}|\marg{name} ends its line and |\end{pgfgodiagram}| goes on a line of its own. It does not work inside the argument of another command or inside |pgfgolayout|. If \meta{name} is also the name of a file, the environment wins. With |kernel = expl3|, the content is skipped and there is an error.
-
-	\begin{codeexample}[code only]
-\begin{pgfgodiagram}{nadare}
+\begin{codeexample}[code only]
+\begin{pgfgosgf}{nadare}
 $$Bc Nadare
 $$  ---------------
 $$ | . . . . . . .
@@ -78,12 +105,12 @@ $$ | . . . 1 6 . .
 $$ | . . 5 4 . . .
 $$ | . . 3 2 a . .
 $$ | . . . . . . .
-\end{pgfgodiagram}
+\end{pgfgosgf}
 
 \sgfdiagrams[goban = {scale = 0.5}]{nadare}
-	\end{codeexample}
+\end{codeexample}
 
-\begin{pgfgodiagram}{nadare}
+\begin{pgfgosgf}{nadare}
 $$Bc Nadare
 $$  ---------------
 $$ | . . . . . . .
@@ -92,10 +119,9 @@ $$ | . . . 1 6 . .
 $$ | . . 5 4 . . .
 $$ | . . 3 2 a . .
 $$ | . . . . . . .
-\end{pgfgodiagram}
+\end{pgfgosgf}
 
 \sgfdiagrams[goban = {scale = 0.5}]{nadare}
-\end{environment}
 
 The first line is the header: |$$|, |B| or |W| (who plays move 1; black if absent), a board size (|$$B13|; 19 if absent), |m| and the number of move 1 (|$$Wm67|) and the title. The |c| for coordinates is accepted but not used: the coordinates are those of |goban/label|. Each diagram is read like this:
 \begin{itemize}
@@ -283,6 +309,10 @@ In the examples, the files are used by their name (p.~\pageref{subsec:sgfnombres
 	Many files from Asian servers do not give their charset; to read them, for example, |\pgfgoset{sgf charset = GBK}|. If a file without |CA| seems to be in one of those charsets, a warning reminds of it. With another charset a warning is given and the file is read as Latin-1: it has to be converted to UTF-8 first, for example with |iconv -f KOI8-R -t UTF-8 game.sgf > game-utf8.sgf|.
 
 	To write the comments in Chinese, Japanese or Korean, the package of that language is also needed: |ctex|, |luatexja| or |luatexko|. Examples 14, 18 and 19 of |doc/examples| show a commented game in each one. Without it, LaTeX only notes the missing characters in the |.log|; so, if the font with which a comment or an |\sgfinfo| is written lacks some Chinese, Japanese or Korean character, a warning is given, once per font. With those packages (or |xeCJK|) this is not checked: they write those characters with another font.
+\end{key}
+
+\begin{key}{/pgfgo/sgf syntax = \meta{syntax} (initially auto)}
+	Syntax of the files, for every command that reads files: |sgf|, |sensei| (Sensei's Library and L19 diagrams, p.~\pageref{subsec:sgfsensei}) or |auto|, which is |sensei| if the file has no SGF nodes (|(;|) and has lines that start with |$$|, and |sgf| otherwise. Every syntax is read as an SGF game, so every command works the same with any of them. With another syntax a warning is given and |auto| is used.
 \end{key}
 
 \begin{key}{/pgfgo/sgf = \meta{sgf options}}
