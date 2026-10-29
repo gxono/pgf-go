@@ -123,7 +123,7 @@
 	\end{command}
 
 	\begin{key}{/pgfgo/view=\meta{options}}
-		Options for every view, with |\pgfgoset|. The options of |goban| that are not of |/pgfgo/view| are added to those the views bring: |scale = 0.8|.
+		Options for every view, with |\pgfgoset|. The options of |goban| that are not of |/pgfgo/view| are added to those the views bring: |scale = 0.8, background = {line = false}| (the background without border, even if the original has one).
 
 		\begin{codeexample}[]
 			\pgfgoset{view = {background = false, scale = 1}}
@@ -194,6 +194,32 @@
 			\pgfgoview{board1}{B2:E4}
 			\pgfgoview[profile = simple]{board1}{B2:E4}
 			\pgfgoview[profile = wain]{board1}{B2:E4}
+		\end{codeexample}
+	\end{key}
+
+	\subsection{A stone in the text}
+	\label{subsec:piedra-texto}
+
+	\begin{command}{\pgfgostone\opt{\oarg{options}}}
+		Draws a single stone in the text, without a board. It uses the style of that moment and, on top, the one of the views: |view/profile|, |view/raise| and the |goban| options of |\pgfgoset{view = ...}|, such as |scale|. So it has the same size and height as the view of one intersection. The options are those of |\stone| (|b|, |w|, |n|, |prisoner|, |mark| and the style of the stone) and |number|. Without |b| or |w|, the stone is neutral.
+
+		It changes nothing of what the last |goban| keeps.
+
+		\begin{codeexample}[]
+			The black stone \pgfgostone[b, mark = triangle] cuts and
+			the white stone \pgfgostone[w, mark = {custom = A}] answers.
+
+			\pgfgostone[b] \pgfgostone[w] \pgfgostone[n]
+			\pgfgostone[b, prisoner] \pgfgostone[w, mark = cross]
+		\end{codeexample}
+	\end{command}
+
+	\begin{key}{/pgfgo/pgfgostone/number=\meta{number}}
+		The stone has the number, with the style of the moves of its color (|move/label|). A neutral stone has no number: it is drawn without it, with a warning.
+
+		\begin{codeexample}[]
+			Black \pgfgostone[b, number = 5] cuts,
+			white \pgfgostone[w, number = 6] ataris.
 		\end{codeexample}
 	\end{key}
 

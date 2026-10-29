@@ -286,7 +286,12 @@
 %SOBRE UNA PIEDRA SE GUARDA CON LA PIEDRA (VER pgf-go-stones.sty), PARA QUE DESAPAREZCA SI LA CAPTURAN.
 %#4: EL CODIGO QUE LA DIBUJA AHORA. UNA MARCA QUE NO SE VE AVANZA IGUAL LA SECUENCIA (EN UN partial O
 %EN UNA VISTA, LAS LETRAS SON LAS DEL TABLERO ENTERO).
+%EN \pgfgostone NO HAY TABLERO: LA MARCA SE DIBUJA SIEMPRE.
+\bool_new:N \l_pgfgo_mark_anywhere_bool
 \cs_new_protected:Npn\__pgfgo_mark_at:nnnn #1#2#3#4 {
+	\bool_if:NTF \l_pgfgo_mark_anywhere_bool {#4} {\__pgfgo_mark_at_board:nnnn {#1} {#2} {#3} {#4}}
+}
+\cs_new_protected:Npn\__pgfgo_mark_at_board:nnnn #1#2#3#4 {
 	\pgfgo_kernel_if_visible:nnTF {#2} {#3} {
 		\bool_lazy_and:nnTF {\l_pgfgo_goban_captures_bool} {\l_pgfgo_goban_captured_marks_bool}
 			{\pgfgo_kernel_board_if_occupied:nnTF {#2} {#3} {\pgfgo_captures_mark:nnn {#1} {#2} {#3}} {#4}}

@@ -100,6 +100,12 @@ All notable changes to `pgf-go` are listed here.
   below the tallest board, and the boards stay at the top.
 - `notes/font`: the font of `\pgfgomovenotes` (without it, that of the text;
   in `\sgfdiagrams` and `\sgfproblem`, that of the caption).
+- `\pgfgostone[options]`: a single stone in the text, without a board, with
+  the style of that moment and, on top, `view/profile`, `view/raise` and the
+  `goban` options of `view` (such as `scale`). It takes the options of
+  `\stone` (`b`, `w`, `n`, `prisoner`, `mark`, the style of the stone) and
+  `number = N`, which draws it with the number and the style of a move of its
+  color. It changes nothing of what the last `goban` keeps.
 
 ### Behaviour changes
 
@@ -112,6 +118,10 @@ All notable changes to `pgf-go` are listed here.
   profile set inside `\small` or `\Large`, the grid grew or shrank and the
   stones did not.
 - `layout/align` is now `layout/halign` (`align` is removed).
+- Views (`\pgfgoview`) draw the background without border, even if the
+  original goban or its profile has one: `view` now brings
+  `background = {line = false}` besides `scale = 0.8`.
+  `\pgfgoset{view = {background = {line = true}}}` brings the border back.
 - Spanish texts name the colors in the singular ("Negro", "Blanco", "Juega
   Negro", "Bueno para Blanco") and the results say "Gana Negro" and "Gana Ana
   por abandono": "Ganan" did not agree with a name. Portuguese results say

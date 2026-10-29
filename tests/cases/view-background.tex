@@ -1,0 +1,26 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{Views have no border on the background, whatever the original (the shadow stays)}
+\begin{goban}[9, name = plain, scale = 0.5]\stones[b]{C3}\stones[w]{D4}\end{goban}
+\begin{goban}[9, name = wood, profile = wain, scale = 0.5]\stones[b]{C3}\stones[w]{D4}\end{goban}
+\begin{goban}[9, name = shadow, background = {shadow = {true, offset = 6pt, opacity = 1}, line = {color = red}}, scale = 0.5]
+	\stones[b]{C3}\stones[w]{D4}
+\end{goban}
+
+Default: \pgfgoview{plain}{B2:E5} and \pgfgoview{plain}{C3};
+wain: \pgfgoview{wood}{B2:E5} and \pgfgoview{wood}{C3};
+shadow and red border: \pgfgoview{shadow}{B2:E5} and \pgfgoview{shadow}{C3}.
+
+\case{The border comes back on demand}
+\pgfgoview[background = {line = true}]{shadow}{B2:E5}
+{\pgfgoset{view = {background = {line = true}}}\pgfgoview{shadow}{B2:E5}}
+\pgfgoview[profile = wain]{plain}{B2:E5}
+\end{document}

@@ -123,7 +123,7 @@
 	\end{command}
 
 	\begin{key}{/pgfgo/view=\meta{options}}
-		Opciones para todas las vistas, con |\pgfgoset|. Las opciones de |goban| que no son de |/pgfgo/view| se agregan a la que traen las vistas: |scale = 0.8|.
+		Opciones para todas las vistas, con |\pgfgoset|. Las opciones de |goban| que no son de |/pgfgo/view| se agregan a las que traen las vistas: |scale = 0.8, background = {line = false}| (el fondo sin borde, aunque lo tenga el original).
 
 		\begin{codeexample}[]
 			\pgfgoset{view = {background = false, scale = 1}}
@@ -194,6 +194,32 @@
 			\pgfgoview{tablero1}{B2:E4}
 			\pgfgoview[profile = simple]{tablero1}{B2:E4}
 			\pgfgoview[profile = wain]{tablero1}{B2:E4}
+		\end{codeexample}
+	\end{key}
+
+	\subsection{Una piedra en el texto}
+	\label{subsec:piedra-texto}
+
+	\begin{command}{\pgfgostone\opt{\oarg{options}}}
+		Dibuja una piedra sola en el texto, sin tablero. Usa el estilo de ese momento y, encima, el de las vistas: |view/profile|, |view/raise| y las opciones de |goban| de |\pgfgoset{view = ...}|, como |scale|. Así queda del mismo tamaño y a la misma altura que la vista de una intersección. Las opciones son las de |\stone| (|b|, |w|, |n|, |prisoner|, |mark| y el estilo de la piedra) y |number|. Sin |b| ni |w|, la piedra es neutral.
+
+		No cambia nada de lo que guarda el último |goban|.
+
+		\begin{codeexample}[]
+			La negra \pgfgostone[b, mark = triangle] corta y
+			la blanca \pgfgostone[w, mark = {custom = A}] responde.
+
+			\pgfgostone[b] \pgfgostone[w] \pgfgostone[n]
+			\pgfgostone[b, prisoner] \pgfgostone[w, mark = cross]
+		\end{codeexample}
+	\end{command}
+
+	\begin{key}{/pgfgo/pgfgostone/number=\meta{number}}
+		La piedra lleva el número, con el estilo de las jugadas de su color (|move/label|). Una piedra neutral no lleva número: se dibuja sin él, con un aviso.
+
+		\begin{codeexample}[]
+			La negra \pgfgostone[b, number = 5] corta,
+			la blanca \pgfgostone[w, number = 6] atari.
 		\end{codeexample}
 	\end{key}
 

@@ -1724,7 +1724,7 @@
 																				{, \l_keys_key_str \tl_if_empty:nF {#1} {= {\exp_not:n {#1}}}}
 																		},
 	}
-	\keys_set:nn {pgfgo / view} {scale = 0.8}
+	\keys_set:nn {pgfgo / view} {scale = 0.8, background = {line = false}}
 
 	%LA PARTE DEL TABLERO DE LA VISTA: UN PUNTO (B3) O UN RECTANGULO, COMO EN partial.
 	\str_new:N \l__pgfgo_view_range_str
@@ -1851,5 +1851,69 @@
 	}
 	\tl_new:N \l__pgfgo_view_options_tl
 	\NewDocumentCommand \pgfgoview {O{} m m} {\pgfgo_view:nnn {#1} {#2} {#3}}
+
+	%\pgfgostone[OPCIONES]: UNA PIEDRA SOLA EN EL TEXTO, CON EL ESTILO DE AHORA Y, ENCIMA, LAS OPCIONES DE view
+	%(raise, profile Y LAS DE goban, COMO scale). SIN TABLERO NI MEMORIA: NO CAMBIA NADA DEL ULTIMO goban.
+	%number = N: LA JUGADA N, CON EL ESTILO move DE SU COLOR (UNA PIEDRA NEUTRAL NO LLEVA NUMERO).
+	\msg_new:nnn {pgfgo} {text-stone-number}
+		{\iow_char:N\\pgfgostone~with~number~=~'#1'~needs~b~or~w:~the~stone~is~drawn~without~it.}
+	\tl_new:N \l__pgfgo_text_stone_number_tl
+	\tl_new:N \l__pgfgo_text_stone_options_tl
+	\keys_define:nn {pgfgo / pgfgostone} {
+		number			.tl_set:N		= \l__pgfgo_text_stone_number_tl,
+	}
+	\cs_new_protected:Npn \pgfgo_text_stone:n #1 {
+		\group_begin:
+			\tl_clear:N \l__pgfgo_text_stone_number_tl
+			\keys_set_known:nnN {pgfgo / pgfgostone} {#1} \l__pgfgo_text_stone_options_tl
+			\use:e {
+				\keys_set:nn {pgfgo / goban} {
+					\tl_if_empty:NF \l__pgfgo_view_profile_tl {profile = {\exp_not:V \l__pgfgo_view_profile_tl}}
+					\exp_not:V \l__pgfgo_view_goban_tl
+				}
+			}
+			\bool_set_false:N \l_pgfgo_goban_captures_bool
+			\bool_set_true:N \l_pgfgo_mark_anywhere_bool
+			\keys_set:nn {pgfgo / stone} {neutral}
+			\keys_set_groups:nnV {pgfgo / stone} {player-id} \l__pgfgo_text_stone_options_tl
+			\dim_set:Nn \l__pgfgo_goban_view_raise_dim {\l_pgfgo_goban_view_raise_tl}
+			\cs_set_eq:cN {pgfonlayer} \__pgfgo_goban_onlayer:n
+			\cs_set_eq:cN {endpgfonlayer} \__pgfgo_goban_endlayer:
+			\exp_args:NV \pgfsetlayers \c__pgfgo_text_stone_layers_tl
+			\pgfpicture
+			\pgfsetxvec{\pgfpoint{\l_pgfgo_goban_grid_x_sep_dim}{0}}
+			\pgfsetyvec{\pgfpoint{0}{\l_pgfgo_goban_grid_y_sep_dim}}
+			\pgftransformscale{\l_pgfgo_goban_scale_tl}
+			\fp_set:Nn \l_pgfgo_goban_line_scale_fp {
+				\bool_if:NTF \l_pgfgo_goban_scale_line_width_bool {\l_pgfgo_goban_scale_tl} {1}
+			}
+			\bool_lazy_or:nnTF {\tl_if_empty_p:N \l__pgfgo_text_stone_number_tl} {\l_pgfgo_players_neutral_bool}
+				{
+					\tl_if_empty:NF \l__pgfgo_text_stone_number_tl
+						{\msg_warning:nnV {pgfgo} {text-stone-number} \l__pgfgo_text_stone_number_tl}
+					\exp_args:NV \__pgfgo_stone_draw:nnn \l__pgfgo_text_stone_options_tl {0} {0}
+				}
+				{
+					\use:e {
+						\__pgfgo_move_draw:nnnnnn {\exp_not:N \BooleanTrue}
+							{\exp_not:V \l__pgfgo_text_stone_options_tl} {0} {0}
+							{\exp_not:V \l__pgfgo_text_stone_number_tl}
+							{\bool_if:NTF \l_pgfgo_players_black_bool {black} {white}}
+					}
+				}
+			%COMO UNA VISTA: EL CENTRO A raise SOBRE LA LINEA DE BASE DEL TEXTO.
+			\pgfsetbaseline {
+				\dim_eval:n {(\dim_use:c {pgf@picminy} + \dim_use:c {pgf@picmaxy}) / 2 - \l__pgfgo_goban_view_raise_dim}
+			}
+			\endpgfpicture
+		\group_end:
+	}
+	\tl_const:Nn \c__pgfgo_text_stone_layers_tl {
+		pgfgo_layer_goban_border, pgfgo_layer_goban_grid, pgfgo_layer_goban_labels, pgfgo_layer_territory,
+		pgfgo_layer_mark_shadow, pgfgo_layer_stone, pgfgo_layer_stone_mark, pgfgo_layer_mark, main
+	}
+	\cs_generate_variant:Nn \keys_set_groups:nnn {nnV}
+	\cs_generate_variant:Nn \msg_warning:nnn {nnV}
+	\NewDocumentCommand \pgfgostone {O{}} {\pgfgo_text_stone:n {#1}}
 
 \ExplSyntaxOff

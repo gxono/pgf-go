@@ -1,0 +1,50 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 1
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{Black, white and neutral stones in the text}
+Black \pgfgostone[b], white \pgfgostone[w], neutral \pgfgostone\ and \pgfgostone[n]; a long line to see that
+the stones do not change the space between lines: x\pgfgostone[b]x\pgfgostone[w]x.
+
+\case{Marks and numbers}
+\pgfgostone[b, mark = triangle] \pgfgostone[w, mark = circle] \pgfgostone[b, mark = {custom = A}]
+\pgfgostone[b, number = 5] \pgfgostone[w, number = 12] \pgfgostone[b, number = 123]
+\pgfgostone[w, number = 6, mark = square]
+
+\case{Number on a neutral stone: a warning and no number}
+\pgfgostone[n, number = 7]
+
+\case{Next to a view of the same stone}
+\begin{goban}[9, name = gob]
+	\stones[b]{C3}\moves{D4}
+	\marks[b, triangle]{C3}
+\end{goban}
+\pgfgoview[background = false, label = false]{gob}{C3}\pgfgostone[b, mark = triangle]
+\pgfgoview[background = false, label = false]{gob}{D4}\pgfgostone[b, number = 1]
+
+\case{A mark outside the visible part of the last goban is still drawn}
+\begin{goban}[9, partial = A1:C3]\stone[b]{B2}\end{goban}
+\pgfgostone[w, mark = triangle] \pgfgostone[b, mark = {custom = B}]
+
+\case{The current style, view options (scale, raise) and profiles}
+{\pgfgoset{stone = {fill = {pattern = {name = north east lines}}}}\pgfgostone[b] \pgfgostone[w]}
+{\pgfgoset{view = {scale = 1.5}}\pgfgostone[b, number = 5]}
+{\pgfgoset{view = {raise = 0pt}}x\pgfgostone[w]x}
+{\pgfgoset{view = {profile = draft}}\pgfgostone[b] \pgfgostone[w, number = 3]}
+\pgfgostone[b, prisoner] \pgfgostone[w, prisoner, mark = cross]
+
+\case{The last goban is not changed: its notes are the same before and after}
+\begin{goban}[5, notes]
+	\moves{B2, C3, B2}
+\end{goban}
+Before: \pgfgomovenotes.
+\pgfgostone[b, number = 4] \pgfgostone[w, mark = triangle]
+After: \pgfgomovenotes.
+
+\end{document}
