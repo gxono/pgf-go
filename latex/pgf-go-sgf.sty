@@ -19,9 +19,15 @@
 	\pgfgo_kernel_if_feature:nTF {sgf} {#1} {\pgfgo_kernel_require:n {sgf}}
 }
 
-%EL TAMANO DE LA ULTIMA PARTIDA LEIDA EN #1, COMO LA OPCION size DE goban (19x19).
-\cs_new_protected:Npn \__pgfgo_sgf_size:N #1 {
-	\tl_set:Ne #1 {\int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int}
+%EL TAMANO Y LOS PUNTOS blank DE LA ULTIMA PARTIDA LEIDA EN #1, COMO OPCIONES DE goban
+%(size = 19x19, blank = {...}).
+\tl_new:N \l__pgfgo_sgf_blank_tl
+\cs_new_protected:Npn \__pgfgo_sgf_board:N #1 {
+	\pgfgo_goban_sgf_blank:N \l__pgfgo_sgf_blank_tl
+	\tl_set:Ne #1 {
+		size = \int_use:N \l_pgfgo_kernel_sgf_size_x_int x \int_use:N \l_pgfgo_kernel_sgf_size_y_int
+		\tl_if_empty:NF \l__pgfgo_sgf_blank_tl {, blank = {\exp_not:V \l__pgfgo_sgf_blank_tl}}
+	}
 }
 
 %LA CLAVE partial DE \sgfdiagrams, \sgfproblem Y \sgfanimation: auto (#1 VERDADERO), false O LAS ESQUINAS DE
@@ -1123,7 +1129,7 @@
 \tl_new:N \l__pgfgo_sgfanim_partial_tl
 \bool_new:N \l__pgfgo_sgfanim_layers_bool
 \tl_new:N \l__pgfgo_sgfanim_file_tl
-\tl_new:N \l__pgfgo_sgfanim_size_tl
+\tl_new:N \l__pgfgo_sgfanim_board_tl
 %LAS JUGADAS (SIN LOS CAMBIOS DE NODOS NI LOS NUMEROS), {black | white}{x}{y}: LA JUGADA DE CADA CUADRO.
 \seq_new:N \l__pgfgo_sgfanim_moves_seq
 \box_new:N \l__pgfgo_sgfanim_box
@@ -1213,7 +1219,7 @@
 	\bool_if:NT \l__pgfgo_sgfanim_partial_bool {\__pgfgo_sgf_extent:nV {#2} \l__pgfgo_sgfanim_variation_tl}
 	\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfanim_variation_tl
 	%LOS TABLEROS TIENEN EL TAMANO DE LA PARTIDA (goban = {...} PUEDE CAMBIARLO).
-	\__pgfgo_sgf_size:N \l__pgfgo_sgfanim_size_tl
+	\__pgfgo_sgf_board:N \l__pgfgo_sgfanim_board_tl
 	%UN CUADRO POR JUGADA.
 	\seq_clear:N \l__pgfgo_sgfanim_moves_seq
 	\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgfanim_keep_move:nnn ##1}
@@ -1251,7 +1257,7 @@
 		\use:e {
 			\exp_not:N \begin{goban}
 				[
-					size = \l__pgfgo_sgfanim_size_tl,
+					\l__pgfgo_sgfanim_board_tl,
 					\tl_if_empty:NTF \l__pgfgo_sgfanim_partial_tl {
 						\bool_if:NT \l__pgfgo_sgfanim_partial_bool {partial = auto,}
 						\bool_if:NT \l__pgfgo_sgfanim_view_bool {sgf~view = {\exp_not:V \l__pgfgo_sgfanim_file_tl},}
@@ -1623,7 +1629,7 @@
 \tl_new:N \l__pgfgo_sgfdiag_var_title_tl
 %LA PARTIDA: EL ARCHIVO, SU TAMANO, SU komi, SUS JUGADAS Y LA ULTIMA QUE SE DIBUJA.
 \tl_new:N \l__pgfgo_sgfdiag_file_tl
-\tl_new:N \l__pgfgo_sgfdiag_size_tl
+\tl_new:N \l__pgfgo_sgfdiag_board_tl
 \tl_new:N \l__pgfgo_sgfdiag_komi_tl
 \int_new:N \l__pgfgo_sgfdiag_total_int
 \int_new:N \l__pgfgo_sgfdiag_last_int
@@ -1798,6 +1804,7 @@
 \box_new:N \l__pgfgo_sgfdiag_box
 \box_new:N \l__pgfgo_sgfdiag_caption_box
 \box_new:N \l__pgfgo_sgfdiag_cell_box
+\box_new:N \l__pgfgo_sgfdiag_below_box
 \box_new:N \g__pgfgo_sgfdiag_fit_box
 
 %EMPIEZA UNA SERIE DE DIAGRAMAS DEL ARCHIVO #2, CON LAS OPCIONES DE layout #1.
@@ -1816,6 +1823,7 @@
 \tl_new:N \l__pgfgo_sgfdiag_caption_tl
 \tl_new:N \l__pgfgo_sgfdiag_caption_code_tl
 \cs_new_protected:Npn \__pgfgo_sgfdiag_draw:nnnn #1#2#3#4 {
+	\box_clear:N \l__pgfgo_sgfdiag_below_box
 	\tl_set:Nn \l__pgfgo_sgfdiag_caption_tl {#3}
 	\bool_set:Nn \l__pgfgo_sgfdiag_side_bool
 		{
@@ -1876,12 +1884,25 @@
 			\__pgfgo_sgfdiag_side_width:n {\l_pgfgo_layout_cell_dim}
 			\tl_set:Nn \l__pgfgo_sgfdiag_align_tl {\pgfgo_layout_par_align:}
 			\dim_set_eq:NN \l__pgfgo_sgfdiag_width_dim \l_pgfgo_layout_cell_dim
-			\vbox_set_top:Nn \l__pgfgo_sgfdiag_cell_box {
-				\pgfgo_layout_place:n {\box_use:N \l__pgfgo_sgfdiag_box}
-				\skip_vertical:n {0.3em}
-				\__pgfgo_sgfdiag_below:nn {\pgfgo_layout_par_align:} {#3}
-				#4
-			}
+			\bool_lazy_and:nnTF {! \l__pgfgo_sgfdiag_side_bool} {\pgfgo_layout_if_below_p:}
+				{
+					%LO DE ABAJO VA APARTE (layout/align captions), CON EL MISMO ESPACIO QUE DEBAJO DEL TABLERO.
+					\hbox_set:Nn \l__pgfgo_sgfdiag_cell_box {\pgfgo_layout_place:n {\box_use:N \l__pgfgo_sgfdiag_box}}
+					\vbox_set_top:Nn \l__pgfgo_sgfdiag_below_box {
+						\tex_prevdepth:D \box_dp:N \l__pgfgo_sgfdiag_cell_box
+						\skip_vertical:n {0.3em}
+						\__pgfgo_sgfdiag_below:nn {\pgfgo_layout_par_align:} {#3}
+						#4
+					}
+				}
+				{
+					\vbox_set_top:Nn \l__pgfgo_sgfdiag_cell_box {
+						\pgfgo_layout_place:n {\box_use:N \l__pgfgo_sgfdiag_box}
+						\skip_vertical:n {0.3em}
+						\__pgfgo_sgfdiag_below:nn {\pgfgo_layout_par_align:} {#3}
+						#4
+					}
+				}
 		}
 		{
 			\tl_set:Nn \l__pgfgo_sgfdiag_align_tl {\centering}
@@ -2001,7 +2022,17 @@
 %EL MISMO DIAGRAMA, PUESTO EN LA DISPOSICION.
 \cs_new_protected:Npn \__pgfgo_sgfdiag_add:nnnn #1#2#3#4 {
 	\__pgfgo_sgfdiag_draw:nnnn {#1} {#2} {#3} {#4}
-	\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box
+	\pgfgo_layout_add:NN \l__pgfgo_sgfdiag_cell_box \l__pgfgo_sgfdiag_below_box
+}
+%UN DIAGRAMA SOLO EN SU FILA: LO DE ABAJO, SI VINO APARTE, VUELVE A LA CELDA.
+\cs_new_protected:Npn \__pgfgo_sgfdiag_join: {
+	\box_if_empty:NF \l__pgfgo_sgfdiag_below_box {
+		\vbox_set_top:Nn \l__pgfgo_sgfdiag_cell_box {
+			\box_use:N \l__pgfgo_sgfdiag_cell_box
+			\nointerlineskip
+			\box_use_drop:N \l__pgfgo_sgfdiag_below_box
+		}
+	}
 }
 
 %EL goban DEL DIAGRAMA (JUGADAS #1 A #2) EN \l__pgfgo_sgfdiag_box. CON name, SE LLAMA name SEGUIDO DE
@@ -2016,7 +2047,7 @@
 		\use:e {
 			\exp_not:N \begin{goban}
 				[
-					size = \l__pgfgo_sgfdiag_size_tl, captures, notes,
+					\l__pgfgo_sgfdiag_board_tl, captures, notes,
 					\exp_not:V \l__pgfgo_sgfdiag_window_tl,
 					\exp_not:V \l__pgfgo_sgfdiag_goban_tl,
 					\exp_not:V \l__pgfgo_sgfdiag_scale_tl
@@ -2430,7 +2461,7 @@
 		\__pgfgo_sgfdiag_begin:Nn \l__pgfgo_sgfdiag_layout_tl {#2}
 		\tl_clear:N \l__pgfgo_sgf_extent_tl
 		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfdiag_variation_tl
-		\__pgfgo_sgf_size:N \l__pgfgo_sgfdiag_size_tl
+		\__pgfgo_sgf_board:N \l__pgfgo_sgfdiag_board_tl
 		\tl_set_eq:NN \l__pgfgo_sgfdiag_komi_tl \l_pgfgo_kernel_sgf_komi_tl
 		\__pgfgo_sgfdiag_var_setup:n {#2}
 		%CON true, CADA DIAGRAMA SE NUMERA CON \l__pgfgo_sgfdiag_first_tl: \sgf NO REINICIA.
@@ -2691,6 +2722,34 @@
 		{\int_set:Nn \l_pgfgo_kernel_sgf_game_int {\l_tmpa_tl}}
 }
 
+%SACA DE LA LISTA LAS PARTIDAS QUE EL ARCHIVO #1 NO TIENE, CON UN SOLO AVISO. SI NO QUEDA NINGUNA, LA
+%PRIMERA (COMO CON game EN \sgf). SIN EL ARCHIVO NO SE TOCA (EL AVISO ES EL DE LA LECTURA).
+\seq_new:N \l__pgfgo_sgfprob_existing_seq
+\int_new:N \l__pgfgo_sgfprob_missing_int
+\msg_new:nnn {pgfgo} {sgf-games}
+	{'#1'~has~#2~game(s);~the~#3~game(s)~after~#2~are~left~out.}
+\cs_new_protected:Npn \__pgfgo_sgfprob_existing_games:n #1 {
+	\pgfgo_kernel_sgf_games:n {#1}
+	\int_compare:nNnT {\l_pgfgo_kernel_sgf_games_int} > {0} {
+		\seq_clear:N \l__pgfgo_sgfprob_existing_seq
+		\int_zero:N \l__pgfgo_sgfprob_missing_int
+		\seq_map_inline:Nn \l__pgfgo_sgfprob_games_seq {
+			\int_compare:nNnTF {##1} > {\l_pgfgo_kernel_sgf_games_int}
+				{\int_incr:N \l__pgfgo_sgfprob_missing_int}
+				{\seq_put_right:Nn \l__pgfgo_sgfprob_existing_seq {##1}}
+		}
+		\int_compare:nNnT {\l__pgfgo_sgfprob_missing_int} > {0} {
+			\use:e {
+				\msg_warning:nnnnn {pgfgo} {sgf-games} {\exp_not:n {#1}}
+					{\int_use:N \l_pgfgo_kernel_sgf_games_int} {\int_use:N \l__pgfgo_sgfprob_missing_int}
+			}
+			\seq_if_empty:NT \l__pgfgo_sgfprob_existing_seq
+				{\seq_put_right:Nn \l__pgfgo_sgfprob_existing_seq {1}}
+			\seq_set_eq:NN \l__pgfgo_sgfprob_games_seq \l__pgfgo_sgfprob_existing_seq
+		}
+	}
+}
+
 \cs_generate_variant:Nn \str_case:nnF {V}
 %LEE EL PROBLEMA DEL ARCHIVO #1 (LA PARTIDA \l_pgfgo_kernel_sgf_game_int): SUS LINEAS, SU TAMANO, QUIEN JUEGA Y
 %LA PARTE VISIBLE.
@@ -2698,7 +2757,7 @@
 	\__pgfgo_sgf_extent:n {#1}
 	\seq_set_eq:NN \l__pgfgo_sgfprob_paths_seq \l_pgfgo_kernel_sgf_paths_seq
 	\pgfgo_kernel_sgf_read:n {#1}
-	\__pgfgo_sgf_size:N \l__pgfgo_sgfdiag_size_tl
+	\__pgfgo_sgf_board:N \l__pgfgo_sgfdiag_board_tl
 	\tl_clear:N \l__pgfgo_sgfprob_player_tl
 	\str_case:VnF \l__pgfgo_sgfprob_to_play_tl {
 		{auto}	{\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {\__pgfgo_sgfprob_player:nnn ##1}}
@@ -2806,8 +2865,8 @@
 		}
 	\__pgfgo_sgfprob_target:n {statement}
 	\bool_if:NTF \l__pgfgo_sgfprob_alone_bool
-		{\pgfgo_layout_add_alone:N \l__pgfgo_sgfdiag_cell_box}
-		{\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box}
+		{\__pgfgo_sgfdiag_join: \pgfgo_layout_add_alone:N \l__pgfgo_sgfdiag_cell_box}
+		{\pgfgo_layout_add:NN \l__pgfgo_sgfdiag_cell_box \l__pgfgo_sgfdiag_below_box}
 }
 
 %SI LA LINEA LEIDA (JUGADAS 0 A #1) ES CORRECTA PARA QUIEN JUEGA: EL ULTIMO GB O GW (POSICION BUENA PARA
@@ -2878,7 +2937,7 @@
 			}
 			{\__pgfgo_sgfdiag_notes:nn {1} {\l__pgfgo_sgfprob_last_int}}
 		\__pgfgo_sgfprob_target:n {solution}
-		\pgfgo_layout_add:N \l__pgfgo_sgfdiag_cell_box
+		\pgfgo_layout_add:NN \l__pgfgo_sgfdiag_cell_box \l__pgfgo_sgfdiag_below_box
 	}
 }
 
@@ -2910,6 +2969,7 @@
 		\bool_set_false:N \l__pgfgo_sgfdiag_root_bool
 		\seq_if_empty:NT \l__pgfgo_sgfprob_games_seq
 			{\seq_put_right:Ne \l__pgfgo_sgfprob_games_seq {\int_use:N \l_pgfgo_kernel_sgf_game_int}}
+		\__pgfgo_sgfprob_existing_games:n {#2}
 		%PRIMERO LOS ENUNCIADOS DE TODAS LAS PARTIDAS, DESPUES LAS SOLUCIONES.
 		\bool_if:NT \l__pgfgo_sgfprob_statement_bool {
 			\seq_map_inline:Nn \l__pgfgo_sgfprob_games_seq {

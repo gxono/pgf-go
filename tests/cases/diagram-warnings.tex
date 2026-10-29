@@ -1,5 +1,5 @@
 % engines: lualatex
-% expect-warnings: 4
+% expect-warnings: 3
 % expect-errors: 0
 \documentclass{article}
 \usepackage[margin=1cm]{geometry}
@@ -18,7 +18,7 @@ $$ | . . ? . . .
 $$ {AR Z99 1:1}
 	\end{pgfgodiagram}
 
-\case{diagram-size (5 is made 6), diagram-line twice (the row with ? and the arrow off the board), diagram-blank}
+\case{diagram-size (5 is made 6), diagram-line twice (the row with ? and the arrow off the board); the blank points give no warning}
 \sgfdiagrams[goban = {scale = 0.5}]{bad}
 
 \end{document}

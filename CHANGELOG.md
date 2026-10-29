@@ -24,8 +24,15 @@ All notable changes to `pgf-go` are listed here.
 - `goban/label/letter case` (`upper` or `lower`, initially `upper`): the
   letters of the coordinates on the border, in upper or lower case. The
   coordinates of the commands are read as before.
-- The profile `draft`: black and white, with lines where there is a fill
-  (black stones, filled marks and territory, a direction for each player).
+- The profile `draft`: black and white, with thin lines, no border on the
+  background, and lines where there is a fill (black stones, filled marks and
+  territory, a direction for each player).
+- `goban/arrow` and `goban/line`: the style of the arrows and lines of the
+  board, with the keys of `\arrow` and `\line` (except `forget`). Profiles
+  set it, and using a profile resets it, as the rest of the board. Every
+  profile now defines it: `pgfgo` and `pgfgosmooth` draw them in
+  `red!80!black`, `wain` in the color of its grid, `simple` and `draft`
+  thinner, and `shell`, `yunzi` and `baduktv` without a halo.
 - `partial` of `\sgfdiagrams`, `\sgfproblem` and `\sgfanimation` also
   takes two corners, as in `goban/partial` (`partial = K10:T19`): every board
   shows that part, even if the file has a view (`VW`).
@@ -71,10 +78,48 @@ All notable changes to `pgf-go` are listed here.
   writes them in the document. The title is the name of the game and of its
   figure; the numbers are moves (`m` and missing numbers keep the
   numbering); marks, letters, `AR` and `LN` go on the last move; the edges
-  place the diagram on the board, and what is drawn is its view. New
-  warnings `diagram-line`, `diagram-blank` and `diagram-size`.
+  place the diagram on the board, and what is drawn is its view; `_` is
+  `goban/blank`. New warnings `diagram-line` and `diagram-size`.
+- `goban/blank = {coordinates}`: intersections that are not part of the
+  board, without lines or star points. A line joins only two neighbouring
+  intersections of the board, so next to a blank point it ends as at the
+  edge. With `grid/image`, the image is cut to the cells of the board. The
+  SGF commands, `sgf size` and `sgf view` take them from the `_` of a
+  Sensei's Library diagram.
+- `goban/grid/edge = {width, color, opacity}`: the four outer lines of the
+  grid, thicker or in another color than the rest; what is not given is as in
+  the grid.
+- `layout/align captions` (initially `false`): with `valign = top`, the
+  captions, notes and comments of a row of the grid start on the same line,
+  below the tallest board, and the boards stay at the top.
+- `notes/font`: the font of `\pgfgomovenotes` (without it, that of the text;
+  in `\sgfdiagrams` and `\sgfproblem`, that of the caption).
+
+### Behaviour changes
+
+- The sizes of the board no longer depend on the font: `grid/sep` is
+  initially `12.5pt` (was `1.25em`), `background/sep` `8.25pt` (was
+  `0.825em`), `label/font size` `10pt` (was the current font) and the
+  automatic sizes of the numbers of `\moves` and of the text of the marks
+  `10pt`, `6.5pt` and `4.5pt` (were `1em`, `0.65em` and `0.45em`). With
+  `10pt` text nothing changes; with a bigger or smaller font, or with a
+  profile set inside `\small` or `\Large`, the grid grew or shrank and the
+  stones did not.
+- `layout/align` is now `layout/halign` (`align` is removed).
+- Spanish texts name the colors in the singular ("Negro", "Blanco", "Juega
+  Negro", "Bueno para Blanco") and the results say "Gana Negro" and "Gana Ana
+  por abandono": "Ganan" did not agree with a name. Portuguese results say
+  "Vitória de Ana por desistência" ("vencem" did not agree either).
 
 ### Fixed
+
+- The definition of `draft` in the catalog of the manuals had no closing
+  brace.
+- One character of `mark/sequence` was smaller (`0.7em`) than one of
+  `mark/custom` (`1em`); both are `10pt` now.
+- `game = 1:100` in `\sgfproblem` with a file of fewer games drew the first
+  game again for each missing one, with a warning each time; now the missing
+  games are left out, with one warning (`sgf-games`).
 
 - `\sgfdiagrams` drew nothing for a game without moves; now it draws one
   diagram of its position, with the name of its figure and no range.

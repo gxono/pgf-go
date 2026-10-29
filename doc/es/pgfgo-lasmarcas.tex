@@ -540,7 +540,7 @@ Las marcas van sobre una intersección, con o sin piedra: formas (círculo, tri�
 \end{key}
 
 \begin{key}{/pgfgo/mark/label/font size = \meta{dimension}}
-	Tamaño del texto. Si no se fija, se ajusta según la cantidad de caracteres.
+	Tamaño del texto. Si no se fija, se ajusta según la cantidad de caracteres, igual en |sequence| y en |custom|: 10pt con uno, 6.5pt con dos y 4.5pt con más.
 \end{key}
 
 \label{key:kanji}\begin{key}{/pgfgo/mark/label/format=\meta{options} (initially arabic)}
@@ -759,6 +759,22 @@ Las flechas y las líneas unen dos intersecciones. Se dibujan encima de las pied
 		\end{goban}
 	\end{codeexample}
 \end{command}
+
+\begin{key}{/pgfgo/goban/arrow=\meta{arrow options}}
+	El estilo de las flechas del tablero, con las mismas claves que |\arrow| salvo |forget|. Es lo que define un perfil (pág.~\pageref{subsec:perfiles}): usar un perfil lo vuelve al de |default| antes de poner el suyo. Las opciones de cada |\arrow| van encima.
+
+	\begin{codeexample}[]
+		\begin{goban}[9, arrow = {color = red!80!black, width = 0.6pt}]
+			\stones[b]{C3, D3}\stone[w]{E5}
+			\arrow{B3}{F3}
+			\arrow[color = blue]{C7}{G9}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/goban/line=\meta{line options}}
+	Lo mismo para las líneas.
+\end{key}
 
 \begin{key}{/pgfgo/arrow/color=\meta{color} (initially black)}
 	Color de la flecha.

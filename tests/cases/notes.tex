@@ -34,4 +34,9 @@
 \notes
 \endgroup
 
+\case{notes/font = \textbackslash itshape\textbackslash small: "2 at 1" in small italics; in \textbackslash pgfgoset, for every \textbackslash pgfgomovenotes}
+\begin{goban}[5, notes]\moves{C3}\moves[w]{C3}\end{goban}
+\pgfgomovenotes[font = \itshape\small].
+{\pgfgoset{notes = {font = \bfseries}}\pgfgomovenotes}.
+
 \end{document}

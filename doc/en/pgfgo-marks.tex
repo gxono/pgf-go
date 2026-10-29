@@ -540,7 +540,7 @@ Marks go on an intersection, with or without a stone: shapes (circle, triangle, 
 \end{key}
 
 \begin{key}{/pgfgo/mark/label/font size = \meta{dimension}}
-	Size of the text. If it is not set, it adjusts according to the number of characters.
+	Size of the text. If it is not set, it adjusts according to the number of characters, the same in |sequence| and in |custom|: 10pt with one, 6.5pt with two and 4.5pt with more.
 \end{key}
 
 \label{key:kanji}\begin{key}{/pgfgo/mark/label/format=\meta{options} (initially arabic)}
@@ -759,6 +759,22 @@ Arrows and lines join two intersections. They are drawn on top of the stones, wi
 		\end{goban}
 	\end{codeexample}
 \end{command}
+
+\begin{key}{/pgfgo/goban/arrow=\meta{arrow options}}
+	The style of the arrows of the board, with the same keys as |\arrow| except |forget|. It is what a profile defines (p.~\pageref{subsec:perfiles}): using a profile sets it back to the one of |default| before setting its own. The options of each |\arrow| go on top.
+
+	\begin{codeexample}[]
+		\begin{goban}[9, arrow = {color = red!80!black, width = 0.6pt}]
+			\stones[b]{C3, D3}\stone[w]{E5}
+			\arrow{B3}{F3}
+			\arrow[color = blue]{C7}{G9}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/goban/line=\meta{line options}}
+	The same for the lines.
+\end{key}
 
 \begin{key}{/pgfgo/arrow/color=\meta{color} (initially black)}
 	Color of the arrow.

@@ -855,12 +855,15 @@ local function is_diagram(s)
 end
 
 -- PIEDRA Y MARCA DE CADA SIMBOLO. LOS NUMEROS SON JUGADAS, LAS MINUSCULAS SON LETRAS, . Y , SON PUNTOS
--- VACIOS (LOS PUNTOS DE ESTRELLA LOS PONE goban) Y _ ES FUERA DEL TABLERO.
+-- VACIOS (LOS PUNTOS DE ESTRELLA LOS PONE goban) Y _ ES FUERA DEL TABLERO (SIN LINEAS: VER diagram_blank).
 local diagram_stones = {X = "AB", B = "AB", ["#"] = "AB", Y = "AB", Z = "AB",
 	O = "AW", W = "AW", ["@"] = "AW", Q = "AW", P = "AW"}
 local diagram_marks = {B = "CR", W = "CR", C = "CR", ["#"] = "SQ", ["@"] = "SQ", S = "SQ",
 	Y = "TR", Q = "TR", T = "TR", Z = "MA", P = "MA", M = "MA"}
 local diagram_columns = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
+-- LOS PUNTOS _ DE UN DIAGRAMA VAN EN ESTA PROPIEDAD DE LA RAIZ (UN ARCHIVO SGF NO PUEDE TENERLA); sgf_read LOS
+-- PASA A goban/blank.
+local diagram_blank = "pgfgo-blank"
 
 local function sgf_letter(n)
 	return string.char(n <= 26 and 96 + n or 38 + n)
@@ -881,7 +884,6 @@ local function parse_diagram(name, number, lines)
 	local title = h:match("^%s*(.-)%s*$")
 	local rows, lines_drawn = {}, {}
 	local north, south, west, east = false, false, false, false
-	local blank = false
 	for i = 2, #lines do
 		local l = lines[i]:match("^%s*(.-)%s*$")
 		local kind, p, q = l:match("^{%s*(%u%u)%s+([%w:]+)%s+([%w:]+)%s*}$")
@@ -955,14 +957,13 @@ local function parse_diagram(name, number, lines)
 			elseif c:match("%l") then
 				add(markup, "LB", p .. ":" .. c)
 			elseif c == "_" then
-				blank = true
+				add(root, diagram_blank, p)
 			else
 				if diagram_stones[c] then add(root, diagram_stones[c], p) end
 				if diagram_marks[c] then add(markup, diagram_marks[c], p) end
 			end
 		end
 	end
-	if blank then message("warning", "diagram-blank", name, number) end
 	for _, d in ipairs(lines_drawn) do
 		local a, b = board_point(d[2]), board_point(d[3])
 		if a and b then
@@ -1369,10 +1370,14 @@ local function sgf_games(name, path)
 	return games
 end
 
+-- EL NOMBRE LLEGA COMO LO DEJA \text_expand:n: \& \# \% \{ \} \_ TAL CUAL Y \$ COMO \protect \$.
+local function sgf_name(name)
+	return (name:gsub("\\protect ", ""):gsub("\\([&#%%$_{}])", "%1"))
+end
+
 -- LA PARTIDA \l_pgfgo_kernel_sgf_game_int DEL ARCHIVO. AVISA SI NO EXISTE Y USA LA PRIMERA.
 local function read_tree(name)
-	--EL NOMBRE LLEGA COMO LO DEJA \text_expand:n: \& \# \% \{ \} \_ TAL CUAL Y \$ COMO \protect \$.
-	name = name:gsub("\\protect ", ""):gsub("\\([&#%%$_{}])", "%1")
+	name = sgf_name(name)
 	local path = find_file(name)
 	if not path then
 		message("error", "sgf-not-found", name)
@@ -1663,6 +1668,13 @@ function pgfgo.sgf_branches(name, path_text, use_i)
 	set_clist("l__pgfgo_kernel_sgf_branches_clist", texts)
 end
 
+-- CUANTAS PARTIDAS TIENE EL ARCHIVO (0 SI NO ESTA).
+function pgfgo.sgf_games(name)
+	name = sgf_name(name)
+	local path = find_file(name)
+	tex.setcount("l_pgfgo_kernel_sgf_games_int", path and #sgf_games(name, path) or 0)
+end
+
 -- EL CAMINO path_text COMO NUMEROS, SIN LOS 1 DEL FINAL (EL QUE USA \pgfgo_kernel_sgf_branches:n). UN
 -- CAMINO DE JUGADAS SE TRADUCE CON LAS VARIANTES QUE TOMA; SI NO EXISTE, O NO SE ENTIENDE, QUEDA COMO ESTA.
 function pgfgo.sgf_path(name, path_text, use_i)
@@ -1698,7 +1710,7 @@ local function read_line(name, t, path_text, use_i)
 end
 
 function pgfgo.sgf_read(name, path_text, use_i)
-	local black, white, moves = {}, {}, {}
+	local black, white, moves, blank = {}, {}, {}, {}
 	sgf_comments, sgf_marks, sgf_labels, sgf_dim, sgf_lines = {}, {}, {}, {}, {}
 	sgf_notes, sgf_names = {}, {}
 	sgf_vars, sgf_style, sgf_figures, sgf_views = {}, 0, {}, {}
@@ -1722,6 +1734,7 @@ function pgfgo.sgf_read(name, path_text, use_i)
 				for _, c in ipairs(sgf_coords(v, size_x, size_y)) do f(point(c[1], c[2]), c) end
 			end
 		end
+		each_point(root, diagram_blank, function(p) insert(blank, p) end)
 		local function without(list, p)
 			local kept = {}
 			for _, q in ipairs(list) do
@@ -1891,6 +1904,7 @@ function pgfgo.sgf_read(name, path_text, use_i)
 	for _, f in ipairs(sgf_figures) do insert(figures, "{" .. f[1] .. "}{" .. f[2] .. "}") end
 	set_clist("l__pgfgo_kernel_sgf_figures_clist", figures)
 	token.set_macro("l_pgfgo_kernel_sgf_view_tl", view_text(views_between(0, 0)))
+	token.set_macro("l_pgfgo_kernel_sgf_blank_tl", concat(blank))
 	tex.setcount("l_pgfgo_kernel_sgf_print_int", print_mode)
 	token.set_macro("l_pgfgo_kernel_sgf_komi_tl", komi)
 	tex.setcount("l_pgfgo_kernel_sgf_size_x_int", size_x)

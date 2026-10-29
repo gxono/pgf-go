@@ -1,0 +1,31 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% problems.sgf: three 9x9 problems; with partial = auto, boards of different heights.
+
+\case{valign = top: the boards at the top, each caption right below its board}
+\sgfproblem[game = 1:3, solutions = false, comments = false, partial = auto, layout = {columns = 3}]{problems.sgf}
+
+\case{valign = top, align captions: the boards at the top, the captions on the same line, below the tallest board}
+\sgfproblem[game = 1:3, solutions = false, comments = false, partial = auto, layout = {columns = 3, align captions}]{problems.sgf}
+
+\case{valign = bottom, align captions: as with valign = bottom alone}
+\sgfproblem[game = 1:3, solutions = false, comments = false, partial = auto, layout = {columns = 3, valign = bottom, align captions}]{problems.sgf}
+
+\case{align captions, halign = left, width = natural, two columns: the third problem alone in the second row}
+\sgfproblem[game = 1:3, solutions = false, comments = false, partial = auto, layout = {columns = 2, width = natural, halign = left, align captions}]{problems.sgf}
+
+\case{align captions in pgfgolayout: gobans without captions, as before}
+\begin{pgfgolayout}[columns = 3, align captions]
+	\begin{goban}[5, scale = 0.6]\stones[b]{C3}\end{goban}
+	\begin{goban}[5x3, scale = 0.6]\stones[w]{C2}\end{goban}
+	\begin{goban}[9, scale = 0.6]\stones[b]{E5}\end{goban}
+\end{pgfgolayout}
+\end{document}

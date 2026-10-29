@@ -36,7 +36,7 @@ Varios tableros pueden ir en una grilla: los |goban| y los diagramas de |\sgfdia
 \end{key}
 
 \begin{key}{/pgfgo/layout/width = \meta{dimension} o |natural| (initially \texttt{\string\linewidth})}
-	Ancho de la grilla. Si es menor que el de la línea, la grilla se centra. Cada columna mide lo que queda al restarle los |column sep| a |width|, repartido entre las columnas; un tablero más angosto queda en su columna según |align|, así que entre dos tableros hay más espacio que |column sep|.
+	Ancho de la grilla. Si es menor que el de la línea, la grilla se centra. Cada columna mide lo que queda al restarle los |column sep| a |width|, repartido entre las columnas; un tablero más angosto queda en su columna según |halign|, así que entre dos tableros hay más espacio que |column sep|.
 
 	Con |natural|, la grilla se ajusta a los diagramas: las columnas tienen el ancho del diagrama más ancho (con su epígrafe, que se corta como sin grilla, ver |caption/min width|) y entre dos tableros del mismo ancho queda exactamente |column sep|. La grilla mide eso por la cantidad de columnas (o de diagramas, si son menos) y se centra en la línea; si es más ancha que la línea, se sale del margen. Los diagramas se dibujan todos juntos al final (o al terminar cada grupo de |per page| o |per frame|). |fit| no sirve con |natural|: el paquete avisa y los tableros quedan con su escala.
 
@@ -87,16 +87,16 @@ Varios tableros pueden ir en una grilla: los |goban| y los diagramas de |\sgfdia
 	\end{codeexample}
 \end{key}
 
-\begin{key}{/pgfgo/layout/align = \meta{center, left o right} (initially center)}
+\begin{key}{/pgfgo/layout/halign = \meta{center, left o right} (initially center)}
 	Dónde va cada diagrama dentro de su columna, con su epígrafe y sus notas. Los comentarios van siempre alineados a la izquierda.
 
 	\begin{codeexample}[code only]
 		\sgfdiagrams[step = 2, to = 6, layout = {columns = 2, width = 0.6\linewidth,
-			column sep = 3em, row sep = 2em, align = left}]{partida}
+			column sep = 3em, row sep = 2em, halign = left}]{partida}
 	\end{codeexample}
 
 	\sgfdiagrams[step = 2, to = 6, layout = {columns = 2, width = 0.6\linewidth,
-		column sep = 3em, row sep = 2em, align = left}]{partida}
+		column sep = 3em, row sep = 2em, halign = left}]{partida}
 \end{key}
 
 \begin{key}{/pgfgo/layout/valign = \meta{top o bottom} (initially top)}
@@ -108,5 +108,14 @@ Varios tableros pueden ir en una grilla: los |goban| y los diagramas de |\sgfdia
 			\begin{goban}[5x3, scale = 0.6]\stones[w]{C2}\end{goban}
 			\begin{goban}[9, scale = 0.6]\stones[b]{E5}\end{goban}
 		\end{pgfgolayout}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/layout/align captions = \meta{boolean} (default true, initially false)}
+	Con |valign = top|, los epígrafes, las notas y los comentarios de los diagramas de una fila empiezan en la misma línea, debajo del tablero más alto; los tableros siguen alineados arriba. Con |valign = bottom| ya están en la misma línea. Los |goban| de |pgfgolayout| no tienen epígrafe: no cambian.
+
+	\begin{codeexample}[code only]
+		\sgfproblem[game = 1:3, solutions = false, partial = auto,
+			layout = {columns = 3, align captions}]{problemas}
 	\end{codeexample}
 \end{key}

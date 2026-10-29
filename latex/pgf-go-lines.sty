@@ -69,6 +69,12 @@
 	arrow				.code:n			= {\keys_set:nn {pgfgo / arrow} {#1}},
 	line				.code:n			= {\keys_set:nn {pgfgo / line} {#1}},
 }
+%EL ESTILO DE LAS FLECHAS Y LINEAS ES DEL TABLERO: ASI LO PONEN LOS PERFILES (goban = {arrow = ..}), Y USAR UN
+%PERFIL LO REINICIA (VER pgf-go-profiles.sty). forget ES DE CADA FLECHA, NO DEL ESTILO.
+\keys_define:nn {pgfgo / goban} {
+	arrow				.code:n			= {\keys_set_exclude_groups:nnn {pgfgo / arrow} {preset} {#1}},
+	line				.code:n			= {\keys_set_exclude_groups:nnn {pgfgo / line} {preset} {#1}},
+}
 
 %LA RECTA DE (#1,#2) A (#3,#4) O, CON bend, LA CURVA: COMO EN TikZ, LOS PUNTOS DE CONTROL ESTAN A 0.3915
 %DE LA DISTANCIA, EN LAS DIRECCIONES DE SALIDA Y DE LLEGADA (GIRADAS bend Y -bend).

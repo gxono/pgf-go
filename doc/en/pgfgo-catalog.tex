@@ -68,7 +68,9 @@ The initial style of the package: the one the board and the players have before 
 				width = 1pt}},
 		label = {
 			color = black
-		}
+		},
+		arrow = {color = red!80!black},
+		line = {color = red!80!black}
 	}
 \end{codeexample}
 
@@ -264,7 +266,9 @@ The colors |wainshade|, |wainwhite| and |wainblack| are those of the profile |wa
 				color = waingrid,
 				width = 1pt}
 			},
-		label = {color = waingoban}
+		label = {color = waingoban},
+		arrow = {color = waingrid},
+		line = {color = waingrid}
 	}
 \end{codeexample}
 
@@ -380,7 +384,9 @@ The colors |wainshade|, |wainwhite| and |wainblack| are those of the profile |wa
 	\pgfgodefineprofile[from = default]{simple}{
 		goban = {
 			background = {line = false},
-			grid = {line = {width = 0.4pt}}
+			grid = {line = {width = 0.4pt}},
+			arrow = {width = 0.8pt},
+			line = {width = 0.6pt}
 		},
 		all = {stone = {line = {width = 0.5pt}}}
 	}
@@ -388,7 +394,7 @@ The colors |wainshade|, |wainwhite| and |wainblack| are those of the profile |wa
 
 \subsection{draft}
 
-Black and white, to print or photocopy: where there is a fill, lines. The black stones, the filled marks and the territory use |fill/pattern| (p.~\pageref{sec:piedras}); the territory, with lines in one direction for each player, is seen with |draw = fill| or |draw = region|.
+Black and white, to print or photocopy: thin lines, no border on the background, and lines where there is a fill. The black stones, the filled marks and the territory use |fill/pattern| (p.~\pageref{sec:piedras}); the territory, with lines in one direction for each player, is seen with |draw = fill| or |draw = region|.
 
 \begin{codeexample}[width=4cm]
 	\pgfgoset{profile = draft}
@@ -402,14 +408,23 @@ Black and white, to print or photocopy: where there is a fill, lines. The black 
 		\mark[sequence]{C1, D2}
 		\territory[b, draw = fill]{F1:2, G1:2}
 		\territory[w, draw = fill]{G3}
+		\arrow{A4}{C3}
 	\end{goban}
 \end{codeexample}
 
 \subsubsection*{Definition}
 \begin{codeexample}[code only]
 	\pgfgodefineprofile[from = default]{draft}{
+		goban = {
+			background = {line = false},
+			grid = {line = {width = 0.4pt}},
+			arrow = {width = 0.6pt},
+			line = {width = 0.4pt}
+		},
 		all = {
+			stone = {line = {width = 0.4pt}},
 			mark = {
+				line = {width = 0.6pt},
 				fill = {
 					color = white,
 					pattern = {name = {Lines[angle = 45, distance = 1.2pt, line width = 0.3pt]}}
@@ -440,6 +455,7 @@ Black and white, to print or photocopy: where there is a fill, lines. The black 
 				}
 			}
 		}
+	}
 \end{codeexample}
 
 \subsection{shell}
@@ -474,7 +490,9 @@ A wooden board with slate and shell stones, drawn with the images that come with
 			background = {
 				line = false,
 				fill = {image = {file = pgfgo-board.jpg}}
-			}
+			},
+			arrow = {halo = false},
+			line = {halo = false}
 		},
 		all = {
 			stone = {
@@ -571,7 +589,9 @@ A light board, of plain wood, with plain stones, one image for each color, witho
 			background = {
 				line = false,
 				fill = {image = {file = pgfgo-baduktv-goban.png}}
-			}
+			},
+			arrow = {halo = false},
+			line = {halo = false}
 		},
 		all = {
 			stone = {

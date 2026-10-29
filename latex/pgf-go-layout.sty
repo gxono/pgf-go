@@ -5,7 +5,8 @@
 %ES UNA CELDA (UNA CAJA). CON columns = auto, LAS CELDAS VAN EN EL PARRAFO, UNA AL LADO DE LA OTRA, Y TeX
 %LAS PASA DE LINEA. CON columns = n, VAN EN UNA GRILLA DE n COLUMNAS DEL MISMO ANCHO: CADA FILA ES UNA
 %LINEA APARTE (LA PAGINA SE CORTA ENTRE FILAS) Y LAS CELDAS DE UNA FILA SE ALINEAN ARRIBA (O, CON
-%valign = bottom, POR LA LINEA DE BASE DE LA CELDA: EL PIE DEL TABLERO). CON
+%valign = bottom, POR LA LINEA DE BASE DE LA CELDA: EL PIE DEL TABLERO). UNA CELDA PUEDE TRAER APARTE LO QUE
+%VA DEBAJO DEL TABLERO (EPIGRAFE, NOTAS): CON align captions, ESO EMPIEZA DEBAJO DEL TABLERO MAS ALTO. CON
 %width = natural, CADA CELDA TIENE SU ANCHO NATURAL Y LAS COLUMNAS EL DE LA MAS ANCHA: LAS CELDAS SE JUNTAN
 %Y LAS FILAS SE DIBUJAN AL FINAL (O AL TERMINAR CADA GRUPO DE per page O per frame).
 
@@ -17,6 +18,7 @@
 \bool_new:N \l__pgfgo_layout_fit_bool
 \tl_new:N \l_pgfgo_layout_align_tl
 \tl_new:N \l__pgfgo_layout_valign_tl
+\bool_new:N \l__pgfgo_layout_align_captions_bool
 \int_new:N \l__pgfgo_layout_per_page_int
 \int_new:N \l__pgfgo_layout_per_frame_int
 \cs_new_protected:Npn \__pgfgo_layout_set_per:Nn #1#2 {
@@ -47,10 +49,13 @@
 	fit							.bool_set:N	= \l__pgfgo_layout_fit_bool,
 	fit							.default:n	= {true},
 	fit							.initial:n	= {false},
-	align						.choices:nn	= {center, left, right} {\tl_set_eq:NN \l_pgfgo_layout_align_tl \l_keys_choice_tl},
-	align						.initial:n	= {center},
+	halign					.choices:nn	= {center, left, right} {\tl_set_eq:NN \l_pgfgo_layout_align_tl \l_keys_choice_tl},
+	halign					.initial:n	= {center},
 	valign					.choices:nn	= {top, bottom} {\tl_set_eq:NN \l__pgfgo_layout_valign_tl \l_keys_choice_tl},
 	valign					.initial:n	= {top},
+	align~captions	.bool_set:N	= \l__pgfgo_layout_align_captions_bool,
+	align~captions	.default:n	= {true},
+	align~captions	.initial:n	= {false},
 	%CADA n DIAGRAMAS, UNA PAGINA NUEVA (per page) O UNA DIAPOSITIVA NUEVA DE beamer (per frame). 0 O false:
 	%SIN CORTES.
 	per~page				.code:n			= {\__pgfgo_layout_set_per:Nn \l__pgfgo_layout_per_page_int {#1}},
@@ -87,6 +92,17 @@
 %LA GRILLA CON CELDAS DE ANCHO FIJO (NO natural): EL ANCHO DE LA CELDA SE CONOCE ANTES DE DIBUJARLA.
 \prg_new_conditional:Npnn \pgfgo_layout_if_cells: {p, T, F, TF} {
 	\bool_lazy_and:nnTF {\pgfgo_layout_if_grid_p:} {! \l__pgfgo_layout_natural_bool}
+		{\prg_return_true:} {\prg_return_false:}
+}
+%LO QUE VA DEBAJO DEL TABLERO SE PASA APARTE (\pgfgo_layout_add:NN): EN LA GRILLA, CON valign = top Y
+%align captions.
+\prg_new_conditional:Npnn \pgfgo_layout_if_below: {p, T, F, TF} {
+	\bool_lazy_all:nTF
+		{
+			{\pgfgo_layout_if_grid_p:}
+			{\l__pgfgo_layout_align_captions_bool}
+			{\str_if_eq_p:Vn \l__pgfgo_layout_valign_tl {top}}
+		}
 		{\prg_return_true:} {\prg_return_false:}
 }
 \prg_new_conditional:Npnn \pgfgo_layout_if_fit: {T, F, TF} {
@@ -136,7 +152,7 @@
 		{\pgfgo_layout_if_grid:T {\__pgfgo_layout_flush:}}
 }
 
-%#1 A LA IZQUIERDA Y #2 A LA DERECHA DE LO QUE SE ALINEA CON align.
+%#1 A LA IZQUIERDA Y #2 A LA DERECHA DE LO QUE SE ALINEA CON halign.
 \cs_new:Npn \__pgfgo_layout_fill:nn #1#2 {
 	\str_case:Vn \l_pgfgo_layout_align_tl {
 		{center}	{#1 #2}
@@ -145,7 +161,7 @@
 	}
 }
 \cs_generate_variant:Nn \str_case:nn {Vn}
-%EL CONTENIDO #1 EN UNA CAJA DEL ANCHO DE LA CELDA, ALINEADO CON align.
+%EL CONTENIDO #1 EN UNA CAJA DEL ANCHO DE LA CELDA, ALINEADO CON halign.
 \cs_new_protected:Npn \pgfgo_layout_place:n #1 {
 	\hbox_to_wd:nn {\l_pgfgo_layout_cell_dim}
 		{\__pgfgo_layout_fill:nn {\hfil} {} #1 \__pgfgo_layout_fill:nn {} {\hfil}}
@@ -196,14 +212,16 @@
 		{#1}
 }
 
-%AGREGA LA CELDA #1.
-\cs_new_protected:Npn \pgfgo_layout_add:N #1 {
+%AGREGA LA CELDA #1. #2: LO QUE VA DEBAJO DEL TABLERO, SI \pgfgo_layout_if_below: (UNA vtop QUE EMPIEZA CON
+%UN ESPACIO); SI NO, UNA CAJA VACIA.
+\cs_new_protected:Npn \pgfgo_layout_add:N #1 {\pgfgo_layout_add:NN #1 \c_empty_box}
+\cs_new_protected:Npn \pgfgo_layout_add:NN #1#2 {
 	\__pgfgo_layout_group_next:
 	\pgfgo_layout_if_grid:TF
 		{
 			\bool_if:NTF \l__pgfgo_layout_natural_bool
-				{\__pgfgo_layout_keep:nN {add} #1}
-				{\__pgfgo_layout_grid_add:N #1}
+				{\__pgfgo_layout_keep:nNN {add} #1 #2}
+				{\__pgfgo_layout_grid_add:NN #1 #2}
 		}
 		{
 			\mode_leave_vertical:
@@ -213,23 +231,51 @@
 			}
 		}
 }
-\cs_new_protected:Npn \__pgfgo_layout_grid_add:N #1 {
+%LAS CELDAS DE LA FILA SE GUARDAN (g__pgfgo_layout_head_<n>_box Y g__pgfgo_layout_below_<n>_box) Y LA FILA SE
+%ARMA AL TERMINARLA (\__pgfgo_layout_row:).
+\cs_new_protected:Npn \__pgfgo_layout_grid_add:NN #1#2 {
 	\int_compare:nNnT {\g__pgfgo_layout_count_int} = {\l_pgfgo_layout_columns_int}
 		{\__pgfgo_layout_ship:}
-	%LA CELDA CUELGA DE LA LINEA BASE (vtop QUE EMPIEZA CON UN ESPACIO): ASI LAS DE UNA FILA QUEDAN
-	%ALINEADAS ARRIBA. CON valign = bottom, SIN EL ESPACIO, LA LINEA BASE ES LA DE LA CELDA: EN LOS
-	%DIAGRAMAS DE \sgfdiagrams Y \sgfproblem, EL PIE DEL TABLERO (EL EPIGRAFE Y LAS NOTAS QUEDAN DEBAJO).
+	\int_gincr:N \g__pgfgo_layout_count_int
+	\__pgfgo_layout_row_put:nN {head} #1
+	\__pgfgo_layout_row_put:nN {below} #2
+}
+\cs_new_protected:Npn \__pgfgo_layout_row_put:nN #1#2 {
+	\box_if_exist:cF {g__pgfgo_layout_ #1 _ \int_use:N \g__pgfgo_layout_count_int _box}
+		{\box_new:c {g__pgfgo_layout_ #1 _ \int_use:N \g__pgfgo_layout_count_int _box}}
+	\box_gset_eq:cN {g__pgfgo_layout_ #1 _ \int_use:N \g__pgfgo_layout_count_int _box} #2
+}
+%LA FILA DE LAS CELDAS GUARDADAS, EN \g__pgfgo_layout_row_box. CADA CELDA CUELGA DE LA LINEA BASE (vtop QUE
+%EMPIEZA CON UN ESPACIO): ASI LAS DE UNA FILA QUEDAN ALINEADAS ARRIBA. CON valign = bottom, SIN EL ESPACIO, LA
+%LINEA BASE ES LA DE LA CELDA: EN LOS DIAGRAMAS DE \sgfdiagrams Y \sgfproblem, EL PIE DEL TABLERO (EL
+%EPIGRAFE Y LAS NOTAS QUEDAN DEBAJO). LO QUE VA DEBAJO, SI VINO APARTE, EMPIEZA A LA ALTURA DEL TABLERO MAS
+%ALTO DE LA FILA.
+\dim_new:N \l__pgfgo_layout_head_dim
+\cs_new_protected:Npn \__pgfgo_layout_row: {
+	\dim_zero:N \l__pgfgo_layout_head_dim
+	\int_step_inline:nn {\g__pgfgo_layout_count_int} {
+		\dim_set:Nn \l__pgfgo_layout_head_dim
+			{\dim_max:nn {\l__pgfgo_layout_head_dim} {\box_ht:c {g__pgfgo_layout_head_##1_box}}}
+	}
 	\hbox_gset:Nn \g__pgfgo_layout_row_box {
-		\hbox_unpack_drop:N \g__pgfgo_layout_row_box
-		\int_compare:nNnT {\g__pgfgo_layout_count_int} > {0}
-			{\skip_horizontal:N \l__pgfgo_layout_column_sep_dim}
-		\vbox_top:n {
-			\str_if_eq:VnT \l__pgfgo_layout_valign_tl {top} {\skip_vertical:n {0pt}}
-			\pgfgo_layout_place:n {\box_use:N #1}
+		\int_step_inline:nn {\g__pgfgo_layout_count_int} {
+			\int_compare:nNnT {##1} > {1}
+				{\skip_horizontal:N \l__pgfgo_layout_column_sep_dim}
+			\vbox_top:n {
+				\str_if_eq:VnT \l__pgfgo_layout_valign_tl {top} {\skip_vertical:n {0pt}}
+				\pgfgo_layout_place:n {\box_use:c {g__pgfgo_layout_head_##1_box}}
+				\box_if_empty:cF {g__pgfgo_layout_below_##1_box} {
+					\skip_vertical:n {\l__pgfgo_layout_head_dim - \box_ht:c {g__pgfgo_layout_head_##1_box}}
+					\nointerlineskip
+					\box_use:c {g__pgfgo_layout_below_##1_box}
+				}
+			}
+			\box_gclear:c {g__pgfgo_layout_head_##1_box}
+			\box_gclear:c {g__pgfgo_layout_below_##1_box}
 		}
 	}
-	\int_gincr:N \g__pgfgo_layout_count_int
 }
+\prg_generate_conditional_variant:Nnn \box_if_empty:N {c} {F}
 
 %AGREGA LA CELDA #1 SOLA EN SU FILA, CENTRADA EN EL ANCHO DE LA DISPOSICION.
 \cs_new_protected:Npn \pgfgo_layout_add_alone:N #1 {
@@ -237,7 +283,7 @@
 	\pgfgo_layout_if_grid:TF
 		{
 			\bool_if:NTF \l__pgfgo_layout_natural_bool
-				{\__pgfgo_layout_keep:nN {alone} #1}
+				{\__pgfgo_layout_keep:nNN {alone} #1 \c_empty_box}
 				{\__pgfgo_layout_grid_alone:N #1}
 		}
 		{
@@ -248,6 +294,7 @@
 }
 \cs_new_protected:Npn \__pgfgo_layout_grid_alone:N #1 {
 	\__pgfgo_layout_ship:
+	\bool_gset_true:N \g__pgfgo_layout_alone_bool
 	\hbox_gset:Nn \g__pgfgo_layout_row_box {
 		\hbox_to_wd:nn {\dim_max:nn {\l__pgfgo_layout_width_tl} {\box_wd:N #1}}
 			{\hfil \vbox_top:n {\skip_vertical:n {0pt} \box_use:N #1} \hfil}
@@ -259,14 +306,18 @@
 %CON width = natural: LAS CELDAS SE GUARDAN (EN CAJAS GLOBALES NUMERADAS, CON add O alone) HASTA EL FINAL
 %DEL GRUPO. AHI LA CELDA TOMA EL ANCHO DE LA MAS ANCHA (LAS DE alone NO CUENTAN), LA FILA EL DE SUS columns
 %CELDAS (O MENOS, SI NO HAY TANTAS) Y SE DIBUJAN TODAS COMO EN LA GRILLA DE SIEMPRE.
-\cs_generate_variant:Nn \__pgfgo_layout_grid_add:N {c}
+\cs_generate_variant:Nn \__pgfgo_layout_grid_add:NN {cc}
 \cs_generate_variant:Nn \__pgfgo_layout_grid_alone:N {c}
 \seq_new:N \g__pgfgo_layout_cells_seq
-\cs_new_protected:Npn \__pgfgo_layout_keep:nN #1#2 {
+\cs_new_protected:Npn \__pgfgo_layout_keep:nNN #1#2#3 {
 	\seq_gput_right:Nn \g__pgfgo_layout_cells_seq {#1}
-	\box_if_exist:cF {g__pgfgo_layout_cell_ \seq_count:N \g__pgfgo_layout_cells_seq _box}
-		{\box_new:c {g__pgfgo_layout_cell_ \seq_count:N \g__pgfgo_layout_cells_seq _box}}
-	\box_gset_eq:cN {g__pgfgo_layout_cell_ \seq_count:N \g__pgfgo_layout_cells_seq _box} #2
+	\__pgfgo_layout_keep_box:nN {cell} #2
+	\__pgfgo_layout_keep_box:nN {cell_below} #3
+}
+\cs_new_protected:Npn \__pgfgo_layout_keep_box:nN #1#2 {
+	\box_if_exist:cF {g__pgfgo_layout_ #1 _ \seq_count:N \g__pgfgo_layout_cells_seq _box}
+		{\box_new:c {g__pgfgo_layout_ #1 _ \seq_count:N \g__pgfgo_layout_cells_seq _box}}
+	\box_gset_eq:cN {g__pgfgo_layout_ #1 _ \seq_count:N \g__pgfgo_layout_cells_seq _box} #2
 }
 \int_new:N \l__pgfgo_layout_added_int
 \cs_new_protected:Npn \__pgfgo_layout_flush: {
@@ -291,8 +342,11 @@
 					}
 				}
 				\seq_map_indexed_inline:Nn \g__pgfgo_layout_cells_seq {
-					\use:c {__pgfgo_layout_grid_##2:c} {g__pgfgo_layout_cell_##1_box}
+					\str_if_eq:nnTF {##2} {add}
+						{\__pgfgo_layout_grid_add:cc {g__pgfgo_layout_cell_##1_box} {g__pgfgo_layout_cell_below_##1_box}}
+						{\__pgfgo_layout_grid_alone:c {g__pgfgo_layout_cell_##1_box}}
 					\box_gclear:c {g__pgfgo_layout_cell_##1_box}
+					\box_gclear:c {g__pgfgo_layout_cell_below_##1_box}
 				}
 				\__pgfgo_layout_ship:
 			\group_end:
@@ -303,8 +357,13 @@
 
 %TERMINA LA FILA: LA FILA TIENE EL ANCHO DE LA DISPOSICION (UNA FILA INCOMPLETA DEJA VACIAS LAS ULTIMAS
 %COLUMNAS), SE SUBE PARA QUE TENGA ALTURA Y NO PROFUNDIDAD, Y SE CENTRA EN LA LINEA. ENTRE FILAS, row sep.
+%LA FILA DE UNA CELDA SOLA (alone) YA ESTA ARMADA; LAS DEMAS SE ARMAN AQUI.
+\bool_new:N \g__pgfgo_layout_alone_bool
 \cs_new_protected:Npn \__pgfgo_layout_ship: {
 	\int_compare:nNnT {\g__pgfgo_layout_count_int} > {0} {
+		\bool_if:NTF \g__pgfgo_layout_alone_bool
+			{\bool_gset_false:N \g__pgfgo_layout_alone_bool}
+			{\__pgfgo_layout_row:}
 		\bool_set_eq:NN \l__pgfgo_layout_first_bool \g__pgfgo_layout_first_row_bool
 		\bool_gset_false:N \g__pgfgo_layout_first_row_bool
 		\hbox_set_to_wd:Nnn \l__pgfgo_layout_row_box {\l__pgfgo_layout_width_tl}

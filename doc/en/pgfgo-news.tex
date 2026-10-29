@@ -7,7 +7,8 @@
 		\begin{itemize}
 			\item \tikzname\ patterns in the fills of the stones, the marks, the territory and the background (|fill/pattern|, p.~\pageref{sec:piedras}).
 			\item Coordinates on the border in lower case (|label/letter case = lower|, p.~\pageref{subsec:etiquetas}).
-			\item The profile |draft|: black and white, with lines where there is a fill.
+			\item The profile |draft|: black and white, with thin lines, no border on the background, and lines where there is a fill.
+			\item |goban/arrow| and |goban/line|: the style of the arrows and lines is part of the profile of the board (p.~\pageref{subsec:flechas}). Every profile defines it: |pgfgo| and |pgfgosmooth| draw them in |red!80!black|.
 			\item |scale line width|: |scale| also multiplies the width of the lines.
 			\item |layout/valign = bottom|: the boards of a row of the grid end at the same height (p.~\pageref{subsec:disposicion}).
 			\item |partial| of |\sgfdiagrams|, |\sgfproblem| and |\sgfanimation| also takes two corners (|partial = K10:T19|): the same part in every board (p.~\pageref{subsec:sgfdiagramas}).
@@ -17,6 +18,13 @@
 			\item |links| in |\sgfproblem|: with |hyperref|, the statement and its solutions link to each other (p.~\pageref{subsec:sgfproblemas}).
 			\item The option |pages|: one board per page, and |<document>-pages.lua| turns them into SVG, PNG or PDF (p.~\pageref{subsec:paginas}).
 			\item Sensei's Library and L19 diagrams (|$$| lines), in a file or in the environment |pgfgodiagram|: every SGF command reads them (p.~\pageref{subsec:sgfsensei}).
+			\item |goban/blank|: intersections that are not part of the board, without lines or star points; they are the |_| of Sensei's Library diagrams (p.~\pageref{subsec:parcial}).
+			\item The sizes of the board are in |pt|: they do not change with the size of the font of the document. One character of |mark/sequence| and one of |mark/custom| have the same size.
+			\item |grid/edge|: the edge of the grid, thicker or in another color.
+			\item |layout/align| is renamed |layout/halign|, and |layout/align captions| puts the captions of a row on the same line with the boards at the top (p.~\pageref{subsec:disposicion}).
+			\item |notes/font|: the font of the notes.
+			\item |\sgfproblem| leaves out the games that the file does not have, with a single warning.
+			\item In Spanish, the colors are singular and the result also agrees with a name: ``Gana Negro'', ``Juega Blanco'', ``Gana Ana por abandono''. In Portuguese, ``Vitória de Ana''.
 		\end{itemize}
 	\item \pgfgoversion:
 		\begin{itemize}

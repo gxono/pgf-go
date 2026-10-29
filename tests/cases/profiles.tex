@@ -54,4 +54,20 @@
 {\pgfgoset{profile = baduktv}\sample}
 \begin{goban}[5, label = {at = {south, west}}]\stones[b, image = {file = pgfgo-yunzi-black}]{C3}\end{goban}
 
+\case{Arrows and lines in every profile: default, wain, pgfgo, pgfgosmooth, simple, draft, shell, yunzi, baduktv}
+\newcommand\arrows{\begin{goban}[5]\stones[b]{C3}\stones[w]{D3}\arrow{A1}{C3}\line{A5}{E5}\arrow[bend = 30]{E1}{D3}\end{goban}}
+{\pgfgoset{profile = default}\arrows}
+{\pgfgoset{profile = wain}\arrows}
+{\pgfgoset{profile = pgfgo}\arrows}
+{\pgfgoset{profile = pgfgosmooth}\arrows}
+{\pgfgoset{profile = simple}\arrows}
+{\pgfgoset{profile = draft}\arrows}
+{\pgfgoset{profile = shell}\arrows}
+{\pgfgoset{profile = yunzi}\arrows}
+{\pgfgoset{profile = baduktv}\arrows}
+
+\case{profile resets the arrows (blue, 3pt before default: black); goban/arrow in the options of a goban (red, thin); the options of \textbackslash arrow on top (blue)}
+{\pgfgoset{arrow = {color = blue, width = 3pt}}\pgfgoset{profile = default}\arrows}
+\begin{goban}[5, arrow = {color = red, width = 0.4pt}]\arrow{A1}{C3}\arrow[color = blue]{E1}{D3}\end{goban}
+
 \end{document}

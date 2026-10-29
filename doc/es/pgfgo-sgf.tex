@@ -104,10 +104,10 @@ La primera línea es la cabecera: |$$|, |B| o |W| (quién juega la jugada 1; si 
 	\item Los números (|1| a |9|, y |0| es 10) son jugadas, en orden: las impares son del que juega la 1. Si falta un número («5 en 1»), las jugadas siguientes conservan el suyo (|MN|).
 	\item Las marcas, las letras y las líneas |{AR C14 C11}| (flecha) y |{LN 5:6 5:9}| (línea) van en la última jugada. Sus puntos son del tablero (|C14|) o del diagrama (|5:6|, columna y fila desde arriba a la izquierda).
 	\item Los bordes (|---|, \verb+|+, |+|) dicen dónde está el diagrama en el tablero. Sin tamaño, dos bordes opuestos dan ese lado del tablero. Sin bordes, el diagrama va en el medio. Lo dibujado es la vista de la partida (|VW|): |\sgfdiagrams| solo muestra esa parte.
-	\item |.| y |,| son puntos vacíos (las estrellas las pone |goban/hoshi|). Los enlaces (\verb+[a|página]+) no se leen.
+	\item |.| y |,| son puntos vacíos (las estrellas las pone |goban/hoshi|). |_| no es del tablero: no tiene líneas (|goban/blank|, pág.~\pageref{subsec:parcial}). Los enlaces (\verb+[a|página]+) no se leen.
 \end{itemize}
 
-Una línea que no se entiende se saltea con una advertencia. |_| (fuera del tablero) se dibuja como un punto vacío, con una advertencia. Un diagrama más grande que el tamaño de la cabecera agranda el tablero, también con una advertencia.
+Una línea que no se entiende se saltea con una advertencia. Un diagrama más grande que el tamaño de la cabecera agranda el tablero, también con una advertencia.
 
 \subsection{Una partida en un tablero}
 \label{subsec:sgftablero}
@@ -839,7 +839,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/result = \meta{result options} (default true)}
-	Escribe debajo del último diagrama, si llega al final de la partida, el resultado (|RE|) y, si el archivo marca el territorio (|TB|, |TW|), el puntaje de cada jugador: «Resultado: Ganan Negras por 0.5 puntos (Negras 6, Blancas 5.5)». El puntaje se cuenta como con |\pgfgoscore| (pág.~\pageref{subsec:territorio}), con el komi del archivo (|KM|). Se apaga con |result = false|; |title| y |format| no lo prenden.
+	Escribe debajo del último diagrama, si llega al final de la partida, el resultado (|RE|) y, si el archivo marca el territorio (|TB|, |TW|), el puntaje de cada jugador: «Resultado: Gana Negro por 0.5 puntos (Negro 6, Blanco 5.5)». El puntaje se cuenta como con |\pgfgoscore| (pág.~\pageref{subsec:territorio}), con el komi del archivo (|KM|). Se apaga con |result = false|; |title| y |format| no lo prenden.
 \end{key}
 
 \begin{stylekey}{/pgfgo/sgf diagrams/result/true}
@@ -855,7 +855,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/result/format = \meta{text o raw} (initially text)}
-	Cómo se escribe el resultado. |text|: en palabras, en el idioma del documento (pág.~\pageref{subsec:idiomas}), «Ganan Negras por abandono»; |raw|: como está en el archivo, «B+R». Con |text| se entienden |0| o |Draw| (empate), |Void| (sin resultado), |?| (desconocido) y |B+| o |W+| seguido de nada, de la diferencia, de |R| o |Resign|, de |T| o |Time|, o de |F| o |Forfeit|. Otro resultado se escribe como está.
+	Cómo se escribe el resultado. |text|: en palabras, en el idioma del documento (pág.~\pageref{subsec:idiomas}), «Gana Negro por abandono»; |raw|: como está en el archivo, «B+R». Con |text| se entienden |0| o |Draw| (empate), |Void| (sin resultado), |?| (desconocido) y |B+| o |W+| seguido de nada, de la diferencia, de |R| o |Resign|, de |T| o |Time|, o de |F| o |Forfeit|. Otro resultado se escribe como está.
 \end{key}
 
 \begin{key}{/pgfgo/sgf diagrams/black name = \meta{text} (initially Black o su traducción)}
@@ -1017,7 +1017,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/caption/min width = \meta{dimension} (initially 8em)}
-	Como en |\sgfdiagrams|: con |columns = auto|, el ancho mínimo al que se corta un epígrafe más ancho que su tablero («Problema 3: Juegan Blancas» debajo de una esquina chica).
+	Como en |\sgfdiagrams|: con |columns = auto|, el ancho mínimo al que se corta un epígrafe más ancho que su tablero («Problema 3: Juega Blanco» debajo de una esquina chica).
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/goban = \meta{goban options}}
@@ -1047,7 +1047,7 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/game = \meta{numbers} (initially 1)}
-	Como |/pgfgo/sgf/game|: en una colección, el problema que se dibuja. También varios, con números y rangos como los de las coordenadas: |game = 1:20| o |game = {1:4, 9}|. Entonces van primero todos los enunciados, numerados (|title|), y después las soluciones de los que las tienen. Así se arma una hoja de problemas:
+	Como |/pgfgo/sgf/game|: en una colección, el problema que se dibuja. También varios, con números y rangos como los de las coordenadas: |game = 1:20| o |game = {1:4, 9}|. Entonces van primero todos los enunciados, numerados (|title|), y después las soluciones de los que las tienen. Las partidas que el archivo no tiene se dejan afuera, con un aviso; si no queda ninguna, se dibuja la primera. Así se arma una hoja de problemas:
 
 	\begin{codeexample}[code only]
 		\sgfproblem[game = 1:24, to play = black, comments = false,

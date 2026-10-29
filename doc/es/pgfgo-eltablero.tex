@@ -61,7 +61,7 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 	\end{key}
 	
 	\begin{key}{/pgfgo/goban/sgf size=\meta{file}}
-		Toma el tamaño del tablero de una partida SGF (su propiedad |SZ|; con un nombre con |transpose|, dado vuelta, pág.~\pageref{subsec:sgfnombres}). Solo con el kernel en Lua (pág.~\pageref{subsec:kernel}).
+		Toma el tamaño del tablero de una partida SGF (su propiedad |SZ|; con un nombre con |transpose|, dado vuelta, pág.~\pageref{subsec:sgfnombres}) y, si es un diagrama de Sensei's Library, sus puntos |blank| (los |_|). Solo con el kernel en Lua (pág.~\pageref{subsec:kernel}).
 
 		\begin{codeexample}[]
 			\begin{goban}[sgf size = variantes, label = {at = {north, west}}]
@@ -218,16 +218,16 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/grid/x sep =\meta{dimension} (initially 1.25em)}
+	\begin{key}{/pgfgo/goban/grid/x sep =\meta{dimension} (initially 12.5pt)}
 		Separación entre las líneas verticales.
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/grid/y sep =\meta{dimension} (initially 1.25em)}
+	\begin{key}{/pgfgo/goban/grid/y sep =\meta{dimension} (initially 12.5pt)}
 		Separación entre las líneas horizontales.
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/grid/sep =\meta{dimension} (initially 1.25em)}
-		Las dos separaciones a la vez.
+	\begin{key}{/pgfgo/goban/grid/sep =\meta{dimension} (initially 12.5pt)}
+		Las dos separaciones a la vez. Las medidas iniciales del tablero (separaciones, radios, tamaños de los números) están en |pt|: el tablero no cambia con el tamaño de la letra del documento. Una medida en |em| se calcula con la letra que hay donde se pone la \emph{key}.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, grid = {x sep = 1.8em}]
@@ -290,6 +290,36 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 
 	\begin{stylekey}{/pgfgo/goban/grid/image/false}
 		Quita la imagen: vuelven las líneas.
+	\end{stylekey}
+
+	\begin{key}{/pgfgo/goban/grid/edge =\meta{options}}
+		El borde de la cuadrícula: las cuatro líneas de afuera, con su grosor, su color y su opacidad, encima de las líneas o de la imagen. Lo que no se dice es como en el resto de la cuadrícula. Con |partial| se ven solo los bordes del tablero que entran; con |blank|, los tramos de la primera y la última fila y columna.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, grid = {edge = {width = 1.5pt}}]
+				\stones[b]{B2, C3}
+			\end{goban}
+
+			\begin{goban}[9, partial = A1:E5, grid = {edge = {width = 1.5pt, color = brown}}]
+				\stones[b]{B2, C3}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/edge/width =\meta{dimension} (initially el de grid/line/width)}
+		El grosor del borde.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/edge/color =\meta{color} (initially el de grid/line/color)}
+		El color del borde.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/edge/opacity =\meta{float} (initially la de grid/line/opacity)}
+		La opacidad del borde.
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/grid/edge/false}
+		Vuelve al borde como el resto de la cuadrícula.
 	\end{stylekey}
 
 	\subsection{Puntos de estrella}
@@ -712,7 +742,7 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/background/sep =\meta{dimension} (initially 0.825em)}
+	\begin{key}{/pgfgo/goban/background/sep =\meta{dimension} (initially 8.25pt)}
 		
 		Separación entre la cuadrícula y el borde. Por defecto, 1.5 veces el radio de las piedras.
 		
@@ -866,6 +896,22 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 			\end{goban}
 		\end{codeexample}
 	\end{key}
+
+	\begin{key}{/pgfgo/goban/blank=\meta{coordinates}}
+		Las intersecciones que no son del tablero: no tienen líneas ni punto de estrella. Una línea une solo dos intersecciones vecinas del tablero, así que al lado de un punto de |blank| termina como en el borde; una intersección sin vecinas queda sin líneas. Las piedras, las marcas y el fondo no cambian. Con |grid/image|, la imagen se ve solo en las celdas de las intersecciones del tablero. Los |_| de los diagramas de Sensei's Library son puntos de |blank| (pág.~\pageref{subsec:sgfsensei}).
+
+		\begin{codeexample}[]
+			\begin{goban}[9, blank = E]
+				\stones[b]{C3, D4, D5}
+				\stones[w]{F3, F4, G5}
+			\end{goban}
+
+			\begin{goban}[9, blank = {A9:C7, 5}]
+				\stones[b]{D8, D6}
+				\stones[w]{C6}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
 	
 	\subsection{Etiquetas del tablero}\label{subsec:etiquetas}
 	
@@ -943,9 +989,9 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		\end{codeexample}
 	\end{key}
 	
-	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially el tamaño de la fuente actual)}
+	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially 10pt)}
 
-		Tamaño de la fuente de las etiquetas.
+		Tamaño de la fuente de las etiquetas. Las etiquetas se alejan del tablero la mitad de este tamaño, además de |label/sep|. Vacío, es el de la fuente actual.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {south, west}}]

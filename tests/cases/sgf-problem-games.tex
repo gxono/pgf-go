@@ -1,0 +1,22 @@
+% engines: lualatex
+% expect-warnings: 2
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% problems.sgf has three games. A range past the last one repeated the first game, with one warning for each
+% missing game: now the missing games are left out with one warning.
+
+\case{game = 2:100 (one warning): "Problem 2" and "Problem 3", nothing more}
+\sgfproblem[game = 2:100, solutions = false, comments = false, goban = {scale = 0.5}, layout = {columns = 4}]{problems.sgf}
+
+\case{game = 7 (one warning): the first game}
+\sgfproblem[game = 7, solutions = false, comments = false, goban = {scale = 0.5}, layout = {columns = 4}]{problems.sgf}
+
+\case{game = 1:3 (no warning): the three statements}
+\sgfproblem[game = 1:3, solutions = false, comments = false, goban = {scale = 0.5}, layout = {columns = 4}]{problems.sgf}
+\end{document}

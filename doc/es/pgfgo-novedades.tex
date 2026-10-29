@@ -7,7 +7,8 @@
 		\begin{itemize}
 			\item Patrones de \tikzname\ en los rellenos de las piedras, las marcas, el territorio y el fondo (|fill/pattern|, pág.~\pageref{sec:piedras}).
 			\item Coordenadas del borde en minúsculas (|label/letter case = lower|, pág.~\pageref{subsec:etiquetas}).
-			\item El perfil |draft|: blanco y negro, con rayas donde hay relleno.
+			\item El perfil |draft|: blanco y negro, con líneas finas, sin el borde del fondo y con rayas donde hay relleno.
+			\item |goban/arrow| y |goban/line|: el estilo de las flechas y las líneas es parte del perfil del tablero (pág.~\pageref{subsec:flechas}). Todos los perfiles lo definen: |pgfgo| y |pgfgosmooth| las dibujan en |red!80!black|.
 			\item |scale line width|: |scale| multiplica también el grosor de las líneas.
 			\item |layout/valign = bottom|: los tableros de una fila de la grilla terminan a la misma altura (pág.~\pageref{subsec:disposicion}).
 			\item |partial| de |\sgfdiagrams|, |\sgfproblem| y |\sgfanimation| acepta también dos esquinas (|partial = K10:T19|): la misma parte en todos los tableros (pág.~\pageref{subsec:sgfdiagramas}).
@@ -17,6 +18,13 @@
 			\item |links| en |\sgfproblem|: con |hyperref|, el enunciado y sus soluciones se enlazan entre sí (pág.~\pageref{subsec:sgfproblemas}).
 			\item La opción |pages|: un tablero por página, y |<documento>-pages.lua| los pasa a SVG, PNG o PDF (pág.~\pageref{subsec:paginas}).
 			\item Diagramas de Sensei's Library y L19 (líneas |$$|), en un archivo o en el entorno |pgfgodiagram|: todos los comandos SGF los leen (pág.~\pageref{subsec:sgfsensei}).
+			\item |goban/blank|: intersecciones que no son del tablero, sin líneas ni estrellas; son los |_| de los diagramas de Sensei's Library (pág.~\pageref{subsec:parcial}).
+			\item Las medidas del tablero están en |pt|: no cambian con el tamaño de la letra del documento. Un carácter de |mark/sequence| y uno de |mark/custom| tienen el mismo tamaño.
+			\item |grid/edge|: el borde de la cuadrícula, más grueso o de otro color.
+			\item |layout/align| pasa a llamarse |layout/halign|, y |layout/align captions| pone los epígrafes de una fila en la misma línea con los tableros arriba (pág.~\pageref{subsec:disposicion}).
+			\item |notes/font|: la fuente de las notas.
+			\item |\sgfproblem| deja afuera las partidas que el archivo no tiene, con un solo aviso.
+			\item En español, los colores van en singular y el resultado concuerda también con un nombre: «Gana Negro», «Juega Blanco», «Gana Ana por abandono». En portugués, «Vitória de Ana».
 		\end{itemize}
 	\item \pgfgoversion:
 		\begin{itemize}

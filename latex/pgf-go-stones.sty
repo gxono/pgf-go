@@ -607,6 +607,7 @@
 \tl_new:N \l_pgfgo_notes_at_tl
 \tl_new:N \l_pgfgo_notes_pass_tl
 \tl_new:N \l_pgfgo_notes_separator_tl
+\tl_new:N \l_pgfgo_notes_font_tl
 \cs_generate_variant:Nn \prop_get:NnNTF {NV}
 \cs_generate_variant:Nn \prop_get:NnNT {NV}
 \cs_generate_variant:Nn \prop_get:NnNF {NV}
@@ -668,6 +669,8 @@
 	pass				.initial:n	= {\pgfgo_text:n {pass}},
 	separator		.tl_set:N		= \l_pgfgo_notes_separator_tl,
 	separator		.initial:n	= {,~},
+	%VACIA: LA DEL TEXTO (EN \sgfdiagrams Y \sgfproblem, LA DEL EPIGRAFE).
+	font				.tl_set:N		= \l_pgfgo_notes_font_tl,
 }
 \keys_define:nn {pgfgo} {
 	notes				.code:n			= {\keys_set:nn {pgfgo / notes} {#1}}
@@ -687,6 +690,7 @@
 		\seq_map_inline:Nn \g_pgfgo_move_notes_seq {
 			\__pgfgo_notes_item:nn ##1
 		}
+		\l_pgfgo_notes_font_tl
 		\seq_use:Nn \l_tmpa_seq {\l_pgfgo_notes_separator_tl}
 	\group_end:
 }
@@ -861,8 +865,8 @@
 				\pgfgo_players_label_length:NnVN \pgfgo_players_move_label_format:n {#5} \l__pgfgo_move_label_tl \l__pgfgo_move_label_int
 				\tl_set:Ne \l__pgfgo_move_label_size_tl {
 					\int_case:nnF {\l__pgfgo_move_label_int}
-						{{1} {1em} {2} {0.65em}}
-						{0.45em}
+						{{1} {10pt} {2} {6.5pt}}
+						{4.5pt}
 				}
 			}
 			{\tl_set_eq:NN \l__pgfgo_move_label_size_tl \l_pgfgo_players_move_label_font_size_tl}

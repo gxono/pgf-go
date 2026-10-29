@@ -137,6 +137,10 @@ With the Lua kernel, a |goban| can follow the rules of the game: remove the capt
 		A pass of an SGF file (p.~\pageref{subsec:sgf}) counts, but it is not drawn. With |notes|, if it would be numbered, ``N: pass'' is noted, in order with the other notes. The passes that end the game are not noted. This key is the text after the number.
 	\end{key}
 
+	\begin{key}{/pgfgo/notes/font = \meta{font commands}}
+		The font of the notes. Without it, that of the text; in |\sgfdiagrams| and |\sgfproblem|, that of the caption.
+	\end{key}
+
 	\begin{key}{/pgfgo/notes/separator = \meta{text} (initially a comma and a space)}
 		Text between the notes.
 

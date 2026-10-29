@@ -1,4 +1,4 @@
-# pgf-go — for drawing go games
+# pgf-go — Go (Weiqi, Baduk, Igo) diagrams in LaTeX
 
 Release 0.2026.10.23 2026/10/23
 
@@ -7,14 +7,16 @@ Release 0.2026.10.23 2026/10/23
 pgf-go draws and comments on Go games with PGF/TikZ: boards, stones, moves,
 marks, arrows and territory. With LuaLaTeX it also reads SGF files (a game on a
 board, diagrams as in books, animations and problems), removes captured stones
-and finds the territory.
+and finds the territory. It also reads the ASCII diagrams of Sensei's Library
+and Life in 19x19.
 
 ## License
 
 The code may be distributed and/or modified under the terms of the
 [LaTeX Project Public License](https://www.latex-project.org/lppl/), version
 1.3c or later. The manuals may be distributed and/or modified under the LaTeX
-Project Public License and/or the GNU Free Documentation License.
+Project Public License, version 1.3c or later, and/or the GNU Free
+Documentation License.
 
 ## Requirements
 
@@ -39,6 +41,8 @@ pgf-go comes with TeX Live and MiKTeX. Otherwise, copy the files of the folder
 	\stones[b]{C3}
 	\stones[w]{E5}
 \end{goban}
+
+\sgfdiagrams[step = 50]{game.sgf}  % LuaLaTeX
 \end{document}
 ```
 

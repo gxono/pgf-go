@@ -1,0 +1,45 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+%
+% goban/blank: the intersections that are not part of the board have no lines and no star points; a line
+% joins only two neighbours of the board, so next to a blank point it ends as at the edge. The stones and
+% the background do not change. With a grid image, the image is only in the cells of the board.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\graphicspath{{../../doc/img/}}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\case{blank = E: two boards side by side (the star point E5 goes too); then a rectangle and a row}
+\begin{goban}[9, blank = E]
+	\stones[b]{C3, D4, D5}
+	\stones[w]{F3, F4, G5}
+\end{goban}
+\begin{goban}[9, blank = {A9:C7, 5}]
+	\stones[b]{D8, D6}
+	\stones[w]{C6}
+\end{goban}
+
+\case{Single points: a hole in the middle, and an intersection left alone (no line reaches it)}
+\begin{goban}[9, blank = {E5, A2, B1}]
+	\stones[b]{E4, E6}
+\end{goban}
+
+\case{With partial and labels}
+\begin{goban}[9, blank = {D, 6}, partial = A1:G8, label]
+	\stones[w]{C3, E3}
+\end{goban}
+
+\case{With a grid image (the image is cut to the cells of the board) and in \textbackslash pgfgoset}
+\begin{goban}[9, blank = E, grid = {image = {file = pgfgo-grid.png}}]
+	\stones[b]{C3}
+\end{goban}
+\pgfgoset{goban = {blank = {A, J}}}
+\begin{goban}[9]
+	\stones[b]{B2}
+\end{goban}
+
+\end{document}

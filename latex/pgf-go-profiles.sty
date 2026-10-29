@@ -28,7 +28,7 @@
 %EL REINICIO: LOS VALORES DEL ASPECTO DEL TABLERO Y DE CADA JUGADOR AL TERMINAR DE CARGAR EL PAQUETE (CON EL
 %PERFIL default). USAR UN PERFIL VUELVE A ELLOS ANTES DE PONER SUS CLAVES, ASI NO HEREDA LO QUE NO DEFINE.
 %DEL TABLERO NO SE TOCA LO QUE NO ES ASPECTO: LAS VARIABLES CON ESTOS NOMBRES (EL TAMANO Y use i NO SON
-%VARIABLES DEL ESTILO).
+%VARIABLES DEL ESTILO). LAS DE LAS FLECHAS Y LINEAS (l__pgfgo_arrow_..., l__pgfgo_line_...) SON DEL TABLERO.
 \clist_const:Nn \c__pgfgo_profile_keep_goban_clist {
 	captures, captured_marks, notes, scale, partial, layers, bbox, labels_pos, label_columns, label_rows, hoshi_at
 }
@@ -52,7 +52,7 @@
 }
 \cs_new_protected:Npn \__pgfgo_profile_save_reset:nN #1#2 {
 	\str_set:Ne \l__pgfgo_profile_var_str {\cs_to_str:N #2}
-	\regex_match:nVTF {\Al_pgfgo_goban_} \l__pgfgo_profile_var_str {
+	\regex_match:nVTF {\A(l_pgfgo_goban_|l__pgfgo_arrow_|l__pgfgo_line_)} \l__pgfgo_profile_var_str {
 		\bool_set_false:N \l__pgfgo_profile_keep_bool
 		\clist_map_inline:Nn \c__pgfgo_profile_keep_goban_clist {
 			\str_if_in:NnT \l__pgfgo_profile_var_str {##1} {\bool_set_true:N \l__pgfgo_profile_keep_bool}
@@ -187,7 +187,7 @@
 			opacity = 1
 		},
 		rounded corners = 0pt,
-		sep = 0.825em,
+		sep = 8.25pt,
 		shadow = false,
 	},
 	grid = {
@@ -196,11 +196,21 @@
 			opacity = 1,
 			width = 0.55pt,
 		}, 
-		sep = 1.25em,
+		sep = 12.5pt,
 	},
 	label = {
 		color = black,
-		sep = 0.35cm}
+		sep = 0.35cm},
+	arrow = {
+		color = black,
+		width = 1.2pt,
+		halo = true
+	},
+	line = {
+		color = black,
+		width = 1.2pt,
+		halo = true
+	}
 }
 
 
@@ -292,7 +302,9 @@
 			color = waingrid,
 			width = 1pt}
 		},
-	label = {color = waingoban}
+	label = {color = waingoban},
+	arrow = {color = waingrid},
+	line = {color = waingrid}
 }
 
 
@@ -409,7 +421,9 @@
 			width = 1pt}},
 	label = {
 		color = black
-	}
+	},
+	arrow = {color = red!80!black},
+	line = {color = red!80!black}
 }
 
 
@@ -539,7 +553,9 @@
 \pgfgodefineprofile[from = default]{simple}{
 	goban = {
 		background = {line = false},
-		grid = {line = {width = 0.4pt}}
+		grid = {line = {width = 0.4pt}},
+		arrow = {width = 0.8pt},
+		line = {width = 0.6pt}
 	},
 	all = {stone = {line = {width = 0.5pt}}}
 }
@@ -549,8 +565,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \pgfgodefineprofile[from = default]{draft}{
+	goban = {
+		background = {line = false},
+		grid = {line = {width = 0.4pt}},
+		arrow = {width = 0.6pt},
+		line = {width = 0.4pt}
+	},
 	all = {
+		stone = {line = {width = 0.4pt}},
 		mark = {
+			line = {width = 0.6pt},
 			fill = {
 				color = white,
 				pattern = {name = {Lines[angle = 45, distance = 1.2pt, line width = 0.3pt]}}
@@ -592,7 +616,9 @@
 		background = {
 			line = false,
 			fill = {image = {file = pgfgo-board.jpg}}
-		}
+		},
+		arrow = {halo = false},
+		line = {halo = false}
 	},
 	all = {
 		stone = {
@@ -646,7 +672,9 @@
 		background = {
 			line = false,
 			fill = {image = {file = pgfgo-baduktv-goban.png}}
-		}
+		},
+		arrow = {halo = false},
+		line = {halo = false}
 	},
 	all = {
 		stone = {

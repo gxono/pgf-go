@@ -1,0 +1,43 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+%
+% _ in a Sensei's Library diagram is not part of the board: the SGF commands pass those points to
+% goban/blank (like sgf size and sgf view in a goban). It was drawn as an empty point, with the warning
+% diagram-blank, so diagrams side by side looked like one board.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\begin{pgfgodiagram}{pair}
+$$B Two shapes
+$$ ------------------------
+$$  _ X O . O _ _ X . X O _
+$$  _ X O . O _ _ X . X O _
+$$  _ X O . O _ _ X . X O _
+$$  _ X W . O _ _ X . . O _
+$$  _ X . . O _ _ X . B O _
+$$  _ X O O O _ _ X X X O _
+$$  _ _ _ _ _ _ _ _ _ _ _ _
+
+$$W Before and after
+$$ +-------------------+
+$$ | . . . _ . . . . . |
+$$ | . X . _ . X 1 . . |
+$$ | . O . _ . O . . . |
+$$ +-------------------+
+\end{pgfgodiagram}
+
+\case{\textbackslash sgfdiagrams: the north edge with blank columns}
+\sgfdiagrams[goban = {scale = 0.6}]{pair}
+
+\case{A goban with sgf size and \textbackslash sgf; \textbackslash sgfproblem of the second game (a 9x3 board in two parts)}
+\begin{goban}[sgf size = {pair}, scale = 0.6]
+	\sgf{pair}
+\end{goban}
+\sgfproblem[game = 2, goban = {scale = 0.6}]{pair}
+
+\end{document}

@@ -1,0 +1,29 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass[12pt]{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\newcommand\board{%
+	\stones[b]{A1}\stones[w]{B1}%
+	\moves{C1, D1}%
+	\marks[sequence]{A3, B3}\marks[custom = A]{C3}\marks[custom = B]{D3}}
+\begin{document}
+
+% The sizes of the board do not depend on the font of the document (12pt here) or on the font where a profile
+% is set: the grid, the border, the labels and the numbers were in em, and the stones in pt. One character
+% of mark/sequence and of mark/custom has the same size.
+
+\case{12pt document: the same board as with 10pt}
+\begin{goban}[4x3, label]\board\end{goban}
+
+\case{Profile set inside \textbackslash Large and \textbackslash tiny: the same board}
+{\Large\begin{goban}[4x3, label, profile = default]\board\end{goban}}
+{\tiny\begin{goban}[4x3, label, profile = default]\board\end{goban}}
+{\tiny\pgfgoset{goban = {profile = default}}\begin{goban}[4x3, label]\board\end{goban}}
+
+\case{label/font size = 6pt: the labels closer to the board}
+\begin{goban}[4x3, label = {font size = 6pt}]\board\end{goban}
+\end{document}

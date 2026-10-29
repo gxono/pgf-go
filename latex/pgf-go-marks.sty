@@ -242,7 +242,7 @@
 
 \cs_new_protected:Npn \__pgfgo_mark_text:nnn #1#2#3 {
 	\tl_if_empty:NTF \l_pgfgo_players_mark_label_font_size_tl
-		{\tl_set:Ne \l__pgfgo_mark_text_size_tl {\int_case:nnF {#1} {{1} {#2} {2} {0.65em}} {0.45em}}}
+		{\tl_set:Ne \l__pgfgo_mark_text_size_tl {\int_case:nnF {#1} {{1} {#2} {2} {6.5pt}} {4.5pt}}}
 		{\tl_set_eq:NN \l__pgfgo_mark_text_size_tl \l_pgfgo_players_mark_label_font_size_tl}
 	%CON mark/scale, EL TAMANO SE CALCULA ADENTRO DE \pgftext: EN LA FIGURA, em VALE 0 (\nullfont).
 	\fp_compare:nNnF {\l_pgfgo_players_mark_scale_fp} = {1} {
@@ -264,7 +264,7 @@
 \cs_new_protected:Nn\pgfgo_mark_custom: {
 	\regex_count:NVN \c__pgfgo_mark_any_regex \l_pgfgo_mark_custom_tl \l__pgfgo_mark_text_length_int
 	\pgfsetcolor{\l_pgfgo_players_mark_line_color_tl}
-	\__pgfgo_mark_text:nnn {\l__pgfgo_mark_text_length_int} {1em}
+	\__pgfgo_mark_text:nnn {\l__pgfgo_mark_text_length_int} {10pt}
 		{\textcolor{\l_pgfgo_players_mark_label_color_tl}{\l_pgfgo_mark_custom_tl}}
 }
 
@@ -273,7 +273,7 @@
 	\pgfgo_players_label_length:NnVN \pgfgo_players_mark_sequence_format:n {\pgfgo_kernel_sequence_number:}
 		\l__pgfgo_mark_text_tl \l__pgfgo_mark_text_length_int
 	\pgfsetcolor{\l_pgfgo_players_mark_label_color_tl}
-	\__pgfgo_mark_text:nnn {\l__pgfgo_mark_text_length_int} {0.7em} {\l__pgfgo_mark_text_tl}
+	\__pgfgo_mark_text:nnn {\l__pgfgo_mark_text_length_int} {10pt} {\l__pgfgo_mark_text_tl}
 	\pgfgo_kernel_sequence_step:
 }
 

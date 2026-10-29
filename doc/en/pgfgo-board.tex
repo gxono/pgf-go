@@ -61,7 +61,7 @@ When we speak of the ``board'', we mean the |goban| environment: the grid, the b
 	\end{key}
 
 	\begin{key}{/pgfgo/goban/sgf size=\meta{file}}
-		Takes the size of the board from an SGF game (its property |SZ|; with a name with |transpose|, turned, p.~\pageref{subsec:sgfnombres}). Only with the Lua kernel (p.~\pageref{subsec:kernel}).
+		Takes the size of the board from an SGF game (its property |SZ|; with a name with |transpose|, turned, p.~\pageref{subsec:sgfnombres}) and, if it is a Sensei's Library diagram, its |blank| points (the |_|). Only with the Lua kernel (p.~\pageref{subsec:kernel}).
 
 		\begin{codeexample}[]
 			\begin{goban}[sgf size = variations, label = {at = {north, west}}]
@@ -218,16 +218,16 @@ When we speak of the ``board'', we mean the |goban| environment: the grid, the b
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/grid/x sep =\meta{dimension} (initially 1.25em)}
+	\begin{key}{/pgfgo/goban/grid/x sep =\meta{dimension} (initially 12.5pt)}
 		Distance between the vertical lines.
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/grid/y sep =\meta{dimension} (initially 1.25em)}
+	\begin{key}{/pgfgo/goban/grid/y sep =\meta{dimension} (initially 12.5pt)}
 		Distance between the horizontal lines.
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/grid/sep =\meta{dimension} (initially 1.25em)}
-		Both distances at once.
+	\begin{key}{/pgfgo/goban/grid/sep =\meta{dimension} (initially 12.5pt)}
+		Both distances at once. The initial sizes of the board (distances, radii, sizes of the numbers) are in |pt|: the board does not change with the size of the font of the document. A size in |em| is computed with the font where the \emph{key} is set.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, grid = {x sep = 1.8em}]
@@ -290,6 +290,36 @@ When we speak of the ``board'', we mean the |goban| environment: the grid, the b
 
 	\begin{stylekey}{/pgfgo/goban/grid/image/false}
 		Removes the image: the lines come back.
+	\end{stylekey}
+
+	\begin{key}{/pgfgo/goban/grid/edge =\meta{options}}
+		The edge of the grid: the four outer lines, with their width, color and opacity, over the lines or the image. What is not given is as in the rest of the grid. With |partial|, only the edges of the board that are in view are seen; with |blank|, the stretches of the first and last row and column.
+
+		\begin{codeexample}[]
+			\begin{goban}[5, grid = {edge = {width = 1.5pt}}]
+				\stones[b]{B2, C3}
+			\end{goban}
+
+			\begin{goban}[9, partial = A1:E5, grid = {edge = {width = 1.5pt, color = brown}}]
+				\stones[b]{B2, C3}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/edge/width =\meta{dimension} (initially that of grid/line/width)}
+		The width of the edge.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/edge/color =\meta{color} (initially that of grid/line/color)}
+		The color of the edge.
+	\end{key}
+
+	\begin{key}{/pgfgo/goban/grid/edge/opacity =\meta{float} (initially that of grid/line/opacity)}
+		The opacity of the edge.
+	\end{key}
+
+	\begin{stylekey}{/pgfgo/goban/grid/edge/false}
+		Back to an edge like the rest of the grid.
 	\end{stylekey}
 
 	\subsection{Star points}
@@ -712,7 +742,7 @@ When we speak of the ``board'', we mean the |goban| environment: the grid, the b
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/background/sep =\meta{dimension} (initially 0.825em)}
+	\begin{key}{/pgfgo/goban/background/sep =\meta{dimension} (initially 8.25pt)}
 
 		Distance between the grid and the border. By default, 1.5 times the radius of the stones.
 
@@ -867,6 +897,22 @@ When we speak of the ``board'', we mean the |goban| environment: the grid, the b
 		\end{codeexample}
 	\end{key}
 
+	\begin{key}{/pgfgo/goban/blank=\meta{coordinates}}
+		The intersections that are not part of the board: they have no lines and no star point. A line joins only two neighbouring intersections of the board, so next to a |blank| point it ends as at the edge; an intersection without neighbours has no lines. The stones, the marks and the background do not change. With |grid/image|, the image is seen only in the cells of the intersections of the board. The |_| of Sensei's Library diagrams are |blank| points (p.~\pageref{subsec:sgfsensei}).
+
+		\begin{codeexample}[]
+			\begin{goban}[9, blank = E]
+				\stones[b]{C3, D4, D5}
+				\stones[w]{F3, F4, G5}
+			\end{goban}
+
+			\begin{goban}[9, blank = {A9:C7, 5}]
+				\stones[b]{D8, D6}
+				\stones[w]{C6}
+			\end{goban}
+		\end{codeexample}
+	\end{key}
+
 	\subsection{Labels of the board}\label{subsec:etiquetas}
 
 	The labels are the coordinates written on the sides of the board.
@@ -943,9 +989,9 @@ When we speak of the ``board'', we mean the |goban| environment: the grid, the b
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially the size of the current font)}
+	\begin{key}{/pgfgo/goban/label/font size = \meta{dimension} (initially 10pt)}
 
-		Size of the font of the labels.
+		Size of the font of the labels. The labels move away from the board half of this size, besides |label/sep|. Empty, it is that of the current font.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {south, west}}]

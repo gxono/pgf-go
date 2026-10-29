@@ -104,10 +104,10 @@ The first line is the header: |$$|, |B| or |W| (who plays move 1; black if absen
 	\item The numbers (|1| to |9|, and |0| is 10) are moves, in order: the odd ones belong to whoever plays 1. If a number is missing (``5 at 1''), the following moves keep theirs (|MN|).
 	\item The marks, the letters and the lines |{AR C14 C11}| (arrow) and |{LN 5:6 5:9}| (line) go on the last move. Their points are board points (|C14|) or diagram points (|5:6|, column and row from the top left).
 	\item The edges (|---|, \verb+|+, |+|) say where the diagram is on the board. Without a size, two opposite edges give that side of the board. Without edges, the diagram goes in the middle. What is drawn is the view of the game (|VW|): |\sgfdiagrams| only shows that part.
-	\item |.| and |,| are empty points (the star points come from |goban/hoshi|). Links (\verb+[a|page]+) are not read.
+	\item |.| and |,| are empty points (the star points come from |goban/hoshi|). |_| is not part of the board: it has no lines (|goban/blank|, p.~\pageref{subsec:parcial}). Links (\verb+[a|page]+) are not read.
 \end{itemize}
 
-A line that is not understood is skipped with a warning. |_| (outside the board) is drawn as an empty point, with a warning. A diagram bigger than the size of the header makes the board bigger, also with a warning.
+A line that is not understood is skipped with a warning. A diagram bigger than the size of the header makes the board bigger, also with a warning.
 
 \subsection{A game on a board}
 \label{subsec:sgftablero}
@@ -1046,7 +1046,7 @@ The animations of |animate| work in Acrobat Reader and in some other viewers (Fo
 \end{key}
 
 \begin{key}{/pgfgo/sgf problem/game = \meta{numbers} (initially 1)}
-	Like |/pgfgo/sgf/game|: in a collection, the problem that is drawn. Also several, with numbers and ranges like those of the coordinates: |game = 1:20| or |game = {1:4, 9}|. Then all the statements go first, numbered (|title|), and then the solutions of those that have them. That is how a problem sheet is built:
+	Like |/pgfgo/sgf/game|: in a collection, the problem that is drawn. Also several, with numbers and ranges like those of the coordinates: |game = 1:20| or |game = {1:4, 9}|. Then all the statements go first, numbered (|title|), and then the solutions of those that have them. The games that the file does not have are left out, with a warning; if none is left, the first one is drawn. That is how a problem sheet is built:
 
 	\begin{codeexample}[code only]
 		\sgfproblem[game = 1:24, to play = black, comments = false,
