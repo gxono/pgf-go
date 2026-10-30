@@ -913,6 +913,8 @@
 	%(\territory{auto} EN UN TABLERO GRANDE) EL ANIDAMIENTO DESBORDA LA PILA DE LuaTeX AL ARMAR LA PAGINA,
 	%SIN NINGUN MENSAJE. EN EL goban, CADA \pgfonlayer VA EN SU CAJA, AL LADO DE LAS ANTERIORES; LO DEMAS ES
 	%COMO EN PGF. \__pgfgo_goban_layer_close: CIERRA LA CAJA DE LA CAPA (NADA SI YA SE ESTABA EN ELLA).
+	%EL \pgfsetlinewidth{0.4pt} DE PGF ESCRIBE "0.4 w" FUERA DE LA CAJA, EN LA CAPA DE AFUERA, Y DEJA EL ANCHO
+	%GLOBAL: CON CAJA NUEVA, EL ANCHO ES 0.4pt SOLO PARA TeX Y SOLO DENTRO (EN EL PDF LA CAPA SIGUE COMO ESTABA).
 	\cs_new_protected:Npn \__pgfgo_goban_onlayer:n #1 {
 		\pgfutil@ifundefined {pgf@layerbox@#1} {
 			\pgferror {Sorry,~the~requested~layer~'#1'~could~not~be~found.~Maybe~you~misspelled~it?}
@@ -925,7 +927,7 @@
 			\tl_if_eq:NNTF \pgf@temp \pgfonlayer@name
 				{
 					\cs_set_eq:NN \__pgfgo_goban_layer_close: \prg_do_nothing:
-					\cs_set:Npn \pgf@temp {\bgroup \begingroup}
+					\cs_set:Npn \pgf@temp {\pgfsetlinewidth {0.4pt} \bgroup \begingroup}
 				}{
 					\cs_set_eq:NN \pgfonlayer@name \pgf@temp
 					\pgfonlayer@assert@is@active
@@ -936,8 +938,8 @@
 							\tex_hbox:D to 0pt \bgroup
 								\begingroup
 					}
+					\dim_set:Nn \pgflinewidth {0.4pt}
 				}
-			\pgfsetlinewidth {0.4pt}
 			\pgf@temp
 		}
 	}

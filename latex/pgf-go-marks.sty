@@ -28,10 +28,16 @@
 \cs_generate_variant:Nn \__pgfgo_mark_shape_function:n {e}
 \clist_map_inline:nn {pgfgo_mark_hatched_lines:, pgfgo_mark_custom:} {\__pgfgo_mark_shape_function:n {#1}}
 
+%CADA FORMA EMPIEZA SIN LAS MARCAS DE LA ANTERIOR (t-circle, circle ES UN circle CON SOMBRA).
+\cs_new_protected:Npn \__pgfgo_mark_shape_reset: {
+	\bool_set_false:N \l_pgfgo_mark_t_bool
+	\bool_set_false:N \l_pgfgo_mark_hatched_lines_bool
+}
+
 %LA CLAVE DE FORMA #1 DE pgfgo/mark, QUE EJECUTA #2 (TAMBIEN LAS DE \pgfgodefinemark).
 \cs_new_protected:Npn \__pgfgo_mark_shape_key:nn #1#2 {
 	\keys_define:nn {pgfgo / mark} {
-		#1		.code:n		= {#2},
+		#1		.code:n		= {\__pgfgo_mark_shape_reset: #2},
 		#1		.groups:n	= {shape},
 	}
 }
@@ -65,12 +71,14 @@
 	shift							.groups:n	=	{preset},
 
 	hatched~lines	.code:n			=	{
+		\__pgfgo_mark_shape_reset:
 		\bool_set_true:N\l_pgfgo_mark_hatched_lines_bool
 		\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_hatched_lines:
 	},
 	hatched~lines	.groups:n		=	{ shape },
 
 	custom					.code:n			= {
+		\__pgfgo_mark_shape_reset:
 		\tl_set:Nn\l_pgfgo_mark_custom_tl{#1}
 		\cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_custom:
 	},
@@ -104,6 +112,7 @@
 	\str_if_eq:VnF #2 {1} {#1 {#2}}
 }
 \cs_generate_variant:Nn \str_if_eq:nnF {Vn}
+\cs_generate_variant:Nn \str_if_eq:nnTF {Vn}
 
 %EL TRAZO DE LA MARCA DEL JUGADOR.
 \cs_new_protected:Npn \__pgfgo_mark_stroke_style: {
@@ -190,10 +199,20 @@
 \prg_generate_conditional_variant:Nnn \tl_if_blank:n {e} {p}
 %LAS MARCAS t- (TERRITORIO): EL CAMINO QUE ARMA #1, CON EL ESTILO DE LA CUADRICULA Y EL RELLENO DE LA
 %PIEDRA (CON SU PATRON).
+%LA CAPA NO TIENE AMBITOS: CON LA CUADRICULA TRANSLUCIDA, UN \pgfscope LIMITA LA OPACIDAD A ESTA MARCA.
 \cs_new_protected:Npn \__pgfgo_mark_t:n #1 {
+	\str_if_eq:VnTF \l_pgfgo_goban_grid_opacity_tl {1}
+		{\__pgfgo_mark_t_aux:n {#1}}
+		{
+			\pgfscope
+			\pgfsetstrokeopacity{\l_pgfgo_goban_grid_opacity_tl}
+			\__pgfgo_mark_t_aux:n {#1}
+			\endpgfscope
+		}
+}
+\cs_new_protected:Npn \__pgfgo_mark_t_aux:n #1 {
 	\pgfsetstrokecolor{\l_pgfgo_goban_grid_color_tl}
 	\pgfgo_goban_line_width:n {\l_pgfgo_goban_grid_line_width_dim}
-	\pgfsetstrokeopacity{\l_pgfgo_goban_grid_opacity_tl}
 	%SIN PATRON, RELLENO Y BORDE DE UN SOLO CAMINO (EN EL PDF, B EN VEZ DEL CAMINO DOS VECES CON f Y S).
 	\bool_lazy_or:nnTF
 		{! \tl_if_blank_p:e {\l_pgfgo_players_stone_fill_pattern_tl}}
@@ -229,7 +248,13 @@
 \tl_new:N \l__pgfgo_mark_x_tl
 \tl_new:N \l__pgfgo_mark_y_tl
 
+%EN SU \pgfscope: LA OPACIDAD 0.6 NO PASA A LAS MARCAS SIGUIENTES DE LA CAPA.
 \cs_new_protected:Nn\pgfgo_mark_dim: {
+	\pgfscope
+	\__pgfgo_mark_dim_aux:
+	\endpgfscope
+}
+\cs_new_protected:Npn \__pgfgo_mark_dim_aux: {
 	\pgfsetfillcolor{\l_pgfgo_goban_border_fill_color_tl}
 	\pgfsetfillopacity{0.6}
 	\pgfgo_goban_if_background_image:TF {

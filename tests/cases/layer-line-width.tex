@@ -1,0 +1,23 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% A stone or a mark goes into its layer: the line width of the drawing around it stays as it was.
+
+\case{Both red lines are 3pt wide: one drawn before the stones and marks, one after them}
+\begin{goban}[5x3]
+	\begin{scope}[line width = 3pt]
+		\draw[red] (go cs:A1) -- (go cs:E1);
+		\stones[b]{B2}\stones[w]{D2}
+		\marks[triangle]{C2}\marks[circle]{B2}
+		\draw[red] (go cs:A3) -- (go cs:E3);
+	\end{scope}
+\end{goban}
+
+\end{document}

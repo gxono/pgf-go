@@ -209,14 +209,14 @@
 
 
 
-\cs_set:Nn\pgfgo_stone_set_render_options:{
-	\pgfonlayer{pgfgo_layer_stone}
+\cs_new_protected:Npn \__pgfgo_stone_colors: {
 	\str_if_eq:VnF \l_pgfgo_players_stone_fill_color_tl {none}
 		{\pgfsetfillcolor{\l_pgfgo_players_stone_fill_color_tl}}
-	\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_fill_opacity_fp}
 	\pgfsetstrokecolor{\l_pgfgo_players_stone_line_color_tl}
+}
+\cs_new_protected:Npn \__pgfgo_stone_opacities: {
+	\pgfsetfillopacity{\fp_use:N\l_pgfgo_players_stone_fill_opacity_fp}
 	\pgfsetstrokeopacity{\fp_use:N\l_pgfgo_players_stone_line_opacity_fp}
-	\endpgfonlayer
 }
 
 
@@ -321,6 +321,8 @@
 %RELLENO). OPACA, EL GRUPO NO CAMBIA NADA Y VA EN UN \pgfscope.
 %EN PDF CADA ASPECTO DE PIEDRA SE DIBUJA UNA VEZ COMO Form XObject (CON /Group SI ES TRANSLUCIDA) Y CADA
 %PIEDRA ES UNA REFERENCIA A EL. CON IMAGEN, PATRON O color = none, Y EN DVI, SE DIBUJA CADA VEZ.
+%LOS COLORES VAN DENTRO DEL Form; LAS OPACIDADES TAMBIEN SI ES OPACA. TRANSLUCIDA, VAN FUERA: EL GRUPO SE
+%COMPONE CON ELLAS (DENTRO DEL GRUPO LA OPACIDAD EMPIEZA EN 1).
 \cs_set:Nn\pgfgo_stone_default_shape:{
 	\bool_set:Nn \l__pgfgo_stone_form_group_bool {
 		! (\fp_compare_p:nNn {\l_pgfgo_players_stone_fill_opacity_fp} = {1}
@@ -334,8 +336,13 @@
 		{\tl_if_empty_p:N \l_pgfgo_players_stone_shadow_image_tl}
 		{\tl_if_empty_p:N \l_pgfgo_players_stone_shine_image_tl}
 	}
-		{\__pgfgo_stone_form:}
 		{
+			\bool_if:NT \l__pgfgo_stone_form_group_bool {\__pgfgo_stone_opacities:}
+			\__pgfgo_stone_form:
+		}
+		{
+			\__pgfgo_stone_colors:
+			\__pgfgo_stone_opacities:
 			\bool_if:NTF \l__pgfgo_stone_form_group_bool
 				{\pgftransparencygroup \__pgfgo_stone_shape: \endpgftransparencygroup}
 				{\pgfscope \__pgfgo_stone_shape: \endpgfscope}
@@ -359,6 +366,18 @@
 \dim_new:N \l__pgfgo_stone_form_maxx_dim
 \dim_new:N \l__pgfgo_stone_form_miny_dim
 \dim_new:N \l__pgfgo_stone_form_maxy_dim
+%LAS PRIMITIVAS DE LOS Form SEGUN EL MOTOR (SOLO SE USAN CON SALIDA PDF).
+\sys_if_engine_luatex:TF
+	{
+		\cs_new_eq:NN \__pgfgo_stone_form_xform:w \saveboxresource
+		\cs_new_eq:NN \g__pgfgo_stone_form_last_int \lastsavedboxresourceindex
+		\cs_new_eq:NN \__pgfgo_stone_form_use:w \useboxresource
+	}
+	{
+		\cs_new_eq:NN \__pgfgo_stone_form_xform:w \pdfxform
+		\cs_new_eq:NN \g__pgfgo_stone_form_last_int \pdflastxform
+		\cs_new_eq:NN \__pgfgo_stone_form_use:w \pdfrefxform
+	}
 
 %LA CLAVE DEL ASPECTO: TODO LO QUE CAMBIA EL DIBUJO, MAS LA PARTE LINEAL DE LA TRANSFORMACION (goban/scale).
 %\g__pgfgo_stone_form_prop: CLAVE -> {Form}{MIN X}{MAX X}{MIN Y}{MAX Y}{MARGEN}.
@@ -397,7 +416,13 @@
 	\pgfresetboundingbox
 	\pgfsettransformentries \l__pgfgo_stone_form_a_tl \l__pgfgo_stone_form_b_tl
 		\l__pgfgo_stone_form_c_tl \l__pgfgo_stone_form_d_tl {0pt} {0pt}
-	\hbox_set:Nn \l__pgfgo_stone_form_box {\pgfscope \__pgfgo_stone_shape: \endpgfscope}
+	\hbox_set:Nn \l__pgfgo_stone_form_box {
+		\pgfscope
+		\__pgfgo_stone_colors:
+		\bool_if:NF \l__pgfgo_stone_form_group_bool {\__pgfgo_stone_opacities:}
+		\__pgfgo_stone_shape:
+		\endpgfscope
+	}
 	\dim_set:Nn \l__pgfgo_stone_form_margin_dim {
 		\fp_to_dim:n {\l_pgfgo_players_stone_line_width_dim * \l_pgfgo_players_stone_scale_fp
 			* \l_pgfgo_goban_line_scale_fp} + 1pt
@@ -424,23 +449,12 @@
 		\tex_hskip:D \dim_eval:n {#2 + #5}
 	}
 	\pgf@sys@pdf@check@resources
-	\sys_if_engine_luatex:TF
-		{
-			\saveboxresource ~
-				\bool_if:NT \l__pgfgo_stone_form_group_bool
-					{attr ~ {/Group~<</S/Transparency/I~false/K~false>>} ~}
-				resources ~ {\pgf@sys@pdf@possible@resources} ~
-				\l__pgfgo_stone_form_box
-			\tl_set:Ne \l__pgfgo_stone_form_index_tl {\int_use:N \lastsavedboxresourceindex}
-		}
-		{
-			\pdfxform ~
-				\bool_if:NT \l__pgfgo_stone_form_group_bool
-					{attr ~ {/Group~<</S/Transparency/I~false/K~false>>} ~}
-				resources ~ {\pgf@sys@pdf@possible@resources} ~
-				\l__pgfgo_stone_form_box
-			\tl_set:Ne \l__pgfgo_stone_form_index_tl {\int_use:N \pdflastxform}
-		}
+	\__pgfgo_stone_form_xform:w
+		\bool_if:NT \l__pgfgo_stone_form_group_bool
+			{attr ~ {/Group~<</S/Transparency/I~false/K~false>>} ~}
+		resources ~ {\pgf@sys@pdf@possible@resources} ~
+		\l__pgfgo_stone_form_box
+	\tl_set:Ne \l__pgfgo_stone_form_index_tl {\int_use:N \g__pgfgo_stone_form_last_int}
 	\prop_gput:NVe \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl
 		{{\l__pgfgo_stone_form_index_tl} {#1} {#2} {#3} {#4} {#5}}
 }
@@ -458,7 +472,7 @@
 		\hbox_set:Nn \l__pgfgo_stone_form_box {
 			\tex_hskip:D \dim_eval:n {\l__pgfgo_stone_form_x_dim + #2 - #6}
 			\tex_raise:D \l__pgfgo_stone_form_y_dim \hbox:n {
-				\sys_if_engine_luatex:TF {\useboxresource #1 \scan_stop:} {\pdfrefxform #1 \scan_stop:}
+				\__pgfgo_stone_form_use:w #1 \scan_stop:
 			}
 			\tex_hss:D
 		}
@@ -511,8 +525,12 @@
 
 
 
-\cs_set:Nn\pgfgo_stone_render_shape:{
+%LA PIEDRA EN (#1,#2), EN SU CAPA. EL GRUPO DE LA CAPA LIMITA EL CORRIMIENTO; LOS COLORES Y OPACIDADES QUE
+%PONE \pgfgo_stone_default_shape: QUEDAN EN LA CAPA (CADA PIEDRA PONE LOS SUYOS), ASI QUE NO HACE FALTA UN
+%\pgfscope (q/Q EN EL PDF).
+\cs_new_protected:Npn \pgfgo_stone_render_shape:nn #1#2 {
 	\pgfonlayer{pgfgo_layer_stone}
+	\pgftransformshift{\pgfpointxy{#1}{#2}}
 	\pgfgo_stone_default_shape:
 	\endpgfonlayer
 }
@@ -596,11 +614,7 @@
 
 	\tl_set:Nn\l_pgfgo_parsed_x_coordinate_tl{#2}
 	\tl_set:Nn\l_pgfgo_parsed_y_coordinate_tl{#3}
-	\pgfgo_stone_set_render_options:
-	\pgfscope
-	\pgftransformshift{\pgfpointxy{#2}{#3}}
-	\pgfgo_stone_render_shape:
-	\endpgfscope
+	\pgfgo_stone_render_shape:nn {#2} {#3}
 
 	%-----MARCAS-------------------------
 	\pgfscope

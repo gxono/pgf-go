@@ -153,6 +153,15 @@ All notable changes to `pgf-go` are listed here.
   x}`) kept only the stones of its own diagram (from the second one on): the
   position continued from a copy of the previous board. Now a named board
   plays the whole game.
+- The mark `dim` left its opacity (0.6) to the filled marks drawn after it,
+  and `t-circle` and `t-square` on a translucent grid left its opacity to the
+  marks after them; now each one keeps its opacity to itself.
+- A shape key of the marks after `t-circle`, `t-square`, `dim` or `hatched
+  lines` (`\marks[t-circle, circle]`) kept part of the previous shape: no
+  shadow, or the shadow of `hatched lines`.
+- A stone, a mark or a line set the line width of the drawing around it to
+  0.4pt: in a `goban`, `\begin{scope}[line width = 3pt]` drew with 0.4pt
+  after `\stones`. Now the width stays as it was.
 
 ### Performance
 
@@ -166,7 +175,9 @@ All notable changes to `pgf-go` are listed here.
 - In PDF output each look of a stone is drawn once and every stone with that
   look refers to it (a Form XObject): a full game is about 30% smaller, the
   manual about 8%. Stones with an image or a pattern, and DVI output, are
-  drawn as before.
+  drawn as before. Each stone also goes into its layer in one piece, without
+  a graphics state of its own, and the colors of the stone (and the
+  opacities, if it is opaque) go inside the Form.
 - Long games in `\sgf` and `\sgfdiagrams`, animations with many frames, and
   coordinates with pdfLaTeX (most items without regular expressions) are a
   little faster.
