@@ -1,0 +1,30 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=17cm]{standalone}
+\usepackage{../../latex/pgf-go}
+
+
+\pgfgoset{profile = simple, goban = {label}}
+
+
+\begin{document}
+	% blank: points that are not part of the board (a board in the shape of a cross).
+	% grid/edge: the outer lines of the grid, thicker; letter case: the letters of the border.
+	% After Z, the columns have two letters: AA, AB...
+
+	\begin{pgfgolayout}[columns = 2, width = natural, column sep = 2em, valign = bottom]
+		\begin{goban}[13, blank = {A:D 1:4, K:N 1:4, A:D 10:13, K:N 10:13}]
+			\stones[b]{G7, F9, E6}
+			\stones[w]{H6, G4, C7}
+		\end{goban}
+		\begin{goban}[9, grid = {edge = {width = 1.2pt}}, label = {letter case = lower}]
+			\stones[b]{C3, G7, C6}
+			\stones[w]{G3, E7, C7}
+		\end{goban}
+	\end{pgfgolayout}
+
+	\bigskip
+	\begin{goban}[30x5, label = {at = south, font size = 6pt}]
+		\stones[b]{X2:AB2, Z3}
+		\stones[w]{X3, Y3, AA3:AB3, Z4}
+	\end{goban}
+\end{document}

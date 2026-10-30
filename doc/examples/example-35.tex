@@ -1,0 +1,39 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=17cm]{standalone}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+% Three problems written in the document, in the syntax of Sensei's Library: one game per diagram.
+% The boards have different heights; align captions puts their captions on the same line.
+\begin{pgfgosgf}{problems}
+$$B Black to kill
+$$ | . . . . .
+$$ | X X X . .
+$$ | O O X X .
+$$ | . O O X .
+$$ | . . O X .
+$$ +----------
+
+$$B Black to live
+$$ ----------+
+$$ . O X . |
+$$ . O X . |
+$$ . O X . |
+$$ . O X X |
+$$ . . O O |
+$$ . . . . |
+
+$$B Black to kill
+$$ . . . . . . . . .
+$$ . . X X X X X . .
+$$ . X O O O O O X .
+$$ . X O . . . O X .
+$$ ------------------
+\end{pgfgosgf}
+
+
+\pgfgoset{profile = pgfgo}
+
+
+\begin{document}
+	\sgfproblem[game = 1:3, layout = {columns = 3, align captions}]{problems}
+\end{document}

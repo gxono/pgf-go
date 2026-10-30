@@ -158,6 +158,15 @@ All notable changes to `pgf-go` are listed here.
 
 - `goban/scale` said that it also changes the width of the lines; it changes
   only the sizes (for the widths, `scale line width`).
+- New examples in `doc/examples`: problems written in the syntax of Sensei's
+  Library in `pgfgosgf`, with `align captions` (`example-35`), shapes placed
+  with `shift` (`example-36`), a joseki in the four corners with `origin` and
+  `transpose` (`example-37`), and boards with `blank`, `grid/edge`,
+  `letter case` and columns of two letters (`example-38`).
+- `example-6` shows every profile, also `simple` and `draft`; `example-21`
+  links the problem and its solutions (`links`) and scales the lines of the
+  big board (`scale line width`); `example-23` uses `\pgfgostone` and a view
+  of several parts; the profile of `example-24` sets `goban/arrow`.
 
 ## 0.2026.10.23 — 2026/10/23
 

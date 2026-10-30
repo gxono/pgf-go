@@ -12,7 +12,7 @@
 \usepackage[most]{tcolorbox}
 \usepackage[kernel = lua]{../latex/pgf-go}
 
-\graphicspath{{../doc/img/}}
+\graphicspath{{../doc/img/}{../latex/}}
 
 % Los kanji de las coordenadas japonesas y chinas.
 \font\kanji = {file:ipaexm.ttf} at 6pt
@@ -23,6 +23,8 @@
 \pgfgodefinesgf{variantes}{../doc/es/variantes.sgf}
 \pgfgodefinesgf{problema}{../doc/es/problema.sgf}
 \pgfgodefinesgf{josekis}{../doc/es/josekis.sgf}
+\pgfgodefinesgf[origin = bottom left]{abajo}{../doc/es/josekis.sgf}
+\pgfgodefinesgf[transpose]{traspuesto}{../doc/es/josekis.sgf}
 \pgfgodefinesgf{lee}{../doc/examples/lee.sgf}
 \pgfgodefinesgf{segoe}{../doc/examples/maeda-segoe.sgf}
 \pgfgodefinesgf{primera}{../doc/examples/games.sgf}
@@ -332,6 +334,7 @@
 	\end{codigo}
 	\small Sin la palabra \clave{size}: un número para un tablero cuadrado, \clave{5x3} para uno rectangular.
 	\clave{scale} no cambia el grosor de las líneas; con \clave{scale line width}, también lo escala.
+	Con más de 25 columnas, después de la Z siguen \clave{AA}, \clave{AB}...
 \end{frame}
 
 \begin{frame}{Una parte del tablero: \texttt{partial}}
@@ -389,7 +392,8 @@
 \pgfgoset{goban = {7}}
 
 \begin{pgfgolayout}[columns = 3, fit]
-	\begin{goban}[label = {at = all}]
+	\begin{goban}[label = {at = all,
+			letter case = lower}]
 		\stones[b]{C3, E5}
 	\end{goban}
 	\begin{goban}[label = {at = {north, east},
@@ -402,16 +406,16 @@
 	\end{goban}
 \end{pgfgolayout}
 	\end{codigo}
-	\small \clave{western}: letras desde la izquierda y números desde abajo (sin la I). \clave{japanese}:
-	números desde la derecha y kanji desde arriba. Las coordenadas de los comandos no cambian.
+	\small \clave{western}: letras desde la izquierda, números desde abajo, sin la I (\clave{letter case}: en
+	minúscula). \clave{japanese}: números desde la derecha, kanji desde arriba. Los comandos no cambian.
 \end{frame}
 
 \begin{frame}[fragile]{Cuadrícula y puntos de estrella}
 	\begin{codigo}[0.45]
 \begin{pgfgolayout}[columns = 3, fit]
 	\begin{goban}[grid = {line = {color = nogal,
-			width = 1pt}}, hoshi = {radius = 2.5pt,
-			color = rojo}]
+			width = 1pt}, edge = {width = 2pt}},
+			hoshi = {radius = 2.5pt, color = rojo}]
 		\stones[b]{C3, E5}
 	\end{goban}
 	\begin{goban}[grid = {line = false},
@@ -424,6 +428,20 @@
 	\end{goban}
 \end{pgfgolayout}
 	\end{codigo}
+	\small \clave{edge}: las cuatro líneas de afuera, con su propio grosor o color.
+\end{frame}
+
+\begin{frame}[fragile]{Tableros con huecos: \texttt{blank}}
+	\begin{codigo}[0.5]
+\begin{goban}[13, scale = 0.75,
+		blank = {A:D 1:4, K:N 1:4,
+			A:D 10:13, K:N 10:13}]
+	\stones[b]{G7, F9, E6}
+	\stones[w]{H6, G4, C7}
+\end{goban}
+	\end{codigo}
+	\small Las intersecciones de \clave{blank} no son parte del tablero: no tienen líneas ni puntos de estrella.
+	Al lado de un hueco, la línea termina como en el borde.
 \end{frame}
 
 \begin{frame}[fragile]{El fondo y el borde}
@@ -435,7 +453,8 @@
 			line = {color = nogal, width = 1.5pt}}]
 		\stones[b]{B1, C2} \stone[w]{A3}
 	\end{goban}
-	\begin{goban}[background = {fill = {color = arena},
+	\begin{goban}[background = {fill = {color = arena,
+			pattern = {name = dots, color = nogal!40}},
 			line = false, rounded corners = 8pt}]
 		\stones[b]{B1, C2} \stone[w]{A3}
 	\end{goban}
@@ -445,6 +464,7 @@
 	\end{goban}
 \end{pgfgolayout}
 	\end{codigo}
+	\small \clave{pattern}: un patrón de Ti\emph{k}Z sobre el relleno; vale también en piedras, marcas y territorio.
 \end{frame}
 
 \begin{frame}[fragile]{Ti\emph{k}Z dentro del tablero}
@@ -662,6 +682,21 @@
 	de \clave{sequence}. Los rectángulos no tienen un orden fijo: ahí avisan.
 \end{frame}
 
+\begin{frame}[fragile]{Mover una forma: \texttt{shift}}
+	\begin{codigo}[0.5]
+\def\tigre{A2, B1, C2}
+
+\begin{goban}[9, scale = 1.1]
+	\stones[b]{\tigre}
+	\stones[b, shift = {3, 3}]{\tigre}
+	\stones[w, shift = {6, 6}]{\tigre}
+	\marks[triangle, shift = {6, 0}]{\tigre}
+\end{goban}
+	\end{codigo}
+	\small \clave{shift = \{columnas, filas\}} corre las coordenadas del comando, a la derecha y hacia arriba:
+	una forma escrita una vez va a cualquier lado. Lo que cae fuera del tablero se descarta, con un aviso.
+\end{frame}
+
 \begin{frame}[fragile]{Todo junto: una partida terminada en dos líneas}
 	\begin{codigo}[0.62]
 \begin{goban}[profile = wain, scale = 1.05,
@@ -866,7 +901,8 @@
 	\line[dash = dotted, halo = false]{G1}{G5}
 \end{goban}
 	\end{codigo}
-	\small Encima de las piedras, con un halo del color del fondo que las separa de lo de abajo.
+	\small Encima de las piedras, con un halo del color del fondo que las separa de lo de abajo. El estilo de
+	todas, en \clave{goban/arrow} y \clave{goban/line}: cada perfil trae el suyo.
 \end{frame}
 
 \begin{frame}[fragile]{Marcas propias}
@@ -1117,6 +1153,24 @@ Sin números ni fondo:
 	como quedó al terminar, al tamaño del texto.
 \end{frame}
 
+\begin{frame}[fragile]{Una piedra suelta y vistas de varias partes}
+	\begin{codigo}[0.5]
+\begin{goban}[5, name = cerco,
+		profile = pgfgo, scale = 0.8]
+	\stones[b]{B3, C2, C4}
+	\stones[w]{C3}
+\end{goban}
+
+La blanca \pgfgostone[w, mark = triangle]
+tiene tres vecinas negras:
+\pgfgoview{cerco}{B3, C2, C4}.
+Negro juega 1 \pgfgostone[b, number = 1]
+en D3 y la captura.
+	\end{codigo}
+	\small \clave{\textbackslash pgfgostone}: una piedra sin tablero, con marca o número. Con comas,
+	\clave{\textbackslash pgfgoview} da una vista por parte, unidas con \clave{separator} y \clave{last}.
+\end{frame}
+
 \begin{frame}[fragile]{Vistas antes del tablero y opciones}
 	\begin{codigo}[0.52]
 Más abajo, la blanca de C3 \pgfgoview{atari}{C3}
@@ -1161,6 +1215,9 @@ El ko de \pgfgoview{pelea}{Q16:S18}.
 			\end{solocodigo}
 			Como si se hubiera dibujado ahí: sirve para \clave{\textbackslash pgfgoview} y para \clave{resume}.
 	\end{columns}
+	\vfill
+	\small Para otro programa, la opción \clave{pages} del paquete: un \clave{goban} por página, y un script
+	que pasa cada uno a SVG o PNG con su nombre.
 \end{frame}
 
 
@@ -1184,6 +1241,44 @@ El ko de \pgfgoview{pelea}{Q16:S18}.
 \end{tabular}
 	\end{codigo}
 	\small Con un nombre, la ruta se escribe una vez y el archivo se lee una sola vez en todo el documento.
+\end{frame}
+
+\begin{frame}[fragile]{Diagramas de Sensei's Library}
+	\begin{codigo}[0.5]
+\begin{pgfgosgf}{escalera}
+$$B La escalera funciona
+$$ . X . . . . . |
+$$ X O 1 . . . . |
+$$ X 2 4 5 . . . |
+$$ . 3 6 8 9 . . |
+$$ . . 7 0 a . . |
+$$ --------------+
+\end{pgfgosgf}
+
+\sgfdiagrams[goban = {profile = pgfgo,
+	scale = 1.2}]{escalera}
+	\end{codigo}
+	\small Un diagrama copiado de Sensei's Library, o de un foro entre \texttt{[go]} y \texttt{[/go]}, se lee como
+	una partida: el título es el epígrafe, los números son jugadas y los bordes lo ubican en el tablero.
+\end{frame}
+
+\begin{frame}[fragile]{Girar un archivo: \texttt{origin} y \texttt{transpose}}
+	\begin{codigo}[0.5]
+% En el preámbulo:
+% \pgfgodefinesgf[origin = bottom left]
+%	{abajo}{josekis.sgf}
+% \pgfgodefinesgf[transpose]
+%	{traspuesto}{josekis.sgf}
+
+\pgfgoset{profile = pgfgo,
+	goban = {19, partial = auto}}
+\begin{pgfgolayout}[columns = 2, fit]
+	\begin{goban}\sgf{abajo}\end{goban}
+	\begin{goban}\sgf{traspuesto}\end{goban}
+\end{pgfgolayout}
+	\end{codigo}
+	\small \clave{origin}: la esquina donde va el punto \texttt{aa} del archivo. \clave{transpose}: cambia filas
+	por columnas. Juntas, las ocho simetrías del tablero; el joseki del archivo está arriba a la derecha.
 \end{frame}
 
 \begin{frame}[fragile]{\texttt{\textbackslash sgf}: una partida en un tablero}
@@ -1339,21 +1434,22 @@ El ko de \pgfgoview{pelea}{Q16:S18}.
 		\column{0.4\textwidth}
 			\begin{solocodigo}
 % Primero el enunciado...
-\sgfproblem[solutions = false,
+\sgfproblem[solutions = false, links,
 	goban = {scale = 1.6}]{problema}
 % ...y en la otra diapositiva,
 % las soluciones.
-\sgfproblem[statement = false,
+\sgfproblem[statement = false, links,
 	verdict, comments = false,
 	layout = {columns = 4, fit}]
 	{problema}
 			\end{solocodigo}
 			\small \clave{verdict} dice si cada variante es correcta, según las anotaciones del archivo.
+			\clave{links}: el epígrafe del enunciado lleva a la solución, y vuelve.
 		\column{0.58\textwidth}
 			\centering
 			\pgfgoset{profile = pgfgo}
-			\only<1>{\sgfproblem[solutions = false, goban = {scale = 1.6}]{problema}}%
-			\only<2>{\sgfproblem[statement = false, verdict, comments = false, layout = {columns = 4, fit}]{problema}}
+			\only<1>{\sgfproblem[solutions = false, links, goban = {scale = 1.6}]{problema}}%
+			\only<2>{\sgfproblem[statement = false, links, verdict, comments = false, layout = {columns = 4, fit}]{problema}}
 	\end{columns}
 \end{frame}
 
@@ -1496,7 +1592,9 @@ El ko de \pgfgoview{pelea}{Q16:S18}.
 				\item \clave{per page}: cada $n$ diagramas, \clave{\textbackslash newpage}.
 				\item \clave{per frame}: cada $n$ diagramas, la diapositiva siguiente (usa \clave{\textbackslash only<+>},
 					así que se suma a los \clave{\textbackslash pause} del frame).
-				\item \clave{align}: \clave{center}, \clave{left} o \clave{right} dentro de la columna.
+				\item \clave{halign}: \clave{center}, \clave{left} o \clave{right} dentro de la columna.
+				\item \clave{valign = bottom}: los tableros de una fila terminan a la misma altura;
+					\clave{align captions}: quedan arriba y los epígrafes empiezan en la misma línea.
 				\item Valen en \clave{pgfgolayout} y en la clave \clave{layout} de \clave{\textbackslash sgfdiagrams}
 					y \clave{\textbackslash sgfproblem}.
 			\end{itemize}
@@ -1578,7 +1676,8 @@ El ko de \pgfgoview{pelea}{Q16:S18}.
 	goban = {background = {fill = {color = black!85},
 			line = false},
 		grid = {line = {color = white!60}},
-		label = {color = gray}},
+		label = {color = gray},
+		arrow = {color = orange!85}},
 	neutral = {mark = {line = {color = white!80},
 		fill = {color = gray}}},
 	black = {stone = {fill = {color = blue!55!black},
@@ -1592,6 +1691,7 @@ El ko de \pgfgoview{pelea}{Q16:S18}.
 	\stones[w]{D4, D5, E5, F3}
 	\moves{F4, G4, F5}
 	\marks[triangle]{G7}
+	\arrow{F5}{F7}
 \end{goban}
 	\end{codigo}
 \end{frame}
@@ -1906,7 +2006,7 @@ El ko de \pgfgoview{pelea}{Q16:S18}.
 
 			\medskip
 			\small El manual (\texttt{pgf-go-es.pdf}) tiene catorce tutoriales y la referencia de cada clave; en
-			\texttt{doc/examples} hay 35 ejemplos con su código.
+			\texttt{doc/examples} hay 39 ejemplos con su código.
 		\column{0.4\textwidth}
 			\centering
 			\begin{goban}[sgf size = comentada, captures, profile = shell, scale = 1.6]

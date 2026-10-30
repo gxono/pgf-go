@@ -1,11 +1,11 @@
 \input{code-page}
-\documentclass[border=0.5cm, varwidth=11.6cm]{standalone}
+\documentclass[border=0.5cm, varwidth=17.4cm]{standalone}
 \usepackage{../../latex/pgf-go}
 
 
 \begin{document}
-	% The same board with four profiles: the first one gets a name, the others bring it back with resume.
-	\begin{pgfgolayout}[columns = 2]
+	% The same board with every profile: the first one gets a name, the others bring it back with resume.
+	\begin{pgfgolayout}[columns = 3]
 		\begin{goban}[name = profiles]
 			\stones[b] {A6|-B5|-D1|-E2, C4, E9-|F4, D5-|G7--D7, H6, H8, I7}
 			\stones[w] {E8-|C5, B:E6, A7, B8, D9, I6|- H5, H2:3, F1|-C3, C2, D:E4, G4}
@@ -21,5 +21,7 @@
 		\begin{goban}[resume = {profiles, marks}, profile = shell]\end{goban}
 		\begin{goban}[resume = {profiles, marks}, profile = yunzi]\end{goban}
 		\begin{goban}[resume = {profiles, marks}, profile = baduktv]\end{goban}
+		\begin{goban}[resume = {profiles, marks}, profile = simple]\end{goban}
+		\begin{goban}[resume = {profiles, marks}, profile = draft]\end{goban}
 	\end{pgfgolayout}
 \end{document}

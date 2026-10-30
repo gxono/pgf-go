@@ -1,0 +1,24 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=17cm]{standalone}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+% joseki.sgf is in the upper right corner. origin says where the point aa of the file goes (initially
+% top left), and transpose swaps columns and rows (the approach comes from the other side): together,
+% the eight symmetries of the board. The variation is chosen by its moves on the board.
+\pgfgodefinesgf[origin = top right]{upper left}{joseki.sgf}
+\pgfgodefinesgf[origin = bottom right, transpose]{upper right}{joseki.sgf}
+\pgfgodefinesgf[transpose]{lower left}{joseki.sgf}
+\pgfgodefinesgf[origin = bottom left]{lower right}{joseki.sgf}
+
+
+\pgfgoset{profile = pgfgo, goban = {19, partial = auto, label = {at = {south, west}}}}
+
+
+\begin{document}
+	\begin{pgfgolayout}[columns = 4, fit]
+		\begin{goban}\sgf{upper left}\end{goban}
+		\begin{goban}\sgf{upper right}\end{goban}
+		\begin{goban}\sgf{lower left}\end{goban}
+		\begin{goban}\sgf[variation = {Q4, R6, O4}]{lower right}\end{goban}
+	\end{pgfgolayout}
+\end{document}

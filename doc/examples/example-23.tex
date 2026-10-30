@@ -27,7 +27,9 @@
 	\end{pgfgolayout}
 
 	\medskip
-	Black plays 1 \pgfgoview{capture}{D3} and takes the white stone \pgfgoview{before}{C3}:
+	The white stone \pgfgostone[w, mark = triangle] has three black neighbours,
+	\pgfgoview{before}{B3, C2, C4}.
+	Black plays 1 \pgfgoview{capture}{D3} and takes it:
 	now the shape is \pgfgoview{capture}{B2:E4}. White cannot take back at once, because the
 	same position would come again. White plays a threat first, 2 \pgfgoview{retake}{A5},
 	Black answers with 3 \pgfgoview{retake}{A4}, and only then White retakes with 4

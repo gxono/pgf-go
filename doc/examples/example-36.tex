@@ -1,0 +1,29 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=12cm]{standalone}
+\usepackage{../../latex/pgf-go}
+
+% Each shape is written once, from A1; shift = {columns, rows} draws it anywhere else.
+\def\jump{A1, A3}
+\def\knight{A1, B3}
+\def\bamboo{A1:2, C1:2}
+\def\tiger{A2, B1, C2}
+
+
+\pgfgoset{profile = pgfgosmooth}
+
+
+\begin{document}
+	\begin{goban}[15x9, label = {at = south}]
+		\stones[b, shift = {1, 5}]{\jump}
+		\stones[b, shift = {4, 5}]{\knight}
+		\stones[b, shift = {7, 5}]{\bamboo}
+		\stones[b, shift = {11, 5}]{\tiger}
+		\stones[w, shift = {1, 1}]{\jump}
+		\stones[w, shift = {4, 1}]{\knight}
+		\stones[w, shift = {7, 1}]{\bamboo}
+		\stones[w, shift = {11, 1}]{\tiger}
+	\end{goban}
+
+	\smallskip
+	From left to right: the one-space jump, the knight's move, the bamboo joint and the tiger's mouth.
+\end{document}

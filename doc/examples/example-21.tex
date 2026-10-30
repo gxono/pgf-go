@@ -6,7 +6,8 @@
 % maeda-segoe.sgf: Maeda Nobuaki against Segoe Kensaku, 1940. problem.sgf: a problem with its solution.
 \pgfgodefinesgf{game}{maeda-segoe.sgf}
 \pgfgodefinesgf{problem}{problem.sgf}
-\pgfgoset{profile = shell, goban = {label = {at = {south, west}}}}
+% links: the caption of the problem links to the slide of its solution, and back.
+\pgfgoset{profile = shell, goban = {label = {at = {south, west}}}, sgf problem = {links}}
 
 
 \begin{document}
@@ -43,7 +44,7 @@
 	\end{frame}
 
 	\begin{frame}[t]{A problem}
-		\only<1>{\sgfproblem[solutions = false, goban = {scale = 2}]{problem}}
+		\only<1>{\sgfproblem[solutions = false, goban = {scale = 2, scale line width}]{problem}}
 		\only<2>{\sgfproblem[statement = false, layout = {columns = 4, fit}]{problem}}
 	\end{frame}
 \end{document}

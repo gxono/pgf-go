@@ -12,7 +12,7 @@
 \usepackage[most]{tcolorbox}
 \usepackage[kernel = lua]{../latex/pgf-go}
 
-\graphicspath{{../doc/img/}}
+\graphicspath{{../doc/img/}{../latex/}}
 
 % The kanji of the Japanese and Chinese coordinates.
 \font\kanji = {file:ipaexm.ttf} at 6pt
@@ -23,6 +23,8 @@
 \pgfgodefinesgf{variations}{../doc/en/variations.sgf}
 \pgfgodefinesgf{problem}{../doc/examples/problem.sgf}
 \pgfgodefinesgf{josekis}{../doc/examples/joseki.sgf}
+\pgfgodefinesgf[origin = bottom left]{below}{../doc/examples/joseki.sgf}
+\pgfgodefinesgf[transpose]{transposed}{../doc/examples/joseki.sgf}
 \pgfgodefinesgf{lee}{../doc/examples/lee.sgf}
 \pgfgodefinesgf{segoe}{../doc/examples/maeda-segoe.sgf}
 \pgfgodefinesgf{first}{../doc/examples/games.sgf}
@@ -331,6 +333,7 @@
 	\end{codebox}
 	\small Without the word \keyname{size}: a number for a square board, \keyname{5x3} for a rectangular one.
 	\keyname{scale} does not change the width of the lines; with \keyname{scale line width}, it scales it too.
+	With more than 25 columns, \keyname{AA}, \keyname{AB}... follow Z.
 \end{frame}
 
 \begin{frame}{Part of the board: \texttt{partial}}
@@ -388,7 +391,8 @@
 \pgfgoset{goban = {7}}
 
 \begin{pgfgolayout}[columns = 3, fit]
-	\begin{goban}[label = {at = all}]
+	\begin{goban}[label = {at = all,
+			letter case = lower}]
 		\stones[b]{C3, E5}
 	\end{goban}
 	\begin{goban}[label = {at = {north, east},
@@ -401,16 +405,16 @@
 	\end{goban}
 \end{pgfgolayout}
 	\end{codebox}
-	\small \keyname{western}: letters from the left and numbers from the bottom (without I). \keyname{japanese}:
-	numbers from the right and kanji from the top. The coordinates of the commands do not change.
+	\small \keyname{western}: letters from the left, numbers from the bottom, no I (\keyname{letter case}: in
+	lower case). \keyname{japanese}: numbers from the right, kanji from the top. The commands do not change.
 \end{frame}
 
 \begin{frame}[fragile]{Grid and star points}
 	\begin{codebox}[0.45]
 \begin{pgfgolayout}[columns = 3, fit]
 	\begin{goban}[grid = {line = {color = walnut,
-			width = 1pt}}, hoshi = {radius = 2.5pt,
-			color = crimson}]
+			width = 1pt}, edge = {width = 2pt}},
+			hoshi = {radius = 2.5pt, color = crimson}]
 		\stones[b]{C3, E5}
 	\end{goban}
 	\begin{goban}[grid = {line = false},
@@ -423,6 +427,20 @@
 	\end{goban}
 \end{pgfgolayout}
 	\end{codebox}
+	\small \keyname{edge}: the four outer lines, with a width or color of their own.
+\end{frame}
+
+\begin{frame}[fragile]{Boards with holes: \texttt{blank}}
+	\begin{codebox}[0.5]
+\begin{goban}[13, scale = 0.75,
+		blank = {A:D 1:4, K:N 1:4,
+			A:D 10:13, K:N 10:13}]
+	\stones[b]{G7, F9, E6}
+	\stones[w]{H6, G4, C7}
+\end{goban}
+	\end{codebox}
+	\small The intersections of \keyname{blank} are not part of the board: they have no lines and no star points.
+	Next to a hole, the line ends as at the edge.
 \end{frame}
 
 \begin{frame}[fragile]{The background and the border}
@@ -434,7 +452,8 @@
 			line = {color = walnut, width = 1.5pt}}]
 		\stones[b]{B1, C2} \stone[w]{A3}
 	\end{goban}
-	\begin{goban}[background = {fill = {color = sand},
+	\begin{goban}[background = {fill = {color = sand,
+			pattern = {name = dots, color = walnut!40}},
 			line = false, rounded corners = 8pt}]
 		\stones[b]{B1, C2} \stone[w]{A3}
 	\end{goban}
@@ -444,6 +463,7 @@
 	\end{goban}
 \end{pgfgolayout}
 	\end{codebox}
+	\small \keyname{pattern}: a Ti\emph{k}Z pattern over the fill; it works also in stones, marks and territory.
 \end{frame}
 
 \begin{frame}[fragile]{Ti\emph{k}Z inside the board}
@@ -661,6 +681,21 @@
 	of \keyname{sequence}. Rectangles have no fixed order: there, you get a warning.
 \end{frame}
 
+\begin{frame}[fragile]{Moving a shape: \texttt{shift}}
+	\begin{codebox}[0.5]
+\def\tiger{A2, B1, C2}
+
+\begin{goban}[9, scale = 1.1]
+	\stones[b]{\tiger}
+	\stones[b, shift = {3, 3}]{\tiger}
+	\stones[w, shift = {6, 6}]{\tiger}
+	\marks[triangle, shift = {6, 0}]{\tiger}
+\end{goban}
+	\end{codebox}
+	\small \keyname{shift = \{columns, rows\}} moves the coordinates of the command, to the right and up: a shape
+	written once goes anywhere. What falls off the board is dropped, with a warning.
+\end{frame}
+
 \begin{frame}[fragile]{All together: a finished game in two lines}
 	\begin{codebox}[0.62]
 \begin{goban}[profile = wain, scale = 1.05,
@@ -865,7 +900,8 @@
 	\line[dash = dotted, halo = false]{G1}{G5}
 \end{goban}
 	\end{codebox}
-	\small Above the stones, with a halo of the background color that separates them from what is below.
+	\small Above the stones, with a halo of the background color that separates them from what is below. The
+	style of all of them, in \keyname{goban/arrow} and \keyname{goban/line}: each profile brings its own.
 \end{frame}
 
 \begin{frame}[fragile]{Custom marks}
@@ -1116,6 +1152,24 @@ Without numbers or background:
 	as it was at the end, at the size of the text.
 \end{frame}
 
+\begin{frame}[fragile]{A stone alone and views of several parts}
+	\begin{codebox}[0.5]
+\begin{goban}[5, name = net,
+		profile = pgfgo, scale = 0.8]
+	\stones[b]{B3, C2, C4}
+	\stones[w]{C3}
+\end{goban}
+
+The white stone \pgfgostone[w, mark = triangle]
+has three black neighbours:
+\pgfgoview{net}{B3, C2, C4}.
+Black plays 1 \pgfgostone[b, number = 1]
+at D3 and captures it.
+	\end{codebox}
+	\small \keyname{\textbackslash pgfgostone}: a stone without a board, with a mark or a number. With commas,
+	\keyname{\textbackslash pgfgoview} gives one view per part, joined with \keyname{separator} and \keyname{last}.
+\end{frame}
+
 \begin{frame}[fragile]{Views before the board, and options}
 	\begin{codebox}[0.52]
 Further below, the white stone at C3 \pgfgoview{atari}{C3}
@@ -1160,6 +1214,9 @@ The ko of \pgfgoview{fight}{Q16:S18}.
 			\end{codeonly}
 			As if it had been drawn there: it works for \keyname{\textbackslash pgfgoview} and for \keyname{resume}.
 	\end{columns}
+	\vfill
+	\small For another program, the package option \keyname{pages}: one \keyname{goban} per page, and a script
+	that turns each one into SVG or PNG, with its name.
 \end{frame}
 
 
@@ -1183,6 +1240,44 @@ The ko of \pgfgoview{fight}{Q16:S18}.
 \end{tabular}
 	\end{codebox}
 	\small With a name, the path is written once and the file is read only once in the whole document.
+\end{frame}
+
+\begin{frame}[fragile]{Diagrams of Sensei's Library}
+	\begin{codebox}[0.5]
+\begin{pgfgosgf}{ladder}
+$$B The ladder works
+$$ . X . . . . . |
+$$ X O 1 . . . . |
+$$ X 2 4 5 . . . |
+$$ . 3 6 8 9 . . |
+$$ . . 7 0 a . . |
+$$ --------------+
+\end{pgfgosgf}
+
+\sgfdiagrams[goban = {profile = pgfgo,
+	scale = 1.2}]{ladder}
+	\end{codebox}
+	\small A diagram copied from Sensei's Library, or from a forum between \texttt{[go]} and \texttt{[/go]}, is read
+	as a game: the title is the caption, the numbers are moves and the edges place it on the board.
+\end{frame}
+
+\begin{frame}[fragile]{Turning a file: \texttt{origin} and \texttt{transpose}}
+	\begin{codebox}[0.5]
+% In the preamble:
+% \pgfgodefinesgf[origin = bottom left]
+%	{below}{joseki.sgf}
+% \pgfgodefinesgf[transpose]
+%	{transposed}{joseki.sgf}
+
+\pgfgoset{profile = pgfgo,
+	goban = {19, partial = auto}}
+\begin{pgfgolayout}[columns = 2, fit]
+	\begin{goban}\sgf{below}\end{goban}
+	\begin{goban}\sgf{transposed}\end{goban}
+\end{pgfgolayout}
+	\end{codebox}
+	\small \keyname{origin}: the corner where the point \texttt{aa} of the file goes. \keyname{transpose}: swaps rows
+	and columns. Together, the eight symmetries of the board; the joseki of the file is in the upper right.
 \end{frame}
 
 \begin{frame}[fragile]{\texttt{\textbackslash sgf}: a game on a board}
@@ -1338,21 +1433,22 @@ The ko of \pgfgoview{fight}{Q16:S18}.
 		\column{0.4\textwidth}
 			\begin{codeonly}
 % First the statement...
-\sgfproblem[solutions = false,
+\sgfproblem[solutions = false, links,
 	goban = {scale = 1.6}]{problem}
 % ...and on the next slide,
 % the solutions.
-\sgfproblem[statement = false,
+\sgfproblem[statement = false, links,
 	verdict, comments = false,
 	layout = {columns = 4, fit}]
 	{problem}
 			\end{codeonly}
 			\small \keyname{verdict} says whether each variation is right, according to the annotations of the file.
+			\keyname{links}: the caption of the statement leads to the solution, and back.
 		\column{0.58\textwidth}
 			\centering
 			\pgfgoset{profile = pgfgo}
-			\only<1>{\sgfproblem[solutions = false, goban = {scale = 1.6}]{problem}}%
-			\only<2>{\sgfproblem[statement = false, verdict, comments = false, layout = {columns = 4, fit}]{problem}}
+			\only<1>{\sgfproblem[solutions = false, links, goban = {scale = 1.6}]{problem}}%
+			\only<2>{\sgfproblem[statement = false, links, verdict, comments = false, layout = {columns = 4, fit}]{problem}}
 	\end{columns}
 \end{frame}
 
@@ -1494,7 +1590,9 @@ The ko of \pgfgoview{fight}{Q16:S18}.
 				\item \keyname{per page}: every $n$ diagrams, \keyname{\textbackslash newpage}.
 				\item \keyname{per frame}: every $n$ diagrams, the next slide (it uses \keyname{\textbackslash only<+>},
 					so it adds to the \keyname{\textbackslash pause} of the frame).
-				\item \keyname{align}: \keyname{center}, \keyname{left} or \keyname{right} inside the column.
+				\item \keyname{halign}: \keyname{center}, \keyname{left} or \keyname{right} inside the column.
+				\item \keyname{valign = bottom}: the boards of a row end at the same height;
+					\keyname{align captions}: they stay at the top and the captions start on the same line.
 				\item They work in \keyname{pgfgolayout} and in the key \keyname{layout} of \keyname{\textbackslash sgfdiagrams}
 					and \keyname{\textbackslash sgfproblem}.
 			\end{itemize}
@@ -1576,7 +1674,8 @@ The ko of \pgfgoview{fight}{Q16:S18}.
 	goban = {background = {fill = {color = black!85},
 			line = false},
 		grid = {line = {color = white!60}},
-		label = {color = gray}},
+		label = {color = gray},
+		arrow = {color = orange!85}},
 	neutral = {mark = {line = {color = white!80},
 		fill = {color = gray}}},
 	black = {stone = {fill = {color = blue!55!black},
@@ -1590,6 +1689,7 @@ The ko of \pgfgoview{fight}{Q16:S18}.
 	\stones[w]{D4, D5, E5, F3}
 	\moves{F4, G4, F5}
 	\marks[triangle]{G7}
+	\arrow{F5}{F7}
 \end{goban}
 	\end{codebox}
 \end{frame}
@@ -1904,7 +2004,7 @@ The ko of \pgfgoview{fight}{Q16:S18}.
 
 			\medskip
 			\small The manual (\texttt{pgf-go-en.pdf}) has fifteen tutorials and the reference of each key; in
-			\texttt{doc/examples} there are 35 examples with their code.
+			\texttt{doc/examples} there are 39 examples with their code.
 		\column{0.4\textwidth}
 			\centering
 			\begin{goban}[sgf size = commented, captures, profile = shell, scale = 1.6]
