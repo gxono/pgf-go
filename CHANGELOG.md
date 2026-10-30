@@ -163,6 +163,10 @@ All notable changes to `pgf-go` are listed here.
 - Smaller PDF files, with the same output: the marks `t-circle` and
   `t-square` fill and stroke one path (before, the path went twice); a
   partial board draws only the lines of the grid that can be seen.
+- In PDF output each look of a stone is drawn once and every stone with that
+  look refers to it (a Form XObject): a full game is about 30% smaller, the
+  manual about 8%. Stones with an image or a pattern, and DVI output, are
+  drawn as before.
 - Long games in `\sgf` and `\sgfdiagrams`, animations with many frames, and
   coordinates with pdfLaTeX (most items without regular expressions) are a
   little faster.

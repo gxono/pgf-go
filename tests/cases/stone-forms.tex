@@ -1,0 +1,62 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% In PDF output each look of a stone is drawn once and reused (a Form XObject). In every row the
+% stone in the middle differs from the default ones around it in one option only: if the look were
+% reused by mistake, it would look like its neighbours.
+
+\case{Default (B), radius 3pt (C), default (D); scale 1.4 (C2)}
+\begin{goban}[5x2]\stones[b]{B1, D1, B2, D2}\stones[b, radius = 3pt]{C1}\stones[b, scale = 1.4]{C2}\end{goban}
+
+\case{Line: red (C1), 2pt (C2); fill: red (C3), opacity 0.5 (C4)}
+\begin{goban}[5x4]
+	\stones[w]{B1:4, D1:4}
+	\stones[w, line = {color = red}]{C1}
+	\stones[w, line = {width = 2pt}]{C2}
+	\stones[w, fill = {color = red}]{C3}
+	\stones[w, fill = {opacity = 0.5}]{C4}
+\end{goban}
+
+\case{Shine: angle 90 (C1), red (C2), opacity 1 (C3); shadow: offset 2pt (C4), angle -90 (C5), scale 1.3 (C6), red (C7)}
+\begin{goban}[5x7, profile = pgfgo]
+	\stones[b]{B1:7, D1:7}
+	\stones[b, shine = {angle = 90}]{C1}
+	\stones[b, shine = {color = red}]{C2}
+	\stones[b, shine = {opacity = 1}]{C3}
+	\stones[b, shadow = {offset = 2pt}]{C4}
+	\stones[b, shadow = {angle = -90}]{C5}
+	\stones[b, shadow = {scale = 1.3}]{C6}
+	\stones[b, shadow = {color = red}]{C7}
+\end{goban}
+
+\case{Prisoners (translucent) between stones; line opacity 0.3 (C2)}
+\begin{goban}[5x2]\stones[b]{B1:2, D1:2}\prisoner[b]{C1}\stones[b, line = {opacity = 0.3, width = 2pt}]{C2}\end{goban}
+
+\case{The same stones with scale = 0.6, then with scale = 2 and scale line width}
+\begin{goban}[5x1]\stones[b]{B1, D1}\stones[w]{C1}\end{goban}
+\begin{goban}[5x1, scale = 0.6]\stones[b]{B1, D1}\stones[w]{C1}\end{goban}
+\begin{goban}[5x1, scale = 2, scale line width]\stones[b]{B1, D1}\stones[w]{C1}\end{goban}
+
+\case{Pattern (C1), color none (C2) and image (C3) keep the direct drawing}
+\begin{goban}[5x3]
+	\stones[b]{B1:3, D1:3}
+	\stones[b, fill = {pattern = {name = north east lines, color = white}}]{C1}
+	\stones[b, fill = {color = none, pattern = {name = dots}}]{C2}
+	\stones[b, image = {file = pgfgo-yunzi-black.png}]{C3}
+\end{goban}
+
+\case{Stones at the edge of partial = auto}
+\begin{goban}[9, partial = auto]\stones[b]{E5, F6}\stones[w]{E6, D5}\end{goban}
+
+\newpage
+\case{A second page reuses the looks of the first}
+\begin{goban}[5x2, profile = pgfgo]\stones[b]{B1, D1}\stones[w]{C1, C2}\prisoner[b]{B2}\end{goban}
+
+\end{document}

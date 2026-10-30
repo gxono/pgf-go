@@ -318,13 +318,155 @@
 }
 
 %UNA PIEDRA TRANSLUCIDA VA EN UN GRUPO DE TRANSPARENCIA: SE COMPONE ENTERA (EL BORDE NO SE VE SOBRE EL
-%RELLENO). OPACA, EL GRUPO NO CAMBIA NADA Y CADA UNO ES UN OBJETO MAS EN EL PDF: VA EN UN \pgfscope.
+%RELLENO). OPACA, EL GRUPO NO CAMBIA NADA Y VA EN UN \pgfscope.
+%EN PDF CADA ASPECTO DE PIEDRA SE DIBUJA UNA VEZ COMO Form XObject (CON /Group SI ES TRANSLUCIDA) Y CADA
+%PIEDRA ES UNA REFERENCIA A EL. CON IMAGEN, PATRON O color = none, Y EN DVI, SE DIBUJA CADA VEZ.
 \cs_set:Nn\pgfgo_stone_default_shape:{
-	\bool_lazy_and:nnTF
-		{\fp_compare_p:nNn {\l_pgfgo_players_stone_fill_opacity_fp} = {1}}
-		{\fp_compare_p:nNn {\l_pgfgo_players_stone_line_opacity_fp} = {1}}
-		{\pgfscope \__pgfgo_stone_shape: \endpgfscope}
-		{\pgftransparencygroup \__pgfgo_stone_shape: \endpgftransparencygroup}
+	\bool_set:Nn \l__pgfgo_stone_form_group_bool {
+		! (\fp_compare_p:nNn {\l_pgfgo_players_stone_fill_opacity_fp} = {1}
+		&& \fp_compare_p:nNn {\l_pgfgo_players_stone_line_opacity_fp} = {1})
+	}
+	\bool_lazy_all:nTF {
+		{\sys_if_output_pdf_p:}
+		{\seq_if_empty_p:N \l_pgfgo_players_stone_image_seq}
+		{\tl_if_empty_p:N \l_pgfgo_players_stone_fill_pattern_tl}
+		{! \str_if_eq_p:Vn \l_pgfgo_players_stone_fill_color_tl {none}}
+		{\tl_if_empty_p:N \l_pgfgo_players_stone_shadow_image_tl}
+		{\tl_if_empty_p:N \l_pgfgo_players_stone_shine_image_tl}
+	}
+		{\__pgfgo_stone_form:}
+		{
+			\bool_if:NTF \l__pgfgo_stone_form_group_bool
+				{\pgftransparencygroup \__pgfgo_stone_shape: \endpgftransparencygroup}
+				{\pgfscope \__pgfgo_stone_shape: \endpgfscope}
+		}
+}
+
+\prop_new:N \g__pgfgo_stone_form_prop
+\tl_new:N \l__pgfgo_stone_form_key_tl
+\tl_new:N \l__pgfgo_stone_form_tl
+\tl_new:N \l__pgfgo_stone_form_a_tl
+\tl_new:N \l__pgfgo_stone_form_b_tl
+\tl_new:N \l__pgfgo_stone_form_c_tl
+\tl_new:N \l__pgfgo_stone_form_d_tl
+\tl_new:N \l__pgfgo_stone_form_index_tl
+\box_new:N \l__pgfgo_stone_form_box
+\bool_new:N \l__pgfgo_stone_form_group_bool
+\dim_new:N \l__pgfgo_stone_form_x_dim
+\dim_new:N \l__pgfgo_stone_form_y_dim
+\dim_new:N \l__pgfgo_stone_form_margin_dim
+\dim_new:N \l__pgfgo_stone_form_minx_dim
+\dim_new:N \l__pgfgo_stone_form_maxx_dim
+\dim_new:N \l__pgfgo_stone_form_miny_dim
+\dim_new:N \l__pgfgo_stone_form_maxy_dim
+
+%LA CLAVE DEL ASPECTO: TODO LO QUE CAMBIA EL DIBUJO, MAS LA PARTE LINEAL DE LA TRANSFORMACION (goban/scale).
+%\g__pgfgo_stone_form_prop: CLAVE -> {Form}{MIN X}{MAX X}{MIN Y}{MAX Y}{MARGEN}.
+\cs_new_protected:Npn \__pgfgo_stone_form: {
+	\pgfgettransformentries \l__pgfgo_stone_form_a_tl \l__pgfgo_stone_form_b_tl
+		\l__pgfgo_stone_form_c_tl \l__pgfgo_stone_form_d_tl \l_tmpa_tl \l_tmpb_tl
+	\tl_set:Ne \l__pgfgo_stone_form_key_tl {
+		\l__pgfgo_stone_form_a_tl, \l__pgfgo_stone_form_b_tl, \l__pgfgo_stone_form_c_tl, \l__pgfgo_stone_form_d_tl;
+		\bool_to_str:N \l__pgfgo_stone_form_group_bool;
+		\dim_use:N \l_pgfgo_players_stone_radius_dim; \fp_use:N \l_pgfgo_players_stone_scale_fp;
+		\dim_use:N \l_pgfgo_players_stone_line_width_dim; \fp_use:N \l_pgfgo_goban_line_scale_fp;
+		\bool_to_str:N \l_pgfgo_players_stone_fill_bool; \bool_to_str:N \l_pgfgo_players_stone_line_bool;
+		\exp_not:V \l_pgfgo_players_stone_fill_color_tl; \fp_use:N \l_pgfgo_players_stone_fill_opacity_fp;
+		\exp_not:V \l_pgfgo_players_stone_line_color_tl; \fp_use:N \l_pgfgo_players_stone_line_opacity_fp;
+		\bool_to_str:N \l_pgfgo_players_stone_shine_bool; \exp_not:V \l_pgfgo_players_stone_shine_color_tl;
+		\fp_use:N \l_pgfgo_players_stone_shine_opacity_fp; \fp_use:N \l_pgfgo_players_stone_shine_angle_fp;
+		\bool_to_str:N \l_pgfgo_players_stone_shadow_bool; \exp_not:V \l_pgfgo_players_stone_shadow_color_tl;
+		\fp_use:N \l_pgfgo_players_stone_shadow_opacity_fp; \fp_use:N \l_pgfgo_players_stone_shadow_angle_fp;
+		\dim_use:N \l_pgfgo_players_stone_shadow_offset_dim; \fp_use:N \l_pgfgo_players_stone_shadow_scale_fp
+	}
+	\prop_get:NVNF \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl \l__pgfgo_stone_form_tl {
+		\__pgfgo_stone_form_build:
+		\prop_get:NVN \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl \l__pgfgo_stone_form_tl
+	}
+	\exp_after:wN \__pgfgo_stone_form_place:nnnnnn \l__pgfgo_stone_form_tl
+}
+
+%DIBUJA LA PIEDRA EN EL ORIGEN EN UNA CAJA, MIDE SU bbox SIN TOCAR LA DEL DIBUJO Y LA GUARDA COMO Form, CON
+%UN MARGEN PARA EL GROSOR DEL BORDE (LA bbox DE PGF NO LO CUENTA). SIN NADA DIBUJADO NO HAY Form.
+\cs_new_protected:Npn \__pgfgo_stone_form_build: {
+	\group_begin:
+	\dim_set_eq:NN \l__pgfgo_stone_form_minx_dim \pgf@picminx
+	\dim_set_eq:NN \l__pgfgo_stone_form_maxx_dim \pgf@picmaxx
+	\dim_set_eq:NN \l__pgfgo_stone_form_miny_dim \pgf@picminy
+	\dim_set_eq:NN \l__pgfgo_stone_form_maxy_dim \pgf@picmaxy
+	\pgfresetboundingbox
+	\pgfsettransformentries \l__pgfgo_stone_form_a_tl \l__pgfgo_stone_form_b_tl
+		\l__pgfgo_stone_form_c_tl \l__pgfgo_stone_form_d_tl {0pt} {0pt}
+	\hbox_set:Nn \l__pgfgo_stone_form_box {\pgfscope \__pgfgo_stone_shape: \endpgfscope}
+	\dim_set:Nn \l__pgfgo_stone_form_margin_dim {
+		\fp_to_dim:n {\l_pgfgo_players_stone_line_width_dim * \l_pgfgo_players_stone_scale_fp
+			* \l_pgfgo_goban_line_scale_fp} + 1pt
+	}
+	\tl_set:Ne \l_tmpa_tl {
+		{\dim_use:N \pgf@picminx} {\dim_use:N \pgf@picmaxx}
+		{\dim_use:N \pgf@picminy} {\dim_use:N \pgf@picmaxy}
+		{\dim_use:N \l__pgfgo_stone_form_margin_dim}
+	}
+	\dim_compare:nNnTF {\pgf@picminx} > {\pgf@picmaxx}
+		{\prop_gput:NVn \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl {{} {} {} {} {} {}}}
+		{\exp_after:wN \__pgfgo_stone_form_save:nnnnn \l_tmpa_tl}
+	\dim_gset_eq:NN \pgf@picminx \l__pgfgo_stone_form_minx_dim
+	\dim_gset_eq:NN \pgf@picmaxx \l__pgfgo_stone_form_maxx_dim
+	\dim_gset_eq:NN \pgf@picminy \l__pgfgo_stone_form_miny_dim
+	\dim_gset_eq:NN \pgf@picmaxy \l__pgfgo_stone_form_maxy_dim
+	\group_end:
+}
+\cs_new_protected:Npn \__pgfgo_stone_form_save:nnnnn #1#2#3#4#5 {
+	\hbox_set:Nn \l__pgfgo_stone_form_box {
+		\tex_vrule:D width 0pt height \dim_eval:n {#4 + #5} depth \dim_eval:n {#5 - (#3)}
+		\tex_hskip:D \dim_eval:n {#5 - (#1)}
+		\box_use_drop:N \l__pgfgo_stone_form_box
+		\tex_hskip:D \dim_eval:n {#2 + #5}
+	}
+	\pgf@sys@pdf@check@resources
+	\sys_if_engine_luatex:TF
+		{
+			\saveboxresource ~
+				\bool_if:NT \l__pgfgo_stone_form_group_bool
+					{attr ~ {/Group~<</S/Transparency/I~false/K~false>>} ~}
+				resources ~ {\pgf@sys@pdf@possible@resources} ~
+				\l__pgfgo_stone_form_box
+			\tl_set:Ne \l__pgfgo_stone_form_index_tl {\int_use:N \lastsavedboxresourceindex}
+		}
+		{
+			\pdfxform ~
+				\bool_if:NT \l__pgfgo_stone_form_group_bool
+					{attr ~ {/Group~<</S/Transparency/I~false/K~false>>} ~}
+				resources ~ {\pgf@sys@pdf@possible@resources} ~
+				\l__pgfgo_stone_form_box
+			\tl_set:Ne \l__pgfgo_stone_form_index_tl {\int_use:N \pdflastxform}
+		}
+	\prop_gput:NVe \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl
+		{{\l__pgfgo_stone_form_index_tl} {#1} {#2} {#3} {#4} {#5}}
+}
+
+%PONE EL Form #1 EN EL PUNTO ACTUAL (CAJA DE TAMANO CERO, COMO \pgfsys@hbox) Y SUMA LA bbox DE LA PIEDRA.
+\cs_new_protected:Npn \__pgfgo_stone_form_place:nnnnnn #1#2#3#4#5#6 {
+	\tl_if_empty:nF {#1} {
+		\pgfpointtransformed{\pgfpointorigin}
+		\dim_set:Nn \l__pgfgo_stone_form_x_dim {\pgf@x}
+		\dim_set:Nn \l__pgfgo_stone_form_y_dim {\pgf@y}
+		\pgf@protocolsizes
+			{\dim_eval:n {\l__pgfgo_stone_form_x_dim + #2}} {\dim_eval:n {\l__pgfgo_stone_form_y_dim + #4}}
+		\pgf@protocolsizes
+			{\dim_eval:n {\l__pgfgo_stone_form_x_dim + #3}} {\dim_eval:n {\l__pgfgo_stone_form_y_dim + #5}}
+		\hbox_set:Nn \l__pgfgo_stone_form_box {
+			\tex_hskip:D \dim_eval:n {\l__pgfgo_stone_form_x_dim + #2 - #6}
+			\tex_raise:D \l__pgfgo_stone_form_y_dim \hbox:n {
+				\sys_if_engine_luatex:TF {\useboxresource #1 \scan_stop:} {\pdfrefxform #1 \scan_stop:}
+			}
+			\tex_hss:D
+		}
+		\box_set_wd:Nn \l__pgfgo_stone_form_box {0pt}
+		\box_set_ht:Nn \l__pgfgo_stone_form_box {0pt}
+		\box_set_dp:Nn \l__pgfgo_stone_form_box {0pt}
+		\box_use_drop:N \l__pgfgo_stone_form_box
+	}
 }
 \cs_new_protected:Npn \__pgfgo_stone_circle: {
 	\pgfpathcircle{\pgfpointorigin}{\l_pgfgo_players_stone_radius_dim * \fp_to_decimal:N\l_pgfgo_players_stone_scale_fp}
