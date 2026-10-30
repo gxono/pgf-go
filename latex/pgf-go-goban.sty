@@ -1713,6 +1713,11 @@
 		forgotten					.initial:n	= {false},
 		raise							.tl_set:N		= \l_pgfgo_goban_view_raise_tl,
 		raise							.initial:n	= {0.5ex},
+		%ENTRE LAS VISTAS DE UNA LISTA DE PARTES; last VA ANTES DE LA ULTIMA (CON DOS, SOLO last).
+		separator					.tl_set:N		= \l__pgfgo_view_separator_tl,
+		separator					.initial:n	= {,~},
+		last							.tl_set:N		= \l__pgfgo_view_last_tl,
+		last							.initial:n	= {~\pgfgo_text:n {and}~},
 		%EL PERFIL DE LAS VISTAS (false: EL ESTILO DEL ORIGINAL). VA ANTES DE LAS DEMAS OPCIONES DE LA VISTA.
 		profile						.code:n			= {
 																			\str_if_eq:nnTF {#1} {false}
@@ -1810,9 +1815,26 @@
 		\prop_gput:Nnn \g__pgfgo_goban_names_style_prop {#1} {#5}
 	}
 
-	%\pgfgoview[OPCIONES]{NOMBRE}{PARTE}: EL goban CON ESE NOMBRE COMO QUEDO AL TERMINAR (CON LAS CAPTURAS),
-	%SOLO EN ESA PARTE, PARA USAR EN EL TEXTO. SI TODAVIA NO HAY UN goban CON ESE NOMBRE: ?? Y UN AVISO.
+	%\pgfgoview[OPCIONES]{NOMBRE}{PARTES}: UNA VISTA POR PARTE (SEPARADAS POR COMAS), UNIDAS CON separator Y last.
+	\seq_new:N \l__pgfgo_view_parts_seq
+	\tl_new:N \l__pgfgo_view_goban_save_tl
 	\cs_new_protected:Npn \pgfgo_view:nnn #1#2#3 {
+		\group_begin:
+			%SOLO PARA separator Y last: LAS OPCIONES DE goban LAS JUNTA CADA VISTA.
+			\tl_set_eq:NN \l__pgfgo_view_goban_save_tl \l__pgfgo_view_goban_tl
+			\keys_set:nn {pgfgo / view} {#1}
+			\tl_set_eq:NN \l__pgfgo_view_goban_tl \l__pgfgo_view_goban_save_tl
+			\seq_clear:N \l__pgfgo_view_parts_seq
+			\clist_map_inline:nn {#3}
+				{\seq_put_right:Nn \l__pgfgo_view_parts_seq {\__pgfgo_view_part:nnn {#1} {#2} {##1}}}
+			\seq_use:Nnnn \l__pgfgo_view_parts_seq
+				{\l__pgfgo_view_last_tl} {\l__pgfgo_view_separator_tl} {\l__pgfgo_view_last_tl}
+		\group_end:
+	}
+
+	%UNA VISTA: EL goban CON ESE NOMBRE COMO QUEDO AL TERMINAR (CON LAS CAPTURAS), SOLO EN ESA PARTE, PARA USAR
+	%EN EL TEXTO. SI TODAVIA NO HAY UN goban CON ESE NOMBRE: ?? Y UN AVISO.
+	\cs_new_protected:Npn \__pgfgo_view_part:nnn #1#2#3 {
 		\__pgfgo_view_find:nTF {#2} {
 			\group_begin:
 				%EL ESTILO DEL goban CON NOMBRE; \pgfgoset{view} Y LAS OPCIONES DE LA VISTA VAN ENCIMA.

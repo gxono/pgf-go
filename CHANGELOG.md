@@ -106,8 +106,16 @@ All notable changes to `pgf-go` are listed here.
   `\stone` (`b`, `w`, `n`, `prisoner`, `mark`, the style of the stone) and
   `number = N`, which draws it with the number and the style of a move of its
   color. It changes nothing of what the last `goban` keeps.
+- `\pgfgoview` with several parts separated by commas
+  (`\pgfgoview{name}{F15, G15, C3:E5}`): one view per part, joined with
+  `view/separator` (initially a comma and a space) and `view/last` (before
+  the last one; initially `and` between spaces, translated as the rest of the
+  texts: new text `and` of `\pgfgotext`).
 
 ### Behaviour changes
+
+- In `\pgfgoview`, a comma separates parts: `{A1, C3}` is two views, not the
+  rectangle between them (a rectangle is written `A1:C3`).
 
 - The sizes of the board no longer depend on the font: `grid/sep` is
   initially `12.5pt` (was `1.25em`), `background/sep` `8.25pt` (was

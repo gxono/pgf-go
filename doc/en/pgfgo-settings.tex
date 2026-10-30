@@ -127,7 +127,7 @@ Both produce exactly the same diagrams\footnote{Or so the tests say.}. The Lua k
 \subsection{Languages}
 \label{subsec:idiomas}
 
-Some texts are written by the package itself: the captions of |\sgfdiagrams| and |\sgfproblem|, the result of the game, the annotations of the comments (|/pgfgo/sgf annotations|) and the word of the ``N at M'' notes. They are translated into English (|en|), Spanish (|es|), French (|fr|), German (|de|), Portuguese (|pt|), Italian (|it|), Esperanto (|eo|), Japanese (|ja|), Chinese (|zh|) and Korean (|ko|). Japanese, Chinese and Korean need a font with those characters.
+Some texts are written by the package itself: the captions of |\sgfdiagrams| and |\sgfproblem|, the result of the game, the annotations of the comments (|/pgfgo/sgf annotations|) the word of the ``N at M'' notes and the ``and'' between several views. They are translated into English (|en|), Spanish (|es|), French (|fr|), German (|de|), Portuguese (|pt|), Italian (|it|), Esperanto (|eo|), Japanese (|ja|), Chinese (|zh|) and Korean (|ko|). Japanese, Chinese and Korean need a font with those characters.
 
 By default, the texts are in the language set by babel or polyglossia, and they follow it if it changes inside the document (|\selectlanguage|, |otherlanguage|). Without babel or polyglossia, or in a language without a translation, they are in English. Each text can be changed with its \emph{key} (for example, |/pgfgo/sgf diagrams/title|); what is set that way holds in any language.
 
@@ -166,6 +166,7 @@ By default, the texts are in the language set by babel or polyglossia, and they 
 			|black to play| & Black to play & Juega Negro \\
 			|white to play| & White to play & Juega Blanco \\
 			|at| & at & en \\
+			|and| & and & y \\
 			|result| & Result & Resultado \\
 			|black| & Black & Negro \\
 			|white| & White & Blanco \\

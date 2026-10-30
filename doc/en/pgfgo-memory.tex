@@ -86,7 +86,7 @@
 
 	\subsection{Views in the text}
 	\label{subsec:vistas}
-	A named |goban| keeps everything it draws. Afterwards, |\pgfgoview| shows part of that board, as it was at the end (with the captures resolved), in the middle of a paragraph: a single stone or a box.
+	A named |goban| keeps everything it draws. Afterwards, |\pgfgoview| shows part of that board, as it was at the end (with the captures resolved), in the middle of a paragraph: a single stone, a box or several.
 
 	\begin{codeexample}[]
 		\begin{goban}[5, name = board1, captures]
@@ -99,8 +99,8 @@
 		The ko: \pgfgoview{board1}{B2:E4}.
 	\end{codeexample}
 
-	\begin{command}{\pgfgoview\opt{\oarg{options}}\marg{name}\marg{part}}
-		Draws the intersection or the rectangle (written as in |partial|) of the |goban| with that name, as it was at the end. By default everything the |goban| drew in that part is seen (stones, numbers of the moves, marks, arrows and territory) with the background and the coordinates of that |goban|, at the size of the text and centered at the height of the lowercase letters. The options are those of |/pgfgo/view|, which remove the marks, the numbers or the territory, or add what was forgotten, and also any option of |goban|, which is applied after those of the named |goban|: that way the background, the coordinates, the grid or the star points are removed, or the style of the stones, the marks and the board is changed (|players|, |stone|, |mark|, |grid|, |background|, \ldots).
+	\begin{command}{\pgfgoview\opt{\oarg{options}}\marg{name}\marg{parts}}
+		Draws the intersection or the rectangle (written as in |partial|) of the |goban| with that name, as it was at the end. With several parts separated by commas (|{F15, G15, C3:E5}|), it draws one view per part, joined with |view/separator| and |view/last|. By default everything the |goban| drew in that part is seen (stones, numbers of the moves, marks, arrows and territory) with the background and the coordinates of that |goban|, at the size of the text and centered at the height of the lowercase letters. The options are those of |/pgfgo/view|, which remove the marks, the numbers or the territory, or add what was forgotten, and also any option of |goban|, which is applied after those of the named |goban|: that way the background, the coordinates, the grid or the star points are removed, or the style of the stones, the marks and the board is changed (|players|, |stone|, |mark|, |grid|, |background|, \ldots).
 
 		The view uses the style that |goban| had when it was drawn (the profile, what was set with |\pgfgoset| and its options), even if it changes later. On top go the profile of the views (|view/profile|), |\pgfgoset{view = ...}| and the options of the view.
 
@@ -184,6 +184,19 @@
 			Text \pgfgoview[raise = 0pt]{board2}{C3}
 			text \pgfgoview{board2}{C3}
 			text \pgfgoview[raise = 1.5ex]{board2}{C3}.
+		\end{codeexample}
+	\end{key}
+
+	\begin{key}{/pgfgo/view/separator=\meta{text} (initially a comma and a space)}
+		What goes between the views of several parts.
+	\end{key}
+
+	\begin{key}{/pgfgo/view/last=\meta{text} (initially and between spaces, or its translation)}
+		What goes before the last view, instead of |separator|. With two parts, only this goes. The spaces are part of the text.
+
+		\begin{codeexample}[]
+			The stones \pgfgoview{board1}{B3, C2, C4} surround C3.
+			\pgfgoview[separator = {; }, last = { or }]{board1}{B3, C2, C4}.
 		\end{codeexample}
 	\end{key}
 

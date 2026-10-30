@@ -1,0 +1,37 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[spanish]{babel}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+\begin{goban}[9, name = lista]
+	\stones[b]{C3, D4, E5}\stones[w]{D3, E4}
+	\marks[cross]{F7, G7, F6, G6, H6}
+\end{goban}
+
+\case{Una parte: igual que antes}
+Punto \pgfgoview{lista}{D4}, rect\'angulo \pgfgoview{lista}{C3:E5}.
+
+\case{Dos partes: solo last (y)}
+Las piedras \pgfgoview{lista}{C3, D4} son negras.
+
+\case{Cinco puntos sueltos y una mezcla de punto y rect\'angulo}
+Las cruces \pgfgoview{lista}{F7, G7, F6, G6, H6}.
+Mezcla: \pgfgoview{lista}{C3, D3:E4, A8 to B9}.
+
+\case{separator y last en la vista y con pgfgoset}
+\pgfgoview[separator = {; }, last = { o }]{lista}{C3, D4, E5}.
+{\pgfgoset{view = {separator = {\,/\,}, last = {\,/\,}}}\pgfgoview{lista}{C3, D4, E5}.}
+
+\case{Otro idioma: and}
+{\pgfgoset{lang = en}\pgfgoview{lista}{C3, D4, E5}.}
+
+\case{Las opciones de goban valen para todas las vistas de la lista}
+\pgfgoview[background = false, marks = false]{lista}{F7, G7, F6}.
+
+\end{document}
