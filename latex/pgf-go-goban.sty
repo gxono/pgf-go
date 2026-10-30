@@ -756,7 +756,6 @@
 		\tl_set:Ne \l__pgfgo_goban_image_file_tl {\seq_item:Nn #1 {1}}
 	}
 	%EL ARCHIVO DE LA BALDOSA (#1,#2), SIEMPRE EL MISMO EN CADA LUGAR DE LA MALLA (COMO EN LAS PIEDRAS).
-	\fp_new:N \l__pgfgo_goban_pick_fp
 	\cs_new_protected:Npn \__pgfgo_goban_image_pick:nn #1#2 {
 		\tl_set:Ne \l__pgfgo_goban_image_file_tl {
 			\seq_item:Nn \l__pgfgo_goban_image_seq
@@ -1101,8 +1100,22 @@
 		\pgfsetstrokeopacity{\l_pgfgo_goban_grid_opacity_tl}
 		\pgfgo_goban_line_width:n {\l_pgfgo_goban_grid_line_width_dim}
 		\pgfsetroundcap
+		%CON partial, SOLO LAS LINEAS DE LA PARTE VISIBLE Y UNA MAS DE CADA LADO (QUEDA FUERA DEL RECORTE):
+		%\pgfpathgrid LAS PONE EN LOS MULTIPLOS DEL PASO, LAS MISMAS QUE CON EL TABLERO COMPLETO.
 		\prop_if_empty:NTF \l__pgfgo_goban_blank_prop
-			{\pgfpathgrid[step = \pgfpointxy{1}{1}] {\pgfpointxy{1}{1}}{\pgfpointxy{#1}{#2}}}
+			{
+				\bool_if:NTF \l_pgfgo_goban_partial_bool
+					{
+						\pgfpathgrid[step = \pgfpointxy{1}{1}]
+							{\pgfpointxy
+								{\int_max:nn {1} {\l_pgfgo_goban_from_x_int - 1}}
+								{\int_max:nn {1} {\l_pgfgo_goban_from_y_int - 1}}}
+							{\pgfpointxy
+								{\int_min:nn {#1} {\l_pgfgo_goban_to_x_int + 1}}
+								{\int_min:nn {#2} {\l_pgfgo_goban_to_y_int + 1}}}
+					}
+					{\pgfpathgrid[step = \pgfpointxy{1}{1}] {\pgfpointxy{1}{1}}{\pgfpointxy{#1}{#2}}}
+			}
 			{\__pgfgo_goban_blank_lines:nn {#1} {#2}}
 		\pgfusepath{stroke}
 		\endpgfscope
@@ -1406,7 +1419,6 @@
 		\pgfgo_kernel_board_window:e
 			{\pgfgo_kernel_column_name:n {#1} #2 ~ to ~ \pgfgo_kernel_column_name:n {#3} #4}
 	}
-	\cs_generate_variant:Nn \pgfgo_kernel_board_window:n {e}
 	%PARA LAS ANIMACIONES POR CAPAS (VER pgf-go-sgf.sty): \l_pgfgo_goban_layers_clist ELIGE LAS CAPAS QUE
 	%SE DIBUJAN (VACIA: TODAS), Y \l_pgfgo_goban_bbox_tl FIJA EL TAMANO ({minx}{miny}{maxx}{maxy}). AL
 	%TERMINAR, EL TAMANO DEL ULTIMO goban QUEDA EN \g_pgfgo_goban_bbox_tl.

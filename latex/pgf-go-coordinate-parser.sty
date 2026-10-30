@@ -338,7 +338,15 @@
 	\seq_clear:N \l__pgfgo_coordinate_corners_seq
 	\seq_clear:N \l__pgfgo_coordinate_links_seq
 	\int_zero:N \l__pgfgo_coordinate_part_int
-	\regex_split:NnN \c__pgfgo_coordinate_link_regex {#1} \l__pgfgo_coordinate_parts_seq
+	%SIN -, | NI r NO HAY OPERADORES: UN SOLO TRAMO, SIN LA REGEX (EL CASO DE CASI TODOS LOS ELEMENTOS).
+	\str_if_in:nnTF {#1} {-} {\__pgfgo_coordinate_split:n {#1}} {
+		\str_if_in:nnTF {#1} {|} {\__pgfgo_coordinate_split:n {#1}} {
+			\str_if_in:nnTF {#1} {r} {\__pgfgo_coordinate_split:n {#1}} {
+				\seq_clear:N \l__pgfgo_coordinate_parts_seq
+				\seq_put_right:Nn \l__pgfgo_coordinate_parts_seq {#1}
+			}
+		}
+	}
 	\seq_map_inline:Nn \l__pgfgo_coordinate_parts_seq {
 		\int_incr:N \l__pgfgo_coordinate_part_int
 		\int_if_odd:nTF {\l__pgfgo_coordinate_part_int} {
@@ -359,6 +367,10 @@
 	\bool_if:NF \l__pgfgo_coordinate_ordered_bool {
 		\bool_if:NF \l__pgfgo_coordinate_subtract_bool {\bool_set_false:N \l__pgfgo_coordinate_all_ordered_bool}
 	}
+}
+
+\cs_new_protected:Npn \__pgfgo_coordinate_split:n #1 {
+	\regex_split:NnN \c__pgfgo_coordinate_link_regex {#1} \l__pgfgo_coordinate_parts_seq
 }
 
 \cs_new_protected:Npn \__pgfgo_coordinate_chain: {

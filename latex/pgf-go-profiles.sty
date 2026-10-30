@@ -2,7 +2,6 @@
 \ExplSyntaxOn
 %UN PERFIL ES UNA LISTA DE CLAVES CON NOMBRE: LOS DE TABLERO VAN EN \g_pgfgo_profile_goban_prop (CLAVES DE
 %/pgfgo/goban) Y LOS DE JUGADOR EN \g_pgfgo_profile_player_prop (CLAVES DE UN JUGADOR DE /pgfgo/players).
-\prop_new:N \g_pgfgo_profile_profile_prop
 \prop_new:N \g_pgfgo_profile_player_prop
 \prop_new:N \g_pgfgo_profile_goban_prop
 
@@ -35,7 +34,6 @@
 \tl_new:N \g__pgfgo_profile_reset_goban_tl
 \clist_map_inline:nn {neutral, black, white} {\tl_new:c {g__pgfgo_profile_reset_ #1 _tl}}
 \str_new:N \l__pgfgo_profile_var_str
-\seq_new:N \l__pgfgo_profile_var_seq
 \bool_new:N \l__pgfgo_profile_keep_bool
 
 %SE LLAMA UNA VEZ, AL FINAL DE pgf-go.sty. USA LAS VARIABLES DEL ESTILO (\g_pgfgo_style_vars_seq) Y
@@ -50,9 +48,19 @@
 		}
 	}
 }
+%SIN REGEX: SE LLAMA UNA VEZ POR VARIABLE DEL ESTILO (CIENTOS) Y COMPILAR UNA REGEX EN CADA LLAMADA COSTABA
+%LA MITAD DEL TIEMPO DE CARGA DEL PAQUETE.
+\prg_new_conditional:Npnn \__pgfgo_profile_var_prefix:n #1 {p, TF} {
+	\str_if_eq:eeTF {\str_range:Nnn \l__pgfgo_profile_var_str {1} {\str_count:n {#1}}} {#1}
+		{\prg_return_true:} {\prg_return_false:}
+}
 \cs_new_protected:Npn \__pgfgo_profile_save_reset:nN #1#2 {
 	\str_set:Ne \l__pgfgo_profile_var_str {\cs_to_str:N #2}
-	\regex_match:nVTF {\A(l_pgfgo_goban_|l__pgfgo_arrow_|l__pgfgo_line_)} \l__pgfgo_profile_var_str {
+	\bool_lazy_any:nTF {
+		{\__pgfgo_profile_var_prefix_p:n {l_pgfgo_goban_}}
+		{\__pgfgo_profile_var_prefix_p:n {l__pgfgo_arrow_}}
+		{\__pgfgo_profile_var_prefix_p:n {l__pgfgo_line_}}
+	}{
 		\bool_set_false:N \l__pgfgo_profile_keep_bool
 		\clist_map_inline:Nn \c__pgfgo_profile_keep_goban_clist {
 			\str_if_in:NnT \l__pgfgo_profile_var_str {##1} {\bool_set_true:N \l__pgfgo_profile_keep_bool}
@@ -61,16 +69,15 @@
 			{\tl_gput_right:Ne \g__pgfgo_profile_reset_goban_tl {\__pgfgo_style_value:nN {#1} #2}}
 	}{
 		%LAS DE UN JUGADOR, SALVO l_pgfgo_players_<jugador>_bool (SI LA PIEDRA ES DE ESE JUGADOR).
-		\regex_extract_once:nVNT {\Al_pgfgo_players_(neutral|black|white)_(.*)\Z}
-			\l__pgfgo_profile_var_str \l__pgfgo_profile_var_seq {
-				\str_if_eq:eeF {\seq_item:Nn \l__pgfgo_profile_var_seq {3}} {bool} {
-					\tl_gput_right:ce {g__pgfgo_profile_reset_ \seq_item:Nn \l__pgfgo_profile_var_seq {2} _tl}
-						{\__pgfgo_style_value:nN {#1} #2}
-				}
-			}
+		\clist_map_inline:nn {neutral, black, white} {
+			\__pgfgo_profile_var_prefix:nTF {l_pgfgo_players_ ##1 _} {
+				\str_if_eq:eeF {\str_range:Nnn \l__pgfgo_profile_var_str {\str_count:n {l_pgfgo_players_ ##1 _} + 1} {-1}}
+					{bool} {\tl_gput_right:ce {g__pgfgo_profile_reset_ ##1 _tl} {\__pgfgo_style_value:nN {#1} #2}}
+				\clist_map_break:
+			} {}
+		}
 	}
 }
-\cs_generate_variant:Nn \regex_extract_once:nnNT {nV}
 \cs_generate_variant:Nn \tl_gput_right:Nn {ce}
 
 \cs_new_protected:Npn \pgfgo_profile_use_goban:n #1 {

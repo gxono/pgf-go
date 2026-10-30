@@ -11,7 +11,6 @@
 \cs_generate_variant:Nn \prop_item:Nn {NV}
 \cs_generate_variant:Nn \prop_put:Nnn {Nne}
 \cs_generate_variant:Nn \prop_gput:Nnn {Nne}
-\cs_generate_variant:Nn \tl_if_eq:nnF {nV}
 \cs_generate_variant:Nn \str_case:nn {Vn}
 
 %LOS COMANDOS DE SGF NECESITAN UN KERNEL QUE LEA PARTIDAS (kernel = lua).
@@ -300,9 +299,13 @@
 	}
 }
 
-%EL NUMERO QUE SE MUESTRA DE CADA JUGADA DIBUJADA (CON restart NO ES EL DE LA PARTIDA), PARA LOS COMENTARIOS.
-\prop_new:N \g__pgfgo_sgf_shown_prop
-\cs_generate_variant:Nn \prop_gput:Nnn {Nee}
+%EL NUMERO QUE SE MUESTRA DE CADA JUGADA DIBUJADA (CON restart NO ES EL DE LA PARTIDA), PARA LOS COMENTARIOS:
+%\__pgfgo_sgf_shown_<JUGADA>: (UN prop SERIA CUADRATICO EN LAS PARTIDAS LARGAS) Y LA MAYOR JUGADA GUARDADA.
+\int_new:N \g__pgfgo_sgf_shown_max_int
+\cs_new_protected:Npn \__pgfgo_sgf_shown_clear: {
+	\int_step_inline:nn {\g__pgfgo_sgf_shown_max_int} {\cs_undefine:c {__pgfgo_sgf_shown_ ##1 :}}
+	\int_gzero:N \g__pgfgo_sgf_shown_max_int
+}
 
 %UNA JUGADA DE #1 (black O white) EN (#2,#3). x E y VACIOS: PASE.
 \cs_new_protected:Npn \__pgfgo_sgf_move:nnn #1#2#3 {
@@ -337,7 +340,8 @@
 				{\l__pgfgo_sgf_number_int + \l__pgfgo_sgf_shift_int}
 		}
 		\pgfgo_kernel_move_set_number:n {\l__pgfgo_sgf_shown_int}
-		\prop_gput:Nee \g__pgfgo_sgf_shown_prop {\int_use:N \l__pgfgo_sgf_count_int} {\int_use:N \l__pgfgo_sgf_shown_int}
+		\cs_gset:cpe {__pgfgo_sgf_shown_ \int_use:N \l__pgfgo_sgf_count_int :} {\int_use:N \l__pgfgo_sgf_shown_int}
+		\int_gset:Nn \g__pgfgo_sgf_shown_max_int {\int_max:nn {\g__pgfgo_sgf_shown_max_int} {\l__pgfgo_sgf_count_int}}
 		\pgfgo_kernel_move_set_player:n {#1}
 		\tl_if_blank:nTF {#2} {
 			%UN PASE CUENTA, PERO NO SE DIBUJA. CON goban/notes, SI SE NUMERARIA, SE ANOTA ("N: pass"), SALVO LOS
@@ -1541,6 +1545,9 @@
 		{\hbox_overlap_right:n {\box_use:c {g__pgfgo_sgfanim_ #2 _box}}}
 }
 
+%UNA LAMINA Y EL CAMBIO DE CUADRO (ARMADAS DE UNA VEZ: SUMARLAS UNA POR UNA ES CUADRATICO).
+\cs_new:Npn \__pgfgo_sgfanim_frame_item:n #1 {\exp_not:n {\box_use:c {g__pgfgo_sgfanim_ #1 _box} \newframe}}
+
 %LA ANIMACION POR CAPAS: LAS LAMINAS, UNA POR CUADRO DE animate, Y EL timeline QUE DICE CUALES SE VEN.
 \cs_new_protected:Npn \__pgfgo_sgfanim_layered: {
 	\pgfgo_sgfanimation_layers:
@@ -1550,9 +1557,7 @@
 	%DE timeline = {...} PROTEGEN LAS COMAS Y LOS = DEL NOMBRE.
 	\tl_replace_all:Nnn \l__pgfgo_sgfanim_timeline_tl {~} {_}
 	\__pgfgo_sgfanim_timeline:V \l__pgfgo_sgfanim_timeline_tl
-	\tl_clear:N \l_tmpb_tl
-	\int_step_inline:nnn {0} {\g__pgfgo_sgfanim_layer_int - 2}
-		{\tl_put_right:Nn \l_tmpb_tl {\box_use:c {g__pgfgo_sgfanim_ ##1 _box} \newframe}}
+	\tl_set:Ne \l_tmpb_tl {\int_step_function:nnN {0} {\g__pgfgo_sgfanim_layer_int - 2} \__pgfgo_sgfanim_frame_item:n}
 	\mode_leave_vertical:
 	\use:e {
 		\exp_not:N \begin{animateinline}
@@ -2054,7 +2059,7 @@
 %\l__pgfgo_sgfdiag_suffix_tl.
 \tl_new:N \l__pgfgo_sgfdiag_suffix_tl
 \cs_new_protected:Npn \__pgfgo_sgfdiag_board:nn #1#2 {
-	\prop_gclear:N \g__pgfgo_sgf_shown_prop
+	\__pgfgo_sgf_shown_clear:
 	\hbox_set:Nn \l__pgfgo_sgfdiag_box {
 		\pgfgo_layout_restore_goban:
 		%LA ESCALA DE fit NO CAMBIA EL GROSOR DE LAS LINEAS (VER pgf-go-goban.sty).
@@ -2187,7 +2192,7 @@
 
 %EL NUMERO QUE SE MOSTRO DE LA JUGADA #1 (EL DE LA PARTIDA SI NO SE DIBUJO).
 \cs_new:Npn \__pgfgo_sgfdiag_shown:n #1 {
-	\prop_if_in:NnTF \g__pgfgo_sgf_shown_prop {#1} {\prop_item:Nn \g__pgfgo_sgf_shown_prop {#1}} {#1}
+	\cs_if_exist:cTF {__pgfgo_sgf_shown_ #1 :} {\use:c {__pgfgo_sgf_shown_ #1 :}} {#1}
 }
 
 %separator ANTES DE CADA COMENTARIO MENOS EL PRIMERO.

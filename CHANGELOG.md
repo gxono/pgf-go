@@ -154,6 +154,19 @@ All notable changes to `pgf-go` are listed here.
   position continued from a copy of the previous board. Now a named board
   plays the whole game.
 
+### Performance
+
+- Loading the package takes about a third of the time it took (about 2
+  seconds less with LuaLaTeX and with pdfLaTeX): saving the initial style
+  of the profiles compiled a regular expression for each variable. A short
+  document now compiles in about half the time.
+- Smaller PDF files, with the same output: the marks `t-circle` and
+  `t-square` fill and stroke one path (before, the path went twice); a
+  partial board draws only the lines of the grid that can be seen.
+- Long games in `\sgf` and `\sgfdiagrams`, animations with many frames, and
+  coordinates with pdfLaTeX (most items without regular expressions) are a
+  little faster.
+
 ### Documentation
 
 - `goban/scale` said that it also changes the width of the lines; it changes

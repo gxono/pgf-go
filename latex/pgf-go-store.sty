@@ -39,11 +39,15 @@
 
 %EL REGISTRO SE LEE CON LOS CATCODES DE expl3, QUE NO TIENEN ESPACIOS: CADA ESPACIO SE ESCRIBE ~ (QUE EN
 %expl3 ES UN ESPACIO). TAMPOCO TIENEN ~ ACTIVO NI _ DE SUBINDICE, Y % CORTARIA LA LINEA.
+\regex_const:Nn \c__pgfgo_store_space_regex {\cS.}
+\regex_const:Nn \c__pgfgo_store_tilde_regex {\cA\~}
+\regex_const:Nn \c__pgfgo_store_sub_regex {\cD.}
+\regex_const:Nn \c__pgfgo_store_percent_regex {\cO\%}
 \cs_new_protected:Npn \__pgfgo_store_escape:N #1 {
-	\regex_replace_all:nnN {\cS.} {\cO\~} #1
-	\regex_replace_all:nnN {\cA\~} {\c{nobreakspace}} #1
-	\regex_replace_all:nnN {\cD.} {\c{sb}} #1
-	\regex_replace_all:nnN {\cO\%} {\c{c_percent_str}} #1
+	\regex_replace_all:NnN \c__pgfgo_store_space_regex {\cO\~} #1
+	\regex_replace_all:NnN \c__pgfgo_store_tilde_regex {\c{nobreakspace}} #1
+	\regex_replace_all:NnN \c__pgfgo_store_sub_regex {\c{sb}} #1
+	\regex_replace_all:NnN \c__pgfgo_store_percent_regex {\c{c_percent_str}} #1
 }
 
 %EL REGISTRO DEL goban #1, YA COMO TEXTO: {<nombre>}{<tamano>}{<capturas>}{<opciones>}{<estilo>}{<memoria>}.

@@ -1,7 +1,6 @@
 \ProvidesFile{pgf-go-players.sty}[2026/10/23 v0.2026.10.23 pgf-go: players]
 \ExplSyntaxOn
 
-\cs_generate_variant:Nn \keys_define:nn {ee, en, ne}
 \cs_generate_variant:Nn \keys_set:nn {ne}
 
 
@@ -42,11 +41,17 @@
 %#3, O CON kanji, DOS POR KANJI (UN KANJI ES TAN ANCHO COMO DOS CIFRAS).
 \regex_const:Nn \c__pgfgo_players_char_regex {[a-zA-Z\d]}
 \cs_new_protected:Npn \pgfgo_players_label_length:NnnN #1#2#3#4 {
-	\cs_if_eq:NNTF #1 \pgfgo_int_to_kanji:n
-		{\int_set:Nn #4 {2 * \pgfgo_kanji_length:n {#2}}}
-		{\regex_count:NnN \c__pgfgo_players_char_regex {#3} #4}
+	\cs_if_eq:NNTF #1 \int_to_arabic:n
+		%arabic (EL DE SIEMPRE): LAS CIFRAS, SIN LA REGEX.
+		{\int_set:Nn #4 {\str_count:e {\int_abs:n {#2}}}}
+		{
+			\cs_if_eq:NNTF #1 \pgfgo_int_to_kanji:n
+				{\int_set:Nn #4 {2 * \pgfgo_kanji_length:n {#2}}}
+				{\regex_count:NnN \c__pgfgo_players_char_regex {#3} #4}
+		}
 }
-\cs_generate_variant:Nn \pgfgo_players_label_length:NnnN {NnVN, NVVN}
+\cs_generate_variant:Nn \pgfgo_players_label_length:NnnN {NnVN}
+\cs_generate_variant:Nn \str_count:n {e}
 
 \def\pgfgosetplayer#1#2{\pgfgoset{players = {#1 = {#2}}}}
 

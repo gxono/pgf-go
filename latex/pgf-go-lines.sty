@@ -79,20 +79,30 @@
 %LA RECTA DE (#1,#2) A (#3,#4) O, CON bend, LA CURVA: COMO EN TikZ, LOS PUNTOS DE CONTROL ESTAN A 0.3915
 %DE LA DISTANCIA, EN LAS DIRECCIONES DE SALIDA Y DE LLEGADA (GIRADAS bend Y -bend).
 \fp_new:N \l__pgfgo_lines_bend_fp
+%LOS PUNTOS DE CONTROL DE LA ULTIMA CURVA: EL HALO DIBUJA LA MISMA 33 VECES Y NO HACE FALTA RECALCULARLOS.
+\tl_new:N \l__pgfgo_lines_bend_key_tl
+\tl_new:N \l__pgfgo_lines_bend_new_key_tl
+\tl_new:N \l__pgfgo_lines_bend_points_tl
 \cs_new_protected:Npn \__pgfgo_lines_path:nnnn #1#2#3#4 {
 	\pgfpathmoveto {\pgfpointxy{#1}{#2}}
 	\fp_compare:nNnTF {\l__pgfgo_lines_bend_fp} = {0}
 		{\pgfpathlineto {\pgfpointxy{#3}{#4}}}
 		{
-			\pgfpathcurveto
-				{\pgfpointxy
+			\tl_set:Ne \l__pgfgo_lines_bend_new_key_tl {{#1} {#2} {#3} {#4} {\fp_use:N \l__pgfgo_lines_bend_fp}}
+			\tl_if_eq:NNF \l__pgfgo_lines_bend_key_tl \l__pgfgo_lines_bend_new_key_tl {
+				\tl_set_eq:NN \l__pgfgo_lines_bend_key_tl \l__pgfgo_lines_bend_new_key_tl
+				\tl_set:Ne \l__pgfgo_lines_bend_points_tl {
 					{\fp_eval:n {#1 + 0.3915 * ((#3 - #1) * cosd(\l__pgfgo_lines_bend_fp) - (#4 - #2) * sind(\l__pgfgo_lines_bend_fp))}}
-					{\fp_eval:n {#2 + 0.3915 * ((#3 - #1) * sind(\l__pgfgo_lines_bend_fp) + (#4 - #2) * cosd(\l__pgfgo_lines_bend_fp))}}}
-				{\pgfpointxy
+					{\fp_eval:n {#2 + 0.3915 * ((#3 - #1) * sind(\l__pgfgo_lines_bend_fp) + (#4 - #2) * cosd(\l__pgfgo_lines_bend_fp))}}
 					{\fp_eval:n {#3 - 0.3915 * ((#3 - #1) * cosd(\l__pgfgo_lines_bend_fp) + (#4 - #2) * sind(\l__pgfgo_lines_bend_fp))}}
-					{\fp_eval:n {#4 - 0.3915 * ((#4 - #2) * cosd(\l__pgfgo_lines_bend_fp) - (#3 - #1) * sind(\l__pgfgo_lines_bend_fp))}}}
-				{\pgfpointxy{#3}{#4}}
+					{\fp_eval:n {#4 - 0.3915 * ((#4 - #2) * cosd(\l__pgfgo_lines_bend_fp) - (#3 - #1) * sind(\l__pgfgo_lines_bend_fp))}}
+				}
+			}
+			\exp_after:wN \__pgfgo_lines_curve:nnnnnn \l__pgfgo_lines_bend_points_tl {#3} {#4}
 		}
+}
+\cs_new_protected:Npn \__pgfgo_lines_curve:nnnnnn #1#2#3#4#5#6 {
+	\pgfpathcurveto {\pgfpointxy {#1} {#2}} {\pgfpointxy {#3} {#4}} {\pgfpointxy {#5} {#6}}
 }
 
 %LA PUNTA DE arrows.meta CRECE CON EL GROSOR DE LA LINEA (SOBRE TODO A LO LARGO): EL HALO DE UNA FLECHA NO

@@ -187,18 +187,30 @@
 
 \cs_set_eq:NN\pgfgo_mark_current:\pgfgo_mark_cross:
 
+\prg_generate_conditional_variant:Nnn \tl_if_blank:n {e} {p}
 %LAS MARCAS t- (TERRITORIO): EL CAMINO QUE ARMA #1, CON EL ESTILO DE LA CUADRICULA Y EL RELLENO DE LA
 %PIEDRA (CON SU PATRON).
 \cs_new_protected:Npn \__pgfgo_mark_t:n #1 {
 	\pgfsetstrokecolor{\l_pgfgo_goban_grid_color_tl}
 	\pgfgo_goban_line_width:n {\l_pgfgo_goban_grid_line_width_dim}
 	\pgfsetstrokeopacity{\l_pgfgo_goban_grid_opacity_tl}
-	\pgfgo_fill:nVVV {#1}
-		\l_pgfgo_players_stone_fill_color_tl
-		\l_pgfgo_players_stone_fill_pattern_tl
-		\l_pgfgo_players_stone_fill_pattern_color_tl
-	#1
-	\pgfusepath{stroke}
+	%SIN PATRON, RELLENO Y BORDE DE UN SOLO CAMINO (EN EL PDF, B EN VEZ DEL CAMINO DOS VECES CON f Y S).
+	\bool_lazy_or:nnTF
+		{! \tl_if_blank_p:e {\l_pgfgo_players_stone_fill_pattern_tl}}
+		{\str_if_eq_p:ee {\l_pgfgo_players_stone_fill_color_tl} {none}}
+		{
+			\pgfgo_fill:nVVV {#1}
+				\l_pgfgo_players_stone_fill_color_tl
+				\l_pgfgo_players_stone_fill_pattern_tl
+				\l_pgfgo_players_stone_fill_pattern_color_tl
+			#1
+			\pgfusepath{stroke}
+		}
+		{
+			\pgfsetfillcolor{\l_pgfgo_players_stone_fill_color_tl}
+			#1
+			\pgfusepath{fill, stroke}
+		}
 }
 
 \cs_new_protected:Nn\pgfgo_mark_t_circle: {
@@ -303,7 +315,6 @@
 }
 \cs_generate_variant:Nn\pgfgo_mark:nnn  {nee}
 \cs_new:Nn \pgfgo_mark:nn {\pgfgo_mark:nnn{#1}#2}
-\cs_generate_variant:Nn\pgfgo_mark:nn {nV}
 
 %EL JUGADOR (POR DEFECTO, EL DE AHORA) Y SU ESTILO DE MARCA, CON LAS OPCIONES #1. LAS DEMAS CLAVES (LA
 %FORMA, custom) LAS PASA pgfgo/players/<jugador>/mark A pgfgo/mark.
