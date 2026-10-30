@@ -30,3 +30,10 @@ pendiente*.md
 
 # Material de trabajo (josekis)
 Kogo*.sgf
+
+# tcolorbox (listados)
+*.listing
+
+# PDF compilados: los manuales y los ejemplos van en los releases de GitHub
+*.pdf
+!doc/img/*.pdf

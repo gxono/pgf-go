@@ -49,7 +49,8 @@ pgf-go comes with TeX Live and MiKTeX. Otherwise, copy the files of the folder
 ## Documentation
 
 The manuals `pgf-go-es.pdf` (Spanish) and `pgf-go-en.pdf` (English), and the
-examples in `doc/examples`.
+examples in `doc/examples`. On GitHub, the compiled manuals are attached to
+each release.
 
 ## Changes
 
