@@ -2,7 +2,7 @@
 
 All notable changes to `pgf-go` are listed here.
 
-## Unreleased
+## 0.2026.10.30 — 2026/10/30
 
 ### New
 

@@ -1,6 +1,6 @@
 # pgf-go — Go (Weiqi, Baduk, Igo) diagrams in LaTeX
 
-Release 0.2026.10.23 2026/10/23
+Release 0.2026.10.30 2026/10/30
 
 ## Description
 
@@ -48,8 +48,9 @@ pgf-go comes with TeX Live and MiKTeX. Otherwise, copy the files of the folder
 
 ## Documentation
 
-The manuals `pgf-go-es.pdf` (Spanish) and `pgf-go-en.pdf` (English), and the
-examples in `doc/examples`. On GitHub, the compiled manuals are attached to
+The manuals `pgf-go-es.pdf` (Spanish) and `pgf-go-en.pdf` (English), the
+slides `doc/pgf-go-quick-start-es.pdf` and `doc/pgf-go-quick-start-en.pdf`, and
+the examples in `doc/examples`. On GitHub, the compiled manuals are attached to
 each release.
 
 ## Changes

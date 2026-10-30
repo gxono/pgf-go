@@ -102,13 +102,19 @@ Varios tableros pueden ir en una grilla: los |goban| y los diagramas de |\sgfdia
 \begin{key}{/pgfgo/layout/valign = \meta{top o bottom} (initially top)}
 	Cómo se alinean los diagramas de una fila de la grilla cuando sus tableros tienen distinto alto. Con |top|, arriba. Con |bottom|, los tableros terminan a la misma altura, y sus epígrafes y notas empiezan todos en la misma línea, debajo. Con |columns = auto|, los diagramas van en la línea de base del párrafo, como con |bottom|.
 
-	\begin{codeexample}[]
+	\begin{codeexample}[code only]
 		\begin{pgfgolayout}[columns = 3, valign = bottom]
 			\begin{goban}[5, scale = 0.6]\stones[b]{C3}\end{goban}
 			\begin{goban}[5x3, scale = 0.6]\stones[w]{C2}\end{goban}
 			\begin{goban}[9, scale = 0.6]\stones[b]{E5}\end{goban}
 		\end{pgfgolayout}
 	\end{codeexample}
+
+	\begin{pgfgolayout}[columns = 3, valign = bottom]
+		\begin{goban}[5, scale = 0.6]\stones[b]{C3}\end{goban}
+		\begin{goban}[5x3, scale = 0.6]\stones[w]{C2}\end{goban}
+		\begin{goban}[9, scale = 0.6]\stones[b]{E5}\end{goban}
+	\end{pgfgolayout}
 \end{key}
 
 \begin{key}{/pgfgo/layout/align captions = \meta{boolean} (default true, initially false)}
