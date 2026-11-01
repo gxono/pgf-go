@@ -96,14 +96,20 @@
 	}
 }
 \cs_new_protected:Npn \__pgfgo_style_register:nnN #1#2#3 {
-	\bool_lazy_or:nnT
-		{\str_if_eq_p:ee {\str_range:nnn {#1} {1} {7}} {l_pgfgo}}
-		{\str_if_eq_p:ee {\str_range:nnn {#1} {1} {8}} {l__pgfgo}}
-		{
-			\str_if_in:nnF {#1} {view} {
-				\str_if_in:nnF {#1} {resume} {\seq_gput_right:Nn \g_pgfgo_style_vars_seq {{#2} #3}}
-			}
+	\__pgfgo_style_if_local:nT {#1} {
+		\str_if_in:nnF {#1} {view} {
+			\str_if_in:nnF {#1} {resume} {\seq_gput_right:Nn \g_pgfgo_style_vars_seq {{#2} #3}}
 		}
+	}
+}
+%VERDADERO SI EL NOMBRE #1 (SIN LA BARRA) EMPIEZA CON l_pgfgo O l__pgfgo. SIN \str_range: SE LLAMA UNA VEZ POR
+%VARIABLE QUE CREAN LOS MODULOS DE ESTILO.
+\use:e {
+	\cs_new:Npn \exp_not:N \__pgfgo_style_if_local_aux:w #1 \tl_to_str:n {_pgfgo} #2 \exp_not:N \q_stop
+		{\exp_not:N \str_case:nnF {#1} {{\tl_to_str:n {l}} {\exp_not:N \use_i:nn} {\tl_to_str:n {l_}} {\exp_not:N \use_i:nn}} {\exp_not:N \use_ii:nn}}
+}
+\cs_new:Npn \__pgfgo_style_if_local:nT #1#2 {
+	\exp_last_unbraced:Nf \__pgfgo_style_if_local_aux:w {\tl_to_str:n {#1 _pgfgo} } \q_stop {#2} {}
 }
 \clist_map_inline:Nn \c__pgfgo_style_types_clist {
 	\cs_new_eq:cc {__pgfgo_style_ #1 _new:N} {#1_new:N}

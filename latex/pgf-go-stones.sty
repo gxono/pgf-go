@@ -320,36 +320,120 @@
 %UNA PIEDRA TRANSLUCIDA VA EN UN GRUPO DE TRANSPARENCIA: SE COMPONE ENTERA (EL BORDE NO SE VE SOBRE EL
 %RELLENO). OPACA, EL GRUPO NO CAMBIA NADA Y VA EN UN \pgfscope.
 %EN PDF CADA ASPECTO DE PIEDRA SE DIBUJA UNA VEZ COMO Form XObject (CON /Group SI ES TRANSLUCIDA) Y CADA
-%PIEDRA ES UNA REFERENCIA A EL. CON IMAGEN, PATRON O color = none, Y EN DVI, SE DIBUJA CADA VEZ.
+%PIEDRA ES UNA REFERENCIA A EL. SIN IMAGEN Y CON PATRON O color = none, Y EN DVI, SE DIBUJA CADA VEZ.
 %LOS COLORES VAN DENTRO DEL Form; LAS OPACIDADES TAMBIEN SI ES OPACA. TRANSLUCIDA, VAN FUERA: EL GRUPO SE
 %COMPONE CON ELLAS (DENTRO DEL GRUPO LA OPACIDAD EMPIEZA EN 1).
 \cs_set:Nn\pgfgo_stone_default_shape:{
+	\bool_if:NTF \l__pgfgo_stone_batch_bool
+		{\tl_if_empty:NTF \g__pgfgo_stone_batch_tl {\__pgfgo_stone_shape_choose:} {\__pgfgo_stone_shape_batch:}}
+		{\__pgfgo_stone_shape_choose:}
+}
+%DENTRO DE \stones TODAS LAS PIEDRAS TIENEN EL MISMO ESTILO Y LA MISMA TRANSFORMACION SALVO EL CORRIMIENTO: LA
+%PRIMERA QUE SE DIBUJA DEJA EN \g__pgfgo_stone_batch_tl COMO SE DIBUJAN ({form}{<Form>} O {form-group}{<Form>},
+%COMO EN \__pgfgo_stone_form:, O {other}{}) Y LAS DEMAS LO USAN. UNA IMAGEN QUE DEPENDE DEL PUNTO (VARIOS
+%ARCHIVOS O UN GIRO AL AZAR) DEJA {other}{}: CADA PIEDRA BUSCA SU Form.
+\tl_new:N \g__pgfgo_stone_batch_tl
+\cs_new_protected:Npn \__pgfgo_stone_shape_batch: {
+	\exp_after:wN \__pgfgo_stone_shape_batch:nn \g__pgfgo_stone_batch_tl
+}
+\cs_new_protected:Npn \__pgfgo_stone_shape_batch:nn #1#2 {
+	\str_case:nnF {#1} {
+		{form} {\__pgfgo_stone_form_place:nnnnnn #2}
+		{form-group} {\__pgfgo_stone_opacities: \__pgfgo_stone_form_place:nnnnnn #2}
+	} {\__pgfgo_stone_shape_choose:}
+}
+\cs_new_protected:Npn \__pgfgo_stone_shape_choose: {
 	\bool_set:Nn \l__pgfgo_stone_form_group_bool {
 		! (\fp_compare_p:nNn {\l_pgfgo_players_stone_fill_opacity_fp} = {1}
 		&& \fp_compare_p:nNn {\l_pgfgo_players_stone_line_opacity_fp} = {1})
 	}
-	\bool_lazy_all:nTF {
-		{\sys_if_output_pdf_p:}
-		{\seq_if_empty_p:N \l_pgfgo_players_stone_image_seq}
-		{\tl_if_empty_p:N \l_pgfgo_players_stone_fill_pattern_tl}
-		{! \str_if_eq_p:Vn \l_pgfgo_players_stone_fill_color_tl {none}}
-		{\tl_if_empty_p:N \l_pgfgo_players_stone_shadow_image_tl}
-		{\tl_if_empty_p:N \l_pgfgo_players_stone_shine_image_tl}
-	}
+	\bool_lazy_and:nnTF {\sys_if_output_pdf_p:}
 		{
-			\bool_if:NT \l__pgfgo_stone_form_group_bool {\__pgfgo_stone_opacities:}
-			\__pgfgo_stone_form:
+			\bool_lazy_or_p:nn {! \seq_if_empty_p:N \l_pgfgo_players_stone_image_seq}
+				{
+					\bool_lazy_and_p:nn {\tl_if_empty_p:N \l_pgfgo_players_stone_fill_pattern_tl}
+						{! \str_if_eq_p:Vn \l_pgfgo_players_stone_fill_color_tl {none}}
+				}
 		}
 		{
-			\__pgfgo_stone_colors:
-			\__pgfgo_stone_opacities:
-			\bool_if:NTF \l__pgfgo_stone_form_group_bool
-				{\pgftransparencygroup \__pgfgo_stone_shape: \endpgftransparencygroup}
-				{\pgfscope \__pgfgo_stone_shape: \endpgfscope}
+			\__pgfgo_stone_form_key:
+			\__pgfgo_stone_form_if_wanted:TF
+				{
+					\bool_if:NT \l__pgfgo_stone_form_group_bool {\__pgfgo_stone_opacities:}
+					\__pgfgo_stone_form:
+					\bool_if:NT \l__pgfgo_stone_batch_bool {
+						\tl_gset:Ne \g__pgfgo_stone_batch_tl {
+							\bool_if:NTF \l__pgfgo_stone_form_point_bool
+								{{other}{}}
+								{
+									{\bool_if:NTF \l__pgfgo_stone_form_group_bool {form-group} {form}}
+									{\exp_not:V \l__pgfgo_stone_form_tl}
+								}
+						}
+					}
+				}
+				{\__pgfgo_stone_shape_direct:}
 		}
+		{\__pgfgo_stone_shape_direct:}
+}
+\cs_new_protected:Npn \__pgfgo_stone_shape_direct: {
+	\bool_if:NT \l__pgfgo_stone_batch_bool {\tl_gset:Nn \g__pgfgo_stone_batch_tl {{other}{}}}
+	\__pgfgo_stone_colors:
+	\__pgfgo_stone_opacities:
+	\bool_if:NTF \l__pgfgo_stone_form_group_bool
+		{\pgftransparencygroup \__pgfgo_stone_shape: \endpgftransparencygroup}
+		{\pgfscope \__pgfgo_stone_shape: \endpgfscope}
 }
 
-\prop_new:N \g__pgfgo_stone_form_prop
+%UNA PIEDRA CON IMAGEN (DE LA PIEDRA, LA SOMBRA O EL BRILLO) DIBUJADA (UN \pgftext CON LA IMAGEN, QUE YA ESTA
+%UNA SOLA VEZ EN EL PDF) PESA POCO EN EL PDF COMPRIMIDO; UN Form (UN OBJETO CON SU DICCIONARIO Y SUS
+%RECURSOS) SOLO CONVIENE SI SE USA MUCHAS VECES, Y CON UNA IMAGEN QUE DEPENDE DEL PUNTO HAY UNO POR PUNTO.
+%ASI QUE CON IMAGEN CADA ASPECTO SE DIBUJA UNA VEZ EN UNA CAJA DE TeX (\__pgfgo_stone_form_image_bool) Y LAS
+%PIEDRAS SIGUIENTES COPIAN LA CAJA: EN EL PDF ES LO MISMO QUE DIBUJARLAS, PERO SIN EL COSTO DE DIBUJARLAS.
+%\g__pgfgo_stone_form_seen_prop CUENTA LOS USOS, Y EL USO \g__pgfgo_stone_form_uses_int PASA LA CAJA A UN Form:
+%UN MANUAL CON POCAS PIEDRAS POR PUNTO NO CRECE, Y UNA COLECCION DE PROBLEMAS QUE REPITE LOS PUNTOS CIENTOS DE
+%VECES USA LOS Form. UNA PIEDRA TRANSLUCIDA NO PUEDE IR EN UNA CAJA (SE COMPONE COMO UN GRUPO, Y EL GRUPO ES
+%EL Form): SE DIBUJA HASTA ESE USO. LAS PIEDRAS DIBUJADAS CREAN EL Form ENSEGUIDA.
+%(ES UNA VARIABLE PARA QUE LOS TESTS PUEDAN PROBAR LOS Form DESDE EL PRIMER USO.)
+\int_new:N \g__pgfgo_stone_form_uses_int
+\int_gset:Nn \g__pgfgo_stone_form_uses_int {5}
+\bool_new:N \l__pgfgo_stone_form_image_bool
+\prg_new_protected_conditional:Npnn \__pgfgo_stone_form_if_wanted: {TF} {
+	\bool_set:Nn \l__pgfgo_stone_form_image_bool {
+		! \seq_if_empty_p:N \l_pgfgo_players_stone_image_seq
+		|| ! \tl_if_empty_p:N \l_pgfgo_players_stone_shadow_image_tl
+		|| ! \tl_if_empty_p:N \l_pgfgo_players_stone_shine_image_tl
+	}
+	\bool_lazy_and:nnTF {\l__pgfgo_stone_form_image_bool} {\l__pgfgo_stone_form_group_bool}
+		{
+			\prop_if_in:NVTF \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl
+				{\prg_return_true:}
+				{
+					\__pgfgo_stone_form_count:
+					\int_compare:nNnTF {\l_tmpa_tl} < {\g__pgfgo_stone_form_uses_int}
+						{\prg_return_false:}
+						{\prg_return_true:}
+				}
+		}
+		{\prg_return_true:}
+}
+%SUMA UN USO A LA CLAVE; LA CUENTA QUEDA EN \l_tmpa_tl.
+\cs_new_protected:Npn \__pgfgo_stone_form_count: {
+	\prop_get:NVNF \g__pgfgo_stone_form_seen_prop \l__pgfgo_stone_form_key_tl \l_tmpa_tl
+		{\tl_set:Nn \l_tmpa_tl {0}}
+	\tl_set:Ne \l_tmpa_tl {\int_eval:n {\l_tmpa_tl + 1}}
+	\prop_gput:NVV \g__pgfgo_stone_form_seen_prop \l__pgfgo_stone_form_key_tl \l_tmpa_tl
+}
+\cs_generate_variant:Nn \prop_if_in:NnTF {NV}
+\cs_generate_variant:Nn \prop_get:NnNF {NV}
+\cs_generate_variant:Nn \prop_gput:Nnn {NVV}
+
+%LAS PROPS QUE RECIBEN UNA CLAVE POR PIEDRA (O POR Form) SON ENLAZADAS: EN UNA PROP PLANA CADA \prop_gput
+%RECORRE Y REESCRIBE TODA LA LISTA. LAS ENLAZADAS ESTAN DESDE l3kernel 2024-02-13; ANTES, PLANAS.
+\cs_new_protected:Npn \__pgfgo_prop_new_linked:N #1 {
+	\cs_if_exist:NTF \prop_new_linked:N {\prop_new_linked:N #1} {\prop_new:N #1}
+}
+\__pgfgo_prop_new_linked:N \g__pgfgo_stone_form_prop
 \tl_new:N \l__pgfgo_stone_form_key_tl
 \tl_new:N \l__pgfgo_stone_form_tl
 \tl_new:N \l__pgfgo_stone_form_a_tl
@@ -359,6 +443,7 @@
 \tl_new:N \l__pgfgo_stone_form_index_tl
 \box_new:N \l__pgfgo_stone_form_box
 \bool_new:N \l__pgfgo_stone_form_group_bool
+\bool_new:N \l__pgfgo_stone_form_point_bool
 \dim_new:N \l__pgfgo_stone_form_x_dim
 \dim_new:N \l__pgfgo_stone_form_y_dim
 \dim_new:N \l__pgfgo_stone_form_margin_dim
@@ -380,10 +465,24 @@
 	}
 
 %LA CLAVE DEL ASPECTO: TODO LO QUE CAMBIA EL DIBUJO, MAS LA PARTE LINEAL DE LA TRANSFORMACION (goban/scale).
+%CON VARIOS ARCHIVOS O UN GIRO AL AZAR (O EN UN RANGO), LA IMAGEN DEPENDE DEL PUNTO
+%(\l__pgfgo_stone_form_point_bool): EL PUNTO VA EN LA CLAVE Y HAY UN Form POR PUNTO.
 %\g__pgfgo_stone_form_prop: CLAVE -> {Form}{MIN X}{MAX X}{MIN Y}{MAX Y}{MARGEN}.
-\cs_new_protected:Npn \__pgfgo_stone_form: {
+\__pgfgo_prop_new_linked:N \g__pgfgo_stone_form_seen_prop
+\cs_new_protected:Npn \__pgfgo_stone_form_key: {
 	\pgfgettransformentries \l__pgfgo_stone_form_a_tl \l__pgfgo_stone_form_b_tl
 		\l__pgfgo_stone_form_c_tl \l__pgfgo_stone_form_d_tl \l_tmpa_tl \l_tmpb_tl
+	\bool_set_false:N \l__pgfgo_stone_form_point_bool
+	\seq_if_empty:NF \l_pgfgo_players_stone_image_seq {
+		\int_compare:nNnTF {\seq_count:N \l_pgfgo_players_stone_image_seq} > {1}
+			{\bool_set_true:N \l__pgfgo_stone_form_point_bool}
+			{
+				\str_set:NV \l__pgfgo_image_rotate_str \l_pgfgo_players_stone_image_rotate_tl
+				\str_if_eq:VnTF \l__pgfgo_image_rotate_str {random}
+					{\bool_set_true:N \l__pgfgo_stone_form_point_bool}
+					{\str_if_in:NnT \l__pgfgo_image_rotate_str {:} {\bool_set_true:N \l__pgfgo_stone_form_point_bool}}
+			}
+	}
 	\tl_set:Ne \l__pgfgo_stone_form_key_tl {
 		\l__pgfgo_stone_form_a_tl, \l__pgfgo_stone_form_b_tl, \l__pgfgo_stone_form_c_tl, \l__pgfgo_stone_form_d_tl;
 		\bool_to_str:N \l__pgfgo_stone_form_group_bool;
@@ -396,14 +495,43 @@
 		\fp_use:N \l_pgfgo_players_stone_shine_opacity_fp; \fp_use:N \l_pgfgo_players_stone_shine_angle_fp;
 		\bool_to_str:N \l_pgfgo_players_stone_shadow_bool; \exp_not:V \l_pgfgo_players_stone_shadow_color_tl;
 		\fp_use:N \l_pgfgo_players_stone_shadow_opacity_fp; \fp_use:N \l_pgfgo_players_stone_shadow_angle_fp;
-		\dim_use:N \l_pgfgo_players_stone_shadow_offset_dim; \fp_use:N \l_pgfgo_players_stone_shadow_scale_fp
+		\dim_use:N \l_pgfgo_players_stone_shadow_offset_dim; \fp_use:N \l_pgfgo_players_stone_shadow_scale_fp;
+		\seq_use:Nn \l_pgfgo_players_stone_image_seq {,}; \exp_not:V \l_pgfgo_players_stone_image_width_tl;
+		\exp_not:V \l_pgfgo_players_stone_image_rotate_tl; \exp_not:V \l_pgfgo_players_stone_image_opacity_tl;
+		\exp_not:V \l_pgfgo_players_stone_shadow_image_tl; \exp_not:V \l_pgfgo_players_stone_shadow_image_width_tl;
+		\exp_not:V \l_pgfgo_players_stone_shadow_image_rotate_tl;
+		\bool_to_str:N \l_pgfgo_players_stone_shadow_image_silhouette_bool;
+		\exp_not:V \l_pgfgo_players_stone_shine_image_tl; \exp_not:V \l_pgfgo_players_stone_shine_image_width_tl;
+		\exp_not:V \l_pgfgo_players_stone_shine_image_rotate_tl;
+		\bool_to_str:N \l_pgfgo_players_stone_shine_image_silhouette_bool
+		\bool_if:NT \l__pgfgo_stone_form_point_bool
+			{; \l_pgfgo_parsed_x_coordinate_tl, \l_pgfgo_parsed_y_coordinate_tl}
 	}
-	\prop_get:NVNF \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl \l__pgfgo_stone_form_tl {
-		\__pgfgo_stone_form_build:
-		\prop_get:NVN \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl \l__pgfgo_stone_form_tl
-	}
+}
+%EL Form (O LA CAJA) DE LA CLAVE \l__pgfgo_stone_form_key_tl (LO CREA SI NO ESTA), EN EL PUNTO ACTUAL.
+\cs_new_protected:Npn \__pgfgo_stone_form: {
+	\prop_get:NVNTF \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl \l__pgfgo_stone_form_tl
+		{\exp_after:wN \__pgfgo_stone_form_promote:nnnnnn \l__pgfgo_stone_form_tl}
+		{
+			\__pgfgo_stone_form_build:
+			\prop_get:NVN \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl \l__pgfgo_stone_form_tl
+		}
 	\exp_after:wN \__pgfgo_stone_form_place:nnnnnn \l__pgfgo_stone_form_tl
 }
+%UNA CAJA (#1 = box<n>) CUENTA EL USO, Y EN EL USO \g__pgfgo_stone_form_uses_int PASA A UN Form.
+\cs_new_protected:Npn \__pgfgo_stone_form_promote:nnnnnn #1#2#3#4#5#6 {
+	\str_if_eq:eeT {\str_range:nnn {#1} {1} {3}} {box} {
+		\__pgfgo_stone_form_count:
+		\int_compare:nNnF {\l_tmpa_tl} < {\g__pgfgo_stone_form_uses_int} {
+			\hbox_set:Nn \l__pgfgo_stone_form_box {\box_use:c {g__pgfgo_stone_form_ #1 _box}}
+			\__pgfgo_stone_form_xform:
+			\prop_gput:NVe \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl
+				{{\l__pgfgo_stone_form_index_tl} {#2} {#3} {#4} {#5} {#6}}
+			\tl_set:Ne \l__pgfgo_stone_form_tl {{\l__pgfgo_stone_form_index_tl} {#2} {#3} {#4} {#5} {#6}}
+		}
+	}
+}
+\int_new:N \g__pgfgo_stone_form_box_int
 
 %DIBUJA LA PIEDRA EN EL ORIGEN EN UNA CAJA, MIDE SU bbox SIN TOCAR LA DEL DIBUJO Y LA GUARDA COMO Form, CON
 %UN MARGEN PARA EL GROSOR DEL BORDE (LA bbox DE PGF NO LO CUENTA). SIN NADA DIBUJADO NO HAY Form.
@@ -448,6 +576,20 @@
 		\box_use_drop:N \l__pgfgo_stone_form_box
 		\tex_hskip:D \dim_eval:n {#2 + #5}
 	}
+	\bool_lazy_and:nnTF {\l__pgfgo_stone_form_image_bool} {! \l__pgfgo_stone_form_group_bool}
+		{
+			\int_gincr:N \g__pgfgo_stone_form_box_int
+			\tl_set:Ne \l__pgfgo_stone_form_index_tl {box \int_use:N \g__pgfgo_stone_form_box_int}
+			\box_new:c {g__pgfgo_stone_form_ \l__pgfgo_stone_form_index_tl _box}
+			\box_gset_eq:cN {g__pgfgo_stone_form_ \l__pgfgo_stone_form_index_tl _box} \l__pgfgo_stone_form_box
+			\__pgfgo_stone_form_count:
+		}
+		{\__pgfgo_stone_form_xform:}
+	\prop_gput:NVe \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl
+		{{\l__pgfgo_stone_form_index_tl} {#1} {#2} {#3} {#4} {#5}}
+}
+%GUARDA \l__pgfgo_stone_form_box COMO Form; SU NUMERO QUEDA EN \l__pgfgo_stone_form_index_tl.
+\cs_new_protected:Npn \__pgfgo_stone_form_xform: {
 	\pgf@sys@pdf@check@resources
 	\__pgfgo_stone_form_xform:w
 		\bool_if:NT \l__pgfgo_stone_form_group_bool
@@ -455,11 +597,10 @@
 		resources ~ {\pgf@sys@pdf@possible@resources} ~
 		\l__pgfgo_stone_form_box
 	\tl_set:Ne \l__pgfgo_stone_form_index_tl {\int_use:N \g__pgfgo_stone_form_last_int}
-	\prop_gput:NVe \g__pgfgo_stone_form_prop \l__pgfgo_stone_form_key_tl
-		{{\l__pgfgo_stone_form_index_tl} {#1} {#2} {#3} {#4} {#5}}
 }
 
-%PONE EL Form #1 EN EL PUNTO ACTUAL (CAJA DE TAMANO CERO, COMO \pgfsys@hbox) Y SUMA LA bbox DE LA PIEDRA.
+%PONE EL Form #1 (O UNA COPIA DE LA CAJA, SI ES box<n>) EN EL PUNTO ACTUAL (CAJA DE TAMANO CERO, COMO
+%\pgfsys@hbox) Y SUMA LA bbox DE LA PIEDRA.
 \cs_new_protected:Npn \__pgfgo_stone_form_place:nnnnnn #1#2#3#4#5#6 {
 	\tl_if_empty:nF {#1} {
 		\pgfpointtransformed{\pgfpointorigin}
@@ -469,10 +610,15 @@
 			{\dim_eval:n {\l__pgfgo_stone_form_x_dim + #2}} {\dim_eval:n {\l__pgfgo_stone_form_y_dim + #4}}
 		\pgf@protocolsizes
 			{\dim_eval:n {\l__pgfgo_stone_form_x_dim + #3}} {\dim_eval:n {\l__pgfgo_stone_form_y_dim + #5}}
+		%\pgf@protocolsizes TAMBIEN AGRANDA LAS MEDIDAS DEL CAMINO: SIN ESTO, EL PROXIMO \pgfusepath (UNA MARCA)
+		%SUMARIA LA PIEDRA A SU bbox. COMO \pgfusepath CON LA PIEDRA DIBUJADA, QUEDAN VACIAS.
+		\pgf@resetpathsizes
 		\hbox_set:Nn \l__pgfgo_stone_form_box {
 			\tex_hskip:D \dim_eval:n {\l__pgfgo_stone_form_x_dim + #2 - #6}
 			\tex_raise:D \l__pgfgo_stone_form_y_dim \hbox:n {
-				\__pgfgo_stone_form_use:w #1 \scan_stop:
+				\str_if_eq:eeTF {\str_range:nnn {#1} {1} {3}} {box}
+					{\box_use:c {g__pgfgo_stone_form_ #1 _box}}
+					{\__pgfgo_stone_form_use:w #1 \scan_stop:}
 			}
 			\tex_hss:D
 		}
@@ -528,11 +674,25 @@
 %LA PIEDRA EN (#1,#2), EN SU CAPA. EL GRUPO DE LA CAPA LIMITA EL CORRIMIENTO; LOS COLORES Y OPACIDADES QUE
 %PONE \pgfgo_stone_default_shape: QUEDAN EN LA CAPA (CADA PIEDRA PONE LOS SUYOS), ASI QUE NO HACE FALTA UN
 %\pgfscope (q/Q EN EL PDF).
+%\stones ABRE LA CAPA UNA VEZ PARA TODAS SUS PIEDRAS (\l__pgfgo_stone_layer_bool): CADA PIEDRA VA EN UN GRUPO
+%DE TeX CON EL ANCHO DE LINEA DE 0.4pt, COMO EN SU CAPA (VER \__pgfgo_goban_onlayer:n). EN EL PDF ES LO
+%MISMO: PGF PONE UN q Q POR CAPA, NO POR CADA \pgfonlayer.
+\bool_new:N \l__pgfgo_stone_layer_bool
 \cs_new_protected:Npn \pgfgo_stone_render_shape:nn #1#2 {
-	\pgfonlayer{pgfgo_layer_stone}
-	\pgftransformshift{\pgfpointxy{#1}{#2}}
-	\pgfgo_stone_default_shape:
-	\endpgfonlayer
+	\bool_if:NTF \l__pgfgo_stone_layer_bool
+		{
+			\group_begin:
+			\dim_set:Nn \pgflinewidth {0.4pt}
+			\pgftransformshift{\pgfpointxy{#1}{#2}}
+			\pgfgo_stone_default_shape:
+			\group_end:
+		}
+		{
+			\pgfonlayer{pgfgo_layer_stone}
+			\pgftransformshift{\pgfpointxy{#1}{#2}}
+			\pgfgo_stone_default_shape:
+			\endpgfonlayer
+		}
 }
 
 
@@ -542,7 +702,8 @@
 
 %LO QUE HAY EN CADA PUNTO DEL goban ACTUAL (LO USA EL TERRITORIO): "x,y" -> black | white | neutral
 %(PIEDRAS VIVAS) O dead-black | dead-white (PRISIONEROS). LAS CAPTURAS Y AE QUITAN LAS PIEDRAS.
-\prop_new:N \g_pgfgo_points_prop
+%ESTA PROP Y LAS DE CAPTURAS Y NOTAS SON ENLAZADAS (VER \__pgfgo_prop_new_linked:N).
+\__pgfgo_prop_new_linked:N \g_pgfgo_points_prop
 
 \cs_new_protected:Npn \pgfgo_points_begin: {
 	\prop_gclear:N \g_pgfgo_points_prop
@@ -567,10 +728,12 @@
 %DIBUJA UNA PIEDRA. SI #1 NO INDICA EL JUGADOR, LA PIEDRA ES NEUTRAL.
 %SOLO SE DIBUJA SI ESTA EN LA PARTE VISIBLE DEL TABLERO. CON CAPTURAS, LAS PIEDRAS NEGRAS Y BLANCAS
 %QUE NO SON PRISIONEROS VAN AL TABLERO DEL KERNEL Y SE DIBUJAN AL CERRAR EL goban.
+%DENTRO DE \stones (\l__pgfgo_stone_batch_bool) EL JUGADOR Y EL ESTILO YA ESTAN PUESTOS: SON LOS MISMOS PARA
+%TODAS SUS PIEDRAS.
+\bool_new:N \l__pgfgo_stone_batch_bool
 \cs_set_protected:Npn\pgfgo_stone:nnn #1#2#3 {
 	\group_begin:
-		\keys_set:nn { pgfgo / stone } {neutral}
-		\keys_set_groups:nnn { pgfgo / stone } {player-id, captures-id} {#1}
+		\bool_if:NF \l__pgfgo_stone_batch_bool {\__pgfgo_stone_player:n {#1}}
 		\__pgfgo_points_put:nnn {#2} {#3}
 			{\bool_if:NT \l__pgfgo_stone_prisoner_bool {dead-} \__pgfgo_players_current:}
 		\bool_lazy_and:nnTF {\l_pgfgo_goban_captures_bool}
@@ -581,7 +744,7 @@
 				\pgfgo_kernel_if_visible:nnT {#2} {#3}
 					{\__pgfgo_captures_defer:nnn {#2} {#3} {\__pgfgo_stone_draw:nnn {#1} {#2} {#3}}}
 			}
-			{\pgfgo_kernel_if_visible:nnT {#2} {#3} {\__pgfgo_stone_draw:nnn {#1} {#2} {#3}}}
+			{\pgfgo_kernel_if_visible:nnT {#2} {#3} {\__pgfgo_stone_render:nnn {#1} {#2} {#3}}}
 	\group_end:
 }
 
@@ -590,6 +753,12 @@
 	\bool_if:NTF \l__pgfgo_captures_fade_bool
 		{\__pgfgo_stone_draw_aux:nnn {#1, prisoner} {#2} {#3}}
 		{\__pgfgo_stone_draw_aux:nnn {#1} {#2} {#3}}
+}
+
+%EL JUGADOR Y prisoner DE LAS OPCIONES #1.
+\cs_new_protected:Npn \__pgfgo_stone_player:n #1 {
+	\keys_set:nn { pgfgo / stone } {neutral}
+	\keys_set_groups:nnn { pgfgo / stone } {player-id, captures-id} {#1}
 }
 
 %EL ESTILO DE UN PRISIONERO DEL JUGADOR #1, ANTES DE LAS OPCIONES DE LA PIEDRA: OPACIDAD DEL RELLENO 0.5,
@@ -602,24 +771,44 @@
 }
 \cs_generate_variant:Nn \__pgfgo_stone_prisoner_style:n {e}
 
+%EL JUGADOR Y prisoner SALEN DE #1. \pgfgo_stone:nnn, QUE YA LOS PUSO, LLAMA DIRECTO A
+%\__pgfgo_stone_render:nnn; EL CODIGO GUARDADO POR LAS CAPTURAS SE EJECUTA FUERA DE ESE GRUPO.
 \cs_new_protected:Npn\__pgfgo_stone_draw_aux:nnn #1#2#3 {
 	\group_begin:
 	\keys_set:nn { pgfgo / stone }{neutral}
 	\bool_set_false:N \l__pgfgo_stone_prisoner_bool
 	\keys_set_groups:nnn{ pgfgo / stone }{ player-id, captures-id }{#1}
+	\__pgfgo_stone_render:nnn {#1} {#2} {#3}
+	\group_end:
+}
+
+%EL ESTILO DE LA PIEDRA DEL JUGADOR ACTUAL CON LAS OPCIONES #1 (EL DEL PRISIONERO PRIMERO).
+\cs_new_protected:Npn \__pgfgo_stone_style:n #1 {
 	\bool_if:NT \l__pgfgo_stone_prisoner_bool
 		{\__pgfgo_stone_prisoner_style:e {\__pgfgo_players_current:}}
 	\keys_set_exclude_groups:enn { pgfgo / players / \__pgfgo_players_current: / stone } { external } {#1}
 	\pgfgo_get_variables_from_current_player:
+}
+
+%DIBUJA LA PIEDRA CON EL JUGADOR Y prisoner YA PUESTOS. #1: LAS OPCIONES DE LA PIEDRA.
+\cs_new_protected:Npn\__pgfgo_stone_render:nnn #1#2#3 {
+	\group_begin:
+	\bool_if:NF \l__pgfgo_stone_batch_bool {\__pgfgo_stone_style:n {#1}}
 
 	\tl_set:Nn\l_pgfgo_parsed_x_coordinate_tl{#2}
 	\tl_set:Nn\l_pgfgo_parsed_y_coordinate_tl{#3}
 	\pgfgo_stone_render_shape:nn {#2} {#3}
 
 	%-----MARCAS-------------------------
-	\pgfscope
-	\keys_set_groups:nnn {pgfgo / stone} {mark} {#1}
-	\endpgfscope
+	%SIN mark EN LAS OPCIONES NO HAY MARCA: NI EL \pgfscope (UN q Q VACIO POR PIEDRA) NI LAS CLAVES. str VE
+	%TAMBIEN DENTRO DE LLAVES; SI mark APARECE EN OTRA PARTE (prisoner = {mark = ...}) SE HACE COMO SIEMPRE.
+	\str_if_in:nnT {#1} {mark} {
+		\pgfscope
+		\bool_set_false:N \l__pgfgo_stone_batch_bool
+		\bool_set_false:N \l__pgfgo_stone_layer_bool
+		\keys_set_groups:nnn {pgfgo / stone} {mark} {#1}
+		\endpgfscope
+	}
 
 	\group_end:
 }
@@ -642,11 +831,11 @@
 \bool_new:N \l_pgfgo_goban_captured_marks_bool
 
 %"x,y" -> CODIGO QUE DIBUJA LO QUE HAY EN LA INTERSECCION.
-\prop_new:N \g__pgfgo_captures_pending_prop
+\__pgfgo_prop_new_linked:N \g__pgfgo_captures_pending_prop
 %"x,y" DE LAS PIEDRAS CAPTURADAS QUE SE DIBUJAN ATENUADAS.
-\prop_new:N \g__pgfgo_captures_faded_prop
+\__pgfgo_prop_new_linked:N \g__pgfgo_captures_faded_prop
 %"x,y" -> CODIGO DE LAS MARCAS SOBRE LA PIEDRA (CON goban/captured marks = remove).
-\prop_new:N \g__pgfgo_captures_marks_prop
+\__pgfgo_prop_new_linked:N \g__pgfgo_captures_marks_prop
 \tl_new:N \l__pgfgo_captures_marks_tl
 \tl_new:N \l__pgfgo_captures_key_tl
 \cs_generate_variant:Nn \prop_gput:Nnn {NVn}
@@ -755,8 +944,8 @@
 %NOTAS DEL ULTIMO goban, {N}{M}.
 \seq_new:N \g_pgfgo_move_notes_seq
 %"x,y" -> NUMERO Y CODIGO DE LA PRIMERA JUGADA NUMERADA EN ESE PUNTO.
-\prop_new:N \g__pgfgo_notes_number_prop
-\prop_new:N \g__pgfgo_notes_code_prop
+\__pgfgo_prop_new_linked:N \g__pgfgo_notes_number_prop
+\__pgfgo_prop_new_linked:N \g__pgfgo_notes_code_prop
 \tl_new:N \l__pgfgo_notes_tl
 \tl_new:N \l_pgfgo_notes_at_tl
 \tl_new:N \l_pgfgo_notes_pass_tl
@@ -934,8 +1123,15 @@
 	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_stone_bool {stone}
 		{\exp_not:N\pgfgo_stones_parsed:nn{\exp_not:n{#1}}{\exp_not:V\l_tmpa_clist}}
 
-	%DIBUJAR LAS PIEDRAS
+	%DIBUJAR LAS PIEDRAS, TODAS EN UNA CAPA Y CON EL JUGADOR Y EL ESTILO PUESTOS UNA VEZ
+	\pgfonlayer{pgfgo_layer_stone}
+	\bool_set_true:N \l__pgfgo_stone_layer_bool
+	\__pgfgo_stone_player:n {#1}
+	\__pgfgo_stone_style:n {#1}
+	\bool_set_true:N \l__pgfgo_stone_batch_bool
+	\tl_gclear:N \g__pgfgo_stone_batch_tl
 	\seq_map_inline:Nn \l_pgfgo_kernel_points_seq {\pgfgo_stone:nnn {#1} ##1}
+	\endpgfonlayer
 	\group_end:
 }
 
@@ -1005,7 +1201,15 @@
 	\keys_set_exclude_groups:nnn {pgfgo / players / #6 / move} {external} {#2}
 	\pgfgo_get_values_from_player:n {#6}
 	%LAS OPCIONES DE PIEDRA Y mark VAN A LA PIEDRA; EL COLOR (#6) VA AL FINAL PARA QUE NO LO CAMBIE b O w.
-	\__pgfgo_stone_draw:nnn{#2, #6}{#3}{#4}
+	%EL JUGADOR YA ES #6: SIN prisoner EN LAS OPCIONES SOLO FALTA EL DE captures = fade, Y NO HACE FALTA
+	%VOLVER A LEER LAS CLAVES DEL JUGADOR (\__pgfgo_stone_draw_aux:nnn).
+	\str_if_in:nnTF {#2} {prisoner}
+		{\__pgfgo_stone_draw:nnn{#2, #6}{#3}{#4}}
+		{
+			\bool_set_eq:NN \l__pgfgo_stone_prisoner_bool \l__pgfgo_captures_fade_bool
+			\tl_clear:N \l__pgfgo_stone_prisoner_options_tl
+			\__pgfgo_stone_render:nnn{#2, #6}{#3}{#4}
+		}
 
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	%----------------------LABEL-----------------------%

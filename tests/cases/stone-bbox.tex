@@ -1,0 +1,30 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% A stone adds only itself to the size of the drawing. The same goban has the same size before and after
+% another one (the second time the stone reuses its PDF form): the territory drawn after the stone on E5,
+% the edge of the drawing at the north and east, does not add the stone again with half its line width.
+
+\newcommand\gobanE{%
+	\begin{goban}[5, label = {at = {south, west}}]\stones[b]{E5}\territory[dame]{C3}\end{goban}}
+\newsavebox\before
+\newsavebox\other
+\newsavebox\after
+\sbox\before{\gobanE}
+\sbox\other{\begin{goban}[5, label = {at = {south, west}}]\stones[b]{A1}\end{goban}}
+\sbox\after{\gobanE}
+
+\case{The same goban, before and after another one}
+\usebox\before\quad\usebox\other\quad\usebox\after
+
+\ifdim\wd\before=\wd\after same width\else DIFFERENT WIDTH\fi,
+\ifdim\ht\before=\ht\after same height\else DIFFERENT HEIGHT\fi.
+
+\end{document}

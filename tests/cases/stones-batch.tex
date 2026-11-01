@@ -1,0 +1,47 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% \stones sets the player and the style once for all its stones, draws them in one layer and reuses the
+% look of the first one it draws. In every row the left goban uses one \stones and the right one a \stone
+% per point: both must look the same.
+
+\case{Marks on every stone}
+\begin{goban}[5x2]\stones[b, mark = triangle]{A1, C1, E2}\end{goban}\quad
+\begin{goban}[5x2]\stone[b, mark = triangle]{A1}\stone[b, mark = triangle]{C1}\stone[b, mark = triangle]{E2}\end{goban}
+
+\case{Translucent stones and prisoners}
+\begin{goban}[5x2]\stones[w, fill = {opacity = 0.4}]{A1, B2, C1}\prisoners[b]{D1, E2}\end{goban}\quad
+\begin{goban}[5x2]
+	\stone[w, fill = {opacity = 0.4}]{A1}\stone[w, fill = {opacity = 0.4}]{B2}\stone[w, fill = {opacity = 0.4}]{C1}
+	\prisoner[b]{D1}\prisoner[b]{E2}
+\end{goban}
+
+\case{Images chosen by position}
+\begin{goban}[5x2]\stones[w, image = {file = {pgfgo-yunzi-white-1.png, pgfgo-yunzi-white-2.png}}]{A1, B1, C1, D1, E1}\end{goban}\quad
+\begin{goban}[5x2]
+	\stone[w, image = {file = {pgfgo-yunzi-white-1.png, pgfgo-yunzi-white-2.png}}]{A1}
+	\stone[w, image = {file = {pgfgo-yunzi-white-1.png, pgfgo-yunzi-white-2.png}}]{B1}
+	\stone[w, image = {file = {pgfgo-yunzi-white-1.png, pgfgo-yunzi-white-2.png}}]{C1}
+	\stone[w, image = {file = {pgfgo-yunzi-white-1.png, pgfgo-yunzi-white-2.png}}]{D1}
+	\stone[w, image = {file = {pgfgo-yunzi-white-1.png, pgfgo-yunzi-white-2.png}}]{E1}
+\end{goban}
+
+\case{Partial board: the first stones are outside the visible part}
+\begin{goban}[9, partial = {A1:E3}]\stones[b, radius = 4pt]{J9, H8, B2, C3}\end{goban}\quad
+\begin{goban}[9, partial = {A1:E3}]\stone[b, radius = 4pt]{J9}\stone[b, radius = 4pt]{H8}\stone[b, radius = 4pt]{B2}\stone[b, radius = 4pt]{C3}\end{goban}
+
+% captures needs kernel = lua.
+\ifdefined\directlua
+\case{With captures: neutral stones are drawn at once, black ones when the goban closes}
+\begin{goban}[5x2, captures]\stones{A1, B1}\stones[b]{C1, D2}\moves{E1}\end{goban}\quad
+\begin{goban}[5x2, captures]\stone{A1}\stone{B1}\stone[b]{C1}\stone[b]{D2}\moves{E1}\end{goban}
+\fi
+
+\end{document}

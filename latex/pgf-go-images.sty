@@ -192,12 +192,23 @@
 				%LA MASCARA QUEDA CON SU ESQUINA INFERIOR IZQUIERDA EN EL ORIGEN DEL SISTEMA DE COORDENADAS
 				%DEL MOMENTO EN QUE SE ACTIVA.
 				\pgftransformshift {\pgfpoint {-0.5\l_pgfgo_image_width_dim} {-0.5\l_pgfgo_image_height_dim}}
+				%DESPUES DE \pgflowlevelsynccm LA TRANSFORMACION DE PGF ES LA IDENTIDAD: EL RECTANGULO NO SUMARIA A LA
+				%CAJA DEL DIBUJO EL LUGAR DONDE QUEDA. LAS ESQUINAS SE SUMAN ANTES (LA CAJA DE LA PIEDRA COMO Form
+				%RECORTA LO QUE QUEDA FUERA).
+				\__pgfgo_image_protocol:nn {0pt} {0pt}
+				\__pgfgo_image_protocol:nn {\l_pgfgo_image_width_dim} {0pt}
+				\__pgfgo_image_protocol:nn {0pt} {\l_pgfgo_image_height_dim}
+				\__pgfgo_image_protocol:nn {\l_pgfgo_image_width_dim} {\l_pgfgo_image_height_dim}
 				\pgflowlevelsynccm
 				\use:e {\exp_not:c {pgfsysprotocol@literal} {/pgfgoalpha \l_pgfgo_image_form_tl \c_space_tl gs}}
 				\pgfpathrectangle {\pgfpointorigin} {\pgfpoint {\l_pgfgo_image_width_dim} {\l_pgfgo_image_height_dim}}
 				\pgfusepath {fill}
 			\endpgfscope
 		}
+}
+\cs_new_protected:Npn \__pgfgo_image_protocol:nn #1#2 {
+	\pgfpointtransformed {\pgfqpoint {#1} {#2}}
+	\pgf@protocolsizes {\pgf@x} {\pgf@y}
 }
 \cs_generate_variant:Nn \prop_if_in:NnF {NV}
 \cs_generate_variant:Nn \prop_gput:Nnn {NVn}

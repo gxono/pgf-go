@@ -1,0 +1,84 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\graphicspath{{../../doc/img/}}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% In PDF output a stone with an image is also drawn once and reused (a Form XObject), with its shadow
+% and its shine, from its fifth use on; before that each look is drawn once in a TeX box and copied (a
+% form used a few times makes the PDF heavier). Here the form comes at the second use. In every row the
+% stone in the middle differs from the ones around it in one option only: if the look were reused by
+% mistake, it would look like its neighbours.
+\ExplSyntaxOn
+\int_gset:Nn \g__pgfgo_stone_form_uses_int {1}
+\ExplSyntaxOff
+
+\case{Image: other file (C1), width 8pt (C2), rotate 45 (C3), opacity 0.4 (C4)}
+\begin{goban}[5x4, profile = shell]
+	\stones[b]{B1:4, D1:4}
+	\stones[b, image = {file = pgfgo-yunzi-black.png}]{C1}
+	\stones[b, image = {width = 8pt}]{C2}
+	\stones[b, image = {file = pgfgo-baduktv-black.png, rotate = 45}]{C3}
+	\stones[b, image = {opacity = 0.4}]{C4}
+\end{goban}
+
+\case{Shadow: no image (C1), silhouette (C2), offset 3pt (C3); shine image (C4), its silhouette (C5)}
+\begin{goban}[5x5, profile = shell]
+	\stones[b]{B1:5, D1:5}
+	\stones[b, shadow = {image = {file = {}}}]{C1}
+	\stones[b, shadow = {color = red, image = {silhouette}}]{C2}
+	\stones[b, shadow = {offset = 3pt}]{C3}
+	\stones[b, shine = {true, image = {file = pgfgo-shadow.png, width = 6pt}}]{C4}
+	\stones[b, shine = {true, color = red, image = {file = pgfgo-shadow.png, width = 6pt, silhouette}}]{C5}
+\end{goban}
+
+% The silhouette is drawn after moving PGF's transformation to the PDF: its corners must still count in
+% the size of the stone, or the form would cut the points of the stars.
+\case{A silhouette bigger than the stone, turned: the whole stars are seen}
+\begin{goban}[5x2]
+	\stones[b, shadow = {true, color = blue, offset = 2pt,
+		image = {file = pgfgo-star.pdf, width = 16pt, rotate = 18, silhouette}}]{B1, D2}
+\end{goban}
+
+% With several files or a random turn the image depends on the point: one \stones (left) and a \stone
+% per point (right) must look the same, and so must the same points on a second goban.
+\case{Image chosen and turned by position}
+\begin{goban}[5x2, profile = shell]\stones[w]{A1, B1, C1, D1, E1, A2, C2, E2}\end{goban}\quad
+\begin{goban}[5x2, profile = shell]
+	\stone[w]{A1}\stone[w]{B1}\stone[w]{C1}\stone[w]{D1}\stone[w]{E1}\stone[w]{A2}\stone[w]{C2}\stone[w]{E2}
+\end{goban}\quad
+\begin{goban}[5x2]\stones[b, image = {file = pgfgo-baduktv-black.png, rotate = 0:90}]{A1, B1, C1, D1, E1}\end{goban}
+
+\case{The same stones with scale = 0.6}
+\begin{goban}[5x1, profile = shell, scale = 0.6]\stones[b]{B1, D1}\stones[w]{C1}\end{goban}
+
+\newpage
+\case{A second page reuses the looks of the first}
+\begin{goban}[5x2, profile = shell]\stones[w]{A1, B1, C1, D1, E1}\stones[b]{A2, C2}\end{goban}
+
+% With the usual threshold the first four stones of each look are copies of a box and the rest use the
+% form: all the stones of a row, and the same point in every goban, must look the same. The translucent
+% prisoners are drawn four times and then use a form with a transparency group.
+\ExplSyntaxOn
+\int_gset:Nn \g__pgfgo_stone_form_uses_int {5}
+\ExplSyntaxOff
+\case{Drawn, then a form: the same look seven times, the same points on six gobans}
+\begin{goban}[7x1, profile = yunzi]\stones[b]{A1, B1, C1, D1, E1, F1, G1}\end{goban}
+
+\begin{goban}[7x1, profile = yunzi]
+	\prisoner[b]{A1}\prisoner[b]{B1}\prisoner[b]{C1}\prisoner[b]{D1}\prisoner[b]{E1}\prisoner[b]{F1}\prisoner[b]{G1}
+\end{goban}
+
+\begin{goban}[3x1, profile = yunzi]\stones[w]{A1, B1, C1}\end{goban}\quad
+\begin{goban}[3x1, profile = yunzi]\stones[w]{A1, B1, C1}\end{goban}\quad
+\begin{goban}[3x1, profile = yunzi]\stones[w]{A1, B1, C1}\end{goban}\quad
+\begin{goban}[3x1, profile = yunzi]\stones[w]{A1, B1, C1}\end{goban}\quad
+\begin{goban}[3x1, profile = yunzi]\stones[w]{A1, B1, C1}\end{goban}\quad
+\begin{goban}[3x1, profile = yunzi]\stones[w]{A1, B1, C1}\end{goban}
+
+\end{document}

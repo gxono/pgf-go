@@ -48,19 +48,18 @@
 		}
 	}
 }
-%SIN REGEX: SE LLAMA UNA VEZ POR VARIABLE DEL ESTILO (CIENTOS) Y COMPILAR UNA REGEX EN CADA LLAMADA COSTABA
-%LA MITAD DEL TIEMPO DE CARGA DEL PAQUETE.
-\prg_new_conditional:Npnn \__pgfgo_profile_var_prefix:n #1 {p, TF} {
-	\str_if_eq:eeTF {\str_range:Nnn \l__pgfgo_profile_var_str {1} {\str_count:n {#1}}} {#1}
-		{\prg_return_true:} {\prg_return_false:}
+%SIN REGEX NI \str_range: SE LLAMA UNA VEZ POR VARIABLE DEL ESTILO (CIENTOS). LOS NOMBRES EMPIEZAN CON l_ O l__,
+%ASI QUE BUSCAR EL PREFIJO EN TODO EL NOMBRE DA LO MISMO.
+\prg_new_protected_conditional:Npnn \__pgfgo_profile_var_goban: {TF} {
+	\str_if_in:NnTF \l__pgfgo_profile_var_str {l_pgfgo_goban_} {\prg_return_true:} {
+		\str_if_in:NnTF \l__pgfgo_profile_var_str {l__pgfgo_arrow_} {\prg_return_true:} {
+			\str_if_in:NnTF \l__pgfgo_profile_var_str {l__pgfgo_line_} {\prg_return_true:} {\prg_return_false:}
+		}
+	}
 }
 \cs_new_protected:Npn \__pgfgo_profile_save_reset:nN #1#2 {
 	\str_set:Ne \l__pgfgo_profile_var_str {\cs_to_str:N #2}
-	\bool_lazy_any:nTF {
-		{\__pgfgo_profile_var_prefix_p:n {l_pgfgo_goban_}}
-		{\__pgfgo_profile_var_prefix_p:n {l__pgfgo_arrow_}}
-		{\__pgfgo_profile_var_prefix_p:n {l__pgfgo_line_}}
-	}{
+	\__pgfgo_profile_var_goban:TF {
 		\bool_set_false:N \l__pgfgo_profile_keep_bool
 		\clist_map_inline:Nn \c__pgfgo_profile_keep_goban_clist {
 			\str_if_in:NnT \l__pgfgo_profile_var_str {##1} {\bool_set_true:N \l__pgfgo_profile_keep_bool}
@@ -70,11 +69,11 @@
 	}{
 		%LAS DE UN JUGADOR, SALVO l_pgfgo_players_<jugador>_bool (SI LA PIEDRA ES DE ESE JUGADOR).
 		\clist_map_inline:nn {neutral, black, white} {
-			\__pgfgo_profile_var_prefix:nTF {l_pgfgo_players_ ##1 _} {
-				\str_if_eq:eeF {\str_range:Nnn \l__pgfgo_profile_var_str {\str_count:n {l_pgfgo_players_ ##1 _} + 1} {-1}}
-					{bool} {\tl_gput_right:ce {g__pgfgo_profile_reset_ ##1 _tl} {\__pgfgo_style_value:nN {#1} #2}}
+			\str_if_in:NnT \l__pgfgo_profile_var_str {l_pgfgo_players_ ##1 _} {
+				\str_if_eq:VnF \l__pgfgo_profile_var_str {l_pgfgo_players_ ##1 _bool}
+					{\tl_gput_right:ce {g__pgfgo_profile_reset_ ##1 _tl} {\__pgfgo_style_value:nN {#1} #2}}
 				\clist_map_break:
-			} {}
+			}
 		}
 	}
 }

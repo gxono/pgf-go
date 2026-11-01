@@ -2,6 +2,50 @@
 
 All notable changes to `pgf-go` are listed here.
 
+## Unreleased
+
+### Performance
+
+- Faster stones, with the same output: the points of the board, the
+  captures and the notes "N at M" are kept in linked property lists (with
+  l3kernel 2024-02-13 or later), where adding a stone no longer takes longer
+  as the board fills; and a stone drawn right away does not read its player
+  keys twice. A full 19x19 board compiles about 20 % faster, and so does a
+  long SGF game with `captures`.
+- A stone without `mark` no longer opens an empty PGF scope for its marks
+  (one `q Q` pair less per stone in the PDF). That scope also hid that a
+  stone placed as a PDF form left its size in PGF's path sizes, so the next
+  path drawn (a territory, a mark) could make the drawing a little bigger; the
+  stone now clears them, as a drawn stone does.
+- `\stones` reads the player, the prisoner style and the stone options once
+  for all its stones, opens the stone layer once, and finds the look (the PDF
+  form) of the first stone it draws and reuses it for the rest. The PDF is the
+  same byte for byte; a full 19x19 board compiles in about a third of the
+  time with LuaLaTeX and in about half with pdfLaTeX.
+- A move does not read its player keys again when its stone is drawn: about
+  5 % less for `\moves` and SGF games.
+- Loading the package is about 50 ms faster (80 ms with pdfLaTeX): the
+  variables of the style are sorted without cutting their names with
+  `\str_range`.
+- Stones with an image (the profiles `shell`, `yunzi` and `baduktv`), with
+  `shadow/image` or with `shine/image` are drawn once per look and copied:
+  the first uses copy a TeX box (the PDF is the same as drawing them), and
+  from the fifth use on the look is a PDF form, like the drawn stones. When
+  the image depends on the point (several files, or `rotate = random` or a
+  range), each point has its own look. A full 19x19 board with
+  `profile = shell` compiles in half the time and its PDF is smaller; the 900
+  problems of a Cho Chikun collection with `\sgfproblem` go from 214 s to
+  about 85 s (and from 617 KB to 479 KB); a document with few stones per
+  point, like the manual, does not grow. Translucent stones with an image are
+  drawn until their fifth use. The image edges may differ by a fraction of a
+  pixel.
+
+### Fixed
+
+- A shadow or shine with `image/silhouette` did not count in the size of the
+  drawing where it really falls (moved and turned), so it could stick out of
+  the frame of the goban; as a PDF form it would even be cut.
+
 ## 0.2026.10.30 — 2026/10/30
 
 ### New
