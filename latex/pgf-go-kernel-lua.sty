@@ -221,8 +221,42 @@
 	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_variations_seq \l__pgfgo_kernel_sgf_variations_clist
 }
 
-\cs_new:Npn \pgfgo_kernel_sgf_comment:nn #1#2 {
-	\lua_now:e {pgfgo.sgf_comment(\int_eval:n {#1}, #2)}
+\cs_new:Npn \pgfgo_kernel_sgf_comment:nnn #1#2#3 {
+	\lua_now:e {pgfgo.sgf_comment(\int_eval:n {#1}, #2, #3)}
+}
+
+\cs_new_protected:Npn \pgfgo_kernel_sgf_evaluation:n #1 {
+	\lua_now:e {pgfgo.sgf_evaluation(\int_eval:n {#1})}
+}
+
+\clist_new:N \l__pgfgo_kernel_sgf_candidates_clist
+\cs_new_protected:Npn \pgfgo_kernel_sgf_candidates:n #1 {
+	\lua_now:e {pgfgo.sgf_candidates(\int_eval:n {#1})}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_candidates_seq \l__pgfgo_kernel_sgf_candidates_clist
+}
+
+\clist_new:N \l__pgfgo_kernel_sgf_line_clist
+\cs_new_protected:Npn \pgfgo_kernel_sgf_line:nn #1#2 {
+	\lua_now:e {pgfgo.sgf_line(\int_eval:n {#1}, \int_eval:n {#2})}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_line_seq \l__pgfgo_kernel_sgf_line_clist
+}
+
+\clist_new:N \l__pgfgo_kernel_sgf_ownership_clist
+\cs_new_protected:Npn \pgfgo_kernel_sgf_ownership:n #1 {
+	\lua_now:e {pgfgo.sgf_ownership(\int_eval:n {#1})}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_ownership_seq \l__pgfgo_kernel_sgf_ownership_clist
+}
+
+\clist_new:N \l__pgfgo_kernel_sgf_series_clist
+\cs_new_protected:Npn \pgfgo_kernel_sgf_series: {
+	\lua_now:e {pgfgo.sgf_series()}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_series_seq \l__pgfgo_kernel_sgf_series_clist
+}
+
+\clist_new:N \l__pgfgo_kernel_sgf_mistakes_clist
+\cs_new_protected:Npn \pgfgo_kernel_sgf_mistakes:nn #1#2 {
+	\lua_now:e {pgfgo.sgf_mistakes(\int_eval:n {#1}, "\lua_escape:e {#2}")}
+	\seq_set_from_clist:NN \l_pgfgo_kernel_sgf_mistakes_seq \l__pgfgo_kernel_sgf_mistakes_clist
 }
 
 \clist_new:N \l__pgfgo_kernel_sgf_marks_clist

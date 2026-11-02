@@ -92,7 +92,7 @@
 }
 
 %------------------------------------------DICCIONARIOS-----------------------------------------%
-%TEXTOS: LAS ANOTACIONES DE /pgfgo/sgf annotations (tesuji ... unclear); diagram, variation, problem, correct, wrong (LO QUE DICE verdict DE UNA SOLUCION), variation at (DONDE \pgfgovariationmove ES EL NUMERO DE LA JUGADA), black to play,
+%TEXTOS: LAS ANOTACIONES DE /pgfgo/sgf annotations (tesuji ... unclear); diagram, variation, problem, correct, wrong (LO QUE DICE verdict DE UNA SOLUCION), variation at Y ai line at (DONDE \pgfgovariationmove ES EL NUMERO DE LA JUGADA), black to play,
 %white to play (EPIGRAFES DE \sgfdiagrams Y \sgfproblem); at Y pass (LAS NOTAS "3 at 1" Y "5: pass"); and (ANTES DE LA ULTIMA DE VARIAS VISTAS, view/last); result, black, white Y LAS
 %FORMAS DEL RESULTADO (RE), DONDE \pgfgowinner ES EL NOMBRE DEL GANADOR Y \pgfgopoints LA DIFERENCIA.
 %LAS TRADUCCIONES A ja, zh Y ko NECESITAN UNA FUENTE CON ESOS CARACTERES.
@@ -116,6 +116,7 @@
 	correct								= correct,
 	wrong									= wrong,
 	variation~at						= variation~at~\pgfgovariationmove{},
+	ai~line~at						= AI~line~at~\pgfgovariationmove{},
 	black~to~play					= Black~to~play,
 	white~to~play					= White~to~play,
 	at										= at,
@@ -153,6 +154,7 @@
 	correct								= correcta,
 	wrong									= incorrecta,
 	variation~at						= variante~en~\pgfgovariationmove{},
+	ai~line~at						= línea~de~la~IA~en~\pgfgovariationmove{},
 	black~to~play					= Juega~Negro,
 	white~to~play					= Juega~Blanco,
 	at										= en,
@@ -190,6 +192,7 @@
 	correct								= correcte,
 	wrong									= fausse,
 	variation~at						= variante~au~coup~\pgfgovariationmove{},
+	ai~line~at						= ligne~de~l'IA~au~coup~\pgfgovariationmove{},
 	black~to~play					= Noir~joue,
 	white~to~play					= Blanc~joue,
 	at										= en,
@@ -227,6 +230,7 @@
 	correct								= richtig,
 	wrong									= falsch,
 	variation~at						= Variante~zu~Zug~\pgfgovariationmove{},
+	ai~line~at						= KI-Variante~zu~Zug~\pgfgovariationmove{},
 	black~to~play					= Schwarz~am~Zug,
 	white~to~play					= Weiß~am~Zug,
 	at										= auf,
@@ -264,6 +268,7 @@
 	correct								= correta,
 	wrong									= errada,
 	variation~at						= variante~no~lance~\pgfgovariationmove{},
+	ai~line~at						= linha~da~IA~no~lance~\pgfgovariationmove{},
 	black~to~play					= Pretas~jogam,
 	white~to~play					= Brancas~jogam,
 	at										= em,
@@ -301,6 +306,7 @@
 	correct								= corretta,
 	wrong									= sbagliata,
 	variation~at						= variante~alla~mossa~\pgfgovariationmove{},
+	ai~line~at						= linea~dell'IA~alla~mossa~\pgfgovariationmove{},
 	black~to~play					= Muove~il~Nero,
 	white~to~play					= Muove~il~Bianco,
 	at										= in,
@@ -338,6 +344,7 @@
 	correct								= ĝusta,
 	wrong									= malĝusta,
 	variation~at						= varianto~ĉe~movo~\pgfgovariationmove{},
+	ai~line~at						= linio~de~la~AI~ĉe~movo~\pgfgovariationmove{},
 	black~to~play					= Nigro~ludas,
 	white~to~play					= Blanko~ludas,
 	at										= ĉe,
@@ -375,6 +382,7 @@
 	correct								= 正解,
 	wrong									= 失敗,
 	variation~at						= \pgfgovariationmove{}手目の変化,
+	ai~line~at						= \pgfgovariationmove{}手目のAIの読み,
 	black~to~play					= 黒番,
 	white~to~play					= 白番,
 	at										= {=},
@@ -412,6 +420,7 @@
 	correct								= 正解,
 	wrong									= 失败,
 	variation~at						= 第\pgfgovariationmove{}手的变化,
+	ai~line~at						= 第\pgfgovariationmove{}手的AI变化,
 	black~to~play					= 黑先,
 	white~to~play					= 白先,
 	at										= {=},
@@ -449,6 +458,7 @@
 	correct								= 정답,
 	wrong									= 실패,
 	variation~at						= \pgfgovariationmove{}수의~변화,
+	ai~line~at						= \pgfgovariationmove{}수의~AI~변화,
 	black~to~play					= 흑선,
 	white~to~play					= 백선,
 	at										= {=},

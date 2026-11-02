@@ -323,7 +323,7 @@ En los ejemplos, los archivos se usan por su nombre (pág.~\pageref{subsec:sgfno
 \label{subsec:sgfdatos}
 
 \begin{command}{\sgfinfo\opt{\oarg{options}}\marg{file}\marg{property}}
-	Escribe una propiedad de la raíz de la partida, por ejemplo |PB| y |PW| (los jugadores), |RE| (el resultado), |KM| (el komi) o |DT| (la fecha), o con |move| la de una jugada. Si no está, no escribe nada. Se puede usar fuera de |goban|.
+	Escribe una propiedad de la raíz de la partida, por ejemplo |PB| y |PW| (los jugadores), |RE| (el resultado), |KM| (el komi) o |DT| (la fecha), o con |move| la de una jugada. Si no está, no escribe nada. Se puede usar fuera de |goban|. En minúsculas (|winrate|, |lead|, |loss|...), escribe un dato del análisis de la partida (pág.~\pageref{subsec:sgfanalisis}).
 
 	\begin{codeexample}[]
 		\sgfinfo{variantes}{PB} (negras) contra
@@ -1092,4 +1092,390 @@ Las animaciones de |animate| funcionan en Acrobat Reader y en algunos otros viso
 		\sgfproblem[links, comments = false, notes = false,
 			goban = {scale = 0.5}]{problema}
 	\end{codeexample}
+\end{key}
+
+\subsection{Partidas analizadas}
+\label{subsec:sgfanalisis}
+
+Los programas que revisan partidas con un motor (KataGo o Leela Zero) guardan el análisis en el mismo archivo SGF, cada uno en sus propiedades: KaTrain (|KT|), Lizzie y LizzieYzy (|LZ|), q5Go (|QKGV| y |QLZV|), Sabaki (|SBKV| y |SBKS|) y Ogatak (|SBKV| y |OGSC|). \pgfgoname\ las lee todas. El análisis de una jugada es el de la posición que deja: el \emph{winrate} (la probabilidad de ganar que calcula el motor), el puntaje (por cuántos puntos va ganando uno de los dos), las visitas (cuántas posiciones miró el motor), las jugadas que propone para seguir, cada una con su línea (las jugadas que espera después), y de quién es cada punto. No todos guardan todo: KaTrain guarda todo; Lizzie, todo menos de quién es cada punto (LizzieYzy también lo guarda) y, con Leela Zero, sin puntaje; q5Go, Sabaki y Ogatak, el \emph{winrate} y el puntaje. Lo que el archivo no tiene no se dibuja ni se escribe.
+
+En los ejemplos, |analizada| es |analizada.sgf|, una partida corta en 9×9 con su análisis en el formato de KaTrain.
+
+\begin{key}{/pgfgo/sgf/analysis = \meta{analysis options}}
+	Opciones de |/pgfgo/sgf analysis| para |\sgf|. Lo que dibujan va después de la última jugada que se muestra (|to|): las jugadas que propone el motor desde esa posición, su línea y de quién es cada punto. Se suman a las de todo el documento (|\pgfgoset{sgf analysis = {...}}|).
+
+	\begin{codeexample}[]
+		\begin{goban}[9, scale = 0.6]
+			\sgf[to = 8, analysis = {candidates = 3}]{analizada}
+		\end{goban}
+		\pgfgocandidates
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/candidates = \meta{number o candidates options} (default true)}
+	Las jugadas que propone el motor, en su orden: un número dice cuántas; |true| (o |candidates| a secas), todas las que guarda el archivo (KaTrain guarda todas las que miró el motor, aun las de una sola visita). Cada una es una marca |custom| con su letra, |A| la primera. Un pase no se marca, pero tiene su letra. Las opciones se suman: |candidates = {3, text = \pgfgowinrate}|. Cualquier otra cosa que no sea un número es un error.
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf analysis/candidates/true}
+	Todas.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf analysis/candidates/false}
+	Ninguna. Es el valor inicial.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf analysis/candidates/text = \meta{text} (initially \texttt{\#1})}
+	Lo que se escribe en cada marca; |#1| es la letra. |\pgfgowinrate|, |\pgfgolead|, |\pgfgovisits|, |\pgfgoprior| y |\pgfgoloss| son los datos de esa jugada.
+
+	\begin{codeexample}[]
+		\begin{goban}[9, scale = 0.6]
+			\sgf[to = 8, analysis = {candidates = {3, text = \pgfgowinrate}}]{analizada}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/candidates/mark = \meta{mark options}}
+	Opciones de la marca de cada jugada propuesta, como las de |\marks| (pág.~\pageref{sec:marcas}).
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/candidates/best = \meta{mark options}}
+	Opciones de la marca de la primera, después de las de |mark|.
+
+	\begin{codeexample}[]
+		\begin{goban}[9, scale = 0.6]
+			\sgf[to = 8, analysis = {candidates = {3,
+				mark = {label = {color = gray}}, best = {label = {color = red}}}}]{analizada}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{command}{\pgfgocandidates\opt{\oarg{options}}}
+	Escribe las notas de las jugadas propuestas del último |\sgf|, una por jugada: «A: 52.3\,\%, B: 49.8\,\%». Las opciones son las de |/pgfgo/sgf analysis|. |\sgfdiagrams| las escribe debajo de cada diagrama.
+\end{command}
+
+\begin{key}{/pgfgo/sgf analysis/candidates/note = \meta{text} (initially \texttt{\#1:\string~\string\pgfgowinrate\string\,\string\%})}
+	Cada nota de |\pgfgocandidates|; |#1| es la letra.
+
+	\begin{codeexample}[]
+		\begin{goban}[9, scale = 0.6]
+			\sgf[to = 8, analysis = {candidates = 3}]{analizada}
+		\end{goban}
+		\pgfgocandidates[candidates = {note = {#1~(\pgfgolead, \pgfgovisits~visitas)},
+			separator = {;~}}]
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/candidates/separator = \meta{text} (initially \texttt{,\string~})}
+	Lo que va entre las notas.
+\end{key}
+
+\begin{command}{\pgfgowinrate}
+	En los textos de las jugadas propuestas (|text|, |note|) y en |\sgfinfo|, el \emph{winrate}, en porcentaje, sin el signo |%|.
+\end{command}
+
+\begin{command}{\pgfgolead}
+	El puntaje, con su signo: |+2.5| si va ganando por dos puntos y medio, $-1.0$ si va perdiendo por uno.
+\end{command}
+
+\begin{command}{\pgfgovisits}
+	Las visitas.
+\end{command}
+
+\begin{command}{\pgfgoprior}
+	La probabilidad que la red le daba a la jugada antes de buscar (\emph{prior} o \emph{policy}), en porcentaje.
+\end{command}
+
+\begin{command}{\pgfgoloss}
+	En una jugada propuesta, los puntos que le faltan para la primera; en |\sgfinfo| y en el epígrafe de un diagrama de |mistakes|, los puntos que perdió la jugada (con signo menos si ganó).
+\end{command}
+
+\begin{key}{/pgfgo/sgf analysis/perspective = \meta{black, white o player} (initially player)}
+	Desde qué jugador se escriben el \emph{winrate} y el puntaje. Con |player|, en una jugada propuesta, desde el que la juega; en |\sgfinfo|, desde el que hizo la jugada (en la jugada 0, desde el que juega). |\sgfgraph| usa |black| salvo con |white|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/digits = \meta{number} (initially 1)}
+	Cuántos decimales llevan el \emph{winrate}, el puntaje, el \emph{prior} y lo que se pierde.
+
+	\begin{codeexample}[]
+		\begin{goban}[9, scale = 0.6]
+			\sgf[to = 8, analysis = {candidates = 2}]{analizada}
+		\end{goban}
+		\pgfgocandidates[perspective = black, digits = 2]
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/colored = \meta{boolean} (default true, initially false)}
+	Pinta según lo que pierde cada jugada, como los programas de análisis: cada jugada propuesta lleva debajo de su letra un disco del color de lo que le falta para la primera; cada jugada numerada de la partida, el borde de su piedra, más grueso, del color de lo que perdió; y en |\sgfgraph|, el punto de cada jugada de |mistakes|. Sin puntaje en el archivo, no pinta nada.
+
+	\begin{codeexample}[]
+		\begin{goban}[9, scale = 0.6]
+			\sgf[to = 12, analysis = {colored, candidates = 3}]{analizada}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/colors = \meta{puntos = color, ...} (initially de verde a violeta)}
+	Los colores de |colored|: una jugada que pierde al menos esos puntos toma ese color (el del mayor que alcanza). El valor inicial es |{0 = green!60, 0.5 = yellow!80!green, 1.5 = orange!80, 3 = red!70, 6 = violet!70, 12 = violet!60!black}|. Una lista nueva reemplaza la anterior.
+
+	\begin{codeexample}[]
+		\begin{goban}[9, scale = 0.6]
+			\sgf[to = 12, analysis = {colored, colors = {0 = blue, 2 = red}}]{analizada}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/line = \meta{number o line options} (default true)}
+	La línea de la primera jugada propuesta, como jugadas numeradas (con |captures|, capturan): un número dice cuántas jugadas; |true| (o |line| a secas), todas. Se numeran desde el número que sigue a la última jugada, o desde |from|. Una jugada propuesta que cae en una piedra de la línea no se marca. Con |goban/notes|, un pase se anota «N: pasa». En |\sgfdiagrams| la línea va solo en los diagramas de |mistakes|.
+
+	\begin{codeexample}[]
+		\begin{goban}[9, scale = 0.6, notes]
+			\sgf[from = 9, to = 8,
+				analysis = {line = {4, from = 1}, candidates = 3}]{analizada}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf analysis/line/true}
+	Toda la línea.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf analysis/line/false}
+	Sin línea. Es el valor inicial.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf analysis/line/from = \meta{number} (initially 0)}
+	El número de la primera jugada de la línea. Con |0|, el que sigue a la última jugada.
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/ownership = \meta{ownership options} (default true)}
+	De quién es cada punto, según el motor: un cuadrado del color de la piedra del dueño, más grande cuanto más seguro, como la marca |t-square| del territorio. Va en los puntos vacíos y en las piedras del otro color (las que el motor da por muertas). Se prende con |ownership| o |ownership = true|; las demás opciones no lo prenden.
+
+	\begin{codeexample}[]
+		\begin{goban}[9, scale = 0.6]
+			\sgf[analysis = {ownership}]{analizada}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf analysis/ownership/true}
+	Dibuja los cuadrados.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf analysis/ownership/false}
+	No los dibuja. Es el valor inicial.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf analysis/ownership/size = \meta{number} (initially 1.4)}
+	La escala (|mark/scale|) del cuadrado de un punto seguro. Los demás son proporcionales.
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/ownership/threshold = \meta{number} (initially 0.2)}
+	Un punto más dudoso que esto (de 0, de nadie, a 1, seguro) no lleva cuadrado.
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/ownership/black = \meta{player options}}
+	Opciones de |/pgfgo/players/black| (pág.~\pageref{subsec:jugadores}) solo para los cuadrados de las negras. Por ejemplo, |black = {stone = {fill = {color = gray}}}|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/ownership/white = \meta{player options}}
+	Lo mismo para los de las blancas.
+
+	\begin{codeexample}[]
+		\begin{goban}[9, scale = 0.6]
+			\sgf[analysis = {ownership = {true, size = 2, threshold = 0.5,
+				white = {stone = {fill = {color = white!60!black}}}}}]{analizada}
+		\end{goban}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/mistakes = \meta{number o mistakes options}}
+	Las jugadas que más pierden: un número dice cuántas. Lo que pierde una jugada es la diferencia de puntaje entre la posición anterior y la que deja, para el que la juega; si el archivo no tiene puntaje, la de \emph{winrate}. Las usan |\sgfinfo{...}{mistakes}|, |\sgfgraph| (un punto con su número) y |\sgfdiagrams| (un diagrama con la línea del motor en su lugar). Las opciones se suman: |mistakes = {3, player = black}|.
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf analysis/mistakes/false}
+	Ninguna. Es el valor inicial.
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf analysis/mistakes/player = \meta{both, black o white} (initially both)}
+	De quién son.
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis/comments = \meta{boolean} (default true, initially true)}
+	Con |false|, los comentarios (|C|) se escriben sin lo que les agregan KaTrain (lo que marca como suyo) y Lizzie (el bloque del final, con el \emph{winrate} y las visitas). Si no queda nada, la jugada no tiene comentario. Las marcas invisibles con las que KaTrain separa las partes no se escriben nunca.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[comments, analysis = {comments = false}]{partida-de-katrain.sgf}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf analysis = \meta{analysis options}}
+	Fija las opciones de análisis de todos los comandos: |\pgfgoset{sgf analysis = {digits = 2}}|.
+\end{key}
+
+Cada comando que lee partidas tiene su propia \emph{key} |analysis|, que se suma a las de todo el documento: las de |\pgfgoset{sgf diagrams = {analysis = {...}}}| valen solo para |\sgfdiagrams|.
+
+\begin{key}{/pgfgo/sgf info/analysis = \meta{analysis options}}
+	Para |\sgfinfo|. Con una propiedad en minúsculas, |\sgfinfo| escribe un dato del análisis de la jugada |move| (con |0|, el de antes de la primera jugada):
+
+	\begin{center}
+		\small
+		\begin{tabular}{lp{9cm}}
+			|winrate| & El \emph{winrate} después de la jugada, en porcentaje. \\
+			|lead| & El puntaje después de la jugada, con signo. \\
+			|visits| & Las visitas. \\
+			|loss| & Los puntos que perdió la jugada. \\
+			|best| & La jugada que proponía el motor en su lugar, como coordenada (|E5|, o |pasa|). \\
+			|mistakes| & Los números de las jugadas que más pierden (|mistakes|), separados por comas. \\
+		\end{tabular}
+	\end{center}
+
+	\begin{codeexample}[]
+		Después de la 9: \sgfinfo[move = 9]{analizada}{winrate}\,\%
+		(\sgfinfo[move = 9]{analizada}{lead}); pierde
+		\sgfinfo[move = 9]{analizada}{loss} puntos; el motor
+		prefería \sgfinfo[move = 9]{analizada}{best}. Para Negro:
+		\sgfinfo[move = 9, analysis = {perspective = black}]{analizada}{winrate}\,\%.
+		Los errores: \sgfinfo[analysis = {mistakes = 3}]{analizada}{mistakes}.
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf comment/analysis = \meta{analysis options}}
+	Para |\sgfcomment| (solo |comments|).
+\end{key}
+
+\begin{key}{/pgfgo/sgf animation/analysis = \meta{analysis options}}
+	Para |\sgfanimation|: lo de |\sgf|, en cada cuadro.
+\end{key}
+
+\begin{key}{/pgfgo/sgf problem/analysis = \meta{analysis options}}
+	Para |\sgfproblem|: lo de |\sgf|, en cada diagrama.
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/analysis = \meta{analysis options}}
+	Para |\sgfdiagrams|. Las jugadas propuestas y de quién es cada punto van en cada diagrama, después de su última jugada, con las notas de |\pgfgocandidates| debajo. La línea va solo en los diagramas de |mistakes|: después de las variantes del diagrama donde está cada una de esas jugadas, un diagrama con la posición anterior, sin números, y la línea que proponía el motor en su lugar, numerada desde 1 («Diagrama 2a (línea de la IA en 37)»).
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[step = 11, goban = {scale = 0.5},
+			layout = {columns = 2},
+			analysis = {mistakes = 2, line = 4, candidates = 2}]{analizada}
+	\end{codeexample}
+
+	\sgfdiagrams[step = 11, goban = {scale = 0.5},
+		layout = {columns = 2},
+		analysis = {mistakes = 2, line = 4, candidates = 2}]{analizada}
+\end{key}
+
+\begin{key}{/pgfgo/sgf diagrams/mistake title = \meta{text} (initially «ai line at» y el número, o su traducción)}
+	Lo que va entre paréntesis en el epígrafe de un diagrama de |mistakes|. |\pgfgovariationmove| es el número de la jugada; |\pgfgoloss|, lo que perdió.
+
+	\begin{codeexample}[code only]
+		\sgfdiagrams[mistake title = {\pgfgovariationmove: pierde \pgfgoloss},
+			analysis = {mistakes = 3}]{analizada}
+	\end{codeexample}
+\end{key}
+
+\begin{command}{\sgfgraph\opt{\oarg{options}}\marg{file}}
+	Dibuja el \emph{winrate} (en negro, con la escala a la izquierda) y el puntaje (en gris, con la escala a la derecha) de cada posición de la partida, desde Negro. El \emph{winrate} va de 0 a 100; el puntaje, de $-M$ a $M$, con $M$ el mayor puntaje, redondeado. La línea punteada es la mitad. Las jugadas de |mistakes| llevan un punto con su número. Es una caja, como una letra: se usa fuera de |goban|. Un archivo sin análisis da un aviso. Las opciones pueden fijarse para todo el documento con |\pgfgoset{sgf graph = {...}}|.
+
+	\begin{codeexample}[]
+		\sgfgraph[height = 2.5cm, analysis = {mistakes = 3}]{analizada}
+	\end{codeexample}
+\end{command}
+
+\begin{key}{/pgfgo/sgf graph/width = \meta{dimension} (initially \string\linewidth)}
+	Ancho del gráfico, con las escalas.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/height = \meta{dimension} (initially 3cm)}
+	Alto del área de las curvas.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/from = \meta{number} (initially 0)}
+	La primera posición: |0| es la de antes de la primera jugada.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/to = \meta{number o last} (initially last)}
+	La última posición.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/step = \meta{number} (initially 0)}
+	Cada cuántas jugadas va un número debajo. Con |0|, según el largo de la partida: 5, 10, 20, 50 o 100.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/marks = \meta{list of numbers}}
+	Jugadas con una línea vertical punteada: |marks = {50, 100}|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/font = \meta{font commands} (initially \string\footnotesize)}
+	Fuente de los números.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/winrate = \meta{curve options} (default true)}
+	La curva del \emph{winrate}. Se apaga con |winrate = false|; las demás opciones no la prenden ni la apagan.
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf graph/winrate/true}
+	Dibuja la curva. Es el valor inicial.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf graph/winrate/false}
+	No la dibuja (ni su escala).
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf graph/winrate/color = \meta{color} (initially black)}
+	Color de la curva y de los puntos de |mistakes|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/winrate/width = \meta{dimension} (initially 0.8pt)}
+	Grosor de la curva.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/winrate/fill = \meta{color o none} (initially none)}
+	Color del área entre la curva y la mitad.
+
+	\begin{codeexample}[]
+		\sgfgraph[width = 7cm, height = 2cm, lead = false,
+			winrate = {fill = gray!30}, from = 5, to = 15, step = 2,
+			analysis = {perspective = white}]{analizada}
+	\end{codeexample}
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/lead = \meta{curve options} (default true)}
+	La curva del puntaje, como |winrate|.
+\end{key}
+
+\begin{stylekey}{/pgfgo/sgf graph/lead/true}
+	Dibuja la curva. Es el valor inicial.
+\end{stylekey}
+
+\begin{stylekey}{/pgfgo/sgf graph/lead/false}
+	No la dibuja (ni su escala).
+\end{stylekey}
+
+\begin{key}{/pgfgo/sgf graph/lead/color = \meta{color} (initially gray)}
+	Color de la curva.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/lead/width = \meta{dimension} (initially 0.6pt)}
+	Grosor de la curva.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/lead/fill = \meta{color o none} (initially none)}
+	Color del área entre la curva y el cero.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/game = \meta{number} (initially 1)}
+	Como |/pgfgo/sgf/game|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/variation = \meta{números} (initially la línea principal)}
+	Como |/pgfgo/sgf/variation|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph/analysis = \meta{analysis options}}
+	Para |\sgfgraph|: |perspective| y |mistakes|.
+\end{key}
+
+\begin{key}{/pgfgo/sgf graph = \meta{graph options}}
+	Fija las opciones de |\sgfgraph| para todo el documento.
 \end{key}

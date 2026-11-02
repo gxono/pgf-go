@@ -1,0 +1,50 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+% passes: 2
+%
+% The analysis in \sgfdiagrams (the legend of the candidates under each
+% diagram, a diagram with the engine's line for each mistake) and in
+% \sgfanimation (each frame drawn whole and made of its layers: both must look
+% the same). animate needs two runs.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{animate}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\ExplSyntaxOn
+\NewDocumentCommand \layers {mmm} {
+	\group_begin:
+		\pgfgo_sgfanimation_setup:nn {#1} {#2}
+		\pgfgo_sgfanimation_layers:
+		\clist_map_inline:nn {#3} {
+			\pgfgo_sgfanimation_frame:n {##1}\enspace
+			\pgfgo_sgfanimation_layers_frame:n {##1}\quad
+		}
+	\group_end:
+}
+\ExplSyntaxOff
+\begin{document}
+
+\case{Diagrams of 11 moves; the 2 worst moves with the engine's line (4 moves, from 1), with 2 candidates; the line is not drawn in the other diagrams}
+\sgfdiagrams[step = 11, layout = {columns = 3}, goban = {scale = 0.6},
+	mistake title = {\pgfgovariationmove: \pgfgoloss},
+	analysis = {mistakes = 2, candidates = 2, line = 4}]{analysis-katrain.sgf}
+
+\case{Only Black's worst move, with the whole line; ownership in every diagram; set with \textbackslash pgfgoset}
+\begingroup
+\pgfgoset{sgf diagrams = {analysis = {ownership, mistakes = {1, player = black}}}}
+\sgfdiagrams[step = 22, layout = {columns = 2}, goban = {scale = 0.6}]{analysis-lizzie.sgf}
+\endgroup
+
+\case{\textbackslash sgf in a goban is not changed by the options of \textbackslash sgfdiagrams}
+\begin{goban}[9, scale = 0.6]\sgf[to = 10]{analysis-katrain.sgf}\end{goban}
+
+\case{Comments without what KaTrain and Lizzie add}
+\sgfdiagrams[step = 2, to = 2, comments, layout = {columns = 2}, goban = {scale = 0.5},
+	analysis = {comments = false}]{analysis-special.sgf}
+
+\case{\textbackslash sgfanimation: candidates and ownership in each frame (whole and by layers)}
+\layers{to = 4, analysis = {candidates = 2, ownership}, goban = {scale = 0.5}}{analysis-katrain.sgf}{0, 1, 3, 4}
+\end{document}

@@ -127,7 +127,7 @@
 	basicstyle = \ttfamily\scriptsize,
 	texcsstyle = *\color{walnut}\bfseries,
 	moretexcs = {stone, stones, move, moves, mark, marks, prisoner, prisoners, arrow, territory,
-		sgf, sgfinfo, sgfcomment, sgfdiagrams, sgfproblem, sgfanimation, pgfgoset, pgfgoview,
+		sgf, sgfinfo, sgfcomment, sgfdiagrams, sgfproblem, sgfanimation, sgfgraph, pgfgocandidates, pgfgoset, pgfgoview,
 		pgfgoscore, pgfgoprisoners, pgfgomovenotes, pgfgoregion, pgfgotext, pgfgodefinesgf,
 		pgfgodefineprofile, pgfgodefinemark, pgfgodefinelanguage, pgfgoimport, pgfgodefinegoban,
 		pgfgodefineplayer, foreach, only, pause, draw, node},
@@ -1411,6 +1411,7 @@ $$ --------------+
 % In the preamble:
 % \pgfgodefinesgf{first}{games.sgf}
 % \pgfgodefinesgf[game = 2]{second}{games.sgf}
+\pgfgodefinesgf{analyzed}{../doc/en/analyzed.sgf}
 
 \pgfgoset{profile = pgfgo}
 \begin{pgfgolayout}[columns = 2, fit]
@@ -1525,6 +1526,56 @@ $$ --------------+
 			\medskip
 			\small\color{walnut}Maeda -- Segoe, 1940: 60 frames.
 	\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Analyzed games: what the engine proposes}
+	\begin{codebox}[0.55]
+% The analysis that KaTrain, Lizzie, q5Go,
+% Sabaki and Ogatak save in the file.
+\begin{goban}[9]
+	\sgf[to = 12, analysis = {colored,
+		candidates = 3}]{analyzed}
+\end{goban}
+
+\pgfgocandidates
+	\end{codebox}
+	\small \keyname{candidates}: the moves it proposes, with letters. \keyname{colored}: from green to violet by
+	what each move loses, as in KaTrain.
+\end{frame}
+
+\begin{frame}[fragile]{Who owns each point and the engine's line}
+	\begin{codebox}[0.55]
+\begin{pgfgolayout}[columns = 2, fit]
+	\begin{goban}[9]
+		\sgf[analysis = {ownership}]{analyzed}
+	\end{goban}
+	\begin{goban}[9, notes]
+		\sgf[from = 9, to = 8, analysis =
+			{line = {5, from = 1}}]{analyzed}
+	\end{goban}
+\end{pgfgolayout}
+	\end{codebox}
+	\small \keyname{ownership}: a square of the owner's color, on the empty points and on the dead stones.
+	\keyname{line}: what the engine expected next.
+\end{frame}
+
+\begin{frame}[fragile]{The graph of the game}
+	\begin{codeonly}
+\sgfgraph[height = 3cm, analysis = {colored, mistakes = 3}]{analyzed}
+	\end{codeonly}
+	\sgfgraph[height = 3cm, analysis = {colored, mistakes = 3}]{analyzed}
+
+	\small Black's winrate (black, on the left) and the score lead (gray, on the right). The dots are the
+	three moves that lose the most.
+\end{frame}
+
+\begin{frame}[fragile]{A diagram for each mistake}
+	\begin{codeonly}
+\sgfdiagrams[step = 22, layout = {columns = 3, fit},
+	analysis = {colored, mistakes = 2, line = 5}]{analyzed}
+	\end{codeonly}
+	{\scriptsize \sgfdiagrams[step = 22, layout = {columns = 3, fit},
+		analysis = {colored, mistakes = 2, line = 5}]{analyzed}}
 \end{frame}
 
 
@@ -1999,12 +2050,13 @@ $$ --------------+
 				\item \keyname{name}, \keyname{resume}, \keyname{\textbackslash pgfgoview}, \keyname{export}: boards are remembered.
 				\item \keyname{\textbackslash sgf}, \keyname{\textbackslash sgfdiagrams}, \keyname{\textbackslash sgfproblem},
 					\keyname{\textbackslash sgfanimation}: games, books, problems and animations.
+				\item \keyname{analysis}, \keyname{\textbackslash sgfgraph}: the AI analysis saved in the file.
 				\item \keyname{profile} and images: the style, in a light PDF.
 			\end{itemize}
 
 			\medskip
 			\small The manual (\texttt{pgf-go-en.pdf}) has fifteen tutorials and the reference of each key; in
-			\texttt{doc/examples} there are 39 examples with their code.
+			\texttt{doc/examples} there are 40 examples with their code.
 		\column{0.4\textwidth}
 			\centering
 			\begin{goban}[sgf size = commented, captures, profile = shell, scale = 1.6]

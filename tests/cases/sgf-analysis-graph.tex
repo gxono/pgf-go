@@ -1,0 +1,40 @@
+% engines: lualatex
+% expect-warnings: 1
+% expect-errors: 0
+%
+% \sgfgraph with the analysis of each program (analysis-*.sgf, see
+% kernel-lua.tex) and its options. The warning: a file without analysis.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak\smallskip}
+\pagestyle{empty}
+\begin{document}
+
+\case{KaTrain: winrate (black) and lead (gray, scale on the right)}
+\sgfgraph[height = 2.5cm]{analysis-katrain.sgf}
+
+\case{Lizzie, q5Go and Sabaki: the same curves}
+\sgfgraph[width = 0.32\linewidth, height = 2cm]{analysis-lizzie.sgf}\hfill
+\sgfgraph[width = 0.32\linewidth, height = 2cm]{analysis-q5go.sgf}\hfill
+\sgfgraph[width = 0.32\linewidth, height = 2cm]{analysis-sabaki.sgf}
+
+\case{The 3 worst moves, and Black's 2 worst; marks at 5 and 15}
+\sgfgraph[height = 2.5cm, marks = {5, 15}, analysis = {mistakes = 3}]{analysis-katrain.sgf}
+
+\sgfgraph[height = 2.5cm, analysis = {mistakes = {2, player = black}}]{analysis-katrain.sgf}
+
+\sgfgraph[height = 2.5cm, analysis = {colored, mistakes = 5}]{analysis-katrain.sgf}
+
+\case{From White, only the winrate, filled, from 5 to 15, a number every 2 moves}
+\sgfgraph[width = 8cm, height = 2.5cm, lead = false, winrate = {fill = gray!30, color = blue, width = 1.2pt},
+	from = 5, to = 15, step = 2, font = \tiny, analysis = {perspective = white}]{analysis-katrain.sgf}
+
+\case{Only the lead, red; a handicap game with passes and analysis from several programs}
+\sgfgraph[width = 8cm, height = 2.5cm, winrate = false, lead = {color = red}]{analysis-katrain.sgf}
+
+\sgfgraph[width = 8cm, height = 2.5cm]{analysis-special.sgf}
+
+\case{A file without analysis: an empty frame and a warning}
+\sgfgraph[width = 4cm, height = 1.5cm]{game.sgf}
+\end{document}

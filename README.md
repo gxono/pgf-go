@@ -8,7 +8,9 @@ pgf-go draws and comments on Go games with PGF/TikZ: boards, stones, moves,
 marks, arrows and territory. With LuaLaTeX it also reads SGF files (a game on a
 board, diagrams as in books, animations and problems), removes captured stones
 and finds the territory. It also reads the ASCII diagrams of Sensei's Library
-and Life in 19x19.
+and Life in 19x19, and the AI analysis that KaTrain, Lizzie, q5Go and Sabaki
+save in the SGF file (the engine's candidate moves, its line, the ownership,
+the winrate graph and the worst moves).
 
 ## License
 

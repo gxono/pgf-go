@@ -4,6 +4,44 @@ All notable changes to `pgf-go` are listed here.
 
 ## Unreleased
 
+### New
+
+- Analyzed games: the SGF commands read the analysis that KaTrain (`KT`),
+  Lizzie and LizzieYzy (`LZ`), q5Go (`QKGV`, `QLZV`), Sabaki (`SBKV`, `SBKS`)
+  and Ogatak (`SBKV`, `OGSC`) save in the file, everything from Black. The
+  key tree `/pgfgo/sgf analysis` (and the key `analysis` of `\sgf`,
+  `\sgfdiagrams`, `\sgfanimation`, `\sgfproblem`, `\sgfinfo`, `\sgfcomment`
+  and `\sgfgraph`) says what is drawn after the last move: `candidates` (the
+  moves the engine proposes, as lettered marks), `line` (the engine's line, as
+  numbered moves) and `ownership` (who owns each point: a `t-square` of the
+  owner's color, bigger the surer, on empty points and dead stones). With
+  `colored`, the candidates, the borders of the numbered moves and the dots of
+  `\sgfgraph` take the color of what they lose (`colors`, from green to
+  violet, as in KaTrain). `perspective` and `digits` say how the numbers are
+  written; `comments = false` leaves out what KaTrain and Lizzie add to the
+  comments.
+- `\pgfgocandidates` writes the notes of the candidates of the last `\sgf`
+  ("A: 52.3 %, B: 49.8 %"), with `\pgfgowinrate`, `\pgfgolead`,
+  `\pgfgovisits`, `\pgfgoprior` and `\pgfgoloss`.
+- `\sgfinfo` writes the analysis of a move with lowercase names: `winrate`,
+  `lead`, `visits`, `loss`, `best` and `mistakes`.
+- `\sgfgraph` draws the winrate and the score lead of the whole game, with the
+  worst moves (`mistakes`) marked.
+- `\sgfdiagrams` with `analysis = {mistakes = 3}`: after each diagram, one per
+  mistake with the position before it and the engine's line in its place
+  ("Diagram 2a (AI line at 37)", `mistake title`); the notes of the candidates
+  go under each diagram. New text `ai line at` in the ten languages.
+
+### Behaviour changes
+
+- KaTrain's invisible separators (U+3164) are no longer written in the
+  comments, so a KaTrain file does not give the `sgf-glyphs` warning.
+- Kernel interface: `\pgfgo_kernel_sgf_comment:nn` is now
+  `\pgfgo_kernel_sgf_comment:nnn` (the third argument leaves out what the
+  analysis programs write); new functions for the analysis
+  (`\pgfgo_kernel_sgf_evaluation:n`, `candidates`, `line`, `ownership`,
+  `series`, `mistakes`).
+
 ### Performance
 
 - Faster stones, with the same output: the points of the board, the

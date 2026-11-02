@@ -1,6 +1,6 @@
 % engines: lualatex
 % expect-warnings: 0
-% expect-errors: 11
+% expect-errors: 12
 % render: no
 \documentclass{article}
 \usepackage{../../latex/pgf-go}
@@ -20,5 +20,6 @@
 \pgfgoset{players = {white = {mark = {custom = ?}}}}  % a mark shape is not a player style
 \pgfgoset{players = {black = {mark = {triangle}}}}    % the same with a named shape
 \begin{goban}[5]\moves[numbers = false]{A1; B1}\end{goban}   % moves only add
+\pgfgoset{sgf analysis = {candidates = many}}   % neither a key nor a number
 
 \end{document}

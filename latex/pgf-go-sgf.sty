@@ -233,7 +233,10 @@
 		{\tl_set_eq:NN \l__pgfgo_sgf_variations_tl \l_keys_choice_tl},
 	variations	.default:n	= {auto},
 	variations	.initial:n	= {none},
+	%OPCIONES DE /pgfgo/sgf analysis (SE SUMAN A LAS DE TODO EL DOCUMENTO).
+	analysis		.code:n			= {\tl_put_right:Nn \l__pgfgo_sgf_analysis_tl {, #1}},
 }
+\tl_new:N \l__pgfgo_sgf_analysis_tl
 
 %\pgfgoset{sgf = {...}} FIJA LAS OPCIONES DE TODOS LOS \sgf (Y LA PARTIDA DE LOS DEMAS COMANDOS).
 %sgf charset: LA CODIFICACION DE LOS ARCHIVOS QUE NO SON UTF-8 (auto: LA DE CA). sgf syntax: LA SINTAXIS DE
@@ -373,18 +376,28 @@
 		\l__pgfgo_sgf_numbers_bool && \l__pgfgo_sgf_numbered_bool &&
 		! \prop_if_in_p:NV \g__pgfgo_sgf_marked_prop \l__pgfgo_captures_key_tl
 	}
+	%CON analysis/colored, EL BORDE DE LA PIEDRA (MAS GRUESO) DEL COLOR DE LO QUE PIERDE LA JUGADA.
+	\tl_clear:N \l__pgfgo_sgf_move_options_tl
+	\bool_lazy_and:nnT {\l__pgfgo_analysis_colored_bool} {\l__pgfgo_sgf_numbered_bool} {
+		\pgfgo_kernel_sgf_evaluation:n {\l__pgfgo_sgf_count_int}
+		\__pgfgo_analysis_color:VN \l_pgfgo_kernel_sgf_loss_tl \l_tmpa_tl
+		\tl_if_empty:NF \l_tmpa_tl
+			{\tl_set:Ne \l__pgfgo_sgf_move_options_tl {line = {true, color = \exp_not:V \l_tmpa_tl, width = 1.6pt}}}
+	}
 	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_move_bool {stone} {
 		\bool_if:NF \l_pgfgo_goban_remember_move_label_bool {\exp_not:N \pgfgo_remember_numbers:n}
 		{
 			\__pgfgo_sgf_move_code:nnnn
 				{\bool_if:NTF \l__pgfgo_sgf_numbered_bool {\exp_not:N \BooleanTrue} {\exp_not:N \BooleanFalse}}
-				{#1} {#2} {#3}
+				{#1, \exp_not:V \l__pgfgo_sgf_move_options_tl} {#2} {#3}
 		}
 	}
 	\bool_if:NTF \l__pgfgo_sgf_numbered_bool
-		{\pgfgo_move:nnnn {\BooleanTrue} {} {#2} {#3}}
+		{\pgfgo_move:nVnn {\BooleanTrue} \l__pgfgo_sgf_move_options_tl {#2} {#3}}
 		{\pgfgo_move:nnnn {\BooleanFalse} {} {#2} {#3}}
 }
+\tl_new:N \l__pgfgo_sgf_move_options_tl
+\cs_generate_variant:Nn \pgfgo_move:nnnn {nV}
 
 %EL CODIGO QUE VUELVE A DIBUJAR LA JUGADA DE #2 EN (#3,#4) (#1: NUMERADA). PARA UNA EXPANSION e.
 \cs_new:Npn \__pgfgo_sgf_move_code:nnnn #1#2#3#4 {
@@ -877,6 +890,7 @@
 	\group_begin:
 		\pgfgo_sgf_use_name:n {#2}
 		\keys_set:nn {pgfgo / sgf} {#1}
+		\keys_set:nV {pgfgo / sgf~analysis} \l__pgfgo_sgf_analysis_tl
 		\tl_set:Nn \l__pgfgo_sgf_file_tl {#2}
 		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgf_variation_tl
 		\__pgfgo_sgf_numbering:
@@ -890,6 +904,7 @@
 		}
 		\seq_map_inline:Nn \l__pgfgo_sgf_variations_seq {\__pgfgo_sgf_variation:nnnn ##1}
 		\__pgfgo_sgf_last_mark:
+		\__pgfgo_analysis_draw:n {\l__pgfgo_sgf_last_int}
 	\group_end:
 }
 
@@ -1021,7 +1036,11 @@
 		}
 	}
 	\tl_set:Ne \l__pgfgo_sgf_comment_tl
-		{\pgfgo_kernel_sgf_comment:nn {#1} {\bool_if:NTF \l__pgfgo_sgf_chat_bool {true} {false}}}
+		{
+			\pgfgo_kernel_sgf_comment:nnn {#1}
+				{\bool_if:NTF \l__pgfgo_sgf_chat_bool {true} {false}}
+				{\bool_if:NTF \l__pgfgo_analysis_comments_bool {true} {false}}
+		}
 }
 %UN TEXTO DEL ARCHIVO (COMENTARIO, PROPIEDAD): SE ESCRIBE, CON EL AVISO sgf-glyphs SI A LA FUENTE LE FALTAN
 %CARACTERES CJK (LaTeX SOLO LO ANOTA EN EL .log). CON luatexja, ctex, luatexko O xeCJK NO SE MIRA: ESCRIBEN ESOS
@@ -1074,12 +1093,15 @@
 	annotations			.default:n	= {true},
 	chat						.bool_set:N	= \l__pgfgo_sgfcomment_chat_bool,
 	chat						.default:n	= {true},
+	analysis				.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfcomment_analysis_tl {, #1}},
 }
+\tl_new:N \l__pgfgo_sgfcomment_analysis_tl
 \NewDocumentCommand \sgfcomment {O{}mm} {
 	\__pgfgo_sgf_if_kernel:n {
 		\group_begin:
 			\pgfgo_sgf_use_name:n {#2}
 			\keys_set:nn {pgfgo / sgf~comment} {#1}
+			\keys_set:nV {pgfgo / sgf~analysis} \l__pgfgo_sgfcomment_analysis_tl
 			\bool_set_eq:NN \l__pgfgo_sgf_annotations_bool \l__pgfgo_sgfcomment_annotations_bool
 			\bool_set_eq:NN \l__pgfgo_sgf_chat_bool \l__pgfgo_sgfcomment_chat_bool
 			\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfcomment_variation_tl
@@ -1089,37 +1111,800 @@
 }
 
 %\sgfinfo{<archivo>}{<propiedad>} ESCRIBE UNA PROPIEDAD DE LA RAIZ (PB, PW, RE, KM, DT, ...) O, CON move,
-%DE UNA JUGADA (BL Y WL: EL TIEMPO QUE LE QUEDA A CADA JUGADOR) DE LA LINEA variation.
+%DE UNA JUGADA (BL Y WL: EL TIEMPO QUE LE QUEDA A CADA JUGADOR) DE LA LINEA variation. EN MINUSCULAS, UN
+%DATO DEL ANALISIS (VER \__pgfgo_sgfinfo_analysis:nn).
 \int_new:N \l__pgfgo_sgfinfo_move_int
 \tl_new:N \l__pgfgo_sgfinfo_variation_tl
 \keys_define:nn {pgfgo / sgf~info} {
 	game					.code:n			= {\int_set:Nn \l_pgfgo_kernel_sgf_game_int {#1}},
 	move					.int_set:N	= \l__pgfgo_sgfinfo_move_int,
 	variation			.tl_set:N		= \l__pgfgo_sgfinfo_variation_tl,
+	analysis			.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfinfo_analysis_tl {, #1}},
 }
+\tl_new:N \l__pgfgo_sgfinfo_analysis_tl
 \NewDocumentCommand \sgfinfo {O{}mm} {
 	\__pgfgo_sgf_if_kernel:n {
 		\group_begin:
 			\pgfgo_sgf_use_name:n {#2}
 			\keys_set:nn {pgfgo / sgf~info} {#1}
-			\bool_lazy_and:nnTF
-				{\int_compare_p:nNn {\l__pgfgo_sgfinfo_move_int} = {0}}
-				{\tl_if_empty_p:N \l__pgfgo_sgfinfo_variation_tl}
-				{\tl_set:Ne \l_tmpa_tl {\pgfgo_kernel_sgf_info:nn {#2} {#3}}}
-				{
-					\tl_set:Ne \l_tmpa_tl {
-						\pgfgo_kernel_sgf_move_info:nnnn {#2} {\l__pgfgo_sgfinfo_variation_tl}
-							{\l__pgfgo_sgfinfo_move_int} {#3}
+			\keys_set:nV {pgfgo / sgf~analysis} \l__pgfgo_sgfinfo_analysis_tl
+			\str_case:nnF {#3} {
+				{winrate}		{\__pgfgo_sgfinfo_analysis:nn {#2} {#3}}
+				{lead}			{\__pgfgo_sgfinfo_analysis:nn {#2} {#3}}
+				{visits}		{\__pgfgo_sgfinfo_analysis:nn {#2} {#3}}
+				{loss}			{\__pgfgo_sgfinfo_analysis:nn {#2} {#3}}
+				{best}			{\__pgfgo_sgfinfo_analysis:nn {#2} {#3}}
+				{mistakes}	{\__pgfgo_sgfinfo_analysis:nn {#2} {#3}}
+			}{
+				\bool_lazy_and:nnTF
+					{\int_compare_p:nNn {\l__pgfgo_sgfinfo_move_int} = {0}}
+					{\tl_if_empty_p:N \l__pgfgo_sgfinfo_variation_tl}
+					{\tl_set:Ne \l_tmpa_tl {\pgfgo_kernel_sgf_info:nn {#2} {#3}}}
+					{
+						\tl_set:Ne \l_tmpa_tl {
+							\pgfgo_kernel_sgf_move_info:nnnn {#2} {\l__pgfgo_sgfinfo_variation_tl}
+								{\l__pgfgo_sgfinfo_move_int} {#3}
+						}
 					}
-				}
-			\__pgfgo_sgf_text:V \l_tmpa_tl
+				\__pgfgo_sgf_text:V \l_tmpa_tl
+			}
 		\group_end:
+	}
+}
+
+%LOS DATOS DEL ANALISIS DE LA JUGADA move: winrate, lead Y visits DE LA POSICION DESPUES DE ESA JUGADA (CON
+%perspective = player, DESDE EL QUE LA JUGO; EN LA JUGADA 0, DESDE EL QUE JUEGA), loss (LO QUE PIERDE ESA
+%JUGADA, EN PUNTOS), best (LA JUGADA QUE PROPONIA EL MOTOR EN SU LUGAR) Y mistakes (LAS JUGADAS QUE MAS
+%PIERDEN, SEGUN analysis/mistakes, CON LOS NUMEROS DE LA PARTIDA).
+\cs_new_protected:Npn \__pgfgo_sgfinfo_analysis:nn #1#2 {
+	\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#1} \l__pgfgo_sgfinfo_variation_tl
+	\str_case:nn {#2} {
+		{best} {
+			\int_compare:nNnT {\l__pgfgo_sgfinfo_move_int} > {0} {
+				\pgfgo_kernel_sgf_candidates:n {\l__pgfgo_sgfinfo_move_int - 1}
+				\seq_if_empty:NF \l_pgfgo_kernel_sgf_candidates_seq {
+					\exp_last_unbraced:Ne \__pgfgo_analysis_point:nnnnnn
+						{\seq_item:Nn \l_pgfgo_kernel_sgf_candidates_seq {1}}
+				}
+			}
+		}
+		{mistakes} {
+			\exp_args:NnV \pgfgo_kernel_sgf_mistakes:nn {\l__pgfgo_analysis_mistakes_int} \l__pgfgo_analysis_mistakes_player_tl
+			\seq_clear:N \l_tmpa_seq
+			\seq_map_inline:Nn \l_pgfgo_kernel_sgf_mistakes_seq {
+				\__pgfgo_sgf_move_number:Nn \l_tmpa_int {##1}
+				\seq_put_right:NV \l_tmpa_seq \l_tmpa_int
+			}
+			\seq_use:Nn \l_tmpa_seq {,~}
+		}
+	}
+	\str_case:nnT {#2} {{winrate} {} {lead} {} {visits} {} {loss} {}} {
+		\pgfgo_kernel_sgf_evaluation:n {\l__pgfgo_sgfinfo_move_int}
+		\__pgfgo_sgf_move_color:Nn \l__pgfgo_analysis_player_tl {\l__pgfgo_sgfinfo_move_int}
+		\tl_if_empty:NT \l__pgfgo_analysis_player_tl
+			{\tl_set_eq:NN \l__pgfgo_analysis_player_tl \l_pgfgo_kernel_sgf_to_play_tl}
+		\__pgfgo_analysis_values:VVVnVV
+			\l_pgfgo_kernel_sgf_winrate_tl \l_pgfgo_kernel_sgf_lead_tl \l_pgfgo_kernel_sgf_visits_tl {}
+			\l_pgfgo_kernel_sgf_loss_tl \l__pgfgo_analysis_player_tl
+		\use:c {pgfgo #2}
+	}
+}
+
+%EN #1, EL COLOR DE LA JUGADA #2 DE LA ULTIMA PARTIDA LEIDA (VACIO SI ES LA 0 O NO EXISTE).
+\cs_new_protected:Npn \__pgfgo_sgf_move_color:Nn #1#2 {
+	\tl_clear:N #1
+	\int_zero:N \l__pgfgo_sgf_moves_seen_int
+	\int_compare:nNnT {#2} > {0} {
+		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_moves_seq {
+			\__pgfgo_sgf_if_move:nnnT ##1 {
+				\int_incr:N \l__pgfgo_sgf_moves_seen_int
+				\int_compare:nNnT {\l__pgfgo_sgf_moves_seen_int} = {#2} {
+					\tl_set:Ne #1 {\use_i:nnn ##1}
+					\seq_map_break:
+				}
+			}
+		}
 	}
 }
 
 \keys_define:nn {pgfgo} {
 	sgf~comment			.code:n			= {\keys_set:nn {pgfgo / sgf~comment} {#1}},
 	sgf~info				.code:n			= {\keys_set:nn {pgfgo / sgf~info} {#1}},
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%---------------------------------------ANALISIS------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%LO QUE GUARDAN EN EL ARCHIVO LOS PROGRAMAS QUE ANALIZAN LA PARTIDA (KaTrain, Lizzie, q5Go, Sabaki, Ogatak;
+%VER pgf-go-kernel.sty): EL winrate Y EL PUNTAJE DE CADA POSICION, LAS JUGADAS QUE PROPONE EL MOTOR CON SUS
+%LINEAS Y DE QUIEN ES CADA PUNTO. /pgfgo/sgf analysis DICE QUE SE DIBUJA DESPUES DE LA ULTIMA JUGADA DE \sgf
+%(Y DE CADA TABLERO DE \sgfdiagrams Y \sgfanimation) Y COMO SE ESCRIBEN LOS NUMEROS. LOS COMANDOS LO CAMBIAN
+%CON SU CLAVE analysis.
+\bool_new:N \l__pgfgo_analysis_comments_bool
+\tl_new:N \l__pgfgo_analysis_perspective_tl
+\int_new:N \l__pgfgo_analysis_digits_int
+\int_new:N \l__pgfgo_analysis_candidates_int
+\tl_new:N \l__pgfgo_analysis_candidate_tl
+\tl_new:N \l__pgfgo_analysis_best_tl
+\tl_new:N \l__pgfgo_analysis_separator_tl
+%EL TEXTO DE CADA MARCA Y EL DE CADA NOTA DE \pgfgocandidates (#1: LA LETRA).
+\cs_new:Npn \__pgfgo_analysis_text:n #1 {}
+\cs_new:Npn \__pgfgo_analysis_note:n #1 {}
+\bool_new:N \l__pgfgo_analysis_ownership_bool
+\tl_new:N \l__pgfgo_analysis_ownership_black_tl
+\tl_new:N \l__pgfgo_analysis_ownership_white_tl
+\tl_new:N \l__pgfgo_analysis_ownership_size_tl
+\tl_new:N \l__pgfgo_analysis_ownership_threshold_tl
+\bool_new:N \l__pgfgo_analysis_line_bool
+\int_new:N \l__pgfgo_analysis_line_int
+\int_new:N \l__pgfgo_analysis_line_from_int
+\int_new:N \l__pgfgo_analysis_mistakes_int
+\tl_new:N \l__pgfgo_analysis_mistakes_player_tl
+
+%LA ESCALA DE colors, COMO {<puntos>}{<color>}, DE MAYOR A MENOR. \__pgfgo_analysis_color:nN DEJA EN #2 EL
+%COLOR DE UNA PERDIDA #1 (VACIO SI #1 ESTA VACIO O NO ALCANZA NINGUNO).
+\bool_new:N \l__pgfgo_analysis_colored_bool
+\seq_new:N \l__pgfgo_analysis_colors_seq
+\cs_new_protected:Npn \__pgfgo_analysis_colors:n #1 {
+	\seq_clear:N \l__pgfgo_analysis_colors_seq
+	\keyval_parse:nnn {} {\__pgfgo_analysis_colors_add:nn} {#1}
+	\seq_sort:Nn \l__pgfgo_analysis_colors_seq
+		{\fp_compare:nNnTF {\use_i:nn ##1} < {\use_i:nn ##2} {\sort_return_swapped:} {\sort_return_same:}}
+}
+\cs_new_protected:Npn \__pgfgo_analysis_colors_add:nn #1#2 {
+	\seq_put_right:Ne \l__pgfgo_analysis_colors_seq {{\tl_trim_spaces:n {#1}}{\tl_trim_spaces:n {#2}}}
+}
+\cs_new_protected:Npn \__pgfgo_analysis_color:nN #1#2 {
+	\tl_clear:N #2
+	\tl_if_blank:nF {#1} {
+		\seq_map_inline:Nn \l__pgfgo_analysis_colors_seq {
+			\fp_compare:nNnF {#1} < {\use_i:nn ##1} {\tl_set:Ne #2 {\use_ii:nn ##1} \seq_map_break:}
+		}
+	}
+}
+\cs_generate_variant:Nn \__pgfgo_analysis_color:nN {VN}
+
+%UNA CLAVE QUE ES UN NUMERO (candidates = 3, line = 6, mistakes = 5) LO DEJA EN #1. OTRA COSA ES UN ERROR.
+\msg_new:nnn {pgfgo} {analysis-key}
+	{'#2'~is~not~a~key~of~/pgfgo/sgf~analysis/#1~(nor~a~number).}
+\prg_new_conditional:Npnn \__pgfgo_analysis_if_number:n #1 {TF} {
+	\regex_match:nnTF {\A\d+\Z} {#1} {\prg_return_true:} {\prg_return_false:}
+}
+\cs_new_protected:Npn \__pgfgo_analysis_count:Nnn #1#2#3 {
+	\__pgfgo_analysis_if_number:nTF {#3}
+		{\int_set:Nn #1 {#3}}
+		{\msg_error:nnnn {pgfgo} {analysis-key} {#2} {#3}}
+}
+\cs_generate_variant:Nn \__pgfgo_analysis_count:Nnn {NnV}
+
+\keys_define:nn {pgfgo / sgf~analysis} {
+	%false: LOS COMENTARIOS (C) SIN LO QUE LES AGREGAN KaTrain Y Lizzie.
+	comments				.bool_set:N	= \l__pgfgo_analysis_comments_bool,
+	comments				.default:n	= {true},
+	comments				.initial:n	= {true},
+	%DESDE QUIEN SE ESCRIBEN EL winrate Y EL PUNTAJE: black, white O player (EL QUE JUEGA: EN UNA JUGADA
+	%PROPUESTA, EL QUE LA JUEGA; EN UNA POSICION, EL QUE ACABA DE JUGAR).
+	perspective			.choices:nn	= {black, white, player}
+		{\tl_set_eq:NN \l__pgfgo_analysis_perspective_tl \l_keys_choice_tl},
+	perspective			.initial:n	= {player},
+	digits					.int_set:N	= \l__pgfgo_analysis_digits_int,
+	digits					.initial:n	= {1},
+	%colored: LAS JUGADAS PROPUESTAS (UN CIRCULO DEBAJO DE LA LETRA), EL BORDE DE LAS JUGADAS NUMERADAS Y LOS PUNTOS
+	%DE \sgfgraph DEL COLOR DE LO QUE PIERDEN. colors: {<puntos> = <color>, ...}: LO QUE PIERDE AL MENOS ESOS
+	%PUNTOS TOMA ESE COLOR (EL DEL MAYOR QUE ALCANZA).
+	colored					.bool_set:N	= \l__pgfgo_analysis_colored_bool,
+	colored					.default:n	= {true},
+	colored					.initial:n	= {false},
+	colors					.code:n			= {\__pgfgo_analysis_colors:n {#1}},
+	colors					.initial:n	= {
+		0 = green!60, 0.5 = yellow!80!green, 1.5 = orange!80, 3 = red!70, 6 = violet!70, 12 = violet!60!black
+	},
+	candidates			.code:n			= {\keys_set:nn {pgfgo / sgf~analysis / candidates} {#1}},
+	candidates			.default:n	= {true},
+	ownership				.code:n			= {\keys_set:nn {pgfgo / sgf~analysis / ownership} {#1}},
+	ownership				.default:n	= {true},
+	line						.code:n			= {\keys_set:nn {pgfgo / sgf~analysis / line} {#1}},
+	line						.default:n	= {true},
+	mistakes				.code:n			= {\keys_set:nn {pgfgo / sgf~analysis / mistakes} {#1}},
+}
+%LAS JUGADAS QUE PROPONE EL MOTOR: UN NUMERO ES CUANTAS (true: TODAS LAS QUE GUARDA EL ARCHIVO). CADA UNA
+%ES UNA MARCA custom CON text (#1: SU LETRA, A, B, ...), Y LAS OPCIONES mark (best, ADEMAS, LA PRIMERA).
+\keys_define:nn {pgfgo / sgf~analysis / candidates} {
+	true						.code:n			= {\int_set_eq:NN \l__pgfgo_analysis_candidates_int \c_max_int},
+	false						.code:n			= {\int_zero:N \l__pgfgo_analysis_candidates_int},
+	mark						.tl_set:N		= \l__pgfgo_analysis_candidate_tl,
+	best						.tl_set:N		= \l__pgfgo_analysis_best_tl,
+	text						.code:n			= {\cs_set:Npn \__pgfgo_analysis_text:n ##1 {#1}},
+	text						.initial:n	= {#1},
+	note						.code:n			= {\cs_set:Npn \__pgfgo_analysis_note:n ##1 {#1}},
+	note						.initial:n	= {#1:~\pgfgowinrate\,\%},
+	separator				.tl_set:N		= \l__pgfgo_analysis_separator_tl,
+	separator				.initial:n	= {,~},
+	unknown					.code:n			= {
+		\__pgfgo_analysis_count:NnV \l__pgfgo_analysis_candidates_int {candidates} \l_keys_key_str
+	},
+}
+%DE QUIEN ES CADA PUNTO: UNA MARCA t-square DEL JUGADOR DUENO, MAS GRANDE CUANTO MAS SEGURO. size: SU ESCALA
+%(mark/scale) CUANDO ES SEGURO; threshold: DEBAJO DE ESO NO SE DIBUJA. black Y white: OPCIONES DE LA MARCA
+%DE CADA COLOR.
+\keys_define:nn {pgfgo / sgf~analysis / ownership} {
+	true						.code:n			= {\bool_set_true:N \l__pgfgo_analysis_ownership_bool},
+	false						.code:n			= {\bool_set_false:N \l__pgfgo_analysis_ownership_bool},
+	black						.tl_set:N		= \l__pgfgo_analysis_ownership_black_tl,
+	white						.tl_set:N		= \l__pgfgo_analysis_ownership_white_tl,
+	size						.tl_set:N		= \l__pgfgo_analysis_ownership_size_tl,
+	size						.initial:n	= {1.4},
+	threshold				.tl_set:N		= \l__pgfgo_analysis_ownership_threshold_tl,
+	threshold				.initial:n	= {0.2},
+}
+%LA LINEA QUE PROPONE EL MOTOR (LA DE LA PRIMERA JUGADA PROPUESTA), COMO JUGADAS NUMERADAS: UN NUMERO ES
+%CUANTAS (true: TODAS). from: EL NUMERO DE LA PRIMERA (0: EL QUE SIGUE A LA ULTIMA JUGADA).
+\keys_define:nn {pgfgo / sgf~analysis / line} {
+	true						.code:n			= {
+		\bool_set_true:N \l__pgfgo_analysis_line_bool
+		\int_set_eq:NN \l__pgfgo_analysis_line_int \c_max_int
+	},
+	false						.code:n			= {\bool_set_false:N \l__pgfgo_analysis_line_bool},
+	from						.int_set:N	= \l__pgfgo_analysis_line_from_int,
+	from						.initial:n	= {0},
+	unknown					.code:n			= {
+		\__pgfgo_analysis_count:NnV \l__pgfgo_analysis_line_int {line} \l_keys_key_str
+		\bool_set_true:N \l__pgfgo_analysis_line_bool
+	},
+}
+\int_set_eq:NN \l__pgfgo_analysis_line_int \c_max_int
+%LAS JUGADAS QUE MAS PIERDEN (EN \sgfinfo, \sgfgraph Y \sgfdiagrams): CUANTAS Y DE QUIEN.
+\keys_define:nn {pgfgo / sgf~analysis / mistakes} {
+	false						.code:n			= {\int_zero:N \l__pgfgo_analysis_mistakes_int},
+	player					.choices:nn	= {both, black, white}
+		{\tl_set_eq:NN \l__pgfgo_analysis_mistakes_player_tl \l_keys_choice_tl},
+	player					.initial:n	= {both},
+	unknown					.code:n			= {
+		\__pgfgo_analysis_count:NnV \l__pgfgo_analysis_mistakes_int {mistakes} \l_keys_key_str
+	},
+}
+
+\keys_define:nn {pgfgo} {
+	sgf~analysis		.code:n			= {\keys_set:nn {pgfgo / sgf~analysis} {#1}},
+}
+
+%LOS NUMEROS. #1 CON digits DECIMALES, SIN SIGNO (\__pgfgo_analysis_fixed:n), CON + O \textminus
+%(\__pgfgo_analysis_signed:n) O CON \textminus SI ES NEGATIVO (\__pgfgo_analysis_number:n). VACIO SI #1 ESTA VACIO.
+%EXPANDIBLES.
+\cs_new:Npn \__pgfgo_analysis_fixed:n #1 {
+	\tl_if_blank:nF {#1} {
+		\exp_args:Ne \__pgfgo_analysis_fixed_aux:n
+			{\fp_eval:n {round(abs(#1), \l__pgfgo_analysis_digits_int)}}
+	}
+}
+\cs_new:Npn \__pgfgo_analysis_fixed_aux:n #1 {\__pgfgo_analysis_fixed:w #1 .. \q_stop}
+\cs_new:Npn \__pgfgo_analysis_fixed:w #1 . #2 . #3 \q_stop {
+	#1
+	\int_compare:nNnT {\l__pgfgo_analysis_digits_int} > {0} {
+		. #2 \prg_replicate:nn {\l__pgfgo_analysis_digits_int - \str_count:n {#2}} {0}
+	}
+}
+\cs_new:Npn \__pgfgo_analysis_signed:n #1 {
+	\tl_if_blank:nF {#1} {
+		\fp_compare:nNnTF {round(#1, \l__pgfgo_analysis_digits_int)} < {0}
+			{\exp_not:N \textminus}
+			{\fp_compare:nNnT {round(#1, \l__pgfgo_analysis_digits_int)} > {0} {+}}
+		\__pgfgo_analysis_fixed:n {#1}
+	}
+}
+
+%CON SIGNO SOLO SI ES NEGATIVO.
+\cs_new:Npn \__pgfgo_analysis_number:n #1 {
+	\tl_if_blank:nF {#1} {
+		\fp_compare:nNnT {round(#1, \l__pgfgo_analysis_digits_int)} < {0} {\exp_not:N \textminus}
+		\__pgfgo_analysis_fixed:n {#1}
+	}
+}
+
+%VERDADERO SI LOS NUMEROS SE ESCRIBEN DESDE NEGRO: perspective = black, O player Y EL JUGADOR #1 ES black.
+\prg_new_conditional:Npnn \__pgfgo_analysis_if_black:n #1 {TF} {
+	\str_case:VnF \l__pgfgo_analysis_perspective_tl {
+		{black}		{\prg_return_true:}
+		{white}		{\prg_return_false:}
+	}{
+		\str_if_eq:nnTF {#1} {white} {\prg_return_false:} {\prg_return_true:}
+	}
+}
+\cs_generate_variant:Nn \str_case:nnF {Vn}
+
+%LOS VALORES QUE ESCRIBEN \pgfgowinrate, \pgfgolead, \pgfgovisits, \pgfgoprior Y \pgfgoloss: winrate #1 (DE
+%NEGRO, EN %), PUNTAJE #2 (DE NEGRO), VISITAS #3, prior #4 (EN %) Y PERDIDA #5 (EN PUNTOS), DESDE EL
+%JUGADOR #6 (PARA perspective = player). SON EXPANDIBLES: SE PUEDEN ESCRIBIR EN EL TEXTO DE UNA MARCA.
+\tl_new:N \l__pgfgo_analysis_winrate_tl
+\tl_new:N \l__pgfgo_analysis_lead_tl
+\tl_new:N \l__pgfgo_analysis_visits_tl
+\tl_new:N \l__pgfgo_analysis_prior_tl
+\tl_new:N \l__pgfgo_analysis_loss_tl
+\NewExpandableDocumentCommand \pgfgowinrate {} {\l__pgfgo_analysis_winrate_tl}
+\NewExpandableDocumentCommand \pgfgolead {} {\l__pgfgo_analysis_lead_tl}
+\NewExpandableDocumentCommand \pgfgovisits {} {\l__pgfgo_analysis_visits_tl}
+\NewExpandableDocumentCommand \pgfgoprior {} {\l__pgfgo_analysis_prior_tl}
+\NewExpandableDocumentCommand \pgfgoloss {} {\l__pgfgo_analysis_loss_tl}
+\cs_new_protected:Npn \__pgfgo_analysis_values:nnnnnn #1#2#3#4#5#6 {
+	\tl_set:Ne \l__pgfgo_analysis_winrate_tl {
+		\tl_if_blank:nF {#1} {\__pgfgo_analysis_fixed:n {\__pgfgo_analysis_if_black:nTF {#6} {#1} {100 - (#1)}}}
+	}
+	\tl_set:Ne \l__pgfgo_analysis_lead_tl {
+		\tl_if_blank:nF {#2} {\__pgfgo_analysis_signed:n {\__pgfgo_analysis_if_black:nTF {#6} {#2} {-(#2)}}}
+	}
+	\tl_set:Ne \l__pgfgo_analysis_visits_tl {\tl_if_blank:nF {#3} {\fp_eval:n {round(#3)}}}
+	\tl_set:Ne \l__pgfgo_analysis_prior_tl {\__pgfgo_analysis_fixed:n {#4}}
+	\tl_set:Ne \l__pgfgo_analysis_loss_tl {\__pgfgo_analysis_number:n {#5}}
+}
+\cs_generate_variant:Nn \__pgfgo_analysis_values:nnnnnn {nnnnVV, VVVnVV, nnnnVn}
+
+%UNA JUGADA PROPUESTA {x}{y}{...} COMO COORDENADA (Q16), O pass.
+\cs_new_protected:Npn \__pgfgo_analysis_point:nnnnnn #1#2#3#4#5#6 {
+	\tl_if_blank:nTF {#1} {\pgfgo_text:n {pass}} {\pgfgo_kernel_column_name:n {#1} #2}
+}
+
+%LO QUE SE DIBUJA DESPUES DE LA JUGADA #1 (AL TERMINAR \sgf): LA LINEA, DE QUIEN ES CADA PUNTO Y LAS
+%JUGADAS PROPUESTAS (LAS QUE CAEN EN UNA PIEDRA DE LA LINEA NO SE MARCAN).
+\prop_new:N \l__pgfgo_analysis_line_prop
+\seq_new:N \g__pgfgo_analysis_notes_seq
+\tl_new:N \l__pgfgo_analysis_player_tl
+\cs_new_protected:Npn \__pgfgo_analysis_draw:n #1 {
+	\prop_clear:N \l__pgfgo_analysis_line_prop
+	\seq_gclear:N \g__pgfgo_analysis_notes_seq
+	\bool_if:NT \l__pgfgo_analysis_line_bool {\__pgfgo_analysis_line:n {#1}}
+	\bool_if:NT \l__pgfgo_analysis_ownership_bool {\__pgfgo_analysis_ownership:n {#1}}
+	\int_compare:nNnT {\l__pgfgo_analysis_candidates_int} > {0} {\__pgfgo_analysis_candidates:n {#1}}
+}
+
+%LAS JUGADAS PROPUESTAS DESPUES DE LA JUGADA #1, CON SUS LETRAS. LAS NOTAS DE \pgfgocandidates QUEDAN EN
+%\g__pgfgo_analysis_notes_seq: {LETRA}{winrate}{PUNTAJE}{VISITAS}{prior}{PERDIDA}{JUGADOR}. LA PERDIDA ES LO
+%QUE LE FALTA PARA LA PRIMERA (EN PUNTOS, PARA EL QUE JUEGA). UN PASE NO SE MARCA, PERO TIENE SU LETRA.
+\int_new:N \l__pgfgo_analysis_rank_int
+\tl_new:N \l__pgfgo_analysis_first_lead_tl
+\cs_new_protected:Npn \__pgfgo_analysis_candidates:n #1 {
+	\pgfgo_kernel_sgf_evaluation:n {#1}
+	\tl_set_eq:NN \l__pgfgo_analysis_player_tl \l_pgfgo_kernel_sgf_to_play_tl
+	\pgfgo_kernel_sgf_candidates:n {#1}
+	\int_zero:N \l__pgfgo_analysis_rank_int
+	\seq_map_inline:Nn \l_pgfgo_kernel_sgf_candidates_seq {
+		\int_compare:nNnF {\l__pgfgo_analysis_rank_int} < {\l__pgfgo_analysis_candidates_int} {\seq_map_break:}
+		\__pgfgo_analysis_candidate:nnnnnn ##1
+	}
+}
+\tl_new:N \l__pgfgo_analysis_candidate_loss_tl
+\cs_new_protected:Npn \__pgfgo_analysis_candidate:nnnnnn #1#2#3#4#5#6 {
+	\int_incr:N \l__pgfgo_analysis_rank_int
+	\int_compare:nNnT {\l__pgfgo_analysis_rank_int} = {1} {\tl_set:Nn \l__pgfgo_analysis_first_lead_tl {#4}}
+	\tl_set:Ne \l__pgfgo_analysis_candidate_loss_tl {
+		\bool_lazy_or:nnF {\tl_if_blank_p:n {#4}} {\tl_if_blank_p:V \l__pgfgo_analysis_first_lead_tl} {
+			\fp_eval:n {
+				(\str_if_eq:VnTF \l__pgfgo_analysis_player_tl {white} {-1} {1})
+					* (\l__pgfgo_analysis_first_lead_tl - (#4))
+			}
+		}
+	}
+	\seq_gput_right:Ne \g__pgfgo_analysis_notes_seq {
+		{\int_to_Alph:n {\l__pgfgo_analysis_rank_int}} {#3} {#4} {#5} {#6}
+		{\l__pgfgo_analysis_candidate_loss_tl} {\l__pgfgo_analysis_player_tl}
+	}
+	\tl_if_blank:nF {#1} {
+		\__pgfgo_captures_key:nn {#1} {#2}
+		\prop_if_in:NVF \l__pgfgo_analysis_line_prop \l__pgfgo_captures_key_tl {
+			\__pgfgo_analysis_values:nnnnVV {#3} {#4} {#5} {#6}
+				\l__pgfgo_analysis_candidate_loss_tl \l__pgfgo_analysis_player_tl
+			\bool_if:NT \l__pgfgo_analysis_colored_bool {
+				\__pgfgo_analysis_color:VN \l__pgfgo_analysis_candidate_loss_tl \l_tmpa_tl
+				\tl_if_empty:NF \l_tmpa_tl {
+					\use:e {
+						\exp_not:N \__pgfgo_sgf_mark_put:nn
+							{neutral, filled~circle, scale = 1.9, fill = {color = \exp_not:V \l_tmpa_tl}}
+							{{#1}{#2}}
+					}
+				}
+			}
+			\use:e {
+				\exp_not:N \__pgfgo_sgf_mark_put:nn
+					{
+						neutral,
+						custom = {\text_expand:n {\__pgfgo_analysis_text:n {\int_to_Alph:n {\l__pgfgo_analysis_rank_int}}}},
+						\exp_not:V \l__pgfgo_analysis_candidate_tl
+						\int_compare:nNnT {\l__pgfgo_analysis_rank_int} = {1} {, \exp_not:V \l__pgfgo_analysis_best_tl}
+					}
+					{{#1}{#2}}
+			}
+		}
+	}
+}
+
+%LA LINEA DE LA PRIMERA JUGADA PROPUESTA DESPUES DE LA JUGADA #1, NUMERADA DESDE line/from O DESDE EL
+%NUMERO QUE SIGUE. UN PASE CUENTA (CON goban/notes SE ANOTA "N: pass") PERO NO SE DIBUJA.
+\cs_new_protected:Npn \__pgfgo_analysis_line:n #1 {
+	\pgfgo_kernel_sgf_evaluation:n {#1}
+	\pgfgo_kernel_move_set_player:n {\tl_if_empty:NTF \l_pgfgo_kernel_sgf_to_play_tl {black} {\l_pgfgo_kernel_sgf_to_play_tl}}
+	\int_compare:nNnT {\l__pgfgo_analysis_line_from_int} > {0}
+		{\pgfgo_kernel_move_set_number:n {\l__pgfgo_analysis_line_from_int}}
+	\pgfgo_kernel_sgf_line:nn {#1} {1}
+	\int_zero:N \l__pgfgo_analysis_rank_int
+	\seq_map_inline:Nn \l_pgfgo_kernel_sgf_line_seq {
+		\int_compare:nNnF {\l__pgfgo_analysis_rank_int} < {\l__pgfgo_analysis_line_int} {\seq_map_break:}
+		\int_incr:N \l__pgfgo_analysis_rank_int
+		\__pgfgo_analysis_line_move:nn ##1
+	}
+}
+\cs_new_protected:Npn \__pgfgo_analysis_line_move:nn #1#2 {
+	\tl_if_blank:nTF {#1} {
+		\bool_if:NT \l_pgfgo_goban_notes_bool {\pgfgo_notes_pass:}
+		\pgfgo_kernel_move_set_number:n {\pgfgo_kernel_move_number: + 1}
+		\pgfgo_kernel_move_if_black:TF
+			{\pgfgo_kernel_move_set_player:n {white}}
+			{\pgfgo_kernel_move_set_player:n {black}}
+	}{
+		\__pgfgo_captures_key:nn {#1} {#2}
+		\prop_put:NVn \l__pgfgo_analysis_line_prop \l__pgfgo_captures_key_tl {}
+		\pgfgo_remember:Nnn \l_pgfgo_goban_remember_move_bool {stone} {
+			\bool_if:NF \l_pgfgo_goban_remember_move_label_bool {\exp_not:N \pgfgo_remember_numbers:n}
+			{
+				\exp_not:N \pgfgo_move_parsed:nnn {\exp_not:N \BooleanTrue}
+					{from = \pgfgo_kernel_move_number:, \__pgfgo_move_color:} {{#1}{#2}}
+			}
+		}
+		\pgfgo_move:nnnn {\BooleanTrue} {} {#1} {#2}
+	}
+}
+
+%DE QUIEN ES CADA PUNTO DESPUES DE LA JUGADA #1: UNA MARCA t-square DEL JUGADOR DUENO (COMO EL TERRITORIO: EL
+%COLOR DE SU PIEDRA Y EL BORDE DE LA CUADRICULA), EN LOS PUNTOS VACIOS Y EN LAS PIEDRAS DEL OTRO COLOR (LAS QUE
+%DA POR MUERTAS). ownership/black Y ownership/white SON OPCIONES DE ESE JUGADOR SOLO PARA ESTAS MARCAS.
+\cs_new_protected:Npn \__pgfgo_analysis_ownership:n #1 {
+	\pgfgo_kernel_sgf_ownership:n {#1}
+	\seq_map_inline:Nn \l_pgfgo_kernel_sgf_ownership_seq {\__pgfgo_analysis_owner:nnn ##1}
+}
+\cs_new_protected:Npn \__pgfgo_analysis_owner:nnn #1#2#3 {
+	\fp_compare:nNnF {abs(#3)} < {\l__pgfgo_analysis_ownership_threshold_tl} {
+		\tl_set:Ne \l__pgfgo_analysis_player_tl {\fp_compare:nNnTF {#3} > {0} {black} {white}}
+		\__pgfgo_captures_key:nn {#1} {#2}
+		\prop_get:NVNF \g_pgfgo_points_prop \l__pgfgo_captures_key_tl \l_tmpa_tl {\tl_clear:N \l_tmpa_tl}
+		\tl_if_eq:NNF \l_tmpa_tl \l__pgfgo_analysis_player_tl {
+			\tl_set:Ne \l_tmpa_tl {
+				{\l__pgfgo_analysis_player_tl}
+				{\exp_not:v {l__pgfgo_analysis_ownership_ \l__pgfgo_analysis_player_tl _tl}}
+				{\fp_eval:n {round(abs(#3) * (\l__pgfgo_analysis_ownership_size_tl), 3)}}
+				{{#1}{#2}}
+			}
+			\pgfgo_remember:Nnn \l_pgfgo_goban_remember_mark_bool {mark}
+				{\exp_not:N \__pgfgo_analysis_owner_draw:nnnn \exp_not:V \l_tmpa_tl}
+			\exp_after:wN \__pgfgo_analysis_owner_draw:nnnn \l_tmpa_tl
+		}
+	}
+}
+%LA MARCA DEL JUGADOR #1, CON SUS OPCIONES #2 Y LA ESCALA #3, EN EL PUNTO #4.
+\cs_new_protected:Npn \__pgfgo_analysis_owner_draw:nnnn #1#2#3#4 {
+	\group_begin:
+		\keys_set:nn {pgfgo / players / #1} {#2}
+		\pgfgo_marks_parsed:nn {#1, t-square, scale = #3} {#4}
+	\group_end:
+}
+
+%\pgfgocandidates[<opciones>] ESCRIBE LAS NOTAS DE LAS JUGADAS PROPUESTAS DEL ULTIMO \sgf QUE LAS DIBUJO
+%("A: 52.3 %, B: 49.8 %"). LAS OPCIONES SON LAS DE /pgfgo/sgf analysis.
+\cs_new_protected:Npn \__pgfgo_analysis_notes: {
+	\seq_clear:N \l_tmpa_seq
+	\seq_map_inline:Nn \g__pgfgo_analysis_notes_seq {
+		\__pgfgo_analysis_values_note:nnnnnnn ##1
+	}
+	\seq_use:Nn \l_tmpa_seq {\l__pgfgo_analysis_separator_tl}
+}
+\cs_new_protected:Npn \__pgfgo_analysis_values_note:nnnnnnn #1#2#3#4#5#6#7 {
+	\__pgfgo_analysis_values:nnnnnn {#2} {#3} {#4} {#5} {#6} {#7}
+	\seq_put_right:Ne \l_tmpa_seq {\text_expand:n {\__pgfgo_analysis_note:n {#1}}}
+}
+\NewDocumentCommand \pgfgocandidates {O{}} {
+	\group_begin:
+		\keys_set:nn {pgfgo / sgf~analysis} {#1}
+		\__pgfgo_analysis_notes:
+	\group_end:
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%---------------------------------------GRAFICO-------------------------------------------------%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\sgfgraph[<opciones>]{<archivo>} DIBUJA EL winrate Y EL PUNTAJE DE CADA POSICION DE LA PARTIDA, DESDE NEGRO
+%(DESDE BLANCO CON analysis/perspective = white). EL winrate VA DE 0 A 100 (ESCALA A LA IZQUIERDA) Y EL
+%PUNTAJE DE -M A M (A LA DERECHA; M ES EL MAYOR, REDONDEADO). LAS JUGADAS DE analysis/mistakes LLEVAN UN
+%PUNTO Y SU NUMERO; LAS DE marks, UNA LINEA VERTICAL. ES UNA CAJA COMO UNA LETRA: SE USA FUERA DE goban.
+\int_new:N \l__pgfgo_sgfgraph_from_int
+\int_new:N \l__pgfgo_sgfgraph_to_int
+\tl_new:N \l__pgfgo_sgfgraph_variation_tl
+\tl_new:N \l__pgfgo_sgfgraph_width_tl
+\tl_new:N \l__pgfgo_sgfgraph_height_tl
+\tl_new:N \l__pgfgo_sgfgraph_font_tl
+\int_new:N \l__pgfgo_sgfgraph_step_int
+\clist_new:N \l__pgfgo_sgfgraph_marks_clist
+\tl_new:N \l__pgfgo_sgfgraph_analysis_tl
+
+%CADA CURVA (winrate, lead): SI SE DIBUJA, SU COLOR, SU GROSOR Y EL COLOR DEL AREA ENTRE ELLA Y EL MEDIO
+%(none: SIN AREA).
+%CLAVES: /pgfgo/sgf graph/{winrate, lead}/{true, false, color, width, fill}
+\cs_new_protected:Npn \__pgfgo_sgfgraph_curve_keys:nnn #1#2#3 {
+	\bool_new:c {l__pgfgo_sgfgraph_ #1 _bool}
+	\bool_set_true:c {l__pgfgo_sgfgraph_ #1 _bool}
+	\tl_new:c {l__pgfgo_sgfgraph_ #1 _color_tl}
+	\dim_new:c {l__pgfgo_sgfgraph_ #1 _width_dim}
+	\tl_new:c {l__pgfgo_sgfgraph_ #1 _fill_tl}
+	\keys_define:nn {pgfgo / sgf~graph / #1} {
+		true		.code:n			= {\bool_set_true:c {l__pgfgo_sgfgraph_ #1 _bool}},
+		false		.code:n			= {\bool_set_false:c {l__pgfgo_sgfgraph_ #1 _bool}},
+		color		.tl_set:c		= {l__pgfgo_sgfgraph_ #1 _color_tl},
+		color		.initial:n	= {#2},
+		width		.dim_set:c	= {l__pgfgo_sgfgraph_ #1 _width_dim},
+		width		.initial:n	= {#3},
+		fill		.tl_set:c		= {l__pgfgo_sgfgraph_ #1 _fill_tl},
+		fill		.initial:n	= {none},
+	}
+}
+\__pgfgo_sgfgraph_curve_keys:nnn {winrate} {black} {0.8pt}
+\__pgfgo_sgfgraph_curve_keys:nnn {lead} {gray} {0.6pt}
+
+\keys_define:nn {pgfgo / sgf~graph} {
+	game						.code:n			= {\int_set:Nn \l_pgfgo_kernel_sgf_game_int {#1}},
+	variation				.tl_set:N		= \l__pgfgo_sgfgraph_variation_tl,
+	%LAS POSICIONES, COMO EN \sgfanimation: 0 ES LA DE ANTES DE LA PRIMERA JUGADA; last (-1), LA ULTIMA.
+	from						.int_set:N	= \l__pgfgo_sgfgraph_from_int,
+	from						.initial:n	= {0},
+	to							.code:n			= {\__pgfgo_sgf_set_to:Nnn \l__pgfgo_sgfgraph_to_int {-1} {#1}},
+	to							.initial:n	= {last},
+	width						.tl_set:N		= \l__pgfgo_sgfgraph_width_tl,
+	width						.initial:n	= {\linewidth},
+	height					.tl_set:N		= \l__pgfgo_sgfgraph_height_tl,
+	height					.initial:n	= {3cm},
+	font						.tl_set:N		= \l__pgfgo_sgfgraph_font_tl,
+	font						.initial:n	= {\footnotesize},
+	%CADA CUANTAS JUGADAS VA UN NUMERO DEBAJO (0: SEGUN EL LARGO).
+	step						.int_set:N	= \l__pgfgo_sgfgraph_step_int,
+	step						.initial:n	= {0},
+	marks						.clist_set:N	= \l__pgfgo_sgfgraph_marks_clist,
+	winrate					.code:n			= {\keys_set:nn {pgfgo / sgf~graph / winrate} {#1}},
+	winrate					.default:n	= {true},
+	lead						.code:n			= {\keys_set:nn {pgfgo / sgf~graph / lead} {#1}},
+	lead						.default:n	= {true},
+	analysis				.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfgraph_analysis_tl {, #1}},
+}
+\keys_define:nn {pgfgo} {
+	sgf~graph				.code:n			= {\keys_set:nn {pgfgo / sgf~graph} {#1}},
+}
+
+\msg_new:nnn {pgfgo} {sgf-no-analysis}
+	{'#1'~has~no~analysis~(KT,~LZ,~QKGV,~QLZV,~SBKV,~SBKS~or~OGSC):~the~graph~is~empty.}
+
+%LOS DATOS QUE SE DIBUJAN: "k" -> {winrate}{PUNTAJE}, YA DESDE QUIEN SE MIRA. LA PRIMERA Y LA ULTIMA
+%POSICION, EL ANCHO Y EL ALTO DEL AREA DEL GRAFICO, Y M.
+\prop_new:N \l__pgfgo_sgfgraph_data_prop
+\int_new:N \l__pgfgo_sgfgraph_first_int
+\int_new:N \l__pgfgo_sgfgraph_last_int
+\dim_new:N \l__pgfgo_sgfgraph_width_dim
+\dim_new:N \l__pgfgo_sgfgraph_height_dim
+\fp_new:N \l__pgfgo_sgfgraph_max_fp
+\bool_new:N \l__pgfgo_sgfgraph_has_winrate_bool
+\bool_new:N \l__pgfgo_sgfgraph_has_lead_bool
+\box_new:N \l__pgfgo_sgfgraph_box
+\fp_new:N \l__pgfgo_sgfgraph_sign_fp
+
+%LAS COORDENADAS DE LA POSICION #1 (x), DE UN winrate #1 Y DE UN PUNTAJE #1 (y). EXPANDIBLES.
+\cs_new:Npn \__pgfgo_sgfgraph_x:n #1 {
+	\fp_to_dim:n {
+		(#1 - \l__pgfgo_sgfgraph_first_int) * \l__pgfgo_sgfgraph_width_dim
+			/ max(1, \l__pgfgo_sgfgraph_last_int - \l__pgfgo_sgfgraph_first_int)
+	}
+}
+\cs_new:Npn \__pgfgo_sgfgraph_winrate_y:n #1 {\fp_to_dim:n {(#1) / 100 * \l__pgfgo_sgfgraph_height_dim}}
+\cs_new:Npn \__pgfgo_sgfgraph_lead_y:n #1 {
+	\fp_to_dim:n {((#1) / \l__pgfgo_sgfgraph_max_fp + 1) / 2 * \l__pgfgo_sgfgraph_height_dim}
+}
+
+%GUARDA UNA POSICION DE \l_pgfgo_kernel_sgf_series_seq SI ESTA ENTRE LA PRIMERA Y LA ULTIMA.
+\cs_new_protected:Npn \__pgfgo_sgfgraph_keep:nnn #1#2#3 {
+	\int_compare:nT {\l__pgfgo_sgfgraph_first_int <= #1 <= \l__pgfgo_sgfgraph_last_int} {
+		\prop_put:Nne \l__pgfgo_sgfgraph_data_prop {#1} {
+			{\tl_if_blank:nF {#2} {\fp_eval:n {
+				\fp_compare:nNnTF {\l__pgfgo_sgfgraph_sign_fp} > {0} {#2} {100 - (#2)}
+			}}}
+			{\tl_if_blank:nF {#3} {\fp_eval:n {\l__pgfgo_sgfgraph_sign_fp * (#3)}}}
+		}
+		\tl_if_blank:nF {#2} {\bool_set_true:N \l__pgfgo_sgfgraph_has_winrate_bool}
+		\tl_if_blank:nF {#3} {
+			\bool_set_true:N \l__pgfgo_sgfgraph_has_lead_bool
+			\fp_set:Nn \l__pgfgo_sgfgraph_max_fp {max(\l__pgfgo_sgfgraph_max_fp, abs(#3))}
+		}
+	}
+}
+
+%UNA CURVA (#1: winrate O lead; #2: EL NUMERO DE SU DATO, 1 O 2): EL AREA Y LA LINEA.
+\cs_new_protected:Npn \__pgfgo_sgfgraph_curve:nn #1#2 {
+	\bool_if:cT {l__pgfgo_sgfgraph_has_ #1 _bool} {
+		\bool_if:cT {l__pgfgo_sgfgraph_ #1 _bool} {
+			\str_if_eq:vnF {l__pgfgo_sgfgraph_ #1 _fill_tl} {none} {
+				\pgfsetfillcolor {\tl_use:c {l__pgfgo_sgfgraph_ #1 _fill_tl}}
+				\bool_set_true:N \l_tmpa_bool
+				\tl_clear:N \l_tmpb_tl
+				\prop_map_inline:Nn \l__pgfgo_sgfgraph_data_prop {
+					\tl_set:Ne \l_tmpa_tl {\use:c {use_ \int_to_roman:n {#2} :nn} ##2}
+					\tl_if_empty:NF \l_tmpa_tl {
+						\bool_if:NT \l_tmpa_bool {
+							\pgfpathmoveto {\pgfpoint {\__pgfgo_sgfgraph_x:n {##1}} {0.5\l__pgfgo_sgfgraph_height_dim}}
+							\bool_set_false:N \l_tmpa_bool
+						}
+						\pgfpathlineto {\pgfpoint {\__pgfgo_sgfgraph_x:n {##1}} {\use:c {__pgfgo_sgfgraph_ #1 _y:n} {\l_tmpa_tl}}}
+						\tl_set:Nn \l_tmpb_tl {##1}
+					}
+				}
+				\pgfpathlineto {\pgfpoint {\__pgfgo_sgfgraph_x:n {\l_tmpb_tl}} {0.5\l__pgfgo_sgfgraph_height_dim}}
+				\pgfpathclose
+				\pgfusepath {fill}
+			}
+			\pgfsetstrokecolor {\tl_use:c {l__pgfgo_sgfgraph_ #1 _color_tl}}
+			\pgfsetlinewidth {\dim_use:c {l__pgfgo_sgfgraph_ #1 _width_dim}}
+			\pgfsetroundjoin
+			\bool_set_true:N \l_tmpa_bool
+			\prop_map_inline:Nn \l__pgfgo_sgfgraph_data_prop {
+				\tl_set:Ne \l_tmpa_tl {\use:c {use_ \int_to_roman:n {#2} :nn} ##2}
+				\tl_if_empty:NF \l_tmpa_tl {
+					\bool_if:NTF \l_tmpa_bool {\pgfpathmoveto} {\pgfpathlineto}
+						{\pgfpoint {\__pgfgo_sgfgraph_x:n {##1}} {\use:c {__pgfgo_sgfgraph_ #1 _y:n} {\l_tmpa_tl}}}
+					\bool_set_false:N \l_tmpa_bool
+				}
+			}
+			\pgfusepath {stroke}
+		}
+	}
+}
+
+%LA JUGADA #1 (UNA DE analysis/mistakes): UN PUNTO EN LA CURVA DEL winrate (O DEL PUNTAJE) Y SU NUMERO,
+%ARRIBA O, CERCA DEL BORDE DE ARRIBA, ABAJO.
+\cs_new_protected:Npn \__pgfgo_sgfgraph_mistake:n #1 {
+	\prop_get:NnNT \l__pgfgo_sgfgraph_data_prop {#1} \l_tmpa_tl
+		{\use:e {\exp_not:N \__pgfgo_sgfgraph_mistake:nnn {#1} \exp_not:V \l_tmpa_tl}}
+}
+\cs_new_protected:Npn \__pgfgo_sgfgraph_mistake:nnn #1#2#3 {
+	\bool_lazy_and:nnTF {\l__pgfgo_sgfgraph_has_winrate_bool} {! \tl_if_empty_p:n {#2}}
+		{\tl_set:Ne \l_tmpb_tl {\__pgfgo_sgfgraph_winrate_y:n {#2}}}
+		{
+			\bool_lazy_and:nnTF {\l__pgfgo_sgfgraph_has_lead_bool} {! \tl_if_empty_p:n {#3}}
+				{\tl_set:Ne \l_tmpb_tl {\__pgfgo_sgfgraph_lead_y:n {#3}}}
+				{\tl_clear:N \l_tmpb_tl}
+		}
+	\tl_if_empty:NF \l_tmpb_tl {
+		\tl_set_eq:NN \l_tmpa_tl \l__pgfgo_sgfgraph_winrate_color_tl
+		\bool_if:NT \l__pgfgo_analysis_colored_bool {
+			\pgfgo_kernel_sgf_evaluation:n {#1}
+			\__pgfgo_analysis_color:VN \l_pgfgo_kernel_sgf_loss_tl \l_tmpa_tl
+			\tl_if_empty:NT \l_tmpa_tl {\tl_set_eq:NN \l_tmpa_tl \l__pgfgo_sgfgraph_winrate_color_tl}
+		}
+		\pgfsetfillcolor {\l_tmpa_tl}
+		\pgfpathcircle {\pgfpoint {\__pgfgo_sgfgraph_x:n {#1}} {\l_tmpb_tl}} {1.5pt}
+		\pgfusepath {fill}
+		\__pgfgo_sgf_move_number:Nn \l_tmpa_int {#1}
+		\dim_compare:nNnTF {\l_tmpb_tl} > {0.8\l__pgfgo_sgfgraph_height_dim}
+			{\pgftext [top, at = {\pgfpoint {\__pgfgo_sgfgraph_x:n {#1}} {\l_tmpb_tl - 2pt}}]}
+			{\pgftext [bottom, at = {\pgfpoint {\__pgfgo_sgfgraph_x:n {#1}} {\l_tmpb_tl + 2pt}}]}
+			{\int_use:N \l_tmpa_int}
+	}
+}
+
+\int_new:N \l__pgfgo_sgfgraph_total_int
+\dim_new:N \l__pgfgo_sgfgraph_left_dim
+\dim_new:N \l__pgfgo_sgfgraph_right_dim
+\tl_new:N \l__pgfgo_sgfgraph_max_tl
+\cs_new_protected:Npn \pgfgo_sgfgraph:nn #1#2 {
+	\group_begin:
+		\pgfgo_sgf_use_name:n {#2}
+		\keys_set:nn {pgfgo / sgf~graph} {#1}
+		\keys_set:nV {pgfgo / sgf~analysis} \l__pgfgo_sgfgraph_analysis_tl
+		\exp_args:NnV \pgfgo_kernel_sgf_read:nn {#2} \l__pgfgo_sgfgraph_variation_tl
+		\__pgfgo_sgf_count_moves:Nn \l__pgfgo_sgfgraph_total_int {\c_max_int}
+		\int_set:Nn \l__pgfgo_sgfgraph_last_int {
+			\int_compare:nNnTF {\l__pgfgo_sgfgraph_to_int} < {0}
+				{\l__pgfgo_sgfgraph_total_int}
+				{\int_min:nn {\l__pgfgo_sgfgraph_to_int} {\l__pgfgo_sgfgraph_total_int}}
+		}
+		\int_set:Nn \l__pgfgo_sgfgraph_first_int
+			{\int_max:nn {0} {\int_min:nn {\l__pgfgo_sgfgraph_from_int} {\l__pgfgo_sgfgraph_last_int}}}
+		\fp_set:Nn \l__pgfgo_sgfgraph_sign_fp {\str_if_eq:VnTF \l__pgfgo_analysis_perspective_tl {white} {-1} {1}}
+		\prop_clear:N \l__pgfgo_sgfgraph_data_prop
+		\fp_zero:N \l__pgfgo_sgfgraph_max_fp
+		\pgfgo_kernel_sgf_series:
+		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_series_seq {\__pgfgo_sgfgraph_keep:nnn ##1}
+		\prop_if_empty:NT \l__pgfgo_sgfgraph_data_prop {\msg_warning:nnn {pgfgo} {sgf-no-analysis} {#2}}
+		%M: 5, 10, 20, 30... (EL MULTIPLO DE 10 QUE SIGUE, O 5).
+		\fp_set:Nn \l__pgfgo_sgfgraph_max_fp {
+			\fp_compare:nNnTF {\l__pgfgo_sgfgraph_max_fp} > {5}
+				{ceil(\l__pgfgo_sgfgraph_max_fp / 10) * 10} {5}
+		}
+		\tl_set:Ne \l__pgfgo_sgfgraph_max_tl {\fp_eval:n {\l__pgfgo_sgfgraph_max_fp}}
+		\bool_lazy_and:nnF {\l__pgfgo_sgfgraph_lead_bool} {\l__pgfgo_sgfgraph_has_lead_bool}
+			{\bool_set_false:N \l__pgfgo_sgfgraph_has_lead_bool}
+		\bool_lazy_and:nnF {\l__pgfgo_sgfgraph_winrate_bool} {\l__pgfgo_sgfgraph_has_winrate_bool}
+			{\bool_set_false:N \l__pgfgo_sgfgraph_has_winrate_bool}
+		\int_compare:nNnT {\l__pgfgo_sgfgraph_step_int} < {1} {
+			\int_set:Nn \l__pgfgo_sgfgraph_step_int {\l__pgfgo_sgfgraph_last_int - \l__pgfgo_sgfgraph_first_int}
+			\int_set:Nn \l__pgfgo_sgfgraph_step_int {
+				\int_compare:nNnTF {\l__pgfgo_sgfgraph_step_int} > {300} {100} {
+					\int_compare:nNnTF {\l__pgfgo_sgfgraph_step_int} > {150} {50} {
+						\int_compare:nNnTF {\l__pgfgo_sgfgraph_step_int} > {60} {20} {
+							\int_compare:nNnTF {\l__pgfgo_sgfgraph_step_int} > {30} {10} {5}
+						}
+					}
+				}
+			}
+		}
+		\l__pgfgo_sgfgraph_font_tl
+		%LAS ESCALAS: EL ANCHO DE SUS NUMEROS A CADA LADO.
+		\hbox_set:Nn \l__pgfgo_sgfgraph_box {100}
+		\dim_set:Nn \l__pgfgo_sgfgraph_left_dim
+			{\bool_if:NTF \l__pgfgo_sgfgraph_has_winrate_bool {\box_wd:N \l__pgfgo_sgfgraph_box + 0.3em} {0pt}}
+		\hbox_set:Nn \l__pgfgo_sgfgraph_box {\textminus \l__pgfgo_sgfgraph_max_tl}
+		\dim_set:Nn \l__pgfgo_sgfgraph_right_dim
+			{\bool_if:NTF \l__pgfgo_sgfgraph_has_lead_bool {\box_wd:N \l__pgfgo_sgfgraph_box + 0.3em} {0pt}}
+		\dim_set:Nn \l__pgfgo_sgfgraph_width_dim
+			{\l__pgfgo_sgfgraph_width_tl - \l__pgfgo_sgfgraph_left_dim - \l__pgfgo_sgfgraph_right_dim}
+		\dim_set:Nn \l__pgfgo_sgfgraph_height_dim {\l__pgfgo_sgfgraph_height_tl}
+		\mode_leave_vertical:
+		\pgfpicture
+			\pgfsetlinewidth {0.4pt}
+			%EL MARCO, EL MEDIO Y LAS LINEAS DE marks.
+			\pgfpathrectanglecorners {\pgfpointorigin}
+				{\pgfpoint {\l__pgfgo_sgfgraph_width_dim} {\l__pgfgo_sgfgraph_height_dim}}
+			\pgfusepath {stroke}
+			\pgfscope
+				\pgfsetstrokecolor {gray}
+				\pgfsetdash {{2pt}{2pt}} {0pt}
+				\pgfpathmoveto {\pgfpoint {0pt} {0.5\l__pgfgo_sgfgraph_height_dim}}
+				\pgfpathlineto {\pgfpoint {\l__pgfgo_sgfgraph_width_dim} {0.5\l__pgfgo_sgfgraph_height_dim}}
+				\clist_map_inline:Nn \l__pgfgo_sgfgraph_marks_clist {
+					\int_compare:nT {\l__pgfgo_sgfgraph_first_int <= ##1 <= \l__pgfgo_sgfgraph_last_int} {
+						\pgfpathmoveto {\pgfpoint {\__pgfgo_sgfgraph_x:n {##1}} {0pt}}
+						\pgfpathlineto {\pgfpoint {\__pgfgo_sgfgraph_x:n {##1}} {\l__pgfgo_sgfgraph_height_dim}}
+					}
+				}
+				\pgfusepath {stroke}
+			\endpgfscope
+			%LOS NUMEROS DE LAS JUGADAS, ABAJO.
+			\int_step_inline:nnnn {0} {\l__pgfgo_sgfgraph_step_int} {\l__pgfgo_sgfgraph_last_int} {
+				\int_compare:nNnF {##1} < {\l__pgfgo_sgfgraph_first_int} {
+					\pgfpathmoveto {\pgfpoint {\__pgfgo_sgfgraph_x:n {##1}} {0pt}}
+					\pgfpathlineto {\pgfpoint {\__pgfgo_sgfgraph_x:n {##1}} {2pt}}
+					\pgfusepath {stroke}
+					\pgftext [top, at = {\pgfpoint {\__pgfgo_sgfgraph_x:n {##1}} {-2pt}}] {##1}
+				}
+			}
+			%LAS ESCALAS.
+			\bool_if:NT \l__pgfgo_sgfgraph_has_winrate_bool {
+				\clist_map_inline:nn {0, 50, 100} {
+					\pgftext [right, at = {\pgfpoint {-0.3em} {\__pgfgo_sgfgraph_winrate_y:n {##1}}}] {##1}
+				}
+			}
+			\bool_if:NT \l__pgfgo_sgfgraph_has_lead_bool {
+				\pgftext [left, at = {\pgfpoint {\l__pgfgo_sgfgraph_width_dim + 0.3em} {\l__pgfgo_sgfgraph_height_dim}}]
+					{+\l__pgfgo_sgfgraph_max_tl}
+				\pgftext [left, at = {\pgfpoint {\l__pgfgo_sgfgraph_width_dim + 0.3em} {0.5\l__pgfgo_sgfgraph_height_dim}}] {0}
+				\pgftext [left, at = {\pgfpoint {\l__pgfgo_sgfgraph_width_dim + 0.3em} {0pt}}]
+					{\textminus\l__pgfgo_sgfgraph_max_tl}
+			}
+			\__pgfgo_sgfgraph_curve:nn {lead} {2}
+			\__pgfgo_sgfgraph_curve:nn {winrate} {1}
+			\int_compare:nNnT {\l__pgfgo_analysis_mistakes_int} > {0} {
+				\exp_args:NnV \pgfgo_kernel_sgf_mistakes:nn {\l__pgfgo_analysis_mistakes_int} \l__pgfgo_analysis_mistakes_player_tl
+				\seq_map_inline:Nn \l_pgfgo_kernel_sgf_mistakes_seq {\__pgfgo_sgfgraph_mistake:n {##1}}
+			}
+		\endpgfpicture
+	\group_end:
+}
+
+\NewDocumentCommand \sgfgraph {O{}m} {
+	\__pgfgo_sgf_if_kernel:n {\pgfgo_sgfgraph:nn {#1} {#2}}
 }
 
 
@@ -1197,7 +1982,9 @@
 	layers					.bool_set:N	= \l__pgfgo_sgfanim_layers_bool,
 	layers					.default:n	= {true},
 	layers					.initial:n	= {true},
+	analysis				.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfanim_analysis_tl {, #1}},
 }
+\tl_new:N \l__pgfgo_sgfanim_analysis_tl
 
 %COMO EN \sgf.
 \__pgfgo_sgf_numbering_keys:nnn {pgfgo / sgf~animation} {sgfanim} {100}
@@ -1229,6 +2016,8 @@
 \cs_new_protected:Npn \pgfgo_sgfanimation_setup:nn #1#2 {
 	\pgfgo_sgf_use_name:n {#2}
 	\keys_set:nn {pgfgo / sgf~animation} {#1}
+	\keys_set:nV {pgfgo / sgf~analysis} \l__pgfgo_sgfanim_analysis_tl
+	\tl_clear:N \l__pgfgo_sgf_analysis_tl
 	\bool_set_eq:NN \l__pgfgo_sgf_annotations_bool \l__pgfgo_sgfanim_annotations_bool
 	\bool_set_eq:NN \l__pgfgo_sgf_chat_bool \l__pgfgo_sgfanim_chat_bool
 	%CADA CUADRO SIGUE LA PARTIDA DESDE EL ANTERIOR (VER \__pgfgo_sgf_play:).
@@ -1730,9 +2519,15 @@
 	variations			.default:n	= {commented},
 	variation~title	.tl_set:N		= \l__pgfgo_sgfdiag_var_title_tl,
 	variation~title	.initial:n	= {\pgfgo_text:n {variation~at}},
+	%EL EPIGRAFE DE LOS DIAGRAMAS DE analysis/mistakes (\pgfgovariationmove: LA JUGADA; \pgfgoloss: LO QUE PIERDE).
+	mistake~title		.tl_set:N		= \l__pgfgo_sgfdiag_mistake_title_tl,
+	mistake~title		.initial:n	= {\pgfgo_text:n {ai~line~at}},
 	%OPCIONES DE /pgfgo/layout SOLO PARA \sgfdiagrams (SE SUMAN A LAS DE TODO EL DOCUMENTO).
 	layout					.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfdiag_layout_tl {, #1}},
+	%OPCIONES DE /pgfgo/sgf analysis SOLO PARA \sgfdiagrams.
+	analysis				.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfdiag_analysis_tl {, #1}},
 }
+\tl_new:N \l__pgfgo_sgfdiag_analysis_tl
 
 %{5, 10, 3}: DIAGRAMAS DE 5, 10, 3, 3, 3... JUGADAS. CON restart, DESDE EL SEGUNDO, CADA DIAGRAMA NUMERA
 %DESDE restart/from.
@@ -2202,10 +2997,13 @@
 		{\l__pgfgo_sgfdiag_comment_separator_tl}
 }
 
-%LAS NOTAS "N at M" Y LOS COMENTARIOS DE LAS JUGADAS #1 A #2 (CON root, SI #1 ES 1, ANTES EL DE LA RAIZ).
+%LAS NOTAS "N at M", LAS DE LAS JUGADAS PROPUESTAS (\pgfgocandidates) Y LOS COMENTARIOS DE LAS JUGADAS #1 A
+%#2 (CON root, SI #1 ES 1, ANTES EL DE LA RAIZ).
 \cs_new_protected:Npn \__pgfgo_sgfdiag_notes:nn #1#2 {
 	\bool_if:nT {\l__pgfgo_sgfdiag_notes_bool && ! \seq_if_empty_p:N \g_pgfgo_move_notes_seq}
 		{\__pgfgo_sgfdiag_below:nn {\l__pgfgo_sgfdiag_align_tl} {\pgfgomovenotes}}
+	\seq_if_empty:NF \g__pgfgo_analysis_notes_seq
+		{\__pgfgo_sgfdiag_below:nn {\l__pgfgo_sgfdiag_align_tl} {\__pgfgo_analysis_notes:}}
 	\bool_if:NT \l__pgfgo_sgfdiag_comments_bool {
 		\__pgfgo_sgfdiag_comments_below:n {
 			\bool_set_true:N \l__pgfgo_sgfdiag_comment_first_bool
@@ -2283,8 +3081,44 @@
 			{\tl_clear:N \l__pgfgo_sgfdiag_first_tl}
 		\__pgfgo_sgfdiag_diagram:nnnn {#1} {\int_max:nn {#2} {\l__pgfgo_sgfdiag_from_int}} {#3} {#4}
 		\__pgfgo_sgfdiag_variations:nnn {#1} {#2} {#3}
+		\__pgfgo_sgfdiag_mistakes:nnn {#1} {\int_max:nn {#2} {\l__pgfgo_sgfdiag_from_int}} {#3}
 	}
 }
+
+%CON analysis/mistakes, DESPUES DE LAS VARIANTES DEL DIAGRAMA #1, UN DIAGRAMA POR CADA UNA DE ESAS JUGADAS QUE
+%ESTA ENTRE #2 Y #3 (CON LA LETRA QUE SIGUE A LAS DE LAS VARIANTES): LA POSICION ANTERIOR, SIN NUMEROS, Y LA
+%LINEA QUE PROPONE EL MOTOR EN SU LUGAR, NUMERADA DESDE 1 (CON LAS OPCIONES DE analysis/line Y LAS DEMAS DE
+%/pgfgo/sgf analysis).
+\seq_new:N \l__pgfgo_sgfdiag_mistakes_seq
+\cs_new_protected:Npn \__pgfgo_sgfdiag_mistakes:nnn #1#2#3 {
+	\seq_map_inline:Nn \l__pgfgo_sgfdiag_mistakes_seq {
+		\int_compare:nT {#2 <= ##1 <= #3} {
+			\int_incr:N \l__pgfgo_sgfdiag_var_count_int
+			\__pgfgo_sgfdiag_mistake:en {\int_eval:n {#1} \int_to_alph:n {\l__pgfgo_sgfdiag_var_count_int}} {##1}
+		}
+	}
+}
+\cs_new_protected:Npn \__pgfgo_sgfdiag_mistake:nn #1#2 {
+	\group_begin:
+		\bool_set_false:N \l__pgfgo_sgf_cache_bool
+		\bool_set_false:N \l__pgfgo_sgfdiag_root_bool
+		\bool_set_false:N \l__pgfgo_sgfdiag_result_bool
+		\bool_set_false:N \l__pgfgo_sgfdiag_comments_bool
+		\bool_set_true:N \l__pgfgo_analysis_line_bool
+		\int_set:Nn \l__pgfgo_analysis_line_from_int {1}
+		\__pgfgo_sgf_move_number:Nn \l__pgfgo_sgfdiag_var_move_int {#2}
+		\pgfgo_kernel_sgf_evaluation:n {#2}
+		\__pgfgo_analysis_values:nnnnVn {} {} {} {} \l_pgfgo_kernel_sgf_loss_tl {}
+		\int_set:Nn \l_pgfgo_goban_sgf_view_from_int {#2}
+		\int_set:Nn \l_pgfgo_goban_sgf_view_to_int {#2}
+		\tl_set:Nn \l__pgfgo_sgfdiag_suffix_tl {#1}
+		\tl_clear:N \l__pgfgo_sgfdiag_first_tl
+		\__pgfgo_sgfdiag_add:nnnn {#2} {#2 - 1}
+			{\l__pgfgo_sgfdiag_title_tl \nobreakspace #1 \nobreakspace (\l__pgfgo_sgfdiag_mistake_title_tl)}
+			{\__pgfgo_sgfdiag_notes:nn {#2} {#2 - 1}}
+	\group_end:
+}
+\cs_generate_variant:Nn \__pgfgo_sgfdiag_mistake:nn {en}
 
 %LAS VARIANTES QUE NACEN EN LAS JUGADAS #2 A #3 DEL DIAGRAMA #1, CADA UNA CON SU LETRA (3a, 3b, ...). LAS
 %VARIANTES DE UNA VARIANTE VAN DONDE VA LA VARIANTE DE LA QUE SALEN (NACEN EN LA MISMA JUGADA).
@@ -2474,6 +3308,8 @@
 	\group_begin:
 		\pgfgo_sgf_use_name:n {#2}
 		\keys_set:nn {pgfgo / sgf~diagrams} {#1}
+		\keys_set:nV {pgfgo / sgf~analysis} \l__pgfgo_sgfdiag_analysis_tl
+		\tl_clear:N \l__pgfgo_sgf_analysis_tl
 		\bool_set_eq:NN \l__pgfgo_sgf_annotations_bool \l__pgfgo_sgfdiag_annotations_bool
 		\bool_set_eq:NN \l__pgfgo_sgf_chat_bool \l__pgfgo_sgfdiag_chat_bool
 		%CADA DIAGRAMA SIGUE LA PARTIDA DESDE EL ANTERIOR (VER \__pgfgo_sgf_play:).
@@ -2503,6 +3339,14 @@
 				{\int_min:nn {\l__pgfgo_sgfdiag_to_int} {\l__pgfgo_sgfdiag_total_int}}
 		}
 		\bool_if:NT \l__pgfgo_sgfdiag_partial_bool {\__pgfgo_sgfdiag_extent:n {#2}}
+		%LA LINEA DEL MOTOR VA SOLO EN LOS DIAGRAMAS DE analysis/mistakes (EN LOS DEMAS SUS NUMEROS SE MEZCLARIAN
+		%CON LOS DE LA PARTIDA).
+		\bool_set_false:N \l__pgfgo_analysis_line_bool
+		\seq_clear:N \l__pgfgo_sgfdiag_mistakes_seq
+		\int_compare:nNnT {\l__pgfgo_analysis_mistakes_int} > {0} {
+			\exp_args:NnV \pgfgo_kernel_sgf_mistakes:nn {\l__pgfgo_analysis_mistakes_int} \l__pgfgo_analysis_mistakes_player_tl
+			\seq_set_eq:NN \l__pgfgo_sgfdiag_mistakes_seq \l_pgfgo_kernel_sgf_mistakes_seq
+		}
 		\bool_lazy_and:nnTF {\l__pgfgo_sgfdiag_figures_bool} {! \seq_if_empty_p:N \l_pgfgo_kernel_sgf_figures_seq}
 			{\__pgfgo_sgfdiag_figures:}
 			{\__pgfgo_sgfdiag_steps:}
@@ -2669,7 +3513,9 @@
 	links								.bool_set:N	= \l__pgfgo_sgfprob_links_bool,
 	links								.default:n	= {true},
 	links								.initial:n	= {false},
+	analysis						.code:n			= {\tl_put_right:Nn \l__pgfgo_sgfprob_analysis_tl {, #1}},
 }
+\tl_new:N \l__pgfgo_sgfprob_analysis_tl
 %COMO EN \sgfdiagrams (SIN root: EL COMENTARIO DE LA RAIZ VA CON EL ENUNCIADO).
 \keys_define:nn {pgfgo / sgf~problem / comments} {
 	true								.code:n			= {\bool_set_true:N \l__pgfgo_sgfprob_comments_bool},
@@ -2900,7 +3746,7 @@
 	\int_step_inline:nnn {0} {#1} {
 		\pgfgo_kernel_sgf_annotations:n {##1}
 		\seq_map_inline:Nn \l_pgfgo_kernel_sgf_annotations_seq {\__pgfgo_sgfprob_judge:nnn {##1} ####1}
-		\str_if_in:eeT {\pgfgo_kernel_sgf_comment:nn {##1} {true}} {RIGHT}
+		\str_if_in:eeT {\pgfgo_kernel_sgf_comment:nnn {##1} {true} {true}} {RIGHT}
 			{\bool_set_true:N \l__pgfgo_sgfprob_right_bool}
 	}
 	\tl_set:Ne \l__pgfgo_sgfprob_verdict_tl {
@@ -2965,6 +3811,8 @@
 	\group_begin:
 		\pgfgo_sgf_use_name:n {#2}
 		\keys_set:nn {pgfgo / sgf~problem} {#1}
+		\keys_set:nV {pgfgo / sgf~analysis} \l__pgfgo_sgfprob_analysis_tl
+		\tl_clear:N \l__pgfgo_sgf_analysis_tl
 		\bool_set_eq:NN \l__pgfgo_sgf_annotations_bool \l__pgfgo_sgfprob_annotations_bool
 		\bool_set_eq:NN \l__pgfgo_sgf_chat_bool \l__pgfgo_sgfprob_chat_bool
 		\__pgfgo_sgfdiag_begin:Nn \l__pgfgo_sgfprob_layout_tl {#2}

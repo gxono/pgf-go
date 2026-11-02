@@ -150,10 +150,33 @@
 %		\l_pgfgo_kernel_sgf_komi_tl		EL komi (KM), COMO NUMERO. 0 SI NO ESTA.
 %		LAS COORDENADAS YA ESTAN EN EL SISTEMA DE pgf-go (LA FILA 1 ES LA DE ABAJO).
 %		ERROR sgf-not-found SI NO ENCUENTRA EL ARCHIVO.
-%	\pgfgo_kernel_sgf_comment:nn {k}{<true | false>}		EXPANDIBLE
+%	\pgfgo_kernel_sgf_comment:nnn {k}{<true | false>}{<true | false>}		EXPANDIBLE
 %		COMENTARIO (C) DE LA JUGADA k DE LA ULTIMA PARTIDA LEIDA, COMO TEXTO (CATCODES 12 Y ESPACIOS). CON
-%		false, SIN EL CHAT DE KGS Y OGS.
+%		false EN EL SEGUNDO, SIN EL CHAT DE KGS Y OGS; EN EL TERCERO, SIN LO QUE ESCRIBEN KaTrain Y Lizzie.
 %		k = 0 ES EL DE LOS NODOS ANTERIORES A LA PRIMERA JUGADA. VACIO SI NO HAY.
+%	ANALISIS DE LA ULTIMA PARTIDA LEIDA: LO QUE GUARDAN KaTrain (KT), Lizzie (LZ), q5Go (QKGV, QLZV), Sabaki
+%	(SBKV, SBKS) Y Ogatak (SBKV, OGSC). EL DE LA JUGADA k ES EL DE LA POSICION DESPUES DE ESA JUGADA (k = 0:
+%	ANTES DE LA PRIMERA). TODO DESDE NEGRO: winrate EN % (LA PROBABILIDAD DE QUE GANE NEGRO) Y lead EN
+%	PUNTOS (CUANTO GANA NEGRO). UN DATO QUE FALTA QUEDA VACIO.
+%	\pgfgo_kernel_sgf_evaluation:n {k}
+%		DEJA \l_pgfgo_kernel_sgf_winrate_tl, \l_pgfgo_kernel_sgf_lead_tl, \l_pgfgo_kernel_sgf_visits_tl,
+%		\l_pgfgo_kernel_sgf_to_play_tl (black O white: QUIEN JUEGA DESPUES) Y \l_pgfgo_kernel_sgf_loss_tl
+%		(LOS PUNTOS QUE PIERDE LA JUGADA k RESPECTO DE LA POSICION ANTERIOR, PARA QUIEN LA JUEGA).
+%	\pgfgo_kernel_sgf_candidates:n {k}
+%		DEJA EN \l_pgfgo_kernel_sgf_candidates_seq LAS JUGADAS QUE PROPONE EL MOTOR DESPUES DE LA JUGADA k, EN
+%		SU ORDEN, COMO {x}{y}{winrate}{lead}{visitas}{prior} (UN PASE TIENE x E y VACIOS; prior EN %).
+%	\pgfgo_kernel_sgf_line:nn {k}{i}
+%		DEJA EN \l_pgfgo_kernel_sgf_line_seq LA LINEA QUE SIGUE A LA JUGADA i DE ESA LISTA (EMPIEZA CON ELLA),
+%		COMO {x}{y} ({}{} ES UN PASE).
+%	\pgfgo_kernel_sgf_ownership:n {k}
+%		DEJA EN \l_pgfgo_kernel_sgf_ownership_seq DE QUIEN ES CADA PUNTO DESPUES DE LA JUGADA k, COMO
+%		{x}{y}{v}: v VA DE -1 (BLANCO) A 1 (NEGRO).
+%	\pgfgo_kernel_sgf_series:
+%		DEJA EN \l_pgfgo_kernel_sgf_series_seq LA EVALUACION DE CADA POSICION QUE TIENE ANALISIS, COMO
+%		{k}{winrate}{lead}.
+%	\pgfgo_kernel_sgf_mistakes:nn {n}{black | white | both}
+%		DEJA EN \l_pgfgo_kernel_sgf_mistakes_seq LAS n JUGADAS DE ESE JUGADOR QUE MAS PIERDEN (EN PUNTOS SI
+%		HAY PUNTAJE, SI NO EN winrate), EN EL ORDEN DE LA PARTIDA. SOLO LAS QUE PIERDEN ALGO.
 %	\pgfgo_kernel_sgf_marks:n {k}
 %		DEJA EN \l_pgfgo_kernel_sgf_marks_seq LAS MARCAS (TR, SQ, CR, MA, SL, LB, DD) Y EL TERRITORIO (TB, TW)
 %		DE LA JUGADA k, COMO {<forma>}{x}{y}{black | white | neutral}{i}. LA FORMA ES triangle, square, circle,
@@ -261,7 +284,13 @@
 	pgfgo_kernel_sgf_games:n,
 	pgfgo_kernel_sgf_read:n,
 	pgfgo_kernel_sgf_read:nn,
-	pgfgo_kernel_sgf_comment:nn,
+	pgfgo_kernel_sgf_comment:nnn,
+	pgfgo_kernel_sgf_evaluation:n,
+	pgfgo_kernel_sgf_candidates:n,
+	pgfgo_kernel_sgf_line:nn,
+	pgfgo_kernel_sgf_ownership:n,
+	pgfgo_kernel_sgf_series:,
+	pgfgo_kernel_sgf_mistakes:nn,
 	pgfgo_kernel_sgf_marks:n,
 	pgfgo_kernel_sgf_lines:n,
 	pgfgo_kernel_sgf_variations:nn,
@@ -343,6 +372,16 @@
 \tl_new:N \l_pgfgo_kernel_sgf_path_tl
 \tl_new:N \l_pgfgo_kernel_sgf_extent_tl
 \int_new:N \l_pgfgo_kernel_sgf_games_int
+\tl_new:N \l_pgfgo_kernel_sgf_winrate_tl
+\tl_new:N \l_pgfgo_kernel_sgf_lead_tl
+\tl_new:N \l_pgfgo_kernel_sgf_visits_tl
+\tl_new:N \l_pgfgo_kernel_sgf_loss_tl
+\tl_new:N \l_pgfgo_kernel_sgf_to_play_tl
+\seq_new:N \l_pgfgo_kernel_sgf_candidates_seq
+\seq_new:N \l_pgfgo_kernel_sgf_line_seq
+\seq_new:N \l_pgfgo_kernel_sgf_ownership_seq
+\seq_new:N \l_pgfgo_kernel_sgf_series_seq
+\seq_new:N \l_pgfgo_kernel_sgf_mistakes_seq
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

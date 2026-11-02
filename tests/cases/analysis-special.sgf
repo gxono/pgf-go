@@ -1,0 +1,16 @@
+(;GM[1]FF[4]CA[UTF-8]SZ[9]KM[0.5]HA[2]AB[cg][gc]PL[W]PB[Black]PW[White]
+C[A handicap game: White plays first. The analysis values are synthetic: they are only for testing.]
+LZ[Test 70.0 1.5k -3.0 5.0
+move E5 visits 900 winrate 3000 prior 2500 scoreMean -3.00 pv E5 E3 C5 info move pass visits 10 winrate 1000 prior 10 scoreMean -9.00 pv pass]
+;W[ee]C[White takes the center.
+Black's winrate: 71.2% (+1.2%)
+(Test / 1.5k playouts)
+komi 0.5]
+LZ[Test 29.0 2k 2.5 5.0
+move E3 visits 800 winrate 7100 prior 3000 scoreMean 2.50 pv E3 C5 info move C5 visits 50 winrate 6900 prior 900 scoreMean 2.00 pv C5]
+;B[ec]C[Good shape.ㅤㅤ
+Move 2: B E7
+Score: B+2.5ㅤ​]QKGV[100:0.72:2.6:5.0::Test]
+;W[ce]SBKV[60.0]SBKS[1.0]
+;B[]C[A pass.]SBKV[61]
+;W[])

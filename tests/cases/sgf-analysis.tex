@@ -1,0 +1,77 @@
+% engines: lualatex
+% expect-warnings: 0
+% expect-errors: 0
+%
+% The analysis that KaTrain, Lizzie, q5Go and Sabaki save in the SGF file
+% (analysis-*.sgf: the same synthetic analysis in each format, see
+% kernel-lua.tex): candidates, the engine's line and ownership on the board,
+% \pgfgocandidates and \sgfinfo.
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\pgfgoset{goban = {scale = 0.55}}
+\pgfgodefinesgf[origin = bottom right, transpose]{turned}{analysis-rect.sgf}
+\begin{document}
+
+\case{Candidates after move 10: KaTrain, Lizzie (the same letters), q5Go (none: only the evaluation)}
+\begin{goban}[9]\sgf[to = 10, analysis = {candidates = 3}]{analysis-katrain.sgf}\end{goban}
+KaTrain: \pgfgocandidates.
+\begin{goban}[9]\sgf[to = 10, analysis = {candidates = 3}]{analysis-lizzie.sgf}\end{goban}
+Lizzie:
+\pgfgocandidates[candidates = {note = {#1~\pgfgowinrate~(\pgfgolead, \pgfgovisits, \pgfgoprior, \pgfgoloss)}, separator = {; }}]
+\begin{goban}[9]\sgf[to = 10, analysis = {candidates = 3}]{analysis-q5go.sgf}\end{goban}
+q5Go: [\pgfgocandidates]
+
+\case{Ownership after move 10 (KaTrain, Lizzie, size and threshold; options alone do not turn it on); only empty points and dead stones}
+\begin{goban}[9]\sgf[to = 10, analysis = {ownership}]{analysis-katrain.sgf}\end{goban}
+\begin{goban}[9]\sgf[to = 10, analysis = {ownership}]{analysis-lizzie.sgf}\end{goban}
+\begin{goban}[9]\sgf[to = 10, analysis = {ownership = {true, size = 2, threshold = 0.7, white = {stone = {fill = {color = gray}}}}}]{analysis-katrain.sgf}\end{goban}
+\begin{goban}[9]\sgf[to = 10, analysis = {ownership = {size = 2}}]{analysis-katrain.sgf}\end{goban}
+
+\case{The engine's line: 4 moves after 10, continuing the numbers; from 1 without the game numbers; the line takes the place of candidate A}
+\begin{goban}[9, notes]\sgf[to = 10, analysis = {line = 4}]{analysis-katrain.sgf}\end{goban}
+\begin{goban}[9, notes]\sgf[from = 11, to = 10, analysis = {line = {true, from = 1}, candidates = 3}]{analysis-lizzie.sgf}\end{goban}
+
+\case{Candidate options: text with the winrate, mark, best; perspective and digits}
+\begin{goban}[9]
+	\sgf[to = 10, analysis = {candidates = {2, text = \pgfgowinrate, mark = {label = {color = blue}}, best = {circle}}}]{analysis-katrain.sgf}
+\end{goban}
+\begin{goban}[9]
+	\sgf[to = 10, analysis = {candidates = {3, text = {\textbf{#1}}}, perspective = black, digits = 2}]{analysis-katrain.sgf}
+\end{goban}
+\pgfgocandidates[perspective = black, digits = 2]
+
+\case{Colored: candidates by what they are behind, numbered moves by what they lost; own colors; Sabaki (no candidates) and Lizzie}
+\begin{goban}[9]\sgf[to = 12, analysis = {colored, candidates = 4}]{analysis-katrain.sgf}\end{goban}
+\begin{goban}[9]\sgf[to = 12, analysis = {colored, colors = {0 = blue, 2 = red}}]{analysis-katrain.sgf}\end{goban}
+\begin{goban}[9]\sgf[to = 12, analysis = {colored}]{analysis-sabaki.sgf}\end{goban}
+\begin{goban}[9]\sgf[from = 5, to = 12, analysis = {colored, candidates = 2}]{analysis-lizzie.sgf}\end{goban}
+
+\case{A handicap game (White to play at the root): candidates from White, a pass candidate (not drawn)}
+\begin{goban}[9]\sgf[to = 0, analysis = {candidates}]{analysis-special.sgf}\end{goban}
+\pgfgocandidates[candidates = {note = {#1: \pgfgowinrate\,\% \pgfgolead}}]
+
+\case{Orientation: the same 9x7 analysis read as it is and turned (origin = bottom right, transpose)}
+\begin{goban}[9x7]\sgf[analysis = {candidates = 4, ownership}]{analysis-rect.sgf}\end{goban}
+\begin{goban}[7x9]\sgf[analysis = {candidates = 4, ownership}]{turned}\end{goban}
+
+\case{\textbackslash sgfinfo}
+After 10 (White's move): winrate \sgfinfo[move = 10]{analysis-katrain.sgf}{winrate},
+lead \sgfinfo[move = 10]{analysis-katrain.sgf}{lead},
+visits \sgfinfo[move = 10]{analysis-katrain.sgf}{visits},
+loss \sgfinfo[move = 10]{analysis-katrain.sgf}{loss},
+best \sgfinfo[move = 10]{analysis-katrain.sgf}{best}.
+From Black: \sgfinfo[move = 10, analysis = {perspective = black}]{analysis-katrain.sgf}{winrate}.
+Root: \sgfinfo{analysis-katrain.sgf}{winrate}.
+Mistakes: \sgfinfo[analysis = {mistakes = 3}]{analysis-katrain.sgf}{mistakes};
+Black's: \sgfinfo[analysis = {mistakes = {3, player = black}}]{analysis-katrain.sgf}{mistakes}.
+Sabaki, after 1: \sgfinfo[move = 1]{analysis-sabaki.sgf}{winrate} (visits: \sgfinfo[move = 1]{analysis-sabaki.sgf}{visits}).
+Handicap root, from White: \sgfinfo{analysis-special.sgf}{winrate}, best for move 1: \sgfinfo[move = 1]{analysis-special.sgf}{best}.
+
+\case{Comments: as they are, and without what KaTrain and Lizzie add}
+1: \sgfcomment{analysis-special.sgf}{1} / \sgfcomment[analysis = {comments = false}]{analysis-special.sgf}{1}
+
+2: \sgfcomment{analysis-special.sgf}{2} / \sgfcomment[analysis = {comments = false}]{analysis-special.sgf}{2}
+\end{document}

@@ -1,0 +1,26 @@
+\input{code-page}
+\documentclass[border=0.5cm, varwidth=12cm]{standalone}
+\usepackage[kernel = lua]{../../latex/pgf-go}
+
+
+\pgfgodefinesgf{game}{analyzed.sgf}
+\pgfgoset{sgf analysis = {colored, mistakes = 2}}
+
+
+\begin{document}
+	% A game reviewed with an AI engine (the analysis KaTrain saved in the file):
+	% the graph, the worst moves with the engine's line, and who owns each point at the end.
+
+	\sgfgraph[height = 2.5cm]{game}
+
+	\medskip
+	\sgfdiagrams[step = 11, layout = {columns = 3}, goban = {scale = 0.8},
+		mistake title = {\pgfgovariationmove, loses \pgfgoloss},
+		analysis = {line = 5, candidates = 2}]{game}
+
+	\begin{goban}[9, scale = 0.8]
+		\sgf[numbers = false, analysis = {ownership}]{game}
+	\end{goban}
+	\quad The worst moves: \sgfinfo{game}{mistakes}. After the last move, Black's winrate is
+	\sgfinfo[move = 22, analysis = {perspective = black}]{game}{winrate}\,\%.
+\end{document}

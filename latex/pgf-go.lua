@@ -1046,14 +1046,19 @@ end
 -- LA ORIENTACION DEL ARCHIVO QUE SE LEE (LA PONE read_tree): LA ESQUINA DE aa Y SI LA PRIMERA LETRA ES LA FILA.
 local sgf_origin, sgf_transpose = "top left", false
 
--- EL PUNTO "pd" COMO {x, y} DE pgf-go (LA FILA 1 ES LA DE ABAJO), SEGUN LA ORIENTACION. size_x Y size_y SON
--- LOS DEL TABLERO (YA DADOS VUELTA CON sgf_transpose).
-local function sgf_point(p, size_x, size_y)
-	local x, y = sgf_number(p:sub(1, 1)), sgf_number(p:sub(2, 2))
+-- EL PUNTO (x, y) DEL ARCHIVO (x DESDE LA IZQUIERDA E y DESDE ARRIBA, COMO EN "pd") COMO {x, y} DE pgf-go
+-- (LA FILA 1 ES LA DE ABAJO), SEGUN LA ORIENTACION. size_x Y size_y SON LOS DEL TABLERO (YA DADOS VUELTA
+-- CON sgf_transpose).
+local function sgf_xy(x, y, size_x, size_y)
 	if sgf_transpose then x, y = y, x end
 	if sgf_origin:find("right") then x = size_x - x + 1 end
 	if not sgf_origin:find("bottom") then y = size_y - y + 1 end
 	return x, y
+end
+
+-- EL PUNTO "pd" COMO {x, y} DE pgf-go.
+local function sgf_point(p, size_x, size_y)
+	return sgf_xy(sgf_number(p:sub(1, 1)), sgf_number(p:sub(2, 2)), size_x, size_y)
 end
 
 -- PUNTOS DE UN VALOR: "pd" O UN RECTANGULO "aa:cc", COMO {x, y}.
@@ -1445,6 +1450,9 @@ local sgf_notes, sgf_names = {}, {}
 -- sgf_style: ST DE LA RAIZ. sgf_figures: "{jugada}{nombre}" DONDE EMPIEZA CADA FIGURA (FG).
 -- sgf_views: LAS VISTAS (VW), {start = jugada desde la que vale, rect = {x1, y1, x2, y2} O nil (TODO EL TABLERO)}.
 local sgf_vars, sgf_style, sgf_figures, sgf_views = {}, 0, {}, {}
+-- EL ANALISIS DE LA LINEA (VER MAS ABAJO, ANALISIS): sgf_analysis[k], EL ULTIMO NODO DE LA JUGADA k CON
+-- PROPIEDADES DE ANALISIS Y QUIEN JUEGA DESPUES; sgf_played[k], EL COLOR DE LA JUGADA k.
+local sgf_analysis, sgf_played = {}, {}
 
 -- SIN EL CHAT DE LOS SERVIDORES: EN OGS, LO QUE SIGUE A UNA LINEA "-- chat --"; EN KGS, LAS LINEAS
 -- "nombre [rango]: ..." Y, SI HABIA ALGUNA, TAMBIEN LAS "nombre: ..." (LOS QUE NO TIENEN RANGO).
@@ -1468,10 +1476,41 @@ local function without_chat(text)
 	return concat(kept, "\n")
 end
 
--- EL COMENTARIO DE LA JUGADA k (LOS DE SUS NODOS, SEGUIDOS), EN UNA LINEA. chat: false LE QUITA EL CHAT.
-function pgfgo.sgf_comment(k, chat)
+-- SIN LO QUE ESCRIBEN LOS PROGRAMAS DE ANALISIS. KaTrain SEPARA LAS PARTES DEL COMENTARIO CON U+3164 U+3164 Y
+-- MARCA LAS SUYAS CON U+3164 U+200B. Lizzie AGREGA AL FINAL UN BLOQUE QUE EMPIEZA CON EL winrate (UNA LINEA CON
+-- %) Y TIENE UNA LINEA "(<motor> / <visitas> <palabra>)" ("(KataGo / 1.2k playouts)", EN SU IDIOMA): SE QUITA
+-- DESDE LA LINEA CON % (HASTA DOS ANTES) HASTA EL FINAL.
+local function without_analysis(text)
+	if text:find("\u{3164}", 1, true) then
+		local parts = {}
+		for part in (text .. "\u{3164}\u{3164}"):gmatch("(.-)\u{3164}\u{3164}") do
+			if not part:find("\u{3164}\u{200B}", 1, true) then insert(parts, part) end
+		end
+		text = concat(parts)
+	end
+	local lines = {}
+	for line in (text .. "\n"):gmatch("(.-)\n") do insert(lines, line) end
+	for i, line in ipairs(lines) do
+		if line:match("^%s*%(.+ / [%d%.]+[kKmM]? .*%)%s*$") then
+			local start = i
+			for j = i - 1, math.max(1, i - 2), -1 do
+				if lines[j]:find("%", 1, true) then start = j end
+			end
+			text = concat(lines, "\n", 1, start - 1)
+			break
+		end
+	end
+	return text
+end
+
+-- EL COMENTARIO DE LA JUGADA k (LOS DE SUS NODOS, SEGUIDOS), EN UNA LINEA. chat: false LE QUITA EL CHAT;
+-- analysis: false, LO QUE ESCRIBEN LOS PROGRAMAS DE ANALISIS. LAS MARCAS DE KaTrain NO SE ESCRIBEN NUNCA (SON
+-- CARACTERES INVISIBLES, QUE LAS FUENTES SIN HANGUL NO TIENEN).
+function pgfgo.sgf_comment(k, chat, analysis)
 	local texts = {}
 	for _, raw in ipairs(sgf_comments[k] or {}) do
+		if analysis == false then raw = without_analysis(raw) end
+		raw = raw:gsub("\u{3164}\u{3164}", "\n"):gsub("\u{3164}\u{200B}", "")
 		local text = (chat == false and without_chat(raw) or raw):gsub("%s+", " "):match("^%s*(.-)%s*$")
 		if text ~= "" then insert(texts, text) end
 	end
@@ -1731,6 +1770,399 @@ function pgfgo.sgf_path(name, path_text, use_i)
 	token.set_macro("l_pgfgo_kernel_sgf_path_tl", path_text)
 end
 
+---------------------------------------------------------------------------------------------------
+-- ANALISIS: LO QUE GUARDAN EN EL ARCHIVO LOS PROGRAMAS QUE ANALIZAN LA PARTIDA CON KataGo O Leela Zero
+---------------------------------------------------------------------------------------------------
+
+-- EL ANALISIS DE UN NODO ES EL DE LA POSICION DESPUES DE SU JUGADA. CADA PROGRAMA LO ESCRIBE A SU MANERA:
+-- KT (KaTrain): TRES VALORES EN BASE64 DE DATOS COMPRIMIDOS CON gzip. EL PRIMERO ES EL TERRITORIO (ownership)
+--   Y EL SEGUNDO LA POLITICA, NUMEROS DE 16 BITS FILA POR FILA DESDE ARRIBA; EL TERCERO, UN JSON CON root
+--   (winrate, scoreLead, visits) Y moves (POR JUGADA: order, visits, winrate, scoreLead, prior, pv). TODO
+--   DESDE NEGRO.
+-- LZ (Lizzie, LizzieYzy): UN TEXTO. EN SU PRIMERA LINEA, EL MOTOR, EL winrate DEL QUE ACABA DE JUGAR (EN %),
+--   LAS VISITAS (1.2k) Y, CON KataGo, EL PUNTAJE DEL QUE JUEGA. DESPUES, LAS JUGADAS ("move Q16 visits 100
+--   winrate 5230 prior 1200 scoreMean 1.5 pv Q16 D4 info move ...", winrate Y prior SOBRE 10000) Y, EN
+--   LizzieYzy, "ownership" Y SUS VALORES. LAS JUGADAS Y EL TERRITORIO, DESDE EL QUE JUEGA.
+-- QKGV Y QLZV (q5Go): "visitas:winrate:puntaje:desvio:komi:motor" (QLZV SIN PUNTAJE NI DESVIO), DESDE NEGRO;
+--   winrate DE 0 A 1.
+-- SBKV (Sabaki, Ogatak): EL winrate DE NEGRO, EN %. SBKS (Sabaki) Y OGSC (Ogatak): EL PUNTAJE DE NEGRO.
+-- ACA TODO QUEDA DESDE NEGRO: winrate DE 0 A 1, lead (CUANTOS PUNTOS GANA NEGRO), prior DE 0 A 1.
+local analysis_props = {"KT", "LZ", "QKGV", "QLZV", "SBKV", "SBKS", "OGSC"}
+
+-- GUARDA EL NODO n DE LA JUGADA k SI TIENE ANALISIS (EL ULTIMO NODO DE LA JUGADA GANA), CON EL TAMANO Y LA
+-- ORIENTACION PARA LEERLO DESPUES. LO QUE DICE PL ES QUIEN JUEGA DESPUES.
+local function analysis_node(n, k, size_x, size_y)
+	for _, p in ipairs(analysis_props) do
+		if n[p] then
+			local pl = n.PL and (n.PL[1] or ""):upper()
+			sgf_analysis[k] = {node = n, sx = size_x, sy = size_y, origin = sgf_origin, transpose = sgf_transpose,
+				pl = (pl == "B" and "black") or (pl == "W" and "white") or nil}
+			return
+		end
+	end
+end
+
+local base64 = {}
+for i, c in ipairs({("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"):byte(1, -1)}) do
+	base64[c] = i - 1
+end
+local function unbase64(s)
+	local out, bits, n = {}, 0, 0
+	for i = 1, #s do
+		local v = base64[s:byte(i)]
+		if v then
+			bits, n = (bits << 6) | v, n + 6
+			if n >= 8 then
+				n = n - 8
+				insert(out, string.char((bits >> n) & 255))
+				bits = bits & ((1 << n) - 1)
+			end
+		end
+	end
+	return concat(out)
+end
+
+-- UN NUMERO DE 16 BITS (IEEE 754, half), BYTES lo Y hi.
+local function half(lo, hi)
+	local h = hi * 256 + lo
+	local sign = h >= 0x8000 and -1 or 1
+	local e, m = (h >> 10) & 31, h & 1023
+	if e == 0 then return sign * m * 2.0 ^ -24 end
+	if e == 31 then return 0 end
+	return sign * (1 + m / 1024) * 2.0 ^ (e - 15)
+end
+
+-- UN JSON (EL DE KaTrain). NaN E Infinity (QUE ESCRIBE Python) SON nil.
+local function json(s)
+	local i = 1
+	local function space() i = s:find("[^ \t\r\n]", i) or #s + 1 end
+	local escapes = {n = "\n", t = "\t", r = "\r", b = "\b", f = "\f"}
+	local function text()
+		local out = {}
+		i = i + 1
+		while true do
+			local j = s:find('["\\]', i)
+			if not j then i = #s + 1 break end
+			insert(out, s:sub(i, j - 1))
+			if s:byte(j) == 34 then i = j + 1 break end
+			local c = s:sub(j + 1, j + 1)
+			if c == "u" then
+				insert(out, utf8.char(tonumber(s:sub(j + 2, j + 5), 16) or 63))
+				i = j + 6
+			else
+				insert(out, escapes[c] or c)
+				i = j + 2
+			end
+		end
+		return concat(out)
+	end
+	local value
+	local function items(close, add)
+		i = i + 1
+		space()
+		if s:sub(i, i) == close then i = i + 1 return end
+		while i <= #s do
+			add()
+			space()
+			local c = s:sub(i, i)
+			i = i + 1
+			if c ~= "," then return end
+		end
+	end
+	function value()
+		space()
+		local c = s:sub(i, i)
+		if c == "{" then
+			local t = {}
+			items("}", function()
+				space()
+				local k = text()
+				space()
+				i = i + 1
+				t[k] = value()
+			end)
+			return t
+		elseif c == "[" then
+			local t = {}
+			items("]", function() t[#t + 1] = value() end)
+			return t
+		elseif c == '"' then
+			return text()
+		end
+		for word, v in pairs({["true"] = true, ["false"] = false, null = false, NaN = false,
+				Infinity = false, ["-Infinity"] = false}) do
+			if s:sub(i, i + #word - 1) == word then
+				i = i + #word
+				return v or nil
+			end
+		end
+		local number = s:match("^-?[%d.]+[eE]?[+-]?%d*", i) or ""
+		i = i + math.max(#number, 1)
+		return tonumber(number)
+	end
+	return value()
+end
+
+local gtp_columns = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
+
+-- UNA JUGADA DE UN MOTOR ("Q16", "pass") COMO {x, y} DEL TABLERO, O "pass". nil SI NO SE ENTIENDE. a ES EL
+-- ANALISIS (SU TAMANO; LA ORIENTACION YA ESTA PUESTA).
+local function gtp_point(v, a)
+	if type(v) ~= "string" then return nil end
+	v = v:upper()
+	if v == "PASS" then return "pass" end
+	local letter, row = v:match("^([A-HJ-Z])(%d+)$")
+	if not letter then return nil end
+	local height = a.transpose and a.sx or a.sy
+	local x, y = sgf_xy(gtp_columns:find(letter, 1, true), height - tonumber(row) + 1, a.sx, a.sy)
+	if x < 1 or y < 1 or x > a.sx or y > a.sy then return nil end
+	return {x, y}
+end
+
+-- UNA LISTA DE JUGADAS DE UN MOTOR (pv) COMO {x, y} O "pass", HASTA LA PRIMERA QUE NO SE ENTIENDE.
+local function gtp_line(list, a)
+	local out = {}
+	for _, v in ipairs(list or {}) do
+		local p = gtp_point(v, a)
+		if not p then break end
+		insert(out, p)
+	end
+	return out
+end
+
+-- EL TERRITORIO DE UNA LISTA DE VALORES FILA POR FILA DESDE ARRIBA (EN EL ARCHIVO), COMO {x, y, v}.
+local function ownership_points(values, a)
+	local width, height = a.sx, a.sy
+	if a.transpose then width, height = height, width end
+	if #values < width * height then return nil end
+	local out = {}
+	for i = 0, width * height - 1 do
+		local x, y = sgf_xy(i % width + 1, i // width + 1, a.sx, a.sy)
+		insert(out, {x, y, values[i + 1]})
+	end
+	return out
+end
+
+local function lz_number(s)
+	return s and tonumber((s:gsub(",", ".")))
+end
+
+-- KT: VER ARRIBA. d ES EL ANALISIS QUE SE ARMA.
+local function read_kt(values, a, d)
+	local parts = {}
+	for i = 1, 3 do
+		local ok, data = pcall(zlib.decompress, unbase64(values[i] or ""), 31)
+		parts[i] = ok and data or ""
+	end
+	local ok, main = pcall(json, parts[3])
+	if not ok or type(main) ~= "table" then return end
+	local root = type(main.root) == "table" and main.root or {}
+	d.winrate, d.lead, d.visits = root.winrate, root.scoreLead, root.visits
+	for gtp, m in pairs(type(main.moves) == "table" and main.moves or {}) do
+		local p = type(m) == "table" and gtp_point(gtp, a)
+		if p then
+			insert(d.moves, {point = p, order = m.order, visits = m.visits, winrate = m.winrate,
+				lead = m.scoreLead, prior = m.prior, line = gtp_line(m.pv, a)})
+		end
+	end
+	local own = {}
+	for i = 1, #parts[1] - 1, 2 do insert(own, half(parts[1]:byte(i, i + 1))) end
+	d.ownership = ownership_points(own, a)
+end
+
+-- LZ: VER ARRIBA. sign ES 1 SI JUEGA NEGRO Y -1 SI JUEGA BLANCO (PARA PASAR TODO A NEGRO).
+local function read_lz(text, a, d, sign)
+	local first, rest = text:match("^([^\n]*)\n?(.*)$")
+	local words = {}
+	for w in first:gmatch("%S+") do insert(words, w) end
+	local w = lz_number(words[2])
+	if w then d.winrate = sign > 0 and 1 - w / 100 or w / 100 end
+	local visits, unit = (words[3] or ""):match("^([%d%.]+)([kKmM]?)$")
+	if visits then
+		d.visits = math.floor(tonumber(visits) * ((unit == "k" or unit == "K") and 1000
+			or (unit == "m" or unit == "M") and 1000000 or 1) + 0.5)
+	end
+	local lead = #words >= 5 and lz_number(words[4])
+	if lead then d.lead = sign * lead end
+	local tokens = {}
+	for t in rest:gmatch("%S+") do insert(tokens, t) end
+	local i, m = 1, nil
+	local own
+	while i <= #tokens do
+		local t = tokens[i]
+		if t == "ownership" then
+			own = {}
+			for j = i + 1, #tokens do insert(own, sign * (lz_number(tokens[j]) or 0)) end
+			break
+		elseif t == "move" then
+			local p = gtp_point(tokens[i + 1], a)
+			m = p and {point = p, line = {}} or nil
+			if m then insert(d.moves, m) end
+			i = i + 2
+		elseif t == "pv" and m then
+			local list = {}
+			i = i + 1
+			while tokens[i] and tokens[i] ~= "info" and tokens[i] ~= "pvVisits" and tokens[i] ~= "ownership" do
+				insert(list, tokens[i])
+				i = i + 1
+			end
+			m.line = gtp_line(list, a)
+		elseif m and tokens[i + 1] and t ~= "info" then
+			local v = lz_number(tokens[i + 1])
+			if t == "visits" then m.visits = v
+			elseif t == "winrate" and v then m.winrate = sign > 0 and v / 10000 or 1 - v / 10000
+			elseif t == "prior" and v then m.prior = v / 10000
+			elseif t == "scoreMean" and v then m.lead = sign * v
+			elseif t == "order" then m.order = v
+			end
+			i = i + 2
+		else
+			i = i + 1
+		end
+	end
+	if own then d.ownership = ownership_points(own, a) end
+end
+
+-- EL ANALISIS DE LA JUGADA k DE LA ULTIMA LINEA LEIDA (0: LA POSICION ANTES DE LA PRIMERA JUGADA), O nil:
+-- {winrate, lead, visits, to_play, moves = {{point, winrate, lead, visits, prior, line}...} EN ORDEN,
+-- ownership = {{x, y, v}...}}. SE LEE LA PRIMERA VEZ QUE SE PIDE.
+local function analysis(k)
+	local a = sgf_analysis[k]
+	if not a then return nil end
+	if a.data then return a.data end
+	local saved_origin, saved_transpose = sgf_origin, sgf_transpose
+	sgf_origin, sgf_transpose = a.origin, a.transpose
+	local n = a.node
+	-- QUIEN JUEGA DESPUES: LO QUE DICE PL, O EL COLOR DE LA JUGADA SIGUIENTE, O EL RIVAL DEL QUE JUGO.
+	local to_play = a.pl or sgf_played[k + 1]
+		or (sgf_played[k] and (sgf_played[k] == "black" and "white" or "black")) or "black"
+	local d = {to_play = to_play, moves = {}}
+	if n.KT then
+		read_kt(n.KT, a, d)
+	elseif n.LZ and (n.LZ[1] or ""):find("%S") then
+		read_lz(n.LZ[1], a, d, to_play == "black" and 1 or -1)
+	end
+	for _, p in ipairs({"QKGV", "QLZV"}) do
+		local fields = {}
+		for f in ((n[p] or {})[1] or ""):gmatch("([^:]*):?") do insert(fields, f) end
+		if n[p] then
+			d.visits = d.visits or tonumber(fields[1])
+			d.winrate = d.winrate or tonumber(fields[2])
+			if p == "QKGV" then d.lead = d.lead or tonumber(fields[3]) end
+		end
+	end
+	local sbkv = n.SBKV and tonumber(n.SBKV[1])
+	d.winrate = d.winrate or (sbkv and sbkv / 100)
+	d.lead = d.lead or (n.SBKS and tonumber(n.SBKS[1])) or (n.OGSC and tonumber(n.OGSC[1]))
+	-- LAS JUGADAS: POR order (LAS QUE NO LO TIENEN, AL FINAL, COMO VINIERON).
+	for i, m in ipairs(d.moves) do m.index = i end
+	table.sort(d.moves, function(x, y)
+		local ox, oy = x.order or math.huge, y.order or math.huge
+		if ox ~= oy then return ox < oy end
+		return x.index < y.index
+	end)
+	sgf_origin, sgf_transpose = saved_origin, saved_transpose
+	a.data = d
+	return d
+end
+
+-- UN NUMERO PARA TeX (VACIO SI NO HAY).
+local function analysis_number(v)
+	if type(v) ~= "number" or v ~= v then return "" end
+	local s = string.format("%.4f", v):gsub("0+$", ""):gsub("%.$", "")
+	return s == "-0" and "0" or s
+end
+
+-- LO QUE PIERDE LA JUGADA k (DE QUIEN LA JUEGA): LA DIFERENCIA DE PUNTAJE (lead) CON LA POSICION ANTERIOR
+-- Y LA DE winrate (EN %). nil SI FALTA ALGUNO.
+local function analysis_loss(k)
+	local color = sgf_played[k]
+	local before, after = analysis(k - 1), analysis(k)
+	if not color or not before or not after then return nil, nil end
+	local sign = color == "black" and 1 or -1
+	local points = before.lead and after.lead and sign * (before.lead - after.lead)
+	local winrate = before.winrate and after.winrate and sign * (before.winrate - after.winrate) * 100
+	return points, winrate
+end
+
+-- LA EVALUACION DE LA POSICION DESPUES DE LA JUGADA k: winrate (DE NEGRO, EN %), lead (DE NEGRO), visits,
+-- QUIEN JUEGA Y LO QUE PIERDE LA JUGADA k (loss, EN PUNTOS). VACIOS SI NO HAY.
+function pgfgo.sgf_evaluation(k)
+	local d = analysis(k) or {}
+	local loss = analysis_loss(k)
+	token.set_macro("l_pgfgo_kernel_sgf_winrate_tl", analysis_number(d.winrate and d.winrate * 100))
+	token.set_macro("l_pgfgo_kernel_sgf_lead_tl", analysis_number(d.lead))
+	token.set_macro("l_pgfgo_kernel_sgf_visits_tl", analysis_number(d.visits))
+	token.set_macro("l_pgfgo_kernel_sgf_loss_tl", analysis_number(loss))
+	token.set_macro("l_pgfgo_kernel_sgf_to_play_tl", d.to_play or "")
+end
+
+-- LAS JUGADAS QUE PROPONE EL MOTOR DESPUES DE LA JUGADA k, EN ORDEN, "{x}{y}{winrate}{lead}{visits}{prior}"
+-- (UN PASE TIENE x E y VACIOS; winrate Y prior EN %).
+function pgfgo.sgf_candidates(k)
+	local list = {}
+	for _, m in ipairs((analysis(k) or {}).moves or {}) do
+		local p = m.point == "pass" and "{}{}" or point(m.point[1], m.point[2])
+		insert(list, p .. "{" .. analysis_number(m.winrate and m.winrate * 100) .. "}{" .. analysis_number(m.lead)
+			.. "}{" .. analysis_number(m.visits) .. "}{" .. analysis_number(m.prior and m.prior * 100) .. "}")
+	end
+	set_clist("l__pgfgo_kernel_sgf_candidates_clist", list)
+end
+
+-- LA LINEA (pv) DE LA JUGADA i QUE PROPONE EL MOTOR DESPUES DE LA JUGADA k, "{x}{y}" ("{}{}" ES UN PASE).
+function pgfgo.sgf_line(k, i)
+	local list = {}
+	local m = ((analysis(k) or {}).moves or {})[i]
+	for _, p in ipairs(m and m.line or {}) do
+		insert(list, p == "pass" and "{}{}" or point(p[1], p[2]))
+	end
+	set_clist("l__pgfgo_kernel_sgf_line_clist", list)
+end
+
+-- DE QUIEN ES CADA PUNTO DESPUES DE LA JUGADA k, "{x}{y}{v}": v DE -1 (BLANCO) A 1 (NEGRO).
+function pgfgo.sgf_ownership(k)
+	local list = {}
+	for _, p in ipairs((analysis(k) or {}).ownership or {}) do
+		insert(list, point(p[1], p[2]) .. "{" .. analysis_number(p[3]) .. "}")
+	end
+	set_clist("l__pgfgo_kernel_sgf_ownership_clist", list)
+end
+
+-- LA EVALUACION DE CADA POSICION DE LA LINEA (DESPUES DE CADA JUGADA, DESDE LA 0), "{k}{winrate}{lead}",
+-- SOLO LAS QUE TIENEN ANALISIS.
+function pgfgo.sgf_series()
+	local list = {}
+	for k = 0, #sgf_played do
+		local d = analysis(k)
+		if d and (d.winrate or d.lead) then
+			insert(list, "{" .. k .. "}{" .. analysis_number(d.winrate and d.winrate * 100) .. "}{"
+				.. analysis_number(d.lead) .. "}")
+		end
+	end
+	set_clist("l__pgfgo_kernel_sgf_series_clist", list)
+end
+
+-- LAS count JUGADAS QUE MAS PIERDEN (DE player: black, white O both), EN ORDEN DE JUGADA. SE MIDEN EN PUNTOS
+-- SI ALGUNA POSICION TIENE PUNTAJE, Y SI NO EN winrate. SOLO LAS QUE PIERDEN ALGO.
+function pgfgo.sgf_mistakes(count, player)
+	local losses, points = {}, false
+	for k = 1, #sgf_played do
+		local p, w = analysis_loss(k)
+		losses[k] = {k = k, points = p, winrate = w}
+		points = points or p ~= nil
+	end
+	local list = {}
+	for k, l in ipairs(losses) do
+		local v = points and l.points or (not points and l.winrate)
+		if v and v > 0 and (player == "both" or sgf_played[k] == player) then insert(list, {k = k, v = v}) end
+	end
+	table.sort(list, function(x, y) return x.v > y.v or (x.v == y.v and x.k < y.k) end)
+	local chosen = {}
+	for i = 1, math.min(count, #list) do insert(chosen, list[i].k) end
+	table.sort(chosen)
+	set_clist("l__pgfgo_kernel_sgf_mistakes_clist", chosen)
+end
+
 local markup = {{"TR", "triangle"}, {"SQ", "square"}, {"CR", "circle"}, {"MA", "cross"},
 	{"SL", "selected"}, {"TB", "black-territory"}, {"TW", "white-territory"}}
 
@@ -1750,6 +2182,7 @@ function pgfgo.sgf_read(name, path_text, use_i)
 	sgf_comments, sgf_marks, sgf_labels, sgf_dim, sgf_lines = {}, {}, {}, {}, {}
 	sgf_notes, sgf_names = {}, {}
 	sgf_vars, sgf_style, sgf_figures, sgf_views = {}, 0, {}, {}
+	sgf_analysis, sgf_played = {}, {}
 	local size_x, size_y = 19, 19
 	local print_mode, komi = 1, "0"
 	local t = read_tree(name)
@@ -1849,11 +2282,13 @@ function pgfgo.sgf_read(name, path_text, use_i)
 						if inside(sim, c[1], c[2]) then play(sim, player[2], c[1], c[2]) end
 					end
 					played = played + 1
+					sgf_played[played] = player[2]
 					-- LAS ALTERNATIVAS A ESTA JUGADA, CON LA POSICION DESPUES DE JUGARLA.
 					sgf_vars[played] = sgf_vars[played] or {}
 					sgf_vars[played].siblings = moves_of(sibs[idx])
 				end
 			end
+			analysis_node(n, played, size_x, size_y)
 			-- LAS JUGADAS QUE PUEDEN SEGUIR (LAS DEL ULTIMO NODO DE LA JUGADA).
 			sgf_vars[played] = sgf_vars[played] or {}
 			sgf_vars[played].children = moves_of(kids[idx])
