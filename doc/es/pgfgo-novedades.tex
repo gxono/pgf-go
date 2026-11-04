@@ -5,6 +5,7 @@
 \begin{itemize}
 	\item \pgfgoversion:
 		\begin{itemize}
+			\item Las fuentes van con el perfil: el estilo inicial, |simple| y |draft| escriben las coordenadas, los números de las jugadas y las etiquetas de las marcas con |\normalfont|; |pgfgo|, |pgfgosmooth|, |wain|, |shell|, |yunzi| y |baduktv|, con |\sffamily| (los números, con |\sffamily\bfseries|).
 			\item Partidas analizadas: los comandos SGF leen el análisis que guardan KaTrain, Lizzie, q5Go, Sabaki y Ogatak (|/pgfgo/sgf analysis|, pág.~\pageref{subsec:sgfanalisis}): las jugadas que propone el motor, su línea y de quién es cada punto en el tablero, con colores según lo que pierde cada jugada (|colored|); |\pgfgocandidates|; |\sgfinfo| con |winrate|, |lead|, |loss|, |best| y |mistakes|; |\sgfgraph|, el gráfico de la partida; y en |\sgfdiagrams|, un diagrama con la línea del motor en cada error grave.
 			\item Patrones de \tikzname\ en los rellenos de las piedras, las marcas, el territorio y el fondo (|fill/pattern|, pág.~\pageref{sec:piedras}).
 			\item Coordenadas del borde en minúsculas (|label/letter case = lower|, pág.~\pageref{subsec:etiquetas}).

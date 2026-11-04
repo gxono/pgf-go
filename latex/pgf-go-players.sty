@@ -512,7 +512,7 @@
 
 	\keys_define:nn { pgfgo / players / #1 / move / label } {
 		font								.code:n 		= {\tl_set:cn{l_pgfgo_players_ #1 _move_label_font_tl}{##1}},
-		font								.initial:n	= {\bfseries},
+		font								.initial:n	= {\normalfont},
 		font~size 					.code:n 		= {\tl_set:cn{l_pgfgo_players_ #1 _move_label_font_size_tl}{##1}},
 		color								.code:n 		= {\tl_set:cn{l_pgfgo_players_ #1 _move_label_color_tl}{##1}},
 		color								.initial:n	= {black},
@@ -598,6 +598,7 @@
 		color			.code:n = {\tl_set:cn{l_pgfgo_players_ #1 _mark_label_color_tl}{##1}},
 		color			.initial:n = {black},
 		font			.code:n		 = {\tl_set:cn{l_pgfgo_players_ #1 _mark_label_font_tl}{##1}},
+		font			.initial:n = {\normalfont},
 		%VACIO: EL TAMANO SE AJUSTA SOLO SEGUN LA CANTIDAD DE CARACTERES.
 		font~size	.code:n		 = {\tl_set:cn{l_pgfgo_players_ #1 _mark_label_font_size_tl}{##1}},
 		format		.choices:nn	= {arabic, alph, Alph, roman, Roman, kanji}

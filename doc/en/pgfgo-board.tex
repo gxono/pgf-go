@@ -1002,9 +1002,9 @@ When we speak of the ``board'', we mean the |goban| environment: the grid, the b
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/label/font = \meta{font commands} (initially \texttt{\string\sffamily})}
+	\begin{key}{/pgfgo/goban/label/font = \meta{font commands} (initially \texttt{\string\normalfont})}
 
-		Font of the labels.
+		Font of the labels. In the profiles |pgfgo|, |pgfgosmooth|, |wain|, |shell|, |yunzi| and |baduktv|, |\sffamily|.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {south, west}, font = \bfseries}]

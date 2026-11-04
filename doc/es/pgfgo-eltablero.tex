@@ -1002,9 +1002,9 @@ Cuando hablamos de «tablero», nos referimos al entorno |goban|: la cuadrícula
 		\end{codeexample}
 	\end{key}
 
-	\begin{key}{/pgfgo/goban/label/font = \meta{font commands} (initially \texttt{\string\sffamily})}
+	\begin{key}{/pgfgo/goban/label/font = \meta{font commands} (initially \texttt{\string\normalfont})}
 
-		Fuente de las etiquetas.
+		Fuente de las etiquetas. En los perfiles |pgfgo|, |pgfgosmooth|, |wain|, |shell|, |yunzi| y |baduktv|, |\sffamily|.
 
 		\begin{codeexample}[]
 			\begin{goban}[5, label = {at = {south, west}, font = \bfseries}]

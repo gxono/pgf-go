@@ -34,6 +34,13 @@ All notable changes to `pgf-go` are listed here.
 
 ### Behaviour changes
 
+- Fonts by profile: the initial style, `simple` and `draft` write the
+  coordinates, the move numbers and the labels of the marks with
+  `\normalfont` (the numbers were `\bfseries` and the coordinates
+  `\sffamily`); `pgfgo`, `pgfgosmooth`, `wain`, `shell`, `yunzi` and
+  `baduktv` write them with `\sffamily`, and the numbers with
+  `\sffamily\bfseries`.
+- With `colored`, the border of a numbered stone is 1pt thick (it was 1.6pt).
 - KaTrain's invisible separators (U+3164) are no longer written in the
   comments, so a KaTrain file does not give the `sgf-glyphs` warning.
 - Kernel interface: `\pgfgo_kernel_sgf_comment:nn` is now

@@ -67,7 +67,8 @@ El estilo inicial del paquete: el que tienen el tablero y los jugadores antes de
 				color = pgfgo!10!black,
 				width = 1pt}},
 		label = {
-			color = black
+			color = black,
+			font = \sffamily
 		},
 		arrow = {color = red!80!black},
 		line = {color = red!80!black}
@@ -101,6 +102,7 @@ Los colores |wainshade|, |wainwhite| y |wainblack| son los del perfil |wain|, m√
 			move = {
 				label = {
 					color = black,
+					font = \sffamily\bfseries,
 					format = arabic,
 				}
 			},
@@ -112,6 +114,7 @@ Los colores |wainshade|, |wainwhite| y |wainblack| son los del perfil |wain|, m√
 				fill = {true, color = gray},
 				label = {
 					color = black,
+					font = \sffamily,
 					format = arabic
 				}
 			}
@@ -266,7 +269,7 @@ Los colores |wainshade|, |wainwhite| y |wainblack| son los del perfil |wain|, m√
 				color = waingrid,
 				width = 1pt}
 			},
-		label = {color = waingoban},
+		label = {color = waingoban, font = \sffamily},
 		arrow = {color = waingrid},
 		line = {color = waingrid}
 	}
@@ -295,6 +298,7 @@ Los colores |wainshade|, |wainwhite| y |wainblack| son los del perfil |wain|, m√
 			move = {
 				label = {
 					color = black,
+					font = \sffamily\bfseries,
 					format = arabic,
 				}
 			},
@@ -305,6 +309,7 @@ Los colores |wainshade|, |wainwhite| y |wainblack| son los del perfil |wain|, m√
 				},
 				label = {
 					color = waingoban,
+					font = \sffamily,
 					format = arabic
 				},
 			}
@@ -491,10 +496,13 @@ Un tablero de madera con piedras de pizarra y de concha, dibujadas con las im√°g
 				line = false,
 				fill = {image = {file = pgfgo-board.jpg}}
 			},
+			label = {font = \sffamily},
 			arrow = {halo = false},
 			line = {halo = false}
 		},
 		all = {
+			move = {label = {font = \sffamily\bfseries}},
+			mark = {label = {font = \sffamily}},
 			stone = {
 				shadow = {
 					true,
@@ -590,10 +598,13 @@ Un tablero claro, de madera lisa, con piedras lisas, una imagen para cada color,
 				line = false,
 				fill = {image = {file = pgfgo-baduktv-goban.png}}
 			},
+			label = {font = \sffamily},
 			arrow = {halo = false},
 			line = {halo = false}
 		},
 		all = {
+			move = {label = {font = \sffamily\bfseries}},
+			mark = {label = {font = \sffamily}},
 			stone = {
 				shadow = {
 					true,

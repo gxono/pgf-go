@@ -382,7 +382,7 @@
 		\pgfgo_kernel_sgf_evaluation:n {\l__pgfgo_sgf_count_int}
 		\__pgfgo_analysis_color:VN \l_pgfgo_kernel_sgf_loss_tl \l_tmpa_tl
 		\tl_if_empty:NF \l_tmpa_tl
-			{\tl_set:Ne \l__pgfgo_sgf_move_options_tl {line = {true, color = \exp_not:V \l_tmpa_tl, width = 1.6pt}}}
+			{\tl_set:Ne \l__pgfgo_sgf_move_options_tl {line = {true, color = \exp_not:V \l_tmpa_tl, width = 1pt}}}
 	}
 	\pgfgo_remember:Nnn \l_pgfgo_goban_remember_move_bool {stone} {
 		\bool_if:NF \l_pgfgo_goban_remember_move_label_bool {\exp_not:N \pgfgo_remember_numbers:n}
