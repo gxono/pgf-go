@@ -1,6 +1,6 @@
 % engines: lualatex
 % expect-warnings: 0
-% expect-errors: 12
+% expect-errors: 13
 % render: no
 \documentclass{article}
 \usepackage{../../latex/pgf-go}
@@ -21,5 +21,7 @@
 \pgfgoset{players = {black = {mark = {triangle}}}}    % the same with a named shape
 \begin{goban}[5]\moves[numbers = false]{A1; B1}\end{goban}   % moves only add
 \pgfgoset{sgf analysis = {candidates = many}}   % neither a key nor a number
+% A layer that does not exist: one error, and the goban still ends (its content is left out).
+\begin{goban}[5]\begin{pgfonlayer}{nolayer}\fill (1,1) circle (1);\end{pgfonlayer}\end{goban}
 
 \end{document}

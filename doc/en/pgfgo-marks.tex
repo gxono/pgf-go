@@ -302,7 +302,7 @@ Marks go on an intersection, with or without a stone: shapes (circle, triangle, 
 
 
 \label{subsec:marcaspropias}\begin{command}{\pgfgodefinemark\opt{\oarg{options}}\marg{name}\marg{pgf code}}
-	Defines a new mark, called \meta{name}, which is used like the others: in |\marks|, in the option |mark| of the stones and of the players, and in |\territory|. It is drawn in the same layers as the other marks; on an empty point, it covers the grid with a circle of the color of the background. A mark with the name of another one replaces it.
+	Defines a new mark, called \meta{name}, which is used like the others: in |\marks|, in the option |mark| of the stones and of the players, and in |\territory|. It is drawn in the same layers as the other marks (p.~\pageref{subsec:capas}); on an empty point, it covers the grid with a circle of the color of the background. A mark with the name of another one replaces it.
 
 	The \meta{pgf code} is drawn with the origin at the point. Coordinates without a unit (those of |\pgfpointxy| and those of Ti\emph{k}Z) are measured in stone radii: |(0,0) circle (1)| has the size of the stone. The color of the lines is |mark/line/color| of the player; the fill color, |mark/fill/color|; and the width of the lines, |mark/line/width|. Those two colors are also called |pgfgomarkline| and |pgfgomarkfill|. With |mark/scale|, the mark changes size like the others.
 
@@ -928,7 +928,7 @@ Lines have the same options, except |tip|:
 \subsection{Drawing with Ti\emph{k}Z}
 \label{subsec:tikz}
 
-A |goban| is a Ti\emph{k}Z picture, so |\draw|, |\node| and the other Ti\emph{k}Z commands can be used inside it. The unit is the distance between two lines of the board, and |(1,1)| is the lower left corner. What is drawn this way goes on top of everything, |partial = auto| does not take it into account and it is not remembered: |resume| and the views do not bring it.
+A |goban| is a Ti\emph{k}Z picture, so |\draw|, |\node| and the other Ti\emph{k}Z commands can be used inside it. The unit is the distance between two lines of the board, and |(1,1)| is the lower left corner. What is drawn this way goes on top of everything, unless it goes in one of the layers of the package (p.~\pageref{subsec:capas}). |partial = auto| does not take it into account and it is not remembered: |resume| and the views do not bring it.
 
 \begin{command}{(go cs:\meta{intersection})}
 	The coordinate system |go| gives the intersection of the board written as in |\arrow| and |\line|: |(go cs:C3)| is C3. It can be outside the board, like |(go cs:C0)|, below column C. If the coordinate is not understood, it warns (|go-coordinate|) and uses the origin, |(0,0)|.
@@ -942,3 +942,34 @@ A |goban| is a Ti\emph{k}Z picture, so |\draw|, |\node| and the other Ti\emph{k}
 		\end{goban}
 	\end{codeexample}
 \end{command}
+
+\subsection{Layers}
+\label{subsec:capas}
+
+A |goban| draws in PGF layers. From bottom to top:
+
+\begin{itemize}
+	\item |pgfgo_layer_goban_border|: the background of the board, with its image and its shadow, and the border.
+	\item |pgfgo_layer_goban_grid|: the grid (the lines or the image, and |edge|) and the star points.
+	\item |pgfgo_layer_goban_labels|: the coordinates.
+	\item |pgfgo_layer_territory|: the fill of the territory, and its outline with |line/above = false|.
+	\item |pgfgo_layer_mark_shadow|: the circle in the color of the background that covers the grid under a mark on an empty point.
+	\item |pgfgo_layer_stone|: the stones.
+	\item |pgfgo_layer_mark|: the marks, the arrows, the lines and the outline of the territory.
+	\item |main|: the move numbers and what is drawn with Ti\emph{k}Z.
+\end{itemize}
+
+To draw in a layer, the |pgfonlayer| environment of PGF is used inside the |goban|. Within one layer, what comes later in the document goes on top: a |\fill| in |pgfgo_layer_stone| before |\stones| goes under those stones, and after it, on top. The territory is drawn when the |goban| ends, and with |captures| so are the stones and their numbers, so they go on top of what was drawn in their layers. With |partial = auto| the board is drawn when the |goban| ends, but it goes underneath, as without |partial|. What goes in a layer follows the rules of the previous section: |partial = auto| does not take it into account and it is not remembered. If the layer does not exist, there is an error and what goes inside is not drawn.
+
+\begin{codeexample}[]
+	\begin{goban}[9]
+		\begin{pgfonlayer}{pgfgo_layer_goban_border}
+			\fill[yellow!50] (go cs:B2) rectangle (go cs:E5);
+		\end{pgfonlayer}
+		\stones[b]{C3, D4}\stones[w]{E5, F4}
+		\begin{pgfonlayer}{pgfgo_layer_territory}
+			\fill[red!40] (go cs:F4) circle (0.8);
+		\end{pgfonlayer}
+		\draw[blue, thick] (go cs:G7) -- (go cs:D4);
+	\end{goban}
+\end{codeexample}

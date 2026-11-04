@@ -1,0 +1,19 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{underscore}
+\usepackage{../../latex/pgf-go}
+\pagestyle{empty}
+\begin{document}
+
+% With the package underscore, _ is active in the document: the names of the layers must still be found.
+a_b
+\begin{goban}[5]
+	\begin{pgfonlayer}{pgfgo_layer_goban_border}\fill[red] (go cs:B2) rectangle (go cs:D4);\end{pgfonlayer}
+	\stones[b]{C3}
+	\begin{pgfonlayer}{pgfgo_layer_stone}\fill[blue] (go cs:C3) circle (0.3);\end{pgfonlayer}
+\end{goban}
+
+\end{document}

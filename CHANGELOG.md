@@ -31,6 +31,9 @@ All notable changes to `pgf-go` are listed here.
   mistake with the position before it and the engine's line in its place
   ("Diagram 2a (AI line at 37)", `mistake title`); the notes of the candidates
   go under each diagram. New text `ai line at` in the ten languages.
+- The drawing layers of the goban are documented ("Layers", in the chapter
+  on marks), and `pgfonlayer` can use them from the document: their names
+  were not found because `_` is not a letter there.
 
 ### Behaviour changes
 
@@ -91,6 +94,11 @@ All notable changes to `pgf-go` are listed here.
 
 ### Fixed
 
+- With `partial = auto`, the background of the board covered what had been
+  drawn in the layers of the board in the body of the goban.
+- `pgfonlayer` with a layer that does not exist closed the `goban` too; what
+  goes inside is now left out, after the error.
+- The layer `pgfgo_layer_stone_mark`, where nothing was drawn, is deleted.
 - A shadow or shine with `image/silhouette` did not count in the size of the
   drawing where it really falls (moved and turned), so it could stick out of
   the frame of the goban; as a PDF form it would even be cut.

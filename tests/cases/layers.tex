@@ -1,0 +1,50 @@
+% engines: lualatex, pdflatex
+% expect-warnings: 0
+% expect-errors: 0
+\documentclass{article}
+\usepackage[margin=1cm]{geometry}
+\usepackage{../../latex/pgf-go}
+\newcommand\case[1]{\par\medskip\noindent\textbf{#1}\par\nopagebreak}
+\pagestyle{empty}
+\begin{document}
+
+% The layers of the goban, used from the document with pgfonlayer (manual: subsec:capas).
+% Their names have _ (not a letter in the document): before, PGF did not find them in the list.
+
+\case{something in each layer, around C3 (a black stone with a mark), from the red square (border) to the magenta disc (main)}
+\begin{goban}[5]
+	\stones[b]{C3}\marks{C3, D4}
+	\begin{pgfonlayer}{pgfgo_layer_goban_border}\fill[red] (go cs:B2) rectangle (go cs:D4);\end{pgfonlayer}
+	\begin{pgfonlayer}{pgfgo_layer_goban_grid}\fill[orange] (go cs:B4) circle (0.45);\end{pgfonlayer}
+	\begin{pgfonlayer}{pgfgo_layer_goban_labels}\fill[yellow] (go cs:B3) circle (0.45);\end{pgfonlayer}
+	\begin{pgfonlayer}{pgfgo_layer_territory}\fill[green] (go cs:C3) circle (0.8);\end{pgfonlayer}
+	\begin{pgfonlayer}{pgfgo_layer_mark_shadow}\fill[cyan] (go cs:E4) circle (0.45);\end{pgfonlayer}
+	\begin{pgfonlayer}{pgfgo_layer_stone}\fill[blue] (go cs:C3) circle (0.2);\end{pgfonlayer}
+	\begin{pgfonlayer}{pgfgo_layer_mark}\draw[violet, very thick] (go cs:B2) -- (go cs:D4);\end{pgfonlayer}
+	\fill[magenta] (go cs:E2) circle (0.3);
+\end{goban}
+
+\case{in one layer, what comes later goes on top: a disc under B3, another over C3}
+\begin{goban}[5]
+	\begin{pgfonlayer}{pgfgo_layer_stone}\fill[red] (go cs:B3) circle (0.7);\end{pgfonlayer}
+	\stones[w]{B3, C3}
+	\begin{pgfonlayer}{pgfgo_layer_stone}\fill[red] (go cs:C3) circle (0.3);\end{pgfonlayer}
+\end{goban}
+
+\case{partial = auto: the board is drawn at the end, but goes under the red square (it covered it)}
+\begin{goban}[9, partial = auto]
+	\begin{pgfonlayer}{pgfgo_layer_goban_border}\fill[red] (go cs:B2) rectangle (go cs:E5);\end{pgfonlayer}
+	\begin{pgfonlayer}{pgfgo_layer_goban_grid}\draw[blue, thick] (go cs:C3) circle (0.5);\end{pgfonlayer}
+	\stones[b]{C3, D4}
+\end{goban}
+
+\case{the territory is drawn at the end: it covers the red disc in its layer}
+\begin{goban}[5]
+	\begin{pgfonlayer}{pgfgo_layer_territory}\fill[red] (go cs:C3) circle (0.3);\end{pgfonlayer}
+	\territory[b, draw = fill, fill = {opacity = 1, color = green}]{C3, D3}
+\end{goban}
+
+\case{a stone in the text after a goban with layers: nothing is carried over}
+\pgfgostone[b] \pgfgostone[w, number = 5]
+
+\end{document}

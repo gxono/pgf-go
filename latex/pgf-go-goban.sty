@@ -52,15 +52,22 @@
 		\pgfsetlinewidth {\fp_to_dim:n {(#1) * \l_pgfgo_goban_line_scale_fp}}
 	}
 
-	%LAYERS
-	\pgfdeclarelayer{pgfgo_layer_goban_border}
-	\pgfdeclarelayer{pgfgo_layer_goban_grid}
-	\pgfdeclarelayer{pgfgo_layer_goban_labels}
-	\pgfdeclarelayer{pgfgo_layer_territory}
-	\pgfdeclarelayer{pgfgo_layer_mark_shadow}
-	\pgfdeclarelayer{pgfgo_layer_stone}
-	\pgfdeclarelayer{pgfgo_layer_stone_mark}
-	\pgfdeclarelayer{pgfgo_layer_mark}
+	%LAS CAPAS, DE ABAJO HACIA ARRIBA (ENCIMA DE TODAS VA main, LA DE TikZ). ESTAN EN EL MANUAL
+	%(subsec:capas): AL CAMBIARLAS, CAMBIARLO TAMBIEN. c__pgfgo_goban_layer_name_<CAPA>_tl ES EL NOMBRE
+	%DE CADA UNA, PARA \__pgfgo_goban_onlayer:n.
+	\clist_const:Nn \c__pgfgo_goban_layers_clist {
+		pgfgo_layer_goban_border, pgfgo_layer_goban_grid, pgfgo_layer_goban_labels, pgfgo_layer_territory,
+		pgfgo_layer_mark_shadow, pgfgo_layer_stone, pgfgo_layer_mark
+	}
+	\clist_map_inline:Nn \c__pgfgo_goban_layers_clist {
+		\pgfdeclarelayer {#1}
+		\tl_const:cn {c__pgfgo_goban_layer_name_#1_tl} {#1}
+	}
+	\tl_const:Ne \c__pgfgo_goban_layers_main_tl {\clist_use:Nn \c__pgfgo_goban_layers_clist {,}, main}
+	%LAS DEL TABLERO (CON partial = auto SE DIBUJAN AL CERRAR, EN \__pgfgo_goban_end:).
+	\clist_const:Nn \c__pgfgo_goban_board_layers_clist
+		{pgfgo_layer_goban_border, pgfgo_layer_goban_grid, pgfgo_layer_goban_labels}
+	\clist_map_inline:Nn \c__pgfgo_goban_board_layers_clist {\box_new:c {g__pgfgo_goban_saved_#1_box}}
 
 	%EN UNA VISTA (\pgfgoview) LAS CLAVES DE LA MEMORIA NO HACEN NADA: LAS OPCIONES DEL goban CON NOMBRE SE
 	%VUELVEN A USAR, Y NO TIENEN QUE BORRAR NI CAMBIAR NINGUNA MEMORIA.
@@ -915,15 +922,22 @@
 	%COMO EN PGF. \__pgfgo_goban_layer_close: CIERRA LA CAJA DE LA CAPA (NADA SI YA SE ESTABA EN ELLA).
 	%EL \pgfsetlinewidth{0.4pt} DE PGF ESCRIBE "0.4 w" FUERA DE LA CAJA, EN LA CAPA DE AFUERA, Y DEJA EL ANCHO
 	%GLOBAL: CON CAJA NUEVA, EL ANCHO ES 0.4pt SOLO PARA TeX Y SOLO DENTRO (EN EL PDF LA CAPA SIGUE COMO ESTABA).
+	%EN EL DOCUMENTO, EL _ DE LOS NOMBRES DE LAS CAPAS NO ES UNA LETRA Y PGF NO LOS ENCONTRARIA EN LA LISTA
+	%(COMPARA CON \ifx): EL NOMBRE SE CAMBIA POR EL DEL PAQUETE (\cs:w NO MIRA LOS CATCODES).
 	\cs_new_protected:Npn \__pgfgo_goban_onlayer:n #1 {
 		\pgfutil@ifundefined {pgf@layerbox@#1} {
+			%(EN PGF FALTA UN GRUPO Y \end{pgfonlayer} CIERRA EL DEL ENTORNO DE AFUERA: AQUI LO QUE SE DIBUJA EN
+			%UNA CAPA QUE NO EXISTE SE DESCARTA.)
 			\pgferror {Sorry,~the~requested~layer~'#1'~could~not~be~found.~Maybe~you~misspelled~it?}
 			\cs_set_eq:NN \__pgfgo_goban_layer_close: \prg_do_nothing:
-			\bgroup
+			\begingroup
+			\tex_setbox:D \l_tmpa_box = \tex_hbox:D \bgroup
 			\begingroup
 		}{
 			\begingroup
-			\tl_set:Nn \pgf@temp {#1}
+			\tl_if_exist:cTF {c__pgfgo_goban_layer_name_#1_tl}
+				{\tl_set_eq:Nc \pgf@temp {c__pgfgo_goban_layer_name_#1_tl}}
+				{\tl_set:Nn \pgf@temp {#1}}
 			\tl_if_eq:NNTF \pgf@temp \pgfonlayer@name
 				{
 					\cs_set_eq:NN \__pgfgo_goban_layer_close: \prg_do_nothing:
@@ -974,17 +988,7 @@
 		\group_begin:
 		\cs_set_eq:cN {pgfonlayer} \__pgfgo_goban_onlayer:n
 		\cs_set_eq:cN {endpgfonlayer} \__pgfgo_goban_endlayer:
-		\pgfsetlayers{
-			pgfgo_layer_goban_border,
-			pgfgo_layer_goban_grid,
-			pgfgo_layer_goban_labels,
-			pgfgo_layer_territory,
-			pgfgo_layer_mark_shadow,
-			pgfgo_layer_stone,
-			pgfgo_layer_stone_mark,
-			pgfgo_layer_mark,
-			main
-		}
+		\exp_args:NV \pgfsetlayers \c__pgfgo_goban_layers_main_tl
 		\dim_set:Nn \l__pgfgo_goban_view_raise_dim {\l_pgfgo_goban_view_raise_tl}
 		\tikzpicture
 		\pgfsetxvec{\pgfpoint{ \l_pgfgo_goban_grid_x_sep_dim}{0}}
@@ -1425,10 +1429,6 @@
 	%SE DIBUJAN (VACIA: TODAS), Y \l_pgfgo_goban_bbox_tl FIJA EL TAMANO ({minx}{miny}{maxx}{maxy}). AL
 	%TERMINAR, EL TAMANO DEL ULTIMO goban QUEDA EN \g_pgfgo_goban_bbox_tl.
 	\clist_new:N \l_pgfgo_goban_layers_clist
-	\clist_const:Nn \c__pgfgo_goban_layers_clist {
-		pgfgo_layer_goban_border, pgfgo_layer_goban_grid, pgfgo_layer_goban_labels, pgfgo_layer_territory,
-		pgfgo_layer_mark_shadow, pgfgo_layer_stone, pgfgo_layer_stone_mark, pgfgo_layer_mark
-	}
 	\tl_new:N \l_pgfgo_goban_bbox_tl
 	\tl_new:N \g_pgfgo_goban_bbox_tl
 
@@ -1456,9 +1456,21 @@
 		\pgfgo_territory_finish:
 		%partial = auto: LA PARTE VISIBLE ES LO QUE SE DIBUJO (EL TERRITORIO COMO REGION SE SUMO AL PEDIRLO), Y
 		%RECIEN AHORA SE DIBUJA EL TABLERO.
+		%LO QUE YA HABIA EN LAS CAPAS DEL TABLERO (DIBUJADO EN EL CUERPO) VA ENCIMA, COMO SIN partial = auto.
 		\bool_if:NT \l_pgfgo_goban_partial_auto_bool {
 			\pgfgo_kernel_extent_window:n {\l_pgfgo_goban_partial_margin_int}
+			\clist_map_inline:Nn \c__pgfgo_goban_board_layers_clist {
+				\box_gset_eq:cc {g__pgfgo_goban_saved_##1_box} {pgf@layerbox@##1}
+				\box_gclear:c {pgf@layerbox@##1}
+			}
 			\__pgfgo_goban_board:VV \l_pgfgo_goban_size_x_int \l_pgfgo_goban_size_y_int
+			\clist_map_inline:Nn \c__pgfgo_goban_board_layers_clist {
+				\box_if_empty:cF {g__pgfgo_goban_saved_##1_box} {
+					\pgfonlayer {##1}
+					\box_use_drop:c {g__pgfgo_goban_saved_##1_box}
+					\endpgfonlayer
+				}
+			}
 		}
 		\pgfgo_territory_end:
 		\tl_if_empty:NF \l_pgfgo_goban_bbox_tl
@@ -1915,7 +1927,7 @@
 			\dim_set:Nn \l__pgfgo_goban_view_raise_dim {\l_pgfgo_goban_view_raise_tl}
 			\cs_set_eq:cN {pgfonlayer} \__pgfgo_goban_onlayer:n
 			\cs_set_eq:cN {endpgfonlayer} \__pgfgo_goban_endlayer:
-			\exp_args:NV \pgfsetlayers \c__pgfgo_text_stone_layers_tl
+			\exp_args:NV \pgfsetlayers \c__pgfgo_goban_layers_main_tl
 			\pgfpicture
 			\pgfsetxvec{\pgfpoint{\l_pgfgo_goban_grid_x_sep_dim}{0}}
 			\pgfsetyvec{\pgfpoint{0}{\l_pgfgo_goban_grid_y_sep_dim}}
@@ -1943,10 +1955,6 @@
 			}
 			\endpgfpicture
 		\group_end:
-	}
-	\tl_const:Nn \c__pgfgo_text_stone_layers_tl {
-		pgfgo_layer_goban_border, pgfgo_layer_goban_grid, pgfgo_layer_goban_labels, pgfgo_layer_territory,
-		pgfgo_layer_mark_shadow, pgfgo_layer_stone, pgfgo_layer_stone_mark, pgfgo_layer_mark, main
 	}
 	\cs_generate_variant:Nn \keys_set_groups:nnn {nnV}
 	\cs_generate_variant:Nn \msg_warning:nnn {nnV}
