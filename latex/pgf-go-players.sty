@@ -279,8 +279,6 @@
 }
 \cs_generate_variant:Nn \__pgfgo_players_mark_other:nn {ne}
 
-\def\pgfgonewplayers#1{\clist_map_function:nN {#1} \__pgfgo_players_new:n}
-
 %LAS CLAVES Y VARIABLES DEL JUGADOR #1 (tests/check_docs.py LEE players/#1 COMO players/<player>).
 %CLAVES: /pgfgo/players/<player>
 \cs_new_protected:Npn \__pgfgo_players_new:n #1 {
@@ -630,7 +628,7 @@
 }
 
 %LOS JUGADORES REALES. TODO SE ASIGNA ACA
-\pgfgonewplayers{neutral, black, white}
+\clist_map_function:nN {neutral, black, white} \__pgfgo_players_new:n
 \pgfgocopyplayers{neutral}{black}{white}
 
 \ExplSyntaxOff

@@ -34,6 +34,10 @@ All notable changes to `pgf-go` are listed here.
 
 ### Behaviour changes
 
+- `\pgfgonewplayers` is deleted. It was undocumented, and the players it
+  created could not be drawn (only copied with `\pgfgocopyplayer`) and failed
+  with `profile`. Define a player profile with `\pgfgodefineplayer` and load
+  it with `players/<player>/profile`.
 - Fonts by profile: the initial style, `simple` and `draft` write the
   coordinates, the move numbers and the labels of the marks with
   `\normalfont` (the numbers were `\bfseries` and the coordinates

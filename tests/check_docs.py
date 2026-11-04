@@ -31,9 +31,7 @@ BS = "\\"
 MANUALS = ("es", "en")
 
 # Not documented on purpose.
-UNDOCUMENTED = {
-    "pgfgonewplayers",                      # internal: creates the three players
-}
+UNDOCUMENTED = set()
 
 # Documented paths that are other names for keys of the code. The manuals
 # document the options of \stone, \moves and \marks as /pgfgo/stone/...,

@@ -16,9 +16,8 @@
 \pgfgodefineplayer[from = default-black]{keys-black}{stone = {fill = {color = green!50!black}}}
 \pgfgodefineplayer[append]{keys-black}{stone = {line = {color = red}}}
 
-% A new player whose settings are copied into black.
-\pgfgonewplayers{extra}
-\pgfgosetplayer{extra}{stone = {fill = {color = purple}, radius = 4pt}}
+% A player profile, loaded into black in a case below.
+\pgfgodefineplayer[from = default-black]{keys-extra}{stone = {fill = {color = purple}, radius = 4pt}}
 
 \begin{document}
 
@@ -61,8 +60,8 @@
 {\pgfgoset{mark = {square}}
 \begin{goban}[5]\marks{C3}\end{goban}}
 
-\case{New player copied into black with \textbackslash pgfgocopyplayers}
-{\pgfgocopyplayers{neutral}{extra}{white}
+\case{Player profile in black, then copied with \textbackslash pgfgocopyplayers}
+{\pgfgoset{players = {black = {profile = keys-extra}}}\pgfgocopyplayers{neutral}{black}{white}
 \begin{goban}[5]\stones[b]{B2}\stones[w]{D2}\stone{C4}\end{goban}}
 
 \case{Profiles built with from and append}
