@@ -2,7 +2,7 @@
 
 [![CTAN](https://img.shields.io/ctan/v/pgf-go)](https://ctan.org/pkg/pgf-go) [![CTAN license](https://img.shields.io/ctan/l/pgf-go)](https://ctan.org/pkg/pgf-go)
 
-Release 0.2026.10.30 2026/10/30
+Release 0.2026.11.27 2026/11/27
 
 ## Description
 

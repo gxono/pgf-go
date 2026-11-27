@@ -1214,7 +1214,7 @@ In the examples, |analyzed| is |analyzed.sgf|, a short game on 9×9 with its ana
 \end{key}
 
 \begin{key}{/pgfgo/sgf analysis/colors = \meta{points = color, ...} (initially from green to violet)}
-	The colors of |colored|: a move that loses at least those points takes that color (that of the largest one it reaches). The initial value is |{0 = green!60, 0.5 = yellow!80!green, 1.5 = orange!80, 3 = red!70, 6 = violet!70, 12 = violet!60!black}|. A new list replaces the previous one.
+	The colors of |colored|: a move that loses at least those points takes that color (that of the largest one it reaches). The initial value is |{0 = green!60,| |0.5 = yellow!80!green,| |1.5 = orange!80,| |3 = red!70,| |6 = violet!70,| |12 = violet!60!black}|. A new list replaces the previous one.
 
 	\begin{codeexample}[]
 		\begin{goban}[9, scale = 0.6]
@@ -1333,7 +1333,8 @@ Each command that reads games has its own |analysis| \emph{key}, which is added 
 		(\sgfinfo[move = 9]{analyzed}{lead}); it loses
 		\sgfinfo[move = 9]{analyzed}{loss} points; the engine
 		preferred \sgfinfo[move = 9]{analyzed}{best}. For Black:
-		\sgfinfo[move = 9, analysis = {perspective = black}]{analyzed}{winrate}\,\%.
+		\sgfinfo[move = 9,
+			analysis = {perspective = black}]{analyzed}{winrate}\,\%.
 		The mistakes: \sgfinfo[analysis = {mistakes = 3}]{analyzed}{mistakes}.
 	\end{codeexample}
 \end{key}

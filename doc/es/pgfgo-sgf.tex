@@ -1215,7 +1215,7 @@ En los ejemplos, |analizada| es |analizada.sgf|, una partida corta en 9×9 con s
 \end{key}
 
 \begin{key}{/pgfgo/sgf analysis/colors = \meta{puntos = color, ...} (initially de verde a violeta)}
-	Los colores de |colored|: una jugada que pierde al menos esos puntos toma ese color (el del mayor que alcanza). El valor inicial es |{0 = green!60, 0.5 = yellow!80!green, 1.5 = orange!80, 3 = red!70, 6 = violet!70, 12 = violet!60!black}|. Una lista nueva reemplaza la anterior.
+	Los colores de |colored|: una jugada que pierde al menos esos puntos toma ese color (el del mayor que alcanza). El valor inicial es |{0 = green!60,| |0.5 = yellow!80!green,| |1.5 = orange!80,| |3 = red!70,| |6 = violet!70,| |12 = violet!60!black}|. Una lista nueva reemplaza la anterior.
 
 	\begin{codeexample}[]
 		\begin{goban}[9, scale = 0.6]
@@ -1334,7 +1334,8 @@ Cada comando que lee partidas tiene su propia \emph{key} |analysis|, que se suma
 		(\sgfinfo[move = 9]{analizada}{lead}); pierde
 		\sgfinfo[move = 9]{analizada}{loss} puntos; el motor
 		prefería \sgfinfo[move = 9]{analizada}{best}. Para Negro:
-		\sgfinfo[move = 9, analysis = {perspective = black}]{analizada}{winrate}\,\%.
+		\sgfinfo[move = 9,
+			analysis = {perspective = black}]{analizada}{winrate}\,\%.
 		Los errores: \sgfinfo[analysis = {mistakes = 3}]{analizada}{mistakes}.
 	\end{codeexample}
 \end{key}
